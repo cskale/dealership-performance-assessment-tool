@@ -14,7 +14,172 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      assessments: {
+        Row: {
+          answers: Json
+          completed_at: string | null
+          created_at: string
+          dealership_id: string
+          id: string
+          overall_score: number | null
+          scores: Json
+          session_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          answers?: Json
+          completed_at?: string | null
+          created_at?: string
+          dealership_id: string
+          id?: string
+          overall_score?: number | null
+          scores?: Json
+          session_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          answers?: Json
+          completed_at?: string | null
+          created_at?: string
+          dealership_id?: string
+          id?: string
+          overall_score?: number | null
+          scores?: Json
+          session_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessments_dealership_id_fkey"
+            columns: ["dealership_id"]
+            isOneToOne: false
+            referencedRelation: "dealerships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      benchmarks: {
+        Row: {
+          average_score: number
+          brand: string
+          country: string
+          id: string
+          last_updated: string
+          metric_name: string
+          percentile_25: number | null
+          percentile_75: number | null
+          sample_size: number
+          segment: string
+        }
+        Insert: {
+          average_score: number
+          brand: string
+          country: string
+          id?: string
+          last_updated?: string
+          metric_name: string
+          percentile_25?: number | null
+          percentile_75?: number | null
+          sample_size?: number
+          segment: string
+        }
+        Update: {
+          average_score?: number
+          brand?: string
+          country?: string
+          id?: string
+          last_updated?: string
+          metric_name?: string
+          percentile_25?: number | null
+          percentile_75?: number | null
+          sample_size?: number
+          segment?: string
+        }
+        Relationships: []
+      }
+      dealerships: {
+        Row: {
+          brand: string
+          contact_email: string | null
+          country: string
+          created_at: string
+          id: string
+          location: string
+          name: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          brand: string
+          contact_email?: string | null
+          country: string
+          created_at?: string
+          id?: string
+          location: string
+          name: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          brand?: string
+          contact_email?: string | null
+          country?: string
+          created_at?: string
+          id?: string
+          location?: string
+          name?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      improvement_actions: {
+        Row: {
+          action_description: string
+          action_title: string
+          assessment_id: string
+          created_at: string
+          department: string
+          estimated_effort: string | null
+          expected_impact: string | null
+          id: string
+          priority: string
+        }
+        Insert: {
+          action_description: string
+          action_title: string
+          assessment_id: string
+          created_at?: string
+          department: string
+          estimated_effort?: string | null
+          expected_impact?: string | null
+          id?: string
+          priority: string
+        }
+        Update: {
+          action_description?: string
+          action_title?: string
+          assessment_id?: string
+          created_at?: string
+          department?: string
+          estimated_effort?: string | null
+          expected_impact?: string | null
+          id?: string
+          priority?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "improvement_actions_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
