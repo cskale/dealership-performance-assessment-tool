@@ -4,20 +4,29 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Building2, Globe, MapPin, Mail, Phone } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { DealershipInfo, AUTOMOTIVE_BRANDS, COUNTRIES } from '@/types/dealership';
+import { useAssessmentData } from '@/hooks/useAssessmentData';
+import { useToast } from '@/hooks/use-toast';
 
 interface DealershipInfoFormProps {
-  onSubmit: (data: DealershipInfo) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSubmit?: (data: DealershipInfo) => void;
   initialData?: DealershipInfo;
-  isLoading?: boolean;
 }
 
 export const DealershipInfoForm: React.FC<DealershipInfoFormProps> = ({
+  open,
+  onOpenChange,
   onSubmit,
   initialData,
-  isLoading = false
 }) => {
+  const navigate = useNavigate();
+  const { saveDealership, isLoading } = useAssessmentData();
+  const { toast } = useToast();
   const [formData, setFormData] = useState<DealershipInfo>({
     name: initialData?.name || '',
     brand: initialData?.brand || '',
@@ -52,10 +61,36 @@ export const DealershipInfoForm: React.FC<DealershipInfoFormProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      onSubmit(formData);
+      try {
+        const dealershipData: DealershipInfo = {
+          ...formData,
+          id: crypto.randomUUID()
+        };
+        
+        await saveDealership(dealershipData);
+        
+        toast({
+          title: "Success!",
+          description: "Dealership information saved successfully.",
+        });
+        
+        onOpenChange(false);
+        
+        if (onSubmit) {
+          onSubmit(dealershipData);
+        } else {
+          navigate('/assessment');
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to save dealership information. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -67,17 +102,18 @@ export const DealershipInfoForm: React.FC<DealershipInfoFormProps> = ({
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto animate-fade-in">
-      <CardHeader className="text-center">
-        <CardTitle className="flex items-center gap-2 justify-center text-2xl">
-          <Building2 className="h-8 w-8 text-primary" />
-          Dealership Information
-        </CardTitle>
-        <CardDescription>
-          Please provide your dealership details to begin the assessment
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-2xl">
+            <Building2 className="h-8 w-8 text-primary" />
+            Dealership Information
+          </DialogTitle>
+          <DialogDescription>
+            Please provide your dealership details to begin the assessment
+          </DialogDescription>
+        </DialogHeader>
+        <div className="py-4">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
@@ -190,7 +226,8 @@ export const DealershipInfoForm: React.FC<DealershipInfoFormProps> = ({
             </Button>
           </div>
         </form>
-      </CardContent>
-    </Card>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };

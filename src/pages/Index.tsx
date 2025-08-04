@@ -1,10 +1,22 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Car, TrendingUp, BarChart3, Users, Award, ArrowRight, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { DealershipInfoForm } from "@/components/DealershipInfoForm";
+import { useAssessmentData } from "@/hooks/useAssessmentData";
 
 const Index = () => {
+  const [showInfoForm, setShowInfoForm] = useState(false);
+  const { dealership } = useAssessmentData();
+  
+  const handleStartAssessment = () => {
+    if (!dealership) {
+      setShowInfoForm(true);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <header className="bg-white shadow-sm border-b">
@@ -30,11 +42,21 @@ const Index = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Link to="/assessment">
-              <Button size="lg" className="flex items-center gap-2 text-lg px-8 py-4">
+            {dealership ? (
+              <Link to="/assessment">
+                <Button size="lg" className="flex items-center gap-2 text-lg px-8 py-4 animate-fade-in">
+                  Continue Assessment <ArrowRight className="h-5 w-5" />
+                </Button>
+              </Link>
+            ) : (
+              <Button 
+                size="lg" 
+                className="flex items-center gap-2 text-lg px-8 py-4 hover-scale"
+                onClick={handleStartAssessment}
+              >
                 Start Assessment <ArrowRight className="h-5 w-5" />
               </Button>
-            </Link>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -59,6 +81,12 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Dealership Info Form Modal */}
+      <DealershipInfoForm 
+        open={showInfoForm}
+        onOpenChange={setShowInfoForm}
+      />
     </div>
   );
 };

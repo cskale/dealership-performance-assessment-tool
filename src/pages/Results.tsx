@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,31 +6,104 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
-import { Download, FileText, FileSpreadsheet, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Target, Star, Brain } from "lucide-react";
+import { Download, FileText, FileSpreadsheet, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Target, Star, Brain, Globe, Building } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { EnhancedCharts } from "@/components/EnhancedCharts";
+import { EnhancedExport } from "@/components/EnhancedExport";
+import { useAssessmentData } from "@/hooks/useAssessmentData";
 
-// Mock data for demonstration - in real app, this would come from localStorage or state management
-const mockResults = {
-  "nvs-1": 4, "nvs-2": 3, "nvs-3": 4, "nvs-4": 3, "nvs-5": 5,
-  "uvs-1": 3, "uvs-2": 4, "uvs-3": 3, "uvs-4": 4, "uvs-5": 3,
-  "svc-1": 4, "svc-2": 5, "svc-3": 3, "svc-4": 4, "svc-5": 4,
-  "pts-1": 3, "pts-2": 4, "pts-3": 3, "pts-4": 4, "pts-5": 4,
-  "fin-1": 4, "fin-2": 3, "fin-3": 4, "fin-4": 3, "fin-5": 4
-};
 
 export default function Results() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [improvementActions, setImprovementActions] = useState<any[]>([]);
+  const [benchmarkComparisons, setBenchmarkComparisons] = useState<any[]>([]);
+  
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { 
+    dealership, 
+    assessment, 
+    benchmarks,
+    loadAssessment, 
+    loadBenchmarks, 
+    generateImprovementActions,
+    isLoading 
+  } = useAssessmentData();
 
-  const sectionData = [
-    { section: "New Vehicle Sales", score: 78, color: "#3B82F6", trend: "up", benchmark: 82 },
-    { section: "Used Vehicle Sales", score: 72, color: "#10B981", trend: "down", benchmark: 75 },
-    { section: "Service Performance", score: 85, color: "#8B5CF6", trend: "up", benchmark: 80 },
-    { section: "Parts & Inventory", score: 76, color: "#F59E0B", trend: "stable", benchmark: 78 },
-    { section: "Financial Operations", score: 74, color: "#EF4444", trend: "up", benchmark: 76 }
-  ];
+  // Load assessment data and generate insights
+  useEffect(() => {
+    const loadData = async () => {
+      if (!assessment) {
+        await loadAssessment();
+      }
+      
+      if (dealership && assessment) {
+        // Load benchmarks for comparison
+        await loadBenchmarks(dealership.brand, dealership.country);
+        
+        // Generate improvement actions
+        if (assessment.scores && Object.keys(assessment.scores).length > 0) {
+          const actions = await generateImprovementActions(assessment.id, assessment.scores);
+          setImprovementActions(actions || []);
+        }
+      }
+    };
+    
+    loadData();
+  }, [dealership, assessment, loadAssessment, loadBenchmarks, generateImprovementActions]);
 
-  const overallScore = Math.round(sectionData.reduce((sum, s) => sum + s.score, 0) / sectionData.length);
+  const sectionData = useMemo(() => {
+    if (!assessment?.scores) {
+      return [
+        { section: "New Vehicle Sales", score: 0, color: "#3B82F6", trend: "up", benchmark: 82 },
+        { section: "Used Vehicle Sales", score: 0, color: "#10B981", trend: "down", benchmark: 75 },
+        { section: "Service Performance", score: 0, color: "#8B5CF6", trend: "up", benchmark: 80 },
+        { section: "Parts & Inventory", score: 0, color: "#F59E0B", trend: "stable", benchmark: 78 },
+        { section: "Financial Operations", score: 0, color: "#EF4444", trend: "up", benchmark: 76 }
+      ];
+    }
+
+    return [
+      { 
+        section: "New Vehicle Sales", 
+        score: assessment.scores.new_vehicle_sales || 0, 
+        color: "#3B82F6", 
+        trend: "up", 
+        benchmark: 82 
+      },
+      { 
+        section: "Used Vehicle Sales", 
+        score: assessment.scores.used_vehicle_sales || 0, 
+        color: "#10B981", 
+        trend: "down", 
+        benchmark: 75 
+      },
+      { 
+        section: "Service Performance", 
+        score: assessment.scores.service_performance || 0, 
+        color: "#8B5CF6", 
+        trend: "up", 
+        benchmark: 80 
+      },
+      { 
+        section: "Parts & Inventory", 
+        score: assessment.scores.parts_inventory || 0, 
+        color: "#F59E0B", 
+        trend: "stable", 
+        benchmark: 78 
+      },
+      { 
+        section: "Financial Operations", 
+        score: assessment.scores.financial_operations || 0, 
+        color: "#EF4444", 
+        trend: "up", 
+        benchmark: 76 
+      }
+    ];
+  }, [assessment]);
+
+  const overallScore = assessment?.overallScore || 0;
 
   const radarData = sectionData.map(s => ({
     subject: s.section.replace(" ", "\n"),
@@ -48,68 +121,34 @@ export default function Results() {
     { month: "Jun", score: overallScore }
   ];
 
-  const recommendations = [
-    {
-      priority: "high",
-      category: "Used Vehicle Sales",
-      title: "Improve Inventory Turnover",
-      description: "Focus on pricing strategies and faster reconditioning to reduce days to sale from 45 to 30 days.",
-      impact: "Potential $150K annual profit increase",
-      icon: Target
-    },
-    {
-      priority: "medium",
-      category: "Service Performance",
-      title: "Optimize Appointment Scheduling",
-      description: "Implement advanced scheduling system to reduce wait times and improve customer satisfaction.",
-      impact: "15% improvement in customer retention",
-      icon: CheckCircle
-    },
-    {
-      priority: "high",
-      category: "Financial Operations",
-      title: "Floor Plan Optimization",
-      description: "Review aging inventory policies and optimize floor plan costs.",
-      impact: "Reduce costs by $25K annually",
-      icon: TrendingUp
-    },
-    {
-      priority: "medium",
-      category: "Parts & Inventory",
-      title: "Supplier Relationship Enhancement",
-      description: "Negotiate better terms with key suppliers and implement just-in-time ordering.",
-      impact: "10% reduction in carrying costs",
-      icon: Star
+  // Redirect if no assessment data
+  useEffect(() => {
+    if (!assessment && !isLoading) {
+      navigate('/assessment');
     }
-  ];
+  }, [assessment, isLoading, navigate]);
 
-  const handleExportPDF = () => {
-    toast({
-      title: "PDF Export Started",
-      description: "Your detailed report is being generated...",
-    });
-    // Simulate PDF generation
-    setTimeout(() => {
-      toast({
-        title: "PDF Ready",
-        description: "Your dealership assessment report has been generated.",
-      });
-    }, 2000);
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your results...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const handleExportExcel = () => {
-    toast({
-      title: "Excel Export Started",
-      description: "Your detailed spreadsheet is being prepared...",
-    });
-    // Simulate Excel generation
-    setTimeout(() => {
-      toast({
-        title: "Excel Ready",
-        description: "Your assessment data has been exported to Excel format.",
-      });
-    }, 1500);
-  };
+  if (!assessment) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">No assessment data found</p>
+          <Button onClick={() => navigate('/assessment')}>Start Assessment</Button>
+        </div>
+      </div>
+    );
+  }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -134,7 +173,24 @@ export default function Results() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Assessment Results</h1>
-          <p className="text-gray-600 mb-6">Comprehensive analysis of your dealership performance</p>
+          <p className="text-gray-600 mb-2">Comprehensive analysis of your dealership performance</p>
+          
+          {dealership && (
+            <div className="flex items-center justify-center gap-4 text-sm text-gray-600 mb-6">
+              <div className="flex items-center gap-1">
+                <Building className="h-4 w-4" />
+                {dealership.name}
+              </div>
+              <div className="flex items-center gap-1">
+                <Star className="h-4 w-4" />
+                {dealership.brand}
+              </div>
+              <div className="flex items-center gap-1">
+                <Globe className="h-4 w-4" />
+                {dealership.country}
+              </div>
+            </div>
+          )}
           
           {/* Overall Score */}
           <div className="flex justify-center mb-6">
@@ -151,11 +207,11 @@ export default function Results() {
 
           {/* Export Buttons */}
           <div className="flex justify-center gap-4 mb-8">
-            <Button onClick={handleExportPDF} className="flex items-center gap-2">
+            <Button className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Export PDF Report
             </Button>
-            <Button variant="outline" onClick={handleExportExcel} className="flex items-center gap-2">
+            <Button variant="outline" className="flex items-center gap-2">
               <FileSpreadsheet className="h-4 w-4" />
               Export to Excel
             </Button>
@@ -164,10 +220,11 @@ export default function Results() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">📊 Overview</TabsTrigger>
             <TabsTrigger value="detailed">📈 Detailed Analysis</TabsTrigger>
             <TabsTrigger value="trends">📉 Trends</TabsTrigger>
+            <TabsTrigger value="benchmarks">🏆 Benchmarks</TabsTrigger>
             <TabsTrigger value="recommendations">🎯 AI Recommendations</TabsTrigger>
           </TabsList>
 
@@ -378,6 +435,50 @@ export default function Results() {
             </div>
           </TabsContent>
 
+          <TabsContent value="benchmarks" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5" />
+                  Benchmark Comparisons
+                </CardTitle>
+                <p className="text-sm text-gray-600">
+                  Compare your performance against industry standards and peer dealerships
+                </p>
+              </CardHeader>
+              <CardContent>
+                {benchmarks.length > 0 ? (
+                  <div className="space-y-4">
+                    {benchmarks.map((benchmark, index) => (
+                      <div key={index} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <h4 className="font-medium">{benchmark.metricName}</h4>
+                          <Badge variant={benchmark.averageScore > (assessment?.scores?.[benchmark.segment] || 0) ? 'destructive' : 'default'}>
+                            Industry: {benchmark.averageScore}%
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-600">Your Score:</span>
+                            <span className="ml-2 font-medium">{assessment?.scores?.[benchmark.segment] || 0}%</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Sample Size:</span>
+                            <span className="ml-2">{benchmark.sampleSize} dealerships</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-8">
+                    No benchmark data available for your brand and country
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="recommendations" className="space-y-6">
             <Card>
               <CardHeader>
@@ -392,37 +493,51 @@ export default function Results() {
             </Card>
 
             <div className="space-y-4">
-              {recommendations.map((rec, index) => {
-                const Icon = rec.icon;
-                return (
-                  <Card key={index} className="border-l-4 border-l-blue-500">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-blue-100 rounded-lg">
-                            <Icon className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-lg">{rec.title}</CardTitle>
-                            <Badge className={`mt-1 ${getPriorityColor(rec.priority)}`}>
-                              {rec.priority.toUpperCase()} PRIORITY
-                            </Badge>
-                          </div>
+              {improvementActions.length > 0 ? improvementActions.map((action, index) => (
+                <Card key={index} className="border-l-4 border-l-blue-500">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <Target className="h-5 w-5 text-blue-600" />
                         </div>
-                        <Badge variant="outline">{rec.category}</Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-700 mb-3">{rec.description}</p>
-                      <div className="flex items-center gap-2 text-sm">
-                        <div className="px-3 py-1 bg-green-100 text-green-800 rounded-full">
-                          💰 {rec.impact}
+                        <div>
+                          <CardTitle className="text-lg">{action.action_title}</CardTitle>
+                          <p className="text-sm text-gray-600">{action.department}</p>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                      <Badge className={getPriorityColor(action.priority)}>
+                        {action.priority} priority
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-700 mb-3">{action.action_description}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {action.expected_impact && (
+                        <div className="bg-green-50 p-3 rounded-lg">
+                          <p className="text-sm text-green-800">
+                            <strong>Expected Impact:</strong> {action.expected_impact}
+                          </p>
+                        </div>
+                      )}
+                      {action.estimated_effort && (
+                        <div className="bg-blue-50 p-3 rounded-lg">
+                          <p className="text-sm text-blue-800">
+                            <strong>Estimated Effort:</strong> {action.estimated_effort}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )) : (
+                <Card>
+                  <CardContent className="text-center py-8">
+                    <p className="text-gray-500">No recommendations available yet. Complete more sections to generate insights.</p>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">

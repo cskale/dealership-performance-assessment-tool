@@ -1,14 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { ChevronLeft, ChevronRight, Car, Wrench, Package, DollarSign, BarChart3 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Car, Wrench, Package, DollarSign, BarChart3, Bot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import { QuestionCard } from "@/components/assessment/QuestionCard";
 import { SectionNavigation } from "@/components/assessment/SectionNavigation";
+import { SmartAssistant } from "@/components/SmartAssistant";
+import { DealershipInfoForm } from "@/components/DealershipInfoForm";
 import { questionnaire } from "@/data/questionnaire";
+import { useAssessmentData } from "@/hooks/useAssessmentData";
+import { AssessmentData } from "@/types/dealership";
 
 export default function Assessment() {
   const [currentSection, setCurrentSection] = useState(0);
@@ -16,7 +21,19 @@ export default function Assessment() {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<() => void | null>(null);
+  const [showAssistant, setShowAssistant] = useState(false);
+  const [showInfoForm, setShowInfoForm] = useState(false);
+  const [scores, setScores] = useState<Record<string, number>>({});
+  
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { 
+    dealership, 
+    assessment, 
+    saveAssessment, 
+    loadAssessment, 
+    isLoading 
+  } = useAssessmentData();
 
   const sections = questionnaire.sections;
   const totalQuestions = sections.reduce((sum, section) => sum + section.questions.length, 0);
@@ -26,8 +43,50 @@ export default function Assessment() {
   const currentSectionData = sections[currentSection];
   const currentQuestionData = currentSectionData?.questions[currentQuestion];
 
-  const handleAnswer = (questionId: string, value: number) => {
-    setAnswers(prev => ({ ...prev, [questionId]: value }));
+  // Calculate real-time scores
+  const calculateScores = useCallback((currentAnswers: Record<string, number>) => {
+    const sectionScores: Record<string, number> = {};
+    
+    sections.forEach((section) => {
+      const sectionAnswers = section.questions
+        .map(q => currentAnswers[q.id])
+        .filter(answer => answer !== undefined);
+      
+      if (sectionAnswers.length > 0) {
+        const average = sectionAnswers.reduce((sum, answer) => sum + answer, 0) / sectionAnswers.length;
+        sectionScores[section.id] = Math.round((average / 5) * 100);
+      }
+    });
+    
+    return sectionScores;
+  }, [sections]);
+
+  const handleAnswer = async (questionId: string, value: number) => {
+    const newAnswers = { ...answers, [questionId]: value };
+    setAnswers(newAnswers);
+    
+    // Calculate real-time scores
+    const newScores = calculateScores(newAnswers);
+    setScores(newScores);
+    
+    // Auto-save to database
+    if (dealership) {
+      try {
+        const overallScore = Object.values(newScores).length > 0 
+          ? Math.round(Object.values(newScores).reduce((sum, score) => sum + score, 0) / Object.values(newScores).length)
+          : 0;
+          
+        await saveAssessment({
+          answers: newAnswers,
+          scores: newScores,
+          overallScore,
+          status: 'in_progress' as const
+        });
+      } catch (error) {
+        console.error('Failed to save assessment:', error);
+      }
+    }
+    
     toast({
       title: "Answer Saved",
       description: "Your response has been recorded.",
@@ -90,6 +149,56 @@ export default function Assessment() {
   const getSectionColor = (index: number) => {
     const colors = ["bg-blue-500", "bg-green-500", "bg-purple-500", "bg-orange-500", "bg-pink-500"];
     return colors[index % colors.length];
+  };
+
+  // Load existing assessment data on mount
+  useEffect(() => {
+    const loadExistingData = async () => {
+      if (!dealership) {
+        setShowInfoForm(true);
+        return;
+      }
+      
+      try {
+        await loadAssessment();
+        
+        if (assessment) {
+          setAnswers(assessment.answers || {});
+          setScores(assessment.scores || {});
+        }
+      } catch (error) {
+        console.error('Failed to load assessment:', error);
+      }
+    };
+    
+    loadExistingData();
+  }, [dealership, loadAssessment, assessment]);
+
+  const handleFinishAssessment = async () => {
+    if (!dealership) return;
+    
+    try {
+      const finalScores = calculateScores(answers);
+      const overallScore = Object.values(finalScores).length > 0 
+        ? Math.round(Object.values(finalScores).reduce((sum, score) => sum + score, 0) / Object.values(finalScores).length)
+        : 0;
+        
+      await saveAssessment({
+        answers,
+        scores: finalScores,
+        overallScore,
+        status: 'completed' as const,
+        completedAt: new Date().toISOString()
+      });
+      
+      navigate('/results');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save assessment. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -180,10 +289,11 @@ export default function Assessment() {
                       </Button>
                     ) : (
                       <Button
-                        onClick={() => window.location.href = "/results"}
+                        onClick={handleFinishAssessment}
                         className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                        disabled={isLoading}
                       >
-                        View Results
+                        {isLoading ? 'Saving...' : 'View Results'}
                         <BarChart3 className="h-4 w-4" />
                       </Button>
                     )}
@@ -193,6 +303,32 @@ export default function Assessment() {
             </Card>
           </div>
         </div>
+
+        {/* Smart Assistant Button */}
+        <div className="fixed bottom-6 right-6 z-50">
+          <Button
+            onClick={() => setShowAssistant(true)}
+            className="h-14 w-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg animate-bounce"
+          >
+            <Bot className="h-6 w-6" />
+          </Button>
+        </div>
+
+        {/* Smart Assistant */}
+        <SmartAssistant
+          open={showAssistant}
+          onOpenChange={setShowAssistant}
+          currentQuestion={currentQuestionData}
+          currentSection={currentSectionData}
+          answers={answers}
+          scores={scores}
+        />
+
+        {/* Dealership Info Form */}
+        <DealershipInfoForm
+          open={showInfoForm}
+          onOpenChange={setShowInfoForm}
+        />
 
         {/* Confirmation Dialog */}
         <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>

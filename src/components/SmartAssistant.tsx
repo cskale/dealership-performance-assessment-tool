@@ -1,32 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Bot, X, Lightbulb, HelpCircle, TrendingUp } from 'lucide-react';
-import { Question } from '@/data/questionnaire';
+import { Bot, Lightbulb, HelpCircle, TrendingUp, BarChart } from 'lucide-react';
+import { Question, Section } from '@/data/questionnaire';
 
 interface SmartAssistantProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   currentQuestion?: Question;
-  currentAnswer?: any;
-  sectionProgress?: number;
-  isVisible: boolean;
-  onClose: () => void;
+  currentSection?: Section;
+  answers?: Record<string, number>;
+  scores?: Record<string, number>;
 }
 
 export const SmartAssistant: React.FC<SmartAssistantProps> = ({
+  open,
+  onOpenChange,
   currentQuestion,
-  currentAnswer,
-  sectionProgress = 0,
-  isVisible,
-  onClose
+  currentSection,
+  answers = {},
+  scores = {}
 }) => {
   const [guidance, setGuidance] = useState<string>('');
   const [tips, setTips] = useState<string[]>([]);
 
   useEffect(() => {
-    if (currentQuestion && isVisible) {
+    if (currentQuestion && open) {
       generateContextualGuidance();
     }
-  }, [currentQuestion, currentAnswer, isVisible]);
+  }, [currentQuestion, open]);
 
   const generateContextualGuidance = () => {
     if (!currentQuestion) return;
@@ -89,40 +91,56 @@ export const SmartAssistant: React.FC<SmartAssistantProps> = ({
     setTips(newTips);
   };
 
+  const getSectionProgress = () => {
+    if (!currentSection) return 0;
+    const sectionAnswers = currentSection.questions.filter(q => answers[q.id] !== undefined).length;
+    return (sectionAnswers / currentSection.questions.length) * 100;
+  };
+
   const getProgressMessage = () => {
-    if (sectionProgress < 25) {
+    const progress = getSectionProgress();
+    if (progress < 25) {
       return "You're just getting started! Take your time to provide accurate responses.";
-    } else if (sectionProgress < 50) {
+    } else if (progress < 50) {
       return "Great progress! Your responses are building a comprehensive assessment.";
-    } else if (sectionProgress < 75) {
+    } else if (progress < 75) {
       return "You're more than halfway through this section. Keep up the good work!";
     } else {
       return "Almost done with this section! Your detailed responses will generate better insights.";
     }
   };
 
-  if (!isVisible) return null;
+  const currentAnswer = currentQuestion ? answers[currentQuestion.id] : undefined;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-80 animate-slide-in-right">
-      <Card className="border-primary shadow-lg">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Bot className="h-5 w-5 text-primary animate-pulse" />
-              Smart Assistant
-            </CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Bot className="h-5 w-5 text-primary animate-pulse" />
+            Smart Assistant
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-4">
+          {/* Current Scores */}
+          {Object.keys(scores).length > 0 && (
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <BarChart className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-800">Current Scores</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {Object.entries(scores).map(([section, score]) => (
+                  <div key={section} className="flex justify-between">
+                    <span className="text-blue-700 capitalize">{section.replace('_', ' ')}:</span>
+                    <span className="font-medium text-blue-800">{score}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Progress Message */}
           <div className="flex items-start gap-2">
             <TrendingUp className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
@@ -157,15 +175,15 @@ export const SmartAssistant: React.FC<SmartAssistantProps> = ({
           )}
 
           {/* Current Answer Feedback */}
-          {currentAnswer !== undefined && currentAnswer !== '' && (
+          {currentAnswer !== undefined && (
             <div className="bg-green-50 dark:bg-green-950/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
               <p className="text-xs text-green-700 dark:text-green-300">
                 ✓ Answer recorded. This helps build your dealership profile for accurate recommendations.
               </p>
             </div>
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
