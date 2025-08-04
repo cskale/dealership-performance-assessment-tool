@@ -79,11 +79,8 @@ export const DealershipInfoForm: React.FC<DealershipInfoFormProps> = ({
         
         onOpenChange(false);
         
-        if (onSubmit) {
-          onSubmit(dealershipData);
-        } else {
-          navigate('/assessment');
-        }
+        // Always navigate to assessment page after successful save
+        navigate('/assessment');
       } catch (error) {
         toast({
           title: "Error",
