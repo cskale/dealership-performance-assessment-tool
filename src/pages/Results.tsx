@@ -205,57 +205,75 @@ export default function Results() {
             </Card>
           </div>
 
-          {/* Export Buttons */}
-          <div className="flex justify-center gap-4 mb-8">
-            <Button className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Export PDF Report
-            </Button>
-            <Button variant="outline" className="flex items-center gap-2">
-              <FileSpreadsheet className="h-4 w-4" />
-              Export to Excel
-            </Button>
+          {/* Enhanced Export Section */}
+          <div className="mb-8">
+            <EnhancedExport 
+              data={{
+                dealership: dealership || { name: 'Assessment Results', brand: 'N/A', location: 'N/A', country: 'N/A' },
+                scores: assessment?.scores || {},
+                answers: assessment?.answers || {},
+                recommendations: improvementActions
+              }}
+            />
           </div>
         </div>
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">📊 Overview</TabsTrigger>
-            <TabsTrigger value="detailed">📈 Detailed Analysis</TabsTrigger>
-            <TabsTrigger value="trends">📉 Trends</TabsTrigger>
-            <TabsTrigger value="benchmarks">🏆 Benchmarks</TabsTrigger>
-            <TabsTrigger value="recommendations">🎯 AI Recommendations</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5 bg-white/80 backdrop-blur-sm border shadow-lg">
+            <TabsTrigger value="overview" className="transition-all duration-300 hover:scale-105">📊 Overview</TabsTrigger>
+            <TabsTrigger value="detailed" className="transition-all duration-300 hover:scale-105">📈 Advanced Analysis</TabsTrigger>
+            <TabsTrigger value="trends" className="transition-all duration-300 hover:scale-105">📉 Trend Analysis</TabsTrigger>
+            <TabsTrigger value="benchmarks" className="transition-all duration-300 hover:scale-105">🏆 Benchmarks</TabsTrigger>
+            <TabsTrigger value="recommendations" className="transition-all duration-300 hover:scale-105">🎯 AI Actions</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
+          <TabsContent value="overview" className="space-y-6 animate-fade-in">
             {/* Section Scores */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {sectionData.map((section, index) => (
-                <Card key={index} className="border-l-4" style={{ borderLeftColor: section.color }}>
+                <Card 
+                  key={index} 
+                  className="border-l-4 hover:shadow-lg transition-all duration-300 hover-scale animate-fade-in" 
+                  style={{ 
+                    borderLeftColor: section.color,
+                    animationDelay: `${index * 100}ms`
+                  }}
+                >
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-sm font-medium">{section.section}</CardTitle>
-                      {getTrendIcon(section.trend)}
+                      <div className="flex items-center gap-2">
+                        {getTrendIcon(section.trend)}
+                        <Badge variant={section.score >= section.benchmark ? "default" : "secondary"}>
+                          {section.score >= section.benchmark ? "Strong" : "Improve"}
+                        </Badge>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-2xl font-bold" style={{ color: section.color }}>
+                        <span className="text-3xl font-bold" style={{ color: section.color }}>
                           {section.score}
                         </span>
-                        <Badge variant="outline">
-                          vs {section.benchmark} benchmark
-                        </Badge>
+                        <div className="text-right">
+                          <div className="text-sm text-muted-foreground">vs {section.benchmark}</div>
+                          <div className={`text-sm font-medium ${section.score >= section.benchmark ? 'text-green-600' : 'text-orange-600'}`}>
+                            {section.score >= section.benchmark ? '+' : ''}{section.score - section.benchmark} pts
+                          </div>
+                        </div>
                       </div>
-                      <Progress value={section.score} className="h-2" />
-                      <div className="text-xs text-gray-600">
+                      <Progress value={section.score} className="h-3" />
+                      <div className="flex items-center gap-2 text-xs">
                         {section.score >= section.benchmark ? (
-                          <span className="text-green-600">✅ Above benchmark</span>
+                          <CheckCircle className="h-4 w-4 text-green-600" />
                         ) : (
-                          <span className="text-orange-600">⚠️ Below benchmark</span>
+                          <AlertTriangle className="h-4 w-4 text-orange-600" />
                         )}
+                        <span className={section.score >= section.benchmark ? 'text-green-600' : 'text-orange-600'}>
+                          {section.score >= section.benchmark ? 'Above industry benchmark' : 'Below industry benchmark'}
+                        </span>
                       </div>
                     </div>
                   </CardContent>
@@ -294,66 +312,12 @@ export default function Results() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="detailed" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Section Breakdown */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Section Performance Breakdown</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer
-                    config={{
-                      score: { label: "Score", color: "#3B82F6" }
-                    }}
-                    className="h-80"
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={sectionData}>
-                        <XAxis dataKey="section" tick={{ fontSize: 10 }} />
-                        <YAxis domain={[0, 100]} />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Bar dataKey="score" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
-
-              {/* Performance Distribution */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Score Distribution</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer
-                    config={{
-                      value: { label: "Sections", color: "#3B82F6" }
-                    }}
-                    className="h-80"
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={sectionData}
-                          dataKey="score"
-                          nameKey="section"
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          label={({ name, value }) => `${name}: ${value}`}
-                        >
-                          {sectionData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
-            </div>
+          <TabsContent value="detailed" className="space-y-6 animate-fade-in">
+            {/* Enhanced Charts Component */}
+            <EnhancedCharts 
+              scores={assessment?.scores || {}}
+              benchmarks={benchmarks.reduce((acc, b) => ({ ...acc, [b.metricName]: b.averageScore }), {})}
+            />
 
             {/* Key Metrics */}
             <Card>
@@ -479,84 +443,105 @@ export default function Results() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="recommendations" className="space-y-6">
-            <Card>
+          <TabsContent value="recommendations" className="space-y-6 animate-fade-in">
+            <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Brain className="h-5 w-5" />
-                  AI-Powered Recommendations
+                  <Brain className="h-5 w-5 text-primary" />
+                  AI-Powered Improvement Recommendations
                 </CardTitle>
-                <p className="text-sm text-gray-600">
-                  Based on your assessment results, here are personalized improvement recommendations
+                <p className="text-muted-foreground">
+                  Automatically generated based on your diagnostic scores and industry best practices
                 </p>
               </CardHeader>
-            </Card>
-
-            <div className="space-y-4">
-              {improvementActions.length > 0 ? improvementActions.map((action, index) => (
-                <Card key={index} className="border-l-4 border-l-blue-500">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-100 rounded-lg">
-                          <Target className="h-5 w-5 text-blue-600" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-lg">{action.action_title}</CardTitle>
-                          <p className="text-sm text-gray-600">{action.department}</p>
-                        </div>
-                      </div>
-                      <Badge className={getPriorityColor(action.priority)}>
-                        {action.priority} priority
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-700 mb-3">{action.action_description}</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {action.expected_impact && (
-                        <div className="bg-green-50 p-3 rounded-lg">
-                          <p className="text-sm text-green-800">
-                            <strong>Expected Impact:</strong> {action.expected_impact}
+              <CardContent>
+                {improvementActions.length > 0 ? (
+                  <div className="space-y-6">
+                    {improvementActions
+                      .sort((a, b) => {
+                        const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
+                        return priorityOrder[b.priority] - priorityOrder[a.priority];
+                      })
+                      .map((action, index) => (
+                      <Card 
+                        key={index} 
+                        className={`border-l-4 hover:shadow-lg transition-all duration-300 animate-fade-in hover-scale ${
+                          action.priority === 'critical' ? 'border-red-500 bg-red-50/50' :
+                          action.priority === 'high' ? 'border-orange-500 bg-orange-50/50' :
+                          action.priority === 'medium' ? 'border-yellow-500 bg-yellow-50/50' :
+                          'border-green-500 bg-green-50/50'
+                        }`}
+                        style={{ animationDelay: `${index * 100}ms` }}
+                      >
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                              <div className={`p-2 rounded-lg ${
+                                action.priority === 'critical' ? 'bg-red-100 text-red-600' :
+                                action.priority === 'high' ? 'bg-orange-100 text-orange-600' :
+                                action.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+                                'bg-green-100 text-green-600'
+                              }`}>
+                                {action.priority === 'critical' ? <AlertTriangle className="h-5 w-5" /> :
+                                 action.priority === 'high' ? <TrendingUp className="h-5 w-5" /> :
+                                 action.priority === 'medium' ? <Target className="h-5 w-5" /> :
+                                 <CheckCircle className="h-5 w-5" />}
+                              </div>
+                              <h3 className="font-semibold text-lg">{action.action_title}</h3>
+                            </div>
+                            <Badge 
+                              variant={action.priority === 'critical' ? 'destructive' : 'secondary'}
+                              className={`${
+                                action.priority === 'critical' ? 'bg-red-500 text-white' :
+                                action.priority === 'high' ? 'bg-orange-500 text-white' :
+                                action.priority === 'medium' ? 'bg-yellow-500 text-white' :
+                                'bg-green-500 text-white'
+                              } capitalize`}
+                            >
+                              {action.priority} Priority
+                            </Badge>
+                          </div>
+                          
+                          <p className="text-muted-foreground mb-6 leading-relaxed">
+                            {action.action_description}
                           </p>
-                        </div>
-                      )}
-                      {action.estimated_effort && (
-                        <div className="bg-blue-50 p-3 rounded-lg">
-                          <p className="text-sm text-blue-800">
-                            <strong>Estimated Effort:</strong> {action.estimated_effort}
-                          </p>
-                        </div>
-                      )}
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="flex items-center gap-2">
+                              <Building className="h-4 w-4 text-primary" />
+                              <div>
+                                <p className="font-medium text-sm">Department</p>
+                                <p className="text-muted-foreground">{action.department}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <TrendingUp className="h-4 w-4 text-green-600" />
+                              <div>
+                                <p className="font-medium text-sm">Expected Impact</p>
+                                <p className="text-muted-foreground">{action.expected_impact}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Target className="h-4 w-4 text-blue-600" />
+                              <div>
+                                <p className="font-medium text-sm">Implementation Time</p>
+                                <p className="text-muted-foreground">{action.estimated_effort}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="animate-pulse">
+                      <Brain className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                     </div>
-                  </CardContent>
-                </Card>
-              )) : (
-                <Card>
-                  <CardContent className="text-center py-8">
-                    <p className="text-gray-500">No recommendations available yet. Complete more sections to generate insights.</p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-
-            <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-blue-900 mb-2">Next Steps</h3>
-                <ul className="space-y-2 text-blue-800">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4" />
-                    Schedule a detailed consultation with our automotive experts
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4" />
-                    Implement high-priority recommendations within 30 days
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4" />
-                    Re-assess performance in 90 days to track improvements
-                  </li>
-                </ul>
+                    <h3 className="text-lg font-medium mb-2">Generating AI Recommendations...</h3>
+                    <p className="text-muted-foreground">Our AI is analyzing your performance data to create personalized improvement strategies.</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
