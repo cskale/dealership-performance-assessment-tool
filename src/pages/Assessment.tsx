@@ -10,7 +10,6 @@ import { useNavigate } from "react-router-dom";
 import { QuestionCard } from "@/components/assessment/QuestionCard";
 import { SectionNavigation } from "@/components/assessment/SectionNavigation";
 import { SmartAssistant } from "@/components/SmartAssistant";
-import { DealershipInfoForm } from "@/components/DealershipInfoForm";
 import { questionnaire } from "@/data/questionnaire";
 import { useAssessmentData } from "@/hooks/useAssessmentData";
 import { AssessmentData } from "@/types/dealership";
@@ -22,13 +21,11 @@ export default function Assessment() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<() => void | null>(null);
   const [showAssistant, setShowAssistant] = useState(false);
-  const [showInfoForm, setShowInfoForm] = useState(false);
   const [scores, setScores] = useState<Record<string, number>>({});
   
   const { toast } = useToast();
   const navigate = useNavigate();
   const { 
-    dealership, 
     assessment, 
     saveAssessment, 
     loadAssessment, 
@@ -69,22 +66,20 @@ export default function Assessment() {
     const newScores = calculateScores(newAnswers);
     setScores(newScores);
     
-    // Auto-save to database
-    if (dealership) {
-      try {
-        const overallScore = Object.values(newScores).length > 0 
-          ? Math.round(Object.values(newScores).reduce((sum, score) => sum + score, 0) / Object.values(newScores).length)
-          : 0;
-          
-        await saveAssessment({
-          answers: newAnswers,
-          scores: newScores,
-          overallScore,
-          status: 'in_progress' as const
-        });
-      } catch (error) {
-        console.error('Failed to save assessment:', error);
-      }
+    // Auto-save to local storage
+    try {
+      const overallScore = Object.values(newScores).length > 0 
+        ? Math.round(Object.values(newScores).reduce((sum, score) => sum + score, 0) / Object.values(newScores).length)
+        : 0;
+        
+      await saveAssessment({
+        answers: newAnswers,
+        scores: newScores,
+        overallScore,
+        status: 'in_progress' as const
+      });
+    } catch (error) {
+      console.error('Failed to save assessment:', error);
     }
     
     toast({
@@ -154,11 +149,6 @@ export default function Assessment() {
   // Load existing assessment data on mount
   useEffect(() => {
     const loadExistingData = async () => {
-      if (!dealership) {
-        setShowInfoForm(true);
-        return;
-      }
-      
       try {
         await loadAssessment();
         
@@ -172,11 +162,9 @@ export default function Assessment() {
     };
     
     loadExistingData();
-  }, [dealership, loadAssessment, assessment]);
+  }, [loadAssessment, assessment]);
 
   const handleFinishAssessment = async () => {
-    if (!dealership) return;
-    
     try {
       const finalScores = calculateScores(answers);
       const overallScore = Object.values(finalScores).length > 0 
@@ -324,11 +312,6 @@ export default function Assessment() {
           scores={scores}
         />
 
-        {/* Dealership Info Form */}
-        <DealershipInfoForm
-          open={showInfoForm}
-          onOpenChange={setShowInfoForm}
-        />
 
         {/* Confirmation Dialog */}
         <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>

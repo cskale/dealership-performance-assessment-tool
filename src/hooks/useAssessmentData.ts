@@ -52,40 +52,22 @@ export const useAssessmentData = () => {
     
     try {
       const sessionId = getSessionId();
-      const currentDealership = dealership || JSON.parse(localStorage.getItem('dealership_info') || '{}');
       
-      if (!currentDealership.id) {
-        throw new Error('Dealership information is required');
-      }
-
-      const dataToSave = {
-        ...assessmentData,
-        session_id: sessionId,
-        dealership_id: currentDealership.id,
-      };
-
-      const { data, error } = await supabase
-        .from('assessments')
-        .upsert(dataToSave, { onConflict: 'session_id' })
-        .select()
-        .single();
-
-      if (error) throw error;
-      
-      // Map database fields to component format
+      // Create assessment data with minimal required fields
       const mappedData: AssessmentData = {
-        id: data.id,
-        sessionId: data.session_id,
-        dealershipId: data.dealership_id,
-        answers: (data.answers as Record<string, any>) || {},
-        scores: (data.scores as Record<string, number>) || {},
-        overallScore: data.overall_score || 0,
-        status: data.status as 'in_progress' | 'completed' | 'archived',
-        completedAt: data.completed_at || undefined
+        id: assessment?.id || crypto.randomUUID(),
+        sessionId: sessionId,
+        dealershipId: 'temp-id', // Temporary ID since we're not using dealership
+        answers: assessmentData.answers || {},
+        scores: assessmentData.scores || {},
+        overallScore: assessmentData.overallScore || 0,
+        status: assessmentData.status || 'in_progress',
+        completedAt: assessmentData.completedAt || undefined
       };
+      
       setAssessment(mappedData);
       localStorage.setItem('assessment_data', JSON.stringify(mappedData));
-      return data;
+      return mappedData;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to save assessment';
       setError(errorMessage);
@@ -93,7 +75,7 @@ export const useAssessmentData = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [dealership, getSessionId]);
+  }, [assessment, getSessionId]);
 
   // Load assessment data
   const loadAssessment = useCallback(async () => {
@@ -101,36 +83,15 @@ export const useAssessmentData = () => {
     setError(null);
     
     try {
-      const sessionId = getSessionId();
-      
-      const { data, error } = await supabase
-        .from('assessments')
-        .select('*, dealerships(*)')
-        .eq('session_id', sessionId)
-        .maybeSingle();
-
-      if (error) throw error;
-      
-      if (data) {
-        // Map database fields to component format
-        const mappedData: AssessmentData = {
-          id: data.id,
-          sessionId: data.session_id,
-          dealershipId: data.dealership_id,
-          answers: (data.answers as Record<string, any>) || {},
-          scores: (data.scores as Record<string, number>) || {},
-          overallScore: data.overall_score || 0,
-          status: data.status as 'in_progress' | 'completed' | 'archived',
-          completedAt: data.completed_at || undefined
-        };
-        setAssessment(mappedData);
-        if (data.dealerships) {
-          setDealership(data.dealerships);
-        }
-        localStorage.setItem('assessment_data', JSON.stringify(mappedData));
+      // Load from localStorage
+      const cachedAssessment = localStorage.getItem('assessment_data');
+      if (cachedAssessment) {
+        const parsedAssessment = JSON.parse(cachedAssessment);
+        setAssessment(parsedAssessment);
+        return parsedAssessment;
       }
       
-      return data;
+      return null;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load assessment';
       setError(errorMessage);
@@ -138,7 +99,7 @@ export const useAssessmentData = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [getSessionId]);
+  }, []);
 
   // Load benchmark data
   const loadBenchmarks = useCallback(async (brand?: string, country?: string) => {
