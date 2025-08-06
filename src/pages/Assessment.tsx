@@ -171,6 +171,19 @@ export default function Assessment() {
         ? Math.round(Object.values(finalScores).reduce((sum, score) => sum + score, 0) / Object.values(finalScores).length)
         : 0;
         
+      // Check if all questions are answered
+      const totalQuestions = sections.reduce((total, section) => total + section.questions.length, 0);
+      const answeredQuestions = Object.keys(answers).length;
+      
+      if (answeredQuestions < totalQuestions) {
+        toast({
+          title: "Assessment Incomplete",
+          description: `Please answer all questions. ${answeredQuestions}/${totalQuestions} completed.`,
+          variant: "destructive",
+        });
+        return;
+      }
+      
       await saveAssessment({
         answers,
         scores: finalScores,
@@ -179,8 +192,15 @@ export default function Assessment() {
         completedAt: new Date().toISOString()
       });
       
+      // Show success message and navigate
+      toast({
+        title: "Assessment Complete!",
+        description: "Your results are ready for review.",
+      });
+      
       navigate('/results');
     } catch (error) {
+      console.error('Assessment completion error:', error);
       toast({
         title: "Error",
         description: "Failed to save assessment. Please try again.",

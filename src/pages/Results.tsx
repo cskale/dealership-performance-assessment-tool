@@ -34,19 +34,29 @@ export default function Results() {
   // Load assessment data and generate insights
   useEffect(() => {
     const loadData = async () => {
-      if (!assessment) {
+      try {
         await loadAssessment();
-      }
-      
-      if (dealership && assessment) {
-        // Load benchmarks for comparison
-        await loadBenchmarks(dealership.brand, dealership.country);
         
-        // Generate improvement actions
-        if (assessment.scores && Object.keys(assessment.scores).length > 0) {
-          const actions = await generateImprovementActions(assessment.id, assessment.scores);
-          setImprovementActions(actions || []);
+        if (assessment) {
+          // Load default benchmarks 
+          await loadBenchmarks('General', 'Global');
+          
+          // Generate improvement actions based on scores
+          if (assessment.scores && Object.keys(assessment.scores).length > 0) {
+            const actions = await generateImprovementActions('assessment-' + Date.now(), assessment.scores);
+            setImprovementActions(actions || []);
+          }
+        } else {
+          // Redirect to assessment if no data found
+          navigate('/assessment');
         }
+      } catch (error) {
+        console.error('Failed to load results data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load assessment results. Please try again.",
+          variant: "destructive",
+        });
       }
     };
     
