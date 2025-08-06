@@ -146,23 +146,26 @@ export default function Assessment() {
     return colors[index % colors.length];
   };
 
-  // Load existing assessment data on mount
+  // Load existing assessment data on mount (only once)
   useEffect(() => {
     const loadExistingData = async () => {
       try {
         await loadAssessment();
-        
-        if (assessment) {
-          setAnswers(assessment.answers || {});
-          setScores(assessment.scores || {});
-        }
       } catch (error) {
         console.error('Failed to load assessment:', error);
       }
     };
     
     loadExistingData();
-  }, [loadAssessment, assessment]);
+  }, []); // Remove dependencies to prevent infinite loop
+
+  // Sync with loaded assessment data
+  useEffect(() => {
+    if (assessment) {
+      setAnswers(assessment.answers || {});
+      setScores(assessment.scores || {});
+    }
+  }, [assessment]);
 
   const handleFinishAssessment = async () => {
     try {
@@ -191,6 +194,17 @@ export default function Assessment() {
         status: 'completed' as const,
         completedAt: new Date().toISOString()
       });
+      
+      // Clear assessment from localStorage to allow fresh start
+      localStorage.removeItem('assessment_data');
+      
+      // Store completed assessment results for the results page
+      localStorage.setItem('completed_assessment_results', JSON.stringify({
+        answers,
+        scores: finalScores,
+        overallScore,
+        completedAt: new Date().toISOString()
+      }));
       
       // Show success message and navigate
       toast({
