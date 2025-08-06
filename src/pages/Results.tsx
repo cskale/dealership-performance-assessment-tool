@@ -57,7 +57,7 @@ export default function Results() {
         }
 
         switch (section) {
-          case 'new_vehicle_sales':
+          case 'new-vehicle-sales':
             actions.push({
               id: 1,
               department: 'New Vehicle Sales',
@@ -70,7 +70,7 @@ export default function Results() {
               score: score
             });
             break;
-          case 'used_vehicle_sales':
+          case 'used-vehicle-sales':
             actions.push({
               id: 2,
               department: 'Used Vehicle Sales',
@@ -83,7 +83,7 @@ export default function Results() {
               score: score
             });
             break;
-          case 'service_performance':
+          case 'service-performance':
             actions.push({
               id: 3,
               department: 'Service',
@@ -96,7 +96,7 @@ export default function Results() {
               score: score
             });
             break;
-          case 'parts_inventory':
+          case 'parts-inventory':
             actions.push({
               id: 4,
               department: 'Parts',
@@ -109,7 +109,7 @@ export default function Results() {
               score: score
             });
             break;
-          case 'financial_operations':
+          case 'financial-operations':
             actions.push({
               id: 5,
               department: 'Finance',
@@ -138,35 +138,35 @@ export default function Results() {
     return [
       { 
         section: "New Vehicle Sales", 
-        score: resultsData.scores.new_vehicle_sales || 0, 
+        score: resultsData.scores["new-vehicle-sales"] || 0, 
         color: "#3B82F6", 
         trend: "up", 
         benchmark: 82 
       },
       { 
         section: "Used Vehicle Sales", 
-        score: resultsData.scores.used_vehicle_sales || 0, 
+        score: resultsData.scores["used-vehicle-sales"] || 0, 
         color: "#10B981", 
         trend: "down", 
         benchmark: 75 
       },
       { 
         section: "Service Performance", 
-        score: resultsData.scores.service_performance || 0, 
+        score: resultsData.scores["service-performance"] || 0, 
         color: "#8B5CF6", 
         trend: "up", 
         benchmark: 80 
       },
       { 
         section: "Parts & Inventory", 
-        score: resultsData.scores.parts_inventory || 0, 
+        score: resultsData.scores["parts-inventory"] || 0, 
         color: "#F59E0B", 
         trend: "stable", 
         benchmark: 78 
       },
       { 
         section: "Financial Operations", 
-        score: resultsData.scores.financial_operations || 0, 
+        score: resultsData.scores["financial-operations"] || 0, 
         color: "#EF4444", 
         trend: "up", 
         benchmark: 76 
