@@ -6,15 +6,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
-import { Download, FileText, FileSpreadsheet, Image, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Target, Star, Brain, Globe, Building, RefreshCw, ArrowLeft } from "lucide-react";
+import { Download, FileText, FileSpreadsheet, Image, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Target, Star, Brain, Globe, Building, RefreshCw, ArrowLeft, Award, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import * as XLSX from "xlsx";
+import { ExecutiveSummary } from "@/components/ExecutiveSummary";
+import { KPIInsights } from "@/components/KPIInsights";
+import { MaturityScoring } from "@/components/MaturityScoring";
+import { InteractiveRecommendations } from "@/components/InteractiveRecommendations";
 
 export default function Results() {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("executive");
   const [improvementActions, setImprovementActions] = useState<any[]>([]);
   const [resultsData, setResultsData] = useState<any>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -437,10 +441,19 @@ export default function Results() {
         </div>
 
         {/* Main Content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm border shadow-lg">
-            <TabsTrigger value="overview" className="transition-all duration-300 hover:scale-105">
-              📊 Dashboard
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6" defaultValue="executive">
+          <TabsList className="grid w-full grid-cols-6 bg-white/80 backdrop-blur-sm border shadow-lg">
+            <TabsTrigger value="executive" className="transition-all duration-300 hover:scale-105">
+              📋 Executive Summary
+            </TabsTrigger>
+            <TabsTrigger value="kpi" className="transition-all duration-300 hover:scale-105">
+              💰 KPI Insights
+            </TabsTrigger>
+            <TabsTrigger value="maturity" className="transition-all duration-300 hover:scale-105">
+              🏆 Maturity
+            </TabsTrigger>
+            <TabsTrigger value="recommendations" className="transition-all duration-300 hover:scale-105">
+              🎯 Recommendations
             </TabsTrigger>
             <TabsTrigger value="charts" className="transition-all duration-300 hover:scale-105">
               📈 Analytics
@@ -448,12 +461,39 @@ export default function Results() {
             <TabsTrigger value="trends" className="transition-all duration-300 hover:scale-105">
               📉 Trends
             </TabsTrigger>
-            <TabsTrigger value="recommendations" className="transition-all duration-300 hover:scale-105">
-              🎯 AI Actions
-            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6 animate-fade-in">
+          <TabsContent value="executive" className="space-y-6 animate-fade-in">
+            <ExecutiveSummary
+              overallScore={overallScore}
+              scores={resultsData.scores}
+              answers={resultsData.answers}
+              completedAt={resultsData.completedAt}
+            />
+          </TabsContent>
+
+          <TabsContent value="kpi" className="space-y-6 animate-fade-in">
+            <KPIInsights
+              scores={resultsData.scores}
+              answers={resultsData.answers}
+            />
+          </TabsContent>
+
+          <TabsContent value="maturity" className="space-y-6 animate-fade-in">
+            <MaturityScoring
+              scores={resultsData.scores}
+              answers={resultsData.answers}
+            />
+          </TabsContent>
+
+          <TabsContent value="recommendations" className="space-y-6 animate-fade-in">
+            <InteractiveRecommendations
+              scores={resultsData.scores}
+              answers={resultsData.answers}
+            />
+          </TabsContent>
+
+          <TabsContent value="charts" className="space-y-6 animate-fade-in">
             {/* Section Scores Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {sectionData.map((section, index) => (
