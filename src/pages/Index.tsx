@@ -1,10 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Car, TrendingUp, BarChart3, Users, Award, ArrowRight, CheckCircle, Target, Zap, Shield } from "lucide-react";
+import { Car, TrendingUp, BarChart3, Users, Award, ArrowRight, CheckCircle, Target, Zap, Shield, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
+  const { user, signOut } = useAuth();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
@@ -17,9 +20,27 @@ const Index = () => {
               </div>
               <h1 className="text-2xl font-bold text-slate-900">DealerInsight Pro</h1>
             </div>
-            <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">
-              AI-Powered Analytics
-            </Badge>
+            <div className="flex items-center gap-4">
+              {user && (
+                <span className="text-sm text-slate-600">
+                  Welcome, {user.email}
+                </span>
+              )}
+              <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">
+                AI-Powered Analytics
+              </Badge>
+              {user && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={signOut}
+                  className="flex items-center gap-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </header>

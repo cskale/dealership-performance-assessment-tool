@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DealershipInfo, AssessmentData, BenchmarkData, ImprovementAction } from '@/types/dealership';
+import { useAuth } from './useAuth';
 
 export const useAssessmentData = () => {
+  const { user } = useAuth();
   const [dealership, setDealership] = useState<DealershipInfo | null>(null);
   const [assessment, setAssessment] = useState<AssessmentData | null>(null);
   const [benchmarks, setBenchmarks] = useState<BenchmarkData[]>([]);
@@ -21,13 +23,22 @@ export const useAssessmentData = () => {
 
   // Save dealership information
   const saveDealership = useCallback(async (dealershipData: DealershipInfo) => {
+    if (!user) {
+      throw new Error('User must be authenticated');
+    }
+
     setIsLoading(true);
     setError(null);
     
     try {
+      const dealershipWithUser = {
+        ...dealershipData,
+        user_id: user.id
+      };
+
       const { data, error } = await supabase
         .from('dealerships')
-        .upsert(dealershipData, { onConflict: 'id' })
+        .upsert(dealershipWithUser, { onConflict: 'id' })
         .select()
         .single();
 
@@ -43,10 +54,14 @@ export const useAssessmentData = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user]);
 
   // Save assessment progress
   const saveAssessment = useCallback(async (assessmentData: Partial<AssessmentData>) => {
+    if (!user) {
+      throw new Error('User must be authenticated');
+    }
+
     setIsLoading(true);
     setError(null);
     
@@ -57,13 +72,34 @@ export const useAssessmentData = () => {
       const mappedData: AssessmentData = {
         id: assessment?.id || crypto.randomUUID(),
         sessionId: sessionId,
-        dealershipId: 'temp-id', // Temporary ID since we're not using dealership
+        dealershipId: dealership?.id || 'temp-id',
         answers: assessmentData.answers || {},
         scores: assessmentData.scores || {},
         overallScore: assessmentData.overallScore || 0,
         status: assessmentData.status || 'in_progress',
         completedAt: assessmentData.completedAt || undefined
       };
+
+      // Save to database if we have a dealership
+      if (dealership?.id) {
+        const dbData = {
+          id: mappedData.id,
+          session_id: mappedData.sessionId,
+          dealership_id: dealership.id,
+          user_id: user.id,
+          answers: mappedData.answers,
+          scores: mappedData.scores,
+          overall_score: mappedData.overallScore,
+          status: mappedData.status,
+          completed_at: mappedData.completedAt
+        };
+
+        const { error } = await supabase
+          .from('assessments')
+          .upsert(dbData, { onConflict: 'id' });
+
+        if (error) throw error;
+      }
       
       setAssessment(mappedData);
       localStorage.setItem('assessment_data', JSON.stringify(mappedData));
@@ -75,7 +111,7 @@ export const useAssessmentData = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [assessment, getSessionId]);
+  }, [assessment, dealership, user, getSessionId]);
 
   // Load assessment data
   const loadAssessment = useCallback(async () => {
@@ -145,6 +181,10 @@ export const useAssessmentData = () => {
 
   // Generate improvement actions
   const generateImprovementActions = useCallback(async (assessmentId: string, scores: Record<string, number>) => {
+    if (!user) {
+      throw new Error('User must be authenticated');
+    }
+
     const actions: any[] = [];
     
     // Analyze scores and generate targeted actions
@@ -158,6 +198,7 @@ export const useAssessmentData = () => {
           case 'new_vehicle_sales':
             actions.push({
               assessment_id: assessmentId,
+              user_id: user.id,
               department: 'New Vehicle Sales',
               priority,
               action_title: 'Enhance Sales Process Training',
@@ -169,6 +210,7 @@ export const useAssessmentData = () => {
           case 'used_vehicle_sales':
             actions.push({
               assessment_id: assessmentId,
+              user_id: user.id,
               department: 'Used Vehicle Sales',
               priority,
               action_title: 'Optimize Used Vehicle Inventory Management',
@@ -180,6 +222,7 @@ export const useAssessmentData = () => {
           case 'service_performance':
             actions.push({
               assessment_id: assessmentId,
+              user_id: user.id,
               department: 'Service',
               priority,
               action_title: 'Service Efficiency Improvement Program',
@@ -191,6 +234,7 @@ export const useAssessmentData = () => {
           case 'parts_inventory':
             actions.push({
               assessment_id: assessmentId,
+              user_id: user.id,
               department: 'Parts',
               priority,
               action_title: 'Parts Inventory Optimization',
@@ -202,6 +246,7 @@ export const useAssessmentData = () => {
           case 'financial_operations':
             actions.push({
               assessment_id: assessmentId,
+              user_id: user.id,
               department: 'Finance',
               priority,
               action_title: 'Financial Process Automation',
@@ -227,7 +272,7 @@ export const useAssessmentData = () => {
       setError(errorMessage);
       return [];
     }
-  }, []);
+  }, [user]);
 
   // Load cached data on mount
   useEffect(() => {

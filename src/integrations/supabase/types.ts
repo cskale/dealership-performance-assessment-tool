@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -26,6 +26,7 @@ export type Database = {
           session_id: string
           status: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           answers?: Json
@@ -38,6 +39,7 @@ export type Database = {
           session_id: string
           status?: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           answers?: Json
@@ -50,6 +52,7 @@ export type Database = {
           session_id?: string
           status?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -111,6 +114,7 @@ export type Database = {
           name: string
           phone: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           brand: string
@@ -122,6 +126,7 @@ export type Database = {
           name: string
           phone?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           brand?: string
@@ -133,6 +138,7 @@ export type Database = {
           name?: string
           phone?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -147,6 +153,7 @@ export type Database = {
           expected_impact: string | null
           id: string
           priority: string
+          user_id: string | null
         }
         Insert: {
           action_description: string
@@ -158,6 +165,7 @@ export type Database = {
           expected_impact?: string | null
           id?: string
           priority: string
+          user_id?: string | null
         }
         Update: {
           action_description?: string
@@ -169,6 +177,7 @@ export type Database = {
           expected_impact?: string | null
           id?: string
           priority?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -179,6 +188,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          role: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          role?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          role?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
