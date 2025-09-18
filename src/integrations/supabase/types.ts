@@ -21,6 +21,7 @@ export type Database = {
           created_at: string
           dealership_id: string
           id: string
+          organization_id: string | null
           overall_score: number | null
           scores: Json
           session_id: string
@@ -34,6 +35,7 @@ export type Database = {
           created_at?: string
           dealership_id: string
           id?: string
+          organization_id?: string | null
           overall_score?: number | null
           scores?: Json
           session_id: string
@@ -47,6 +49,7 @@ export type Database = {
           created_at?: string
           dealership_id?: string
           id?: string
+          organization_id?: string | null
           overall_score?: number | null
           scores?: Json
           session_id?: string
@@ -60,6 +63,13 @@ export type Database = {
             columns: ["dealership_id"]
             isOneToOne: false
             referencedRelation: "dealerships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -112,6 +122,7 @@ export type Database = {
           id: string
           location: string
           name: string
+          organization_id: string | null
           phone: string | null
           updated_at: string
           user_id: string | null
@@ -124,6 +135,7 @@ export type Database = {
           id?: string
           location: string
           name: string
+          organization_id?: string | null
           phone?: string | null
           updated_at?: string
           user_id?: string | null
@@ -136,11 +148,20 @@ export type Database = {
           id?: string
           location?: string
           name?: string
+          organization_id?: string | null
           phone?: string | null
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "dealerships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       improvement_actions: {
         Row: {
@@ -152,6 +173,7 @@ export type Database = {
           estimated_effort: string | null
           expected_impact: string | null
           id: string
+          organization_id: string | null
           priority: string
           user_id: string | null
         }
@@ -164,6 +186,7 @@ export type Database = {
           estimated_effort?: string | null
           expected_impact?: string | null
           id?: string
+          organization_id?: string | null
           priority: string
           user_id?: string | null
         }
@@ -176,6 +199,7 @@ export type Database = {
           estimated_effort?: string | null
           expected_impact?: string | null
           id?: string
+          organization_id?: string | null
           priority?: string
           user_id?: string | null
         }
@@ -187,34 +211,171 @@ export type Database = {
             referencedRelation: "assessments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "improvement_actions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
-      profiles: {
+      memberships: {
         Row: {
           created_at: string
-          email: string | null
-          full_name: string | null
           id: string
-          role: string | null
+          is_active: boolean | null
+          organization_id: string
+          role: Database["public"]["Enums"]["membership_role"]
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
-          email?: string | null
-          full_name?: string | null
           id?: string
-          role?: string | null
+          is_active?: boolean | null
+          organization_id: string
+          role?: Database["public"]["Enums"]["membership_role"]
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
-          email?: string | null
-          full_name?: string | null
           id?: string
+          is_active?: boolean | null
+          organization_id?: string
+          role?: Database["public"]["Enums"]["membership_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memberships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          settings: Json | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          settings?: Json | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          settings?: Json | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          active_organization_id: string | null
+          consent_analytics: boolean | null
+          consent_marketing: boolean | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          email_verified: boolean | null
+          full_name: string | null
+          gdpr_consented_at: string | null
+          id: string
+          last_sign_in_at: string | null
+          role: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active_organization_id?: string | null
+          consent_analytics?: boolean | null
+          consent_marketing?: boolean | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          email_verified?: boolean | null
+          full_name?: string | null
+          gdpr_consented_at?: string | null
+          id?: string
+          last_sign_in_at?: string | null
           role?: string | null
           updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active_organization_id?: string | null
+          consent_analytics?: boolean | null
+          consent_marketing?: boolean | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          email_verified?: boolean | null
+          full_name?: string | null
+          gdpr_consented_at?: string | null
+          id?: string
+          last_sign_in_at?: string | null
+          role?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_active_organization_id_fkey"
+            columns: ["active_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_sessions: {
+        Row: {
+          device_info: Json | null
+          first_seen: string
+          id: string
+          ip_address: unknown | null
+          is_active: boolean | null
+          last_seen: string
+          session_id: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          device_info?: Json | null
+          first_seen?: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          last_seen?: string
+          session_id: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          device_info?: Json | null
+          first_seen?: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          last_seen?: string
+          session_id?: string
+          user_agent?: string | null
           user_id?: string
         }
         Relationships: []
@@ -224,10 +385,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      delete_user_account: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
+      export_user_data: {
+        Args: { _user_id: string }
+        Returns: Json
+      }
     }
     Enums: {
-      [_ in never]: never
+      membership_role: "owner" | "admin" | "manager" | "analyst" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -354,6 +522,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      membership_role: ["owner", "admin", "manager", "analyst", "viewer"],
+    },
   },
 } as const

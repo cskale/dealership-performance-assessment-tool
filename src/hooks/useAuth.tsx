@@ -9,6 +9,8 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signInWithMagicLink: (email: string) => Promise<{ error: any }>;
+  signInWithOAuth: (provider: 'google' | 'apple' | 'facebook') => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
@@ -87,6 +89,59 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return { error };
   };
 
+  const signInWithMagicLink = async (email: string) => {
+    const redirectUrl = `${window.location.origin}/auth/callback`;
+    
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: redirectUrl,
+      }
+    });
+
+    if (error) {
+      toast({
+        title: "Magic Link Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Magic Link Sent",
+        description: "Check your email for the magic link to sign in.",
+      });
+    }
+
+    return { error };
+  };
+
+  const signInWithOAuth = async (provider: 'google' | 'apple' | 'facebook') => {
+    const getReturnToUrl = () => {
+      const cookies = document.cookie.split(';');
+      const returnToCookie = cookies.find(c => c.trim().startsWith('returnTo='));
+      return returnToCookie ? decodeURIComponent(returnToCookie.split('=')[1]) : '/';
+    };
+
+    const redirectUrl = `${window.location.origin}/auth/callback?returnTo=${encodeURIComponent(getReturnToUrl())}`;
+    
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: redirectUrl,
+      }
+    });
+
+    if (error) {
+      toast({
+        title: "OAuth Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+
+    return { error };
+  };
+
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -104,6 +159,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loading,
     signUp,
     signIn,
+    signInWithMagicLink,
+    signInWithOAuth,
     signOut,
   };
 

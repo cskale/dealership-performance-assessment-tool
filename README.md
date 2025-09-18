@@ -1,73 +1,111 @@
-# Welcome to your Lovable project
+# Enterprise Dealership Assessment Platform
 
-## Project info
+A comprehensive, enterprise-grade dealership performance assessment platform with advanced authentication, multi-tenancy, and GDPR compliance features.
 
-**URL**: https://lovable.dev/projects/775c0250-c831-4186-9520-28df4d940ca2
+## 🚀 Features
 
-## How can I edit this code?
+### Authentication & Security
+- **Multiple Sign-in Methods**: Email/password, magic links, Google OAuth, Apple Sign In, Facebook Login
+- **Enterprise Session Management**: Track and manage active sessions across devices
+- **Multi-Factor Authentication**: Ready for 2FA implementation
+- **Secure Callback Handling**: Single callback route handles all OAuth flows with proper redirects
 
-There are several ways of editing your application.
+### Multi-Tenancy & RBAC
+- **Role-Based Access Control**: Five permission levels (owner, admin, manager, analyst, viewer)
+- **Organization Management**: Auto-created organizations on first login
+- **Scoped Data Access**: All data properly scoped to active organization
+- **Organization Switching**: Seamless switching between organizations
 
-**Use Lovable**
+### GDPR Compliance
+- **Data Export**: Complete JSON export of user data
+- **Account Deletion**: Two-step confirmation with cascade delete
+- **Consent Management**: Granular consent toggles for analytics and marketing
+- **Privacy by Design**: Default OFF for all tracking consent
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/775c0250-c831-4186-9520-28df4d940ca2) and start prompting.
+### Account Center
+- **Profile Management**: Editable display name, email verification status
+- **Security Dashboard**: Active session monitoring with device details
+- **Privacy Controls**: Consent management and data export/deletion
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠 Setup Instructions
 
-**Use your preferred IDE**
+### Prerequisites
+- Node.js 18+ and npm
+- Supabase account
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Environment Configuration
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Create a Supabase project and configure the following in your Supabase dashboard:
 
-Follow these steps:
+#### Required Supabase Settings
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1. **Authentication Configuration**
+   - Enable Email authentication
+   - Configure OAuth providers (see sections below)
+   - Set Site URL and Redirect URLs in Authentication > URL Configuration
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. **Site URL**: `https://your-domain.com` (or your preview/local URL)
+3. **Redirect URLs**: Add all URLs where users can be redirected after authentication
 
-# Step 3: Install the necessary dependencies.
-npm i
+### OAuth Provider Setup
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+#### Google OAuth
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing
+3. Enable Google+ API
+4. Create OAuth 2.0 credentials:
+   - **Application type**: Web application
+   - **Authorized JavaScript origins**: Your site URLs
+   - **Authorized redirect URIs**: `https://your-supabase-project.supabase.co/auth/v1/callback`
+5. Add Client ID and Secret to Supabase Auth > Providers > Google
+
+#### Apple Sign In
+1. Go to [Apple Developer Portal](https://developer.apple.com/)
+2. Create a Services ID for Sign in with Apple
+3. Configure domains and redirect URLs
+4. Generate a private key for Apple Sign In
+5. Add configuration to Supabase Auth > Providers > Apple
+
+#### Facebook Login
+1. Go to [Facebook Developers](https://developers.facebook.com/)
+2. Create a new app or use existing
+3. Add Facebook Login product
+4. Configure Valid OAuth Redirect URIs: `https://your-supabase-project.supabase.co/auth/v1/callback`
+5. Add App ID and Secret to Supabase Auth > Providers > Facebook
+
+### Installation & Running
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
+
+# Build for production
+npm run build
+
+# Run tests
+npm test
 ```
 
-**Edit a file directly in GitHub**
+## 🧪 Testing
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Running Tests
 
-**Use GitHub Codespaces**
+```bash
+# Run all tests
+npm test
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Run tests in watch mode  
+npm run test:watch
 
-## What technologies are used for this project?
+# Run with coverage report
+npm run test:coverage
+```
 
-This project is built with:
+The test suite covers authentication flows, multi-tenant functionality, GDPR compliance, and accessibility standards.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 📝 License
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/775c0250-c831-4186-9520-28df4d940ca2) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+MIT License - see LICENSE file for details.
