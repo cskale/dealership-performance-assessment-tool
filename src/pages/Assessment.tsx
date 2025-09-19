@@ -212,7 +212,7 @@ export default function Assessment() {
         description: "Your results are ready for review.",
       });
       
-      navigate('/results');
+      navigate('/app/results');
     } catch (error) {
       console.error('Assessment completion error:', error);
       toast({
