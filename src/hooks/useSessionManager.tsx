@@ -6,8 +6,8 @@ interface UserSession {
   id: string;
   session_id: string;
   device_info: any;
-  ip_address: string;
-  user_agent: string;
+  ip_address: string | null;
+  user_agent: string | null;
   first_seen: string;
   last_seen: string;
   is_active: boolean;
@@ -30,7 +30,10 @@ export const useSessionManager = () => {
         .eq('is_active', true)
         .order('last_seen', { ascending: false });
 
-      setSessions(data || []);
+        setSessions((data || []).map(session => ({
+          ...session,
+          ip_address: session.ip_address ? String(session.ip_address) : null
+        })));
     } catch (error) {
       console.error('Error fetching sessions:', error);
     } finally {

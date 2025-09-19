@@ -106,7 +106,7 @@ export const useGDPR = () => {
     if (!user) return false;
 
     try {
-      const updateData = consentType === 'analytics' 
+      const updateData: any = consentType === 'analytics' 
         ? { consent_analytics: granted }
         : { consent_marketing: granted };
 

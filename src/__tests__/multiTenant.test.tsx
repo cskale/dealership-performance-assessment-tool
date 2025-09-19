@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/dom';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/hooks/useAuth';
@@ -75,37 +76,27 @@ describe('MultiTenant Hook', () => {
     vi.clearAllMocks();
     
     // Setup mock responses for memberships query
-    mockSupabase.from.mockImplementation((table) => {
-      if (table === 'memberships') {
-        return {
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          then: vi.fn(() => Promise.resolve({
-            data: [
-              {
-                id: 'membership-1',
-                user_id: 'user-1',
-                organization_id: 'org-1',
-                role: 'owner',
-                is_active: true,
-                organization: {
-                  id: 'org-1',
-                  name: 'Test Organization',
-                  slug: 'test-org'
-                }
-              }
-            ]
-          }))
-        };
-      }
-      
-      return {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn(() => Promise.resolve({ 
-          data: { active_organization_id: 'org-1' } 
-        })),
-      };
+    mockSupabase.from.mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockResolvedValue({
+        data: [
+          {
+            id: 'membership-1',
+            user_id: 'user-1',
+            organization_id: 'org-1',
+            role: 'owner',
+            is_active: true,
+            organization: {
+              id: 'org-1',
+              name: 'Test Organization',
+              slug: 'test-org'
+            }
+          }
+        ]
+      }),
+      single: vi.fn(() => Promise.resolve({ 
+        data: { active_organization_id: 'org-1' } 
+      })),
     });
   });
 
@@ -141,37 +132,27 @@ describe('MultiTenant Hook', () => {
 
   it('handles viewer role permissions correctly', async () => {
     // Mock viewer role
-    mockSupabase.from.mockImplementation((table) => {
-      if (table === 'memberships') {
-        return {
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          then: vi.fn(() => Promise.resolve({
-            data: [
-              {
-                id: 'membership-1',
-                user_id: 'user-1',
-                organization_id: 'org-1',
-                role: 'viewer',
-                is_active: true,
-                organization: {
-                  id: 'org-1',
-                  name: 'Test Organization',
-                  slug: 'test-org'
-                }
-              }
-            ]
-          }))
-        };
-      }
-      
-      return {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn(() => Promise.resolve({ 
-          data: { active_organization_id: 'org-1' } 
-        })),
-      };
+    mockSupabase.from.mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockResolvedValue({
+        data: [
+          {
+            id: 'membership-1',
+            user_id: 'user-1',
+            organization_id: 'org-1',
+            role: 'viewer',
+            is_active: true,
+            organization: {
+              id: 'org-1',
+              name: 'Test Organization',
+              slug: 'test-org'
+            }
+          }
+        ]
+      }),
+      single: vi.fn(() => Promise.resolve({ 
+        data: { active_organization_id: 'org-1' } 
+      })),
     });
 
     render(
