@@ -3,7 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { HelpCircle, MessageSquare } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { HelpCircle, MessageSquare, Info, TrendingUp, Target, Award } from "lucide-react";
 import { Question } from "@/data/questionnaire";
 
 interface QuestionCardProps {
@@ -95,6 +96,79 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
             </div>
           )}
         </div>
+      )}
+
+      {/* Enhanced Context Information */}
+      {(question.purpose || question.situationAnalysis || question.linkedKPIs || question.benefits) && (
+        <Card className="border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50">
+          <CardContent className="p-0">
+            <Collapsible>
+              <CollapsibleTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-between p-4 h-auto text-left"
+                >
+                  <div className="flex items-center gap-2">
+                    <Info className="h-4 w-4 text-indigo-600" />
+                    <span className="font-medium text-indigo-900">
+                      Why This Question Matters
+                    </span>
+                  </div>
+                  <Award className="h-4 w-4 text-indigo-600" />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="px-4 pb-4 space-y-4">
+                {question.purpose && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Target className="h-4 w-4 text-purple-600" />
+                      <h4 className="font-semibold text-purple-900">Assessment Purpose</h4>
+                    </div>
+                    <p className="text-sm text-gray-700 pl-6">{question.purpose}</p>
+                  </div>
+                )}
+                
+                {question.situationAnalysis && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-blue-600" />
+                      <h4 className="font-semibold text-blue-900">Situation Analysis</h4>
+                    </div>
+                    <p className="text-sm text-gray-700 pl-6">{question.situationAnalysis}</p>
+                  </div>
+                )}
+                
+                {question.linkedKPIs && question.linkedKPIs.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Award className="h-4 w-4 text-green-600" />
+                      <h4 className="font-semibold text-green-900">Linked KPIs</h4>
+                    </div>
+                    <div className="pl-6">
+                      <div className="flex flex-wrap gap-2">
+                        {question.linkedKPIs.map((kpi, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {kpi}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {question.benefits && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Award className="h-4 w-4 text-amber-600" />
+                      <h4 className="font-semibold text-amber-900">Business Benefits</h4>
+                    </div>
+                    <p className="text-sm text-gray-700 pl-6">{question.benefits}</p>
+                  </div>
+                )}
+              </CollapsibleContent>
+            </Collapsible>
+          </CardContent>
+        </Card>
       )}
 
       {/* Additional Features */}
