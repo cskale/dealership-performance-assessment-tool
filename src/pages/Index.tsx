@@ -1,49 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Car, TrendingUp, BarChart3, Users, Award, ArrowRight, CheckCircle, Target, Zap, Shield, LogOut } from "lucide-react";
+import { Car, TrendingUp, BarChart3, Users, Award, ArrowRight, CheckCircle, Target, Zap, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { AppHeader } from "@/components/AppHeader";
 
 const Index = () => {
-  const { user, signOut } = useAuth();
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-600 rounded-lg">
-                <Car className="h-6 w-6 text-white" />
-              </div>
-              <h1 className="text-2xl font-bold text-slate-900">DealerInsight Pro</h1>
-            </div>
-            <div className="flex items-center gap-4">
-              {user && (
-                <span className="text-sm text-slate-600">
-                  Welcome, {user.email}
-                </span>
-              )}
-              <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">
-                AI-Powered Analytics
-              </Badge>
-              {user && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={signOut}
-                  className="flex items-center gap-2"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Sign Out
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <AppHeader />
 
       {/* Hero Section */}
       <section className="py-24 px-4">
@@ -57,7 +22,7 @@ const Index = () => {
             identifies growth opportunities, and provides actionable insights to boost performance across all departments.
           </p>
           
-          <Link to="/assessment">
+          <Link to="/app/assessment">
             <Button size="lg" className="h-14 px-8 text-lg font-semibold hover-scale">
               Start Your Assessment <ArrowRight className="h-5 w-5 ml-2" />
             </Button>
@@ -249,7 +214,7 @@ const Index = () => {
           <p className="text-xl text-blue-100 mb-8">
             Start your comprehensive assessment now and discover the opportunities waiting in your business.
           </p>
-          <Link to="/assessment">
+          <Link to="/app/assessment">
             <Button size="lg" variant="secondary" className="h-14 px-8 text-lg font-semibold hover-scale">
               Begin Assessment <ArrowRight className="h-5 w-5 ml-2" />
             </Button>
