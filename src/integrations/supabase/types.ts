@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      assessment_notes: {
+        Row: {
+          assessment_id: string | null
+          created_at: string
+          id: string
+          notes: string
+          organization_id: string | null
+          question_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assessment_id?: string | null
+          created_at?: string
+          id?: string
+          notes: string
+          organization_id?: string | null
+          question_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assessment_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string
+          organization_id?: string | null
+          question_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_notes_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_notes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessments: {
         Row: {
           answers: Json

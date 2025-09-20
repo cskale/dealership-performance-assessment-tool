@@ -4,11 +4,10 @@ import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { ChevronLeft, ChevronRight, Car, Wrench, Package, DollarSign, BarChart3, Bot } from "lucide-react";
+import { ChevronLeft, ChevronRight, Car, Wrench, Package, DollarSign, BarChart3, Bot, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { QuestionCard } from "@/components/assessment/QuestionCard";
-import { SectionNavigation } from "@/components/assessment/SectionNavigation";
+import { CategoryAssessment } from "@/components/assessment/CategoryAssessment";
 import { SmartAssistant } from "@/components/SmartAssistant";
 import { questionnaire } from "@/data/questionnaire";
 import { useAssessmentData } from "@/hooks/useAssessmentData";
@@ -16,10 +15,7 @@ import { AssessmentData } from "@/types/dealership";
 
 export default function Assessment() {
   const [currentSection, setCurrentSection] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [pendingNavigation, setPendingNavigation] = useState<() => void | null>(null);
   const [showAssistant, setShowAssistant] = useState(false);
   const [scores, setScores] = useState<Record<string, number>>({});
   
@@ -38,7 +34,6 @@ export default function Assessment() {
   const progress = (answeredQuestions / totalQuestions) * 100;
 
   const currentSectionData = sections[currentSection];
-  const currentQuestionData = currentSectionData?.questions[currentQuestion];
 
   // Calculate real-time scores
   const calculateScores = useCallback((currentAnswers: Record<string, number>) => {
@@ -89,49 +84,25 @@ export default function Assessment() {
     });
   };
 
-  const navigateToQuestion = (sectionIndex: number, questionIndex: number) => {
-    if (hasUnsavedChanges()) {
-      setPendingNavigation(() => () => {
-        setCurrentSection(sectionIndex);
-        setCurrentQuestion(questionIndex);
-      });
-      setShowConfirmDialog(true);
-    } else {
-      setCurrentSection(sectionIndex);
-      setCurrentQuestion(questionIndex);
-    }
-  };
-
-  const hasUnsavedChanges = () => {
-    if (!currentQuestionData) return false;
-    return !(currentQuestionData.id in answers);
-  };
-
-  const nextQuestion = () => {
-    if (currentQuestion < currentSectionData.questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-    } else if (currentSection < sections.length - 1) {
+  const nextSection = () => {
+    if (currentSection < sections.length - 1) {
       setCurrentSection(currentSection + 1);
-      setCurrentQuestion(0);
+    } else {
+      handleFinishAssessment();
     }
   };
 
-  const prevQuestion = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1);
-    } else if (currentSection > 0) {
+  const prevSection = () => {
+    if (currentSection > 0) {
       setCurrentSection(currentSection - 1);
-      setCurrentQuestion(sections[currentSection - 1].questions.length - 1);
     }
   };
 
-  const canGoNext = () => {
-    return currentSection < sections.length - 1 || currentQuestion < currentSectionData.questions.length - 1;
+  const canContinue = () => {
+    const sectionQuestions = currentSectionData.questions;
+    return sectionQuestions.every(q => answers[q.id] !== undefined);
   };
 
-  const canGoPrev = () => {
-    return currentSection > 0 || currentQuestion > 0;
-  };
 
   const getSectionIcon = (sectionTitle: string) => {
     if (sectionTitle.includes("New Vehicle")) return Car;
@@ -224,106 +195,110 @@ export default function Assessment() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/50 p-4">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Car className="h-8 w-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">Dealership Performance Assessment</h1>
-          </div>
-          <p className="text-gray-600 mb-6">Comprehensive analysis of your dealership's operational excellence</p>
-          
-          {/* Progress */}
-          <div className="max-w-md mx-auto">
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>Progress</span>
-              <span>{answeredQuestions} of {totalQuestions} questions</span>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/app')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Button>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary">
+                {Math.round(progress)}%
+              </div>
+              <div className="text-sm text-muted-foreground">Complete</div>
             </div>
-            <Progress value={progress} className="h-3" />
-            <Badge variant="outline" className="mt-2">
-              {Math.round(progress)}% Complete
-            </Badge>
+          </div>
+          
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Car className="h-8 w-8 text-primary" />
+              <h1 className="text-4xl font-bold text-foreground">Industrial Assessment Platform</h1>
+            </div>
+            <p className="text-muted-foreground mb-6 text-lg">
+              Advanced dealership performance evaluation with comprehensive analytics
+            </p>
+            
+            {/* Progress */}
+            <div className="max-w-2xl mx-auto">
+              <div className="flex justify-between text-sm text-muted-foreground mb-3">
+                <span>Overall Progress</span>
+                <span>{answeredQuestions} of {totalQuestions} questions answered</span>
+              </div>
+              <Progress value={progress} className="h-4 mb-4" />
+              
+              {/* Section Progress Indicators */}
+              <div className="flex justify-center gap-2 flex-wrap">
+                {sections.map((section, index) => {
+                  const sectionAnswered = section.questions.filter(q => answers[q.id] !== undefined).length;
+                  const sectionTotal = section.questions.length;
+                  const sectionProgress = (sectionAnswered / sectionTotal) * 100;
+                  
+                  return (
+                    <Badge 
+                      key={section.id}
+                      variant={index === currentSection ? "default" : "outline"}
+                      className={`text-xs ${
+                        sectionProgress === 100 
+                          ? 'bg-green-100 text-green-800 border-green-300' 
+                          : index === currentSection 
+                            ? 'bg-primary text-primary-foreground'
+                            : ''
+                      }`}
+                    >
+                      {section.title}: {sectionAnswered}/{sectionTotal}
+                    </Badge>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Main Assessment Content */}
+        <div className="max-w-5xl mx-auto">
+          <CategoryAssessment
+            section={currentSectionData}
+            answers={answers}
+            onAnswer={handleAnswer}
+            onContinue={nextSection}
+            canContinue={canContinue()}
+            isLastSection={currentSection === sections.length - 1}
+          />
+          
           {/* Section Navigation */}
-          <div className="lg:col-span-1">
-            <SectionNavigation
-              sections={sections}
-              currentSection={currentSection}
-              currentQuestion={currentQuestion}
-              answers={answers}
-              onNavigate={navigateToQuestion}
-              getSectionIcon={getSectionIcon}
-              getSectionColor={getSectionColor}
-            />
-          </div>
-
-          {/* Main Content */}
-          <div className="lg:col-span-3">
-            <Card className="shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg">
-                <div className="flex items-center gap-3">
-                  {(() => {
-                    const Icon = getSectionIcon(currentSectionData.title);
-                    return <Icon className="h-6 w-6" />;
-                  })()}
-                  <div>
-                    <CardTitle className="text-xl">{currentSectionData.title}</CardTitle>
-                    <p className="text-blue-100 text-sm">
-                      Question {currentQuestion + 1} of {currentSectionData.questions.length}
-                    </p>
-                  </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="p-6">
-                {currentQuestionData && (
-                  <QuestionCard
-                    question={currentQuestionData}
-                    value={answers[currentQuestionData.id]}
-                    onChange={(value) => handleAnswer(currentQuestionData.id, value)}
-                  />
-                )}
-
-                {/* Navigation Buttons */}
-                <div className="flex justify-between mt-8">
+          {sections.length > 1 && (
+            <Card className="mt-8 bg-muted/50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
                   <Button
                     variant="outline"
-                    onClick={prevQuestion}
-                    disabled={!canGoPrev()}
+                    onClick={prevSection}
+                    disabled={currentSection === 0}
                     className="flex items-center gap-2"
                   >
                     <ChevronLeft className="h-4 w-4" />
-                    Previous
+                    Previous Section
                   </Button>
-
-                  <div className="flex gap-2">
-                    {canGoNext() ? (
-                      <Button
-                        onClick={nextQuestion}
-                        className="flex items-center gap-2"
-                      >
-                        Next
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={handleFinishAssessment}
-                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-                        disabled={isLoading}
-                      >
-                        {isLoading ? 'Saving...' : 'View Results'}
-                        <BarChart3 className="h-4 w-4" />
-                      </Button>
-                    )}
+                  
+                  <div className="text-center">
+                    <div className="text-sm text-muted-foreground">
+                      Section {currentSection + 1} of {sections.length}
+                    </div>
+                    <div className="font-medium">{currentSectionData.title}</div>
                   </div>
+                  
+                  <div className="w-24" /> {/* Spacer for alignment */}
                 </div>
               </CardContent>
             </Card>
-          </div>
+          )}
         </div>
 
         {/* Smart Assistant Button */}
@@ -340,38 +315,11 @@ export default function Assessment() {
         <SmartAssistant
           open={showAssistant}
           onOpenChange={setShowAssistant}
-          currentQuestion={currentQuestionData}
+          currentQuestion={null}
           currentSection={currentSectionData}
           answers={answers}
           scores={scores}
         />
-
-
-        {/* Confirmation Dialog */}
-        <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
-              <AlertDialogDescription>
-                You have unsaved changes on this question. Are you sure you want to navigate away?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => {
-                  if (pendingNavigation) {
-                    pendingNavigation();
-                    setPendingNavigation(null);
-                  }
-                  setShowConfirmDialog(false);
-                }}
-              >
-                Continue
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
     </div>
   );
