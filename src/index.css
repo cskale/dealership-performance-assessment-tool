@@ -8,45 +8,54 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 210 24% 16%;
+    /* Pastel gradient backgrounds */
+    --background: 240 20% 98%;
+    --foreground: 240 10% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 210 24% 16%;
+    --card-foreground: 240 10% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 24% 16%;
+    --popover-foreground: 240 10% 15%;
 
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 98%;
+    /* Pastel purple primary */
+    --primary: 262 70% 78%;
+    --primary-foreground: 240 10% 15%;
 
-    --secondary: 220 13% 95%;
-    --secondary-foreground: 210 24% 16%;
+    /* Pastel blue secondary */
+    --secondary: 210 70% 82%;
+    --secondary-foreground: 240 10% 15%;
 
-    --muted: 220 13% 95%;
-    --muted-foreground: 210 12% 55%;
+    --muted: 240 10% 95%;
+    --muted-foreground: 240 5% 50%;
 
-    --accent: 142 71% 85%;
-    --accent-foreground: 210 24% 16%;
+    /* Pastel pink/green accents */
+    --accent: 330 70% 85%;
+    --accent-foreground: 240 10% 15%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 65% 75%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Pastel accent colors for SaaS UI */
-    --success: 142 71% 73%;
-    --success-foreground: 0 0% 98%;
+    /* Pastel accent colors for enterprise dashboard */
+    --success: 142 60% 75%;
+    --success-foreground: 142 40% 20%;
     
-    --warning: 48 96% 78%;
-    --warning-foreground: 210 24% 16%;
+    --warning: 48 90% 75%;
+    --warning-foreground: 48 40% 20%;
     
-    --info: 199 89% 85%;
-    --info-foreground: 210 24% 16%;
+    --info: 210 70% 82%;
+    --info-foreground: 210 40% 20%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Dashboard specific colors */
+    --dashboard-bg: 240 25% 97%;
+    --dashboard-card: 0 0% 100%;
+    --dashboard-hover: 240 15% 98%;
 
-    --radius: 0.5rem;
+    --border: 240 10% 90%;
+    --input: 240 10% 90%;
+    --ring: 262 70% 78%;
+
+    --radius: 1rem;
 
     --sidebar-background: 0 0% 98%;
 

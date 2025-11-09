@@ -76,6 +76,11 @@ export default {
 				info: {
 					DEFAULT: 'hsl(var(--info))',
 					foreground: 'hsl(var(--info-foreground))'
+				},
+				dashboard: {
+					bg: 'hsl(var(--dashboard-bg))',
+					card: 'hsl(var(--dashboard-card))',
+					hover: 'hsl(var(--dashboard-hover))'
 				}
 			},
 			borderRadius: {
