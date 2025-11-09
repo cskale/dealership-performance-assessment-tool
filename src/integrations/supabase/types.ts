@@ -161,43 +161,72 @@ export type Database = {
         }
         Relationships: []
       }
+      dealership_contacts: {
+        Row: {
+          contact_email: string | null
+          created_at: string
+          dealership_id: string
+          id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          contact_email?: string | null
+          created_at?: string
+          dealership_id: string
+          id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          contact_email?: string | null
+          created_at?: string
+          dealership_id?: string
+          id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dealership_contacts_dealership_id_fkey"
+            columns: ["dealership_id"]
+            isOneToOne: true
+            referencedRelation: "dealerships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dealerships: {
         Row: {
           brand: string
-          contact_email: string | null
           country: string
           created_at: string
           id: string
           location: string
           name: string
           organization_id: string | null
-          phone: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           brand: string
-          contact_email?: string | null
           country: string
           created_at?: string
           id?: string
           location: string
           name: string
           organization_id?: string | null
-          phone?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           brand?: string
-          contact_email?: string | null
           country?: string
           created_at?: string
           id?: string
           location?: string
           name?: string
           organization_id?: string | null
-          phone?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -397,7 +426,7 @@ export type Database = {
           device_info: Json | null
           first_seen: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           is_active: boolean | null
           last_seen: string
           session_id: string
@@ -408,7 +437,7 @@ export type Database = {
           device_info?: Json | null
           first_seen?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_active?: boolean | null
           last_seen?: string
           session_id: string
@@ -419,7 +448,7 @@ export type Database = {
           device_info?: Json | null
           first_seen?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_active?: boolean | null
           last_seen?: string
           session_id?: string
@@ -433,14 +462,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      delete_user_account: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
-      export_user_data: {
-        Args: { _user_id: string }
-        Returns: Json
-      }
+      delete_user_account: { Args: { _user_id: string }; Returns: boolean }
+      export_user_data: { Args: { _user_id: string }; Returns: Json }
     }
     Enums: {
       membership_role: "owner" | "admin" | "manager" | "analyst" | "viewer"

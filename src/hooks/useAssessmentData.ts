@@ -31,22 +31,46 @@ export const useAssessmentData = () => {
     setError(null);
     
     try {
+      // Extract contact info before saving dealership
+      const { contactEmail, phone, ...dealershipFields } = dealershipData;
+      
       const dealershipWithUser = {
-        ...dealershipData,
+        ...dealershipFields,
         user_id: user.id
       };
 
-      const { data, error } = await supabase
+      // Save dealership (without contact info)
+      const { data: dealershipResult, error: dealershipError } = await supabase
         .from('dealerships')
         .upsert(dealershipWithUser, { onConflict: 'id' })
         .select()
         .single();
 
-      if (error) throw error;
+      if (dealershipError) throw dealershipError;
       
-      setDealership(data);
-      localStorage.setItem('dealership_info', JSON.stringify(data));
-      return data;
+      // Save contact info to protected table if provided
+      if (contactEmail || phone) {
+        const { error: contactError } = await supabase
+          .from('dealership_contacts')
+          .upsert({
+            dealership_id: dealershipResult.id,
+            contact_email: contactEmail || null,
+            phone: phone || null
+          }, { onConflict: 'dealership_id' });
+        
+        if (contactError) throw contactError;
+      }
+      
+      // Combine data for local state (include contact info for form)
+      const fullDealershipData = {
+        ...dealershipResult,
+        contactEmail,
+        phone
+      };
+      
+      setDealership(fullDealershipData);
+      localStorage.setItem('dealership_info', JSON.stringify(fullDealershipData));
+      return fullDealershipData;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to save dealership information';
       setError(errorMessage);
