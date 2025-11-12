@@ -8,54 +8,54 @@
 
 @layer base {
   :root {
-    /* Pastel gradient backgrounds */
-    --background: 240 20% 98%;
-    --foreground: 240 10% 15%;
+    /* Atlassian Blue SaaS Theme */
+    --background: 0 0% 99%;
+    --foreground: 214 15% 22%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 15%;
+    --card-foreground: 214 15% 22%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 15%;
+    --popover-foreground: 214 15% 22%;
 
-    /* Pastel purple primary */
-    --primary: 262 70% 78%;
-    --primary-foreground: 240 10% 15%;
+    /* Atlassian Primary Blue #0052CC */
+    --primary: 214 100% 40%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Pastel blue secondary */
-    --secondary: 210 70% 82%;
-    --secondary-foreground: 240 10% 15%;
+    /* Lighter blue for hover/secondary */
+    --secondary: 212 100% 58%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 240 10% 95%;
-    --muted-foreground: 240 5% 50%;
+    --muted: 210 14% 96%;
+    --muted-foreground: 214 10% 50%;
 
-    /* Pastel pink/green accents */
-    --accent: 330 70% 85%;
-    --accent-foreground: 240 10% 15%;
+    /* Accent blue #2684FF */
+    --accent: 212 100% 58%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 65% 75%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    /* Pastel accent colors for enterprise dashboard */
-    --success: 142 60% 75%;
-    --success-foreground: 142 40% 20%;
+    /* Status colors */
+    --success: 134 61% 41%;
+    --success-foreground: 0 0% 100%;
     
-    --warning: 48 90% 75%;
-    --warning-foreground: 48 40% 20%;
+    --warning: 36 100% 50%;
+    --warning-foreground: 0 0% 100%;
     
-    --info: 210 70% 82%;
-    --info-foreground: 210 40% 20%;
+    --info: 212 100% 58%;
+    --info-foreground: 0 0% 100%;
 
     /* Dashboard specific colors */
-    --dashboard-bg: 240 25% 97%;
+    --dashboard-bg: 210 14% 98%;
     --dashboard-card: 0 0% 100%;
-    --dashboard-hover: 240 15% 98%;
+    --dashboard-hover: 210 17% 95%;
 
-    --border: 240 10% 90%;
-    --input: 240 10% 90%;
-    --ring: 262 70% 78%;
+    --border: 214 12% 92%;
+    --input: 214 12% 92%;
+    --ring: 214 100% 40%;
 
-    --radius: 1rem;
+    --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
 
