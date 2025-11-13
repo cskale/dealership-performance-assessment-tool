@@ -34,19 +34,19 @@ export function SectionNavigation({
     const progress = getSectionProgress(section);
     
     if (sectionIndex === currentSection) {
-      return { icon: Clock, color: "text-blue-600", bg: "bg-blue-50" };
+      return { icon: Clock, color: "text-primary", bg: "bg-background" };
     } else if (progress === 100) {
-      return { icon: Check, color: "text-green-600", bg: "bg-green-50" };
+      return { icon: Check, color: "text-muted-foreground", bg: "bg-background" };
     } else if (progress > 0) {
-      return { icon: AlertCircle, color: "text-yellow-600", bg: "bg-yellow-50" };
+      return { icon: AlertCircle, color: "text-muted-foreground", bg: "bg-background" };
     } else {
-      return { icon: Clock, color: "text-gray-400", bg: "bg-gray-50" };
+      return { icon: Clock, color: "text-muted-foreground", bg: "bg-background" };
     }
   };
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Assessment Sections</h2>
+    <div className="space-y-3">
+      <h2 className="text-sm font-medium text-foreground px-1">Assessment Sections</h2>
       
       {sections.map((section, sectionIndex) => {
         const progress = getSectionProgress(section);
@@ -58,90 +58,83 @@ export function SectionNavigation({
         return (
           <Card
             key={section.id}
-            className={`transition-all duration-200 cursor-pointer border-2 ${
+            className={`transition-all duration-200 cursor-pointer hover:scale-[1.02] border bg-white ${
               isCurrentSection 
-                ? "border-blue-500 shadow-md" 
-                : "border-gray-200 hover:border-gray-300 hover:shadow-sm"
+                ? "border-l-4 border-l-primary shadow-sm" 
+                : "hover:shadow-sm"
             }`}
             onClick={() => onNavigate(sectionIndex, 0)}
           >
-            <CardContent className="p-4">
+            <CardContent className="p-3">
               {/* Section Header */}
-              <div className="flex items-start gap-3 mb-3">
-                <div className={`p-2 rounded-lg ${status.bg}`}>
-                  <Icon className={`h-5 w-5 ${status.color}`} />
+              <div className="flex items-start gap-2.5 mb-2.5">
+                <div className="p-1.5">
+                  <Icon className="h-4 w-4 text-muted-foreground stroke-[1.5]" strokeWidth={1.5} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-gray-900 text-sm leading-tight">
+                  <h3 className={`text-sm leading-tight ${
+                    isCurrentSection ? 'font-medium text-foreground' : 'font-normal text-muted-foreground'
+                  }`}>
                     {section.title}
                   </h3>
-                  <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                    {section.description}
-                  </p>
                 </div>
                 <div className="flex items-center gap-1">
-                  <StatusIcon className={`h-4 w-4 ${status.color}`} />
+                  <StatusIcon className={`h-3.5 w-3.5 ${status.color}`} strokeWidth={1.5} />
                 </div>
               </div>
 
               {/* Progress */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-600">
+                  <span className="text-xs text-muted-foreground">
                     {section.questions.filter(q => q.id in answers).length} of {section.questions.length}
                   </span>
                   <Badge 
-                    variant={progress === 100 ? "default" : "secondary"}
-                    className="text-xs"
+                    variant={progress === 100 ? "default" : "outline"}
+                    className="text-xs h-5 px-1.5 font-normal"
                   >
                     {Math.round(progress)}%
                   </Badge>
                 </div>
-                <Progress value={progress} className="h-2" />
+                <Progress 
+                  value={progress} 
+                  className="h-1.5" 
+                />
               </div>
 
-              {/* Question List (for current section) */}
-              {isCurrentSection && (
-                <div className="mt-4 pt-3 border-t border-gray-200">
-                  <h4 className="text-xs font-medium text-gray-700 mb-2">Questions</h4>
-                  <div className="space-y-1 max-h-48 overflow-y-auto">
-                    {section.questions.map((question, questionIndex) => {
-                      const isAnswered = question.id in answers;
-                      const isCurrentQuestion = questionIndex === currentQuestion;
-                      
-                      return (
-                        <Button
-                          key={question.id}
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onNavigate(sectionIndex, questionIndex);
-                          }}
-                          className={`w-full justify-start text-left h-auto p-2 ${
-                            isCurrentQuestion 
-                              ? "bg-blue-100 text-blue-900" 
-                              : isAnswered 
-                                ? "bg-green-50 text-green-800"
-                                : "text-gray-600 hover:bg-gray-50"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 w-full">
-                            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                              isAnswered 
-                                ? "bg-green-500" 
-                                : isCurrentQuestion 
-                                  ? "bg-blue-500"
-                                  : "bg-gray-300"
-                            }`} />
-                            <span className="text-xs truncate">
-                              Q{questionIndex + 1}: {question.text.substring(0, 40)}...
-                            </span>
-                          </div>
-                        </Button>
-                      );
-                    })}
-                  </div>
+              {/* Questions List - Only show for current section */}
+              {isCurrentSection && section.questions.length > 0 && (
+                <div className="mt-3 pt-3 border-t space-y-1">
+                  {section.questions.map((question, qIndex) => {
+                    const isAnswered = question.id in answers;
+                    const isCurrentQuestion = qIndex === currentQuestion;
+                    
+                    return (
+                      <button
+                        key={question.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onNavigate(sectionIndex, qIndex);
+                        }}
+                        className={`w-full text-left px-2 py-1.5 rounded text-xs transition-colors ${
+                          isCurrentQuestion
+                            ? "bg-primary/10 text-primary font-medium"
+                            : isAnswered
+                            ? "text-muted-foreground hover:bg-muted/30"
+                            : "text-muted-foreground/60 hover:bg-muted/20"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {isAnswered ? (
+                            <Check className="h-3 w-3 text-primary flex-shrink-0" strokeWidth={2} />
+                          ) : (
+                            <div className="h-3 w-3 rounded-full border border-muted-foreground/30 flex-shrink-0" />
+                          )}
+                          <span className="line-clamp-1 flex-1">Q{qIndex + 1}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
@@ -149,23 +142,30 @@ export function SectionNavigation({
         );
       })}
 
-      {/* Overall Progress */}
-      <Card className="border-blue-200 bg-blue-50">
-        <CardContent className="p-4">
-          <h3 className="text-sm font-medium text-blue-900 mb-2">Overall Progress</h3>
+      {/* Overall Progress Card */}
+      <Card className="border bg-muted/20">
+        <CardContent className="p-3">
           <div className="space-y-2">
-            <div className="flex justify-between text-xs text-blue-800">
-              <span>
-                {Object.keys(answers).length} of {sections.reduce((sum, s) => sum + s.questions.length, 0)} questions
-              </span>
-              <span>
-                {Math.round((Object.keys(answers).length / sections.reduce((sum, s) => sum + s.questions.length, 0)) * 100)}%
-              </span>
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-medium text-foreground">Overall Progress</span>
+              <Badge variant="outline" className="text-xs h-5 font-normal">
+                {Math.round(
+                  (Object.keys(answers).length / 
+                    sections.reduce((acc, s) => acc + s.questions.length, 0)) * 100
+                )}%
+              </Badge>
             </div>
-            <Progress 
-              value={(Object.keys(answers).length / sections.reduce((sum, s) => sum + s.questions.length, 0)) * 100} 
-              className="h-3"
+            <Progress
+              value={
+                (Object.keys(answers).length / 
+                  sections.reduce((acc, s) => acc + s.questions.length, 0)) * 100
+              }
+              className="h-1.5"
             />
+            <p className="text-xs text-muted-foreground">
+              {Object.keys(answers).length} of{" "}
+              {sections.reduce((acc, s) => acc + s.questions.length, 0)} questions
+            </p>
           </div>
         </CardContent>
       </Card>

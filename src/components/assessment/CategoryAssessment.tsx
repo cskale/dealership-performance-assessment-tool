@@ -107,91 +107,84 @@ export function CategoryAssessment({
   }, [autoSaveTimers]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Section Header */}
-      <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-2xl font-bold text-primary flex items-center gap-3">
-                <span className="text-3xl">{section.icon}</span>
+      <Card className="border bg-white">
+        <CardHeader className="pb-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <CardTitle className="text-lg font-medium text-foreground mb-2">
                 {section.title}
               </CardTitle>
-              <p className="text-muted-foreground mt-2">{section.description}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {section.description}
+              </p>
             </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold text-primary">{Math.round(progress)}%</div>
-              <div className="text-sm text-muted-foreground">Complete</div>
-              {noteCount > 0 && (
-                <Badge variant="secondary" className="mt-2 flex items-center gap-1">
-                  <StickyNote className="h-3 w-3" />
-                  {noteCount} notes
-                </Badge>
-              )}
-            </div>
+            {noteCount > 0 && (
+              <Badge variant="outline" className="flex items-center gap-1.5 text-xs font-normal">
+                <StickyNote className="h-3 w-3" />
+                {noteCount} {noteCount === 1 ? 'note' : 'notes'}
+              </Badge>
+            )}
           </div>
-          <Progress value={progress} className="h-2 mt-4" />
+          
+          <div className="mt-4 space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">
+                {answeredQuestions} of {section.questions.length} completed
+              </span>
+              <span className="font-medium text-foreground">
+                {Math.round(progress)}%
+              </span>
+            </div>
+            <Progress value={progress} className="h-2" />
+          </div>
         </CardHeader>
       </Card>
 
       {/* Questions */}
-      <div className="space-y-6">
-        {section.questions.map((question, index) => (
-          <Card 
-            key={question.id} 
-            className={`border-l-4 transition-all duration-200 ${
-              answers[question.id] 
-                ? 'border-l-green-500 bg-green-50/50' 
-                : 'border-l-gray-300 hover:border-l-primary/50'
-            }`}
-          >
-            <CardContent className="p-6">
-              <div className="space-y-4">
+      <div className="space-y-4">
+        {section.questions.map((question, index) => {
+          const value = answers[question.id];
+          const isExpanded = expandedQuestions.has(question.id);
+          
+          return (
+            <Card key={question.id} className="border bg-white hover:shadow-sm transition-all duration-200">
+              <CardContent className="p-5">
                 {/* Question Header */}
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Badge variant="outline" className="text-xs">
-                        Q{index + 1}
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        {question.category}
-                      </Badge>
-                      {answers[question.id] && (
-                        <CheckCircle2 className="h-4 w-4 text-green-600" />
-                      )}
-                      {hasNotes(question.id) && (
-                        <Badge variant="outline" className="text-xs flex items-center gap-1">
-                          <StickyNote className="h-3 w-3" />
-                          Note
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1">
+                      <div className="flex items-start gap-2 mb-1">
+                        <span className="text-xs font-medium text-muted-foreground">Q{index + 1}</span>
+                        <Badge variant="outline" className="text-xs h-5 font-normal">
+                          {question.category}
                         </Badge>
+                      </div>
+                      <h3 className="text-base font-medium text-foreground leading-relaxed">
+                        {question.text}
+                      </h3>
+                      {question.description && (
+                        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                          {question.description}
+                        </p>
                       )}
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground leading-relaxed">
-                      {question.text}
-                    </h3>
-                    {question.description && (
-                      <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-                        {question.description}
-                      </p>
-                    )}
                   </div>
                 </div>
 
                 {/* Rating Scale */}
                 {question.type === "scale" && question.scale && (
-                  <div className="space-y-4">
-                    <div className="text-center">
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Rate from {question.scale.min} (lowest) to {question.scale.max} (highest)
-                      </p>
+                  <div className="space-y-4 mb-4">
+                    <div className="text-xs text-muted-foreground text-center">
+                      Rate from {question.scale.min} (lowest) to {question.scale.max} (highest)
                     </div>
 
                     {/* Rating Buttons */}
-                    <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-5 gap-2">
                       {Array.from({ length: question.scale.max }, (_, i) => {
                         const rating = i + 1;
-                        const isSelected = answers[question.id] === rating;
+                        const isSelected = value === rating;
                         const label = getRatingText(question, rating);
 
                         return (
@@ -199,12 +192,18 @@ export function CategoryAssessment({
                             key={rating}
                             variant={isSelected ? "default" : "outline"}
                             onClick={() => handleRatingClick(question.id, rating)}
-                            className={`h-auto p-4 flex flex-col items-center gap-2 transition-all duration-200 ${
-                              isSelected ? getRatingColor(rating) : "hover:bg-muted"
+                            className={`h-auto p-3 flex flex-col items-center gap-1.5 transition-all duration-200 ${
+                              isSelected 
+                                ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                                : "border hover:bg-muted/50 hover:scale-[1.02]"
                             }`}
                           >
-                            <span className="text-2xl font-bold">{rating}</span>
-                            <span className="text-xs text-center leading-tight">
+                            <span className={`text-xl font-medium ${isSelected ? '' : 'text-foreground'}`}>
+                              {rating}
+                            </span>
+                            <span className={`text-xs text-center leading-tight ${
+                              isSelected ? 'opacity-90' : 'text-muted-foreground'
+                            }`}>
                               {label}
                             </span>
                           </Button>
@@ -213,10 +212,10 @@ export function CategoryAssessment({
                     </div>
 
                     {/* Selected Value Display */}
-                    {answers[question.id] && (
-                      <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20">
-                        <p className="text-sm text-primary">
-                          <strong>Selected:</strong> {answers[question.id]} - {getRatingText(question, answers[question.id])}
+                    {value && (
+                      <div className="text-center p-3 bg-muted/30 rounded border">
+                        <p className="text-sm text-foreground">
+                          <span className="font-medium">Selected:</span> {value} - {getRatingText(question, value)}
                         </p>
                       </div>
                     )}

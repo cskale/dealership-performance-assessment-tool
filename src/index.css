@@ -11,6 +11,7 @@
     /* Atlassian Blue SaaS Theme */
     --background: 0 0% 99%;
     --foreground: 214 15% 22%;
+    --neutral-bg: 218 20% 97%; /* #F4F5F7 */
 
     --card: 0 0% 100%;
     --card-foreground: 214 15% 22%;
@@ -77,6 +78,7 @@
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
+    --neutral-bg: 222 20% 12%;
 
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;

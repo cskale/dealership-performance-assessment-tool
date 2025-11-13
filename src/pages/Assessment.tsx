@@ -201,25 +201,24 @@ export default function Assessment() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/50">
+    <div className="min-h-screen bg-[hsl(var(--neutral-bg))]">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+      <div className="sticky top-0 z-10 bg-white border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={() => navigate('/app')}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to Dashboard
             </Button>
             <div className="flex items-center gap-2">
-              <Car className="h-6 w-6 text-primary" />
-              <h1 className="text-xl font-bold text-foreground">Industrial Assessment Platform</h1>
+              <h1 className="text-lg font-medium text-foreground">Dealership Assessment</h1>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">
+              <div className="text-xl font-medium text-foreground">
                 {Math.round(progress)}%
               </div>
               <div className="text-xs text-muted-foreground">Complete</div>
