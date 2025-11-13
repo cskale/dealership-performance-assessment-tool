@@ -365,49 +365,64 @@ export type Database = {
       profiles: {
         Row: {
           active_organization_id: string | null
+          avatar_url: string | null
+          bio: string | null
           consent_analytics: boolean | null
           consent_marketing: boolean | null
           created_at: string
+          department: string | null
           display_name: string | null
           email: string | null
           email_verified: boolean | null
           full_name: string | null
           gdpr_consented_at: string | null
           id: string
+          job_title: string | null
           last_sign_in_at: string | null
           role: string | null
+          timezone: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           active_organization_id?: string | null
+          avatar_url?: string | null
+          bio?: string | null
           consent_analytics?: boolean | null
           consent_marketing?: boolean | null
           created_at?: string
+          department?: string | null
           display_name?: string | null
           email?: string | null
           email_verified?: boolean | null
           full_name?: string | null
           gdpr_consented_at?: string | null
           id?: string
+          job_title?: string | null
           last_sign_in_at?: string | null
           role?: string | null
+          timezone?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           active_organization_id?: string | null
+          avatar_url?: string | null
+          bio?: string | null
           consent_analytics?: boolean | null
           consent_marketing?: boolean | null
           created_at?: string
+          department?: string | null
           display_name?: string | null
           email?: string | null
           email_verified?: boolean | null
           full_name?: string | null
           gdpr_consented_at?: string | null
           id?: string
+          job_title?: string | null
           last_sign_in_at?: string | null
           role?: string | null
+          timezone?: string | null
           updated_at?: string
           user_id?: string
         }
