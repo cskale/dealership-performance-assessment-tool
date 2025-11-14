@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { MessageSquare, Save, ChevronRight, AlertCircle, CheckCircle2, StickyNote } from "lucide-react";
+import { MessageSquare, Save, ChevronRight, AlertCircle, StickyNote } from "lucide-react";
 import { Question, Section } from "@/data/questionnaire";
 import { useAssessmentNotes } from "@/hooks/useAssessmentNotes";
 import { useToast } from "@/hooks/use-toast";
@@ -34,7 +34,6 @@ export function CategoryAssessment({
   const { notes, saveNote, hasNotes, getCategoryNoteCount } = useAssessmentNotes();
   const { toast } = useToast();
 
-  // Initialize notes text from loaded notes
   useEffect(() => {
     const initialNotesText: Record<string, string> = {};
     section.questions.forEach(question => {
@@ -56,12 +55,10 @@ export function CategoryAssessment({
   const handleNotesChange = (questionId: string, text: string) => {
     setNotesText(prev => ({ ...prev, [questionId]: text }));
     
-    // Clear existing timer
     if (autoSaveTimers[questionId]) {
       clearTimeout(autoSaveTimers[questionId]);
     }
     
-    // Set new autosave timer
     const timer = setTimeout(() => {
       saveNote(questionId, text);
       toast({
@@ -69,7 +66,7 @@ export function CategoryAssessment({
         description: "Your note has been automatically saved.",
         duration: 1500,
       });
-    }, 2000); // Auto-save after 2 seconds of no typing
+    }, 2000);
     
     setAutoSaveTimers(prev => ({ ...prev, [questionId]: timer }));
   };
@@ -86,18 +83,11 @@ export function CategoryAssessment({
     });
   };
 
-  const getRatingColor = (rating: number) => {
-    if (rating <= 2) return "bg-red-500 hover:bg-red-600 text-white";
-    if (rating === 3) return "bg-yellow-500 hover:bg-yellow-600 text-white";
-    return "bg-green-500 hover:bg-green-600 text-white";
-  };
-
   const getRatingText = (question: Question, rating: number) => {
     if (!question.scale) return "";
     return question.scale.labels[rating - 1] || "";
   };
 
-  // Cleanup timers on unmount
   useEffect(() => {
     return () => {
       Object.values(autoSaveTimers).forEach(timer => {
@@ -108,7 +98,6 @@ export function CategoryAssessment({
 
   return (
     <div className="space-y-4">
-      {/* Section Header */}
       <Card className="border bg-white">
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between gap-4">
@@ -142,16 +131,13 @@ export function CategoryAssessment({
         </CardHeader>
       </Card>
 
-      {/* Questions */}
       <div className="space-y-4">
         {section.questions.map((question, index) => {
           const value = answers[question.id];
-          const isExpanded = expandedQuestions.has(question.id);
           
           return (
             <Card key={question.id} className="border bg-white hover:shadow-sm transition-all duration-200">
               <CardContent className="p-5">
-                {/* Question Header */}
                 <div className="space-y-3 mb-4">
                   <div className="flex items-start gap-3">
                     <div className="flex-1">
@@ -173,14 +159,12 @@ export function CategoryAssessment({
                   </div>
                 </div>
 
-                {/* Rating Scale */}
                 {question.type === "scale" && question.scale && (
                   <div className="space-y-4 mb-4">
                     <div className="text-xs text-muted-foreground text-center">
                       Rate from {question.scale.min} (lowest) to {question.scale.max} (highest)
                     </div>
 
-                    {/* Rating Buttons */}
                     <div className="grid grid-cols-5 gap-2">
                       {Array.from({ length: question.scale.max }, (_, i) => {
                         const rating = i + 1;
@@ -211,7 +195,6 @@ export function CategoryAssessment({
                       })}
                     </div>
 
-                    {/* Selected Value Display */}
                     {value && (
                       <div className="text-center p-3 bg-muted/30 rounded border">
                         <p className="text-sm text-foreground">
@@ -222,9 +205,8 @@ export function CategoryAssessment({
                   </div>
                 )}
 
-                {/* Enhanced Context Information */}
                 {(question.purpose || question.situationAnalysis || question.linkedKPIs || question.benefits) && (
-                  <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+                  <Card className="border bg-white mb-4">
                     <CardContent className="p-0">
                       <Collapsible 
                         open={expandedQuestions.has(question.id)}
@@ -233,15 +215,15 @@ export function CategoryAssessment({
                         <CollapsibleTrigger asChild>
                           <Button 
                             variant="ghost" 
-                            className="w-full justify-between p-4 h-auto text-left"
+                            className="w-full justify-between p-4 h-auto text-left hover:bg-muted/50"
                           >
                             <div className="flex items-center gap-2">
                               <AlertCircle className="h-4 w-4 text-primary" />
-                              <span className="font-medium text-primary">
+                              <span className="font-medium text-foreground">
                                 Why This Question Matters
                               </span>
                             </div>
-                            <ChevronRight className={`h-4 w-4 text-primary transition-transform ${
+                            <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${
                               expandedQuestions.has(question.id) ? 'rotate-90' : ''
                             }`} />
                           </Button>
@@ -249,24 +231,24 @@ export function CategoryAssessment({
                         <CollapsibleContent className="px-4 pb-4 space-y-4">
                           {question.purpose && (
                             <div className="space-y-2">
-                              <h4 className="font-semibold text-primary">Assessment Purpose</h4>
+                              <h4 className="font-medium text-foreground">Assessment Purpose</h4>
                               <p className="text-sm text-muted-foreground">{question.purpose}</p>
                             </div>
                           )}
                           
                           {question.situationAnalysis && (
                             <div className="space-y-2">
-                              <h4 className="font-semibold text-primary">Situation Analysis</h4>
+                              <h4 className="font-medium text-foreground">Situation Analysis</h4>
                               <p className="text-sm text-muted-foreground">{question.situationAnalysis}</p>
                             </div>
                           )}
                           
                           {question.linkedKPIs && question.linkedKPIs.length > 0 && (
                             <div className="space-y-2">
-                              <h4 className="font-semibold text-primary">Linked KPIs</h4>
+                              <h4 className="font-medium text-foreground">Linked KPIs</h4>
                               <div className="flex flex-wrap gap-2">
                                 {question.linkedKPIs.map((kpi, kpiIndex) => (
-                                  <Badge key={kpiIndex} variant="secondary" className="text-xs">
+                                  <Badge key={kpiIndex} variant="outline" className="text-xs">
                                     {kpi}
                                   </Badge>
                                 ))}
@@ -276,7 +258,7 @@ export function CategoryAssessment({
                           
                           {question.benefits && (
                             <div className="space-y-2">
-                              <h4 className="font-semibold text-primary">Business Benefits</h4>
+                              <h4 className="font-medium text-foreground">Business Benefits</h4>
                               <p className="text-sm text-muted-foreground">{question.benefits}</p>
                             </div>
                           )}
@@ -286,15 +268,14 @@ export function CategoryAssessment({
                   </Card>
                 )}
 
-                {/* Notes Section */}
-                <Card className="border-blue-200 bg-blue-50/50">
+                <Card className="border bg-white">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <MessageSquare className="h-4 w-4 text-blue-600" />
-                      <label className="text-sm font-medium text-blue-900">
+                      <MessageSquare className="h-4 w-4 text-primary" />
+                      <label className="text-sm font-medium text-foreground">
                         Additional Notes & Insights
                         {hasNotes(question.id) && (
-                          <Badge variant="outline" className="ml-2 text-xs text-blue-600">
+                          <Badge variant="outline" className="ml-2 text-xs text-primary">
                             Saved
                           </Badge>
                         )}
@@ -305,22 +286,21 @@ export function CategoryAssessment({
                       onChange={(e) => handleNotesChange(question.id, e.target.value)}
                       placeholder="Add your observations, context, or improvement ideas for this question..."
                       rows={3}
-                      className="w-full bg-white"
+                      className="w-full bg-white border"
                     />
-                    <div className="text-xs text-blue-600 mt-2 flex items-center gap-1">
+                    <div className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
                       <Save className="h-3 w-3" />
                       Auto-saves as you type
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
-      {/* Continue Button */}
-      <Card className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
+      <Card className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-0">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
