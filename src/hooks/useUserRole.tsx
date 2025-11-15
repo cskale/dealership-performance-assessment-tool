@@ -30,15 +30,18 @@ export const useUserRole = (): UserRoleData => {
           .from('user_roles')
           .select('role, dealer_id')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
         if (error) {
           console.error('Error fetching user role:', error);
           setRole(null);
           setDealerId(null);
-        } else {
+        } else if (data) {
           setRole(data.role as UserRole);
           setDealerId(data.dealer_id);
+        } else {
+          setRole(null);
+          setDealerId(null);
         }
       } catch (error) {
         console.error('Error fetching user role:', error);
