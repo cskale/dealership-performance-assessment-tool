@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -25,21 +25,30 @@ const AuthCallback = () => {
         }
 
         if (data.session) {
-          // Clear any returnTo cookie and get the redirect path
-          const returnTo = searchParams.get('returnTo') || getCookieValue('returnTo') || '/';
-          
-          // Clear the cookie
-          document.cookie = 'returnTo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-          
-          // Ensure it's a safe internal path
-          const safePath = isInternalPath(returnTo) ? returnTo : '/';
-          
+          // Check user role and redirect accordingly
+          const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role, dealer_id')
+            .eq('user_id', data.session.user.id)
+            .single();
+
           toast({
             title: "Welcome back!",
             description: "You've been successfully signed in.",
           });
-          
-          navigate(safePath, { replace: true });
+
+          if (roleData) {
+            if (roleData.role === 'dealer' && roleData.dealer_id) {
+              navigate(`/dealer/${roleData.dealer_id}/actions`, { replace: true });
+            } else if (roleData.role === 'coach') {
+              navigate('/coach/actions', { replace: true });
+            } else {
+              navigate('/', { replace: true });
+            }
+          } else {
+            // No role assigned yet, go to home
+            navigate('/', { replace: true });
+          }
         } else {
           navigate('/auth');
         }
@@ -60,23 +69,6 @@ const AuthCallback = () => {
       </div>
     </div>
   );
-};
-
-// Helper functions
-const getCookieValue = (name: string): string | null => {
-  const cookies = document.cookie.split(';');
-  const cookie = cookies.find(c => c.trim().startsWith(`${name}=`));
-  return cookie ? decodeURIComponent(cookie.split('=')[1]) : null;
-};
-
-const isInternalPath = (path: string): boolean => {
-  try {
-    const url = new URL(path, window.location.origin);
-    return url.origin === window.location.origin && !path.includes('//');
-  } catch {
-    // If it's not a valid URL, check if it's a relative path
-    return path.startsWith('/') && !path.startsWith('//') && !path.includes('.');
-  }
 };
 
 export default AuthCallback;

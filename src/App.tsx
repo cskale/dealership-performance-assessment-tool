@@ -10,6 +10,8 @@ import Results from "./pages/Results";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import Account from "./pages/Account";
+import DealerActions from "./pages/DealerActions";
+import CoachActions from "./pages/CoachActions";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/hooks/useAuth";
 import { MultiTenantProvider } from "@/hooks/useMultiTenant";
@@ -43,6 +45,16 @@ const App = () => (
                   <Routes>
                     <Route index element={<Account />} />
                   </Routes>
+                </ProtectedRoute>
+              } />
+              <Route path="/dealer/:dealerId/actions" element={
+                <ProtectedRoute>
+                  <DealerActions />
+                </ProtectedRoute>
+              } />
+              <Route path="/coach/actions" element={
+                <ProtectedRoute>
+                  <CoachActions />
                 </ProtectedRoute>
               } />
               <Route path="/" element={
