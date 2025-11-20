@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { OrganizationSwitcher } from './OrganizationSwitcher';
+import { RoleSelector } from './RoleSelector';
 import { useAuth } from '@/hooks/useAuth';
 import { User, Settings, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -36,6 +37,7 @@ export function AppHeader() {
         </div>
 
         <div className="flex items-center gap-4">
+          <RoleSelector />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
