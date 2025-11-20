@@ -10,11 +10,11 @@ import Results from "./pages/Results";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import Account from "./pages/Account";
-import DealerActions from "./pages/DealerActions";
-import CoachActions from "./pages/CoachActions";
+import Actions from "./pages/Actions";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/hooks/useAuth";
 import { MultiTenantProvider } from "@/hooks/useMultiTenant";
+import { RoleProvider } from "@/contexts/RoleContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -23,10 +23,11 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <MultiTenantProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+        <RoleProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
@@ -47,14 +48,9 @@ const App = () => (
                   </Routes>
                 </ProtectedRoute>
               } />
-              <Route path="/dealer/:dealerId/actions" element={
+              <Route path="/actions" element={
                 <ProtectedRoute>
-                  <DealerActions />
-                </ProtectedRoute>
-              } />
-              <Route path="/coach/actions" element={
-                <ProtectedRoute>
-                  <CoachActions />
+                  <Actions />
                 </ProtectedRoute>
               } />
               <Route path="/" element={
@@ -66,7 +62,8 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
-        </TooltipProvider>
+          </TooltipProvider>
+        </RoleProvider>
       </MultiTenantProvider>
     </AuthProvider>
   </QueryClientProvider>
