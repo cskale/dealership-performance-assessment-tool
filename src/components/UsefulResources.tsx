@@ -1,68 +1,204 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Video, GraduationCap, Globe } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { BookOpen, Video, FileText, Globe, Target, TrendingUp, Wrench, DollarSign } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface UsefulResourcesProps {
   scores: Record<string, number>;
 }
 
-interface Resource {
-  title: string;
-  type: 'Article' | 'Video' | 'Course' | 'Webinar';
-  description: string;
+interface DepartmentResource {
   department: string;
+  score: number;
+  implementationGuide: {
+    phase: string;
+    duration: string;
+    activities: string[];
+    deliverables: string[];
+  }[];
+  keyMetrics: string[];
+  learningResources: {
+    title: string;
+    type: 'Article' | 'Video' | 'Course' | 'Webinar';
+  }[];
 }
 
 export function UsefulResources({ scores }: UsefulResourcesProps) {
-  const generateResources = (): Resource[] => {
-    const resources: Resource[] = [];
+  const generateDepartmentResources = (): DepartmentResource[] => {
+    const resources: DepartmentResource[] = [];
 
     Object.entries(scores).forEach(([department, score]) => {
       if (score < 75) {
         switch (department) {
           case 'new-vehicle-sales':
-            resources.push(
-              { title: 'Modern Sales Techniques in Automotive Industry', type: 'Course', description: 'Comprehensive training on contemporary sales methodologies', department: 'New Vehicle Sales' },
-              { title: 'Customer Psychology and Buying Behavior', type: 'Article', description: 'Understanding customer decision-making processes', department: 'New Vehicle Sales' },
-              { title: 'Closing Techniques That Work', type: 'Video', description: 'Practical demonstrations of effective closing strategies', department: 'New Vehicle Sales' },
-              { title: 'Building Long-term Customer Relationships', type: 'Webinar', description: 'Strategies for customer retention and loyalty', department: 'New Vehicle Sales' }
-            );
+            resources.push({
+              department: 'New Vehicle Sales',
+              score,
+              implementationGuide: [
+                {
+                  phase: 'Assessment & Planning',
+                  duration: '2 weeks',
+                  activities: ['Evaluate current sales performance', 'Identify skill gaps', 'Design training curriculum'],
+                  deliverables: ['Skills assessment report', 'Training plan', 'Resource list']
+                },
+                {
+                  phase: 'Training Implementation',
+                  duration: '4 weeks',
+                  activities: ['Conduct training sessions', 'Practice scenarios', 'Implement coaching'],
+                  deliverables: ['Trained sales team', 'Performance benchmarks', 'Coaching framework']
+                },
+                {
+                  phase: 'Monitoring & Optimization',
+                  duration: '2 weeks',
+                  activities: ['Track performance metrics', 'Gather feedback', 'Make adjustments'],
+                  deliverables: ['Performance reports', 'Optimization plan', 'Ongoing support structure']
+                }
+              ],
+              keyMetrics: ['Closing ratio improvement', 'Customer satisfaction scores', 'Average deal size', 'Lead conversion rate'],
+              learningResources: [
+                { title: 'Modern Sales Techniques in Automotive Industry', type: 'Course' },
+                { title: 'Customer Psychology and Buying Behavior', type: 'Article' },
+                { title: 'Closing Techniques That Work', type: 'Video' },
+                { title: 'Building Long-term Customer Relationships', type: 'Webinar' }
+              ]
+            });
             break;
 
           case 'used-vehicle-sales':
-            resources.push(
-              { title: 'Used Vehicle Inventory Best Practices', type: 'Course', description: 'Optimize your used vehicle operations', department: 'Used Vehicle Sales' },
-              { title: 'Market-Based Pricing Strategies', type: 'Article', description: 'Data-driven approach to vehicle pricing', department: 'Used Vehicle Sales' },
-              { title: 'Technology Solutions for Dealers', type: 'Video', description: 'Overview of modern dealership technology', department: 'Used Vehicle Sales' },
-              { title: 'Inventory Optimization Workshop', type: 'Webinar', description: 'Live session on inventory management', department: 'Used Vehicle Sales' }
-            );
+            resources.push({
+              department: 'Used Vehicle Sales',
+              score,
+              implementationGuide: [
+                {
+                  phase: 'System Selection & Planning',
+                  duration: '3 weeks',
+                  activities: ['Evaluate current processes', 'Research solutions', 'Plan implementation'],
+                  deliverables: ['Vendor selection', 'Implementation timeline', 'Training plan']
+                },
+                {
+                  phase: 'Implementation & Integration',
+                  duration: '6 weeks',
+                  activities: ['Install software', 'Integrate systems', 'Configure workflows'],
+                  deliverables: ['Functional system', 'Integrated processes', 'Trained team']
+                },
+                {
+                  phase: 'Optimization & Monitoring',
+                  duration: '3 weeks',
+                  activities: ['Monitor performance', 'Fine-tune settings', 'Measure results'],
+                  deliverables: ['Performance reports', 'Optimization recommendations', 'ROI analysis']
+                }
+              ],
+              keyMetrics: ['Inventory turnover rate', 'Days in inventory', 'Gross profit per unit', 'Market pricing accuracy'],
+              learningResources: [
+                { title: 'Used Vehicle Inventory Best Practices', type: 'Course' },
+                { title: 'Market-Based Pricing Strategies', type: 'Article' },
+                { title: 'Technology Solutions for Dealers', type: 'Video' },
+                { title: 'Inventory Optimization Workshop', type: 'Webinar' }
+              ]
+            });
             break;
 
           case 'service-performance':
-            resources.push(
-              { title: 'Digital Service Management', type: 'Course', description: 'Modernizing service department operations', department: 'Service Performance' },
-              { title: 'Customer Experience in Service', type: 'Article', description: 'Enhancing service customer satisfaction', department: 'Service Performance' },
-              { title: 'Technician Productivity Tools', type: 'Video', description: 'Tools to improve workshop efficiency', department: 'Service Performance' },
-              { title: 'Service Department Innovation', type: 'Webinar', description: 'Latest trends in automotive service', department: 'Service Performance' }
-            );
+            resources.push({
+              department: 'Service Performance',
+              score,
+              implementationGuide: [
+                {
+                  phase: 'Process Analysis & Planning',
+                  duration: '4 weeks',
+                  activities: ['Map current processes', 'Identify improvement areas', 'Select technology solutions'],
+                  deliverables: ['Process map', 'Technology roadmap', 'Implementation plan']
+                },
+                {
+                  phase: 'Technology Implementation',
+                  duration: '8 weeks',
+                  activities: ['Install systems', 'Configure workflows', 'Train staff'],
+                  deliverables: ['Deployed technology', 'Trained workforce', 'Updated processes']
+                },
+                {
+                  phase: 'Performance Monitoring',
+                  duration: '2 weeks',
+                  activities: ['Track KPIs', 'Gather feedback', 'Make adjustments'],
+                  deliverables: ['Performance dashboard', 'Feedback reports', 'Continuous improvement plan']
+                }
+              ],
+              keyMetrics: ['Labor efficiency rate', 'Customer satisfaction scores', 'Technician productivity', 'Service retention rate'],
+              learningResources: [
+                { title: 'Digital Service Management', type: 'Course' },
+                { title: 'Customer Experience in Service', type: 'Article' },
+                { title: 'Technician Productivity Tools', type: 'Video' },
+                { title: 'Service Department Innovation', type: 'Webinar' }
+              ]
+            });
             break;
 
           case 'parts-inventory':
-            resources.push(
-              { title: 'Parts Inventory Management Best Practices', type: 'Course', description: 'Optimize parts operations and profitability', department: 'Parts & Inventory' },
-              { title: 'Predictive Analytics in Automotive', type: 'Article', description: 'Using data to forecast parts demand', department: 'Parts & Inventory' },
-              { title: 'Inventory Optimization Techniques', type: 'Video', description: 'Practical inventory management strategies', department: 'Parts & Inventory' },
-              { title: 'Parts Department Efficiency', type: 'Webinar', description: 'Maximizing parts department performance', department: 'Parts & Inventory' }
-            );
+            resources.push({
+              department: 'Parts & Inventory',
+              score,
+              implementationGuide: [
+                {
+                  phase: 'Data Analysis & Planning',
+                  duration: '2 weeks',
+                  activities: ['Analyze inventory data', 'Identify patterns', 'Select technology'],
+                  deliverables: ['Data analysis report', 'Technology selection', 'Implementation plan']
+                },
+                {
+                  phase: 'System Implementation',
+                  duration: '6 weeks',
+                  activities: ['Deploy analytics platform', 'Configure forecasting', 'Train team'],
+                  deliverables: ['Operational system', 'Trained staff', 'Optimized processes']
+                },
+                {
+                  phase: 'Monitoring & Optimization',
+                  duration: '2 weeks',
+                  activities: ['Track performance', 'Fine-tune models', 'Measure ROI'],
+                  deliverables: ['Performance metrics', 'Optimized models', 'ROI report']
+                }
+              ],
+              keyMetrics: ['Inventory turnover rate', 'Fill rate percentage', 'Carrying cost reduction', 'Obsolete parts percentage'],
+              learningResources: [
+                { title: 'Parts Inventory Management Best Practices', type: 'Course' },
+                { title: 'Predictive Analytics in Automotive', type: 'Article' },
+                { title: 'Inventory Optimization Techniques', type: 'Video' },
+                { title: 'Parts Department Efficiency', type: 'Webinar' }
+              ]
+            });
             break;
 
           case 'financial-operations':
-            resources.push(
-              { title: 'Financial Process Automation', type: 'Course', description: 'Streamline financial workflows', department: 'Financial Operations' },
-              { title: 'Dealership Financial Management', type: 'Article', description: 'Best practices in dealer finance', department: 'Financial Operations' },
-              { title: 'Automation Tools Overview', type: 'Video', description: 'Technology for financial efficiency', department: 'Financial Operations' },
-              { title: 'Financial Efficiency Strategies', type: 'Webinar', description: 'Improving financial performance', department: 'Financial Operations' }
-            );
+            resources.push({
+              department: 'Financial Operations',
+              score,
+              implementationGuide: [
+                {
+                  phase: 'Process Mapping & Analysis',
+                  duration: '3 weeks',
+                  activities: ['Document current processes', 'Identify bottlenecks', 'Plan automation'],
+                  deliverables: ['Process documentation', 'Automation roadmap', 'Platform selection']
+                },
+                {
+                  phase: 'Automation Implementation',
+                  duration: '7 weeks',
+                  activities: ['Deploy platform', 'Configure workflows', 'Test processes'],
+                  deliverables: ['Automated processes', 'Trained team', 'Quality assurance']
+                },
+                {
+                  phase: 'Monitoring & Expansion',
+                  duration: '2 weeks',
+                  activities: ['Monitor performance', 'Identify additional opportunities', 'Plan expansion'],
+                  deliverables: ['Performance reports', 'Expansion plan', 'ROI analysis']
+                }
+              ],
+              keyMetrics: ['Process automation rate', 'Error reduction percentage', 'Time savings', 'Cost efficiency improvement'],
+              learningResources: [
+                { title: 'Financial Process Automation', type: 'Course' },
+                { title: 'Dealership Financial Management', type: 'Article' },
+                { title: 'Automation Tools Overview', type: 'Video' },
+                { title: 'Financial Efficiency Strategies', type: 'Webinar' }
+              ]
+            });
             break;
         }
       }
@@ -71,22 +207,22 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
     return resources;
   };
 
-  const resources = generateResources();
+  const departmentResources = generateDepartmentResources();
   const getIcon = (type: string) => {
     switch (type) {
-      case 'Article': return <BookOpen className="h-5 w-5" />;
-      case 'Video': return <Video className="h-5 w-5" />;
-      case 'Course': return <GraduationCap className="h-5 w-5" />;
-      case 'Webinar': return <Globe className="h-5 w-5" />;
-      default: return <BookOpen className="h-5 w-5" />;
+      case 'Course': return BookOpen;
+      case 'Video': return Video;
+      case 'Article': return FileText;
+      case 'Webinar': return Globe;
+      default: return BookOpen;
     }
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'Article': return 'bg-blue-500';
+      case 'Course': return 'bg-blue-500';
       case 'Video': return 'bg-purple-500';
-      case 'Course': return 'bg-green-500';
+      case 'Article': return 'bg-green-500';
       case 'Webinar': return 'bg-orange-500';
       default: return 'bg-gray-500';
     }
@@ -94,6 +230,7 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
 
   return (
     <div className="space-y-6">
+      {/* Header Section */}
       <Card className="border-primary/20 shadow-lg">
         <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10">
           <CardTitle className="flex items-center gap-2 text-2xl">
@@ -103,39 +240,119 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
         </CardHeader>
         <CardContent className="p-6">
           <p className="text-muted-foreground">
-            Curated learning resources to support your improvement initiatives based on your assessment results.
+            Comprehensive guides, metrics, and learning resources tailored to your assessment results. 
+            Each section provides implementation guides, key performance metrics, and curated learning materials.
           </p>
         </CardContent>
       </Card>
 
-      {resources.length === 0 ? (
+      {/* Department Resources */}
+      {departmentResources.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center">
-            <p className="text-muted-foreground">Great job! Your scores are excellent. No specific resources needed at this time.</p>
+            <p className="text-muted-foreground">
+              Great job! All departments are performing above 75%. No additional resources needed at this time.
+            </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {resources.map((resource, index) => (
-            <Card key={index} className="border shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start gap-3">
-                  <div className={`p-2 rounded-lg text-white ${getTypeColor(resource.type)}`}>
-                    {getIcon(resource.type)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge variant="outline" className="text-xs">{resource.department}</Badge>
-                      <Badge className={`text-white text-xs ${getTypeColor(resource.type)}`}>
-                        {resource.type}
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-base">{resource.title}</CardTitle>
-                  </div>
+        <div className="space-y-6">
+          {departmentResources.map((resource, index) => (
+            <Card key={index} className="border shadow-md">
+              <CardHeader className="bg-gradient-to-r from-background to-primary/5">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-xl">{resource.department}</CardTitle>
+                  <Badge variant="outline">Score: {resource.score}%</Badge>
                 </div>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{resource.description}</p>
+              <CardContent className="p-6 space-y-6">
+                {/* Implementation Guide */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <Target className="h-5 w-5 text-primary" />
+                    Implementation Guide
+                  </h3>
+                  <Accordion type="single" collapsible className="w-full">
+                    {resource.implementationGuide.map((phase, phaseIndex) => (
+                      <AccordionItem key={phaseIndex} value={`phase-${phaseIndex}`}>
+                        <AccordionTrigger className="text-left">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline">{phase.duration}</Badge>
+                            <span>{phase.phase}</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="space-y-4 pt-2">
+                            <div>
+                              <h4 className="font-medium text-sm mb-2">Activities:</h4>
+                              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                                {phase.activities.map((activity, actIndex) => (
+                                  <li key={actIndex}>{activity}</li>
+                                ))}
+                              </ul>
+                            </div>
+                            <div>
+                              <h4 className="font-medium text-sm mb-2">Deliverables:</h4>
+                              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                                {phase.deliverables.map((deliverable, delIndex) => (
+                                  <li key={delIndex}>{deliverable}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </div>
+
+                {/* Key Performance Metrics */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    Key Performance Metrics
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {resource.keyMetrics.map((metric, metricIndex) => (
+                      <Card key={metricIndex} className="border-primary/20">
+                        <CardContent className="p-3">
+                          <p className="text-sm font-medium flex items-center gap-2">
+                            <DollarSign className="h-4 w-4 text-primary" />
+                            {metric}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Learning Resources */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <Wrench className="h-5 w-5 text-primary" />
+                    Learning Resources
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {resource.learningResources.map((learningResource, lrIndex) => {
+                      const Icon = getIcon(learningResource.type);
+                      return (
+                        <Card key={lrIndex} className="border hover:border-primary/50 transition-colors">
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-3">
+                              <div className={cn("p-2 rounded-lg", getTypeColor(learningResource.type))}>
+                                <Icon className="h-4 w-4 text-white" />
+                              </div>
+                              <div className="flex-1">
+                                <Badge variant="outline" className="mb-2">{learningResource.type}</Badge>
+                                <p className="text-sm font-medium">{learningResource.title}</p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
               </CardContent>
             </Card>
           ))}
