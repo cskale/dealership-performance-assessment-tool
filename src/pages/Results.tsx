@@ -13,7 +13,8 @@ import * as XLSX from "xlsx";
 import { ExecutiveSummary } from "@/components/ExecutiveSummary";
 import { IndustrialKPIDashboard } from "@/components/IndustrialKPIDashboard";
 import { MaturityScoring } from "@/components/MaturityScoring";
-import { InteractiveRecommendations } from "@/components/InteractiveRecommendations";
+import { ActionPlan } from "@/components/ActionPlan";
+import { UsefulResources } from "@/components/UsefulResources";
 import { formatEuro, formatPercentage } from "@/utils/euroFormatter";
 
 export default function Results() {
@@ -203,11 +204,12 @@ export default function Results() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6" defaultValue="executive">
-          <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm border shadow-lg">
+          <TabsList className="grid w-full grid-cols-5 bg-white/80 backdrop-blur-sm border shadow-lg">
             <TabsTrigger value="executive">📋 Executive Summary</TabsTrigger>
             <TabsTrigger value="kpi">💰 KPI Analytics</TabsTrigger>
             <TabsTrigger value="maturity">🏆 Maturity</TabsTrigger>
-            <TabsTrigger value="recommendations">🎯 Recommendations</TabsTrigger>
+            <TabsTrigger value="action-plan">✅ Action Plan</TabsTrigger>
+            <TabsTrigger value="resources">📚 Useful Resources</TabsTrigger>
           </TabsList>
 
           <TabsContent value="executive" className="space-y-6 animate-fade-in">
@@ -233,10 +235,16 @@ export default function Results() {
             />
           </TabsContent>
 
-          <TabsContent value="recommendations" className="space-y-6 animate-fade-in">
-            <InteractiveRecommendations
+          <TabsContent value="action-plan" className="space-y-6 animate-fade-in">
+            <ActionPlan
               scores={resultsData.scores}
-              answers={resultsData.answers}
+              assessmentId={resultsData.assessmentId}
+            />
+          </TabsContent>
+
+          <TabsContent value="resources" className="space-y-6 animate-fade-in">
+            <UsefulResources
+              scores={resultsData.scores}
             />
           </TabsContent>
         </Tabs>

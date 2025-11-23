@@ -39,6 +39,11 @@ export interface ImprovementAction {
   actionDescription: string;
   expectedImpact?: string;
   estimatedEffort?: string;
+  responsiblePerson?: string;
+  targetCompletionDate?: string;
+  status?: 'Open' | 'In Progress' | 'Completed';
+  supportRequiredFrom?: string[];
+  kpisLinkedTo?: string[];
 }
 
 export const AUTOMOTIVE_BRANDS = [
