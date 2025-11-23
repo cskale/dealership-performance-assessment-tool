@@ -294,8 +294,13 @@ export type Database = {
           estimated_effort: string | null
           expected_impact: string | null
           id: string
+          kpis_linked_to: string[] | null
           organization_id: string | null
           priority: string
+          responsible_person: string | null
+          status: string | null
+          support_required_from: string[] | null
+          target_completion_date: string | null
           user_id: string | null
         }
         Insert: {
@@ -307,8 +312,13 @@ export type Database = {
           estimated_effort?: string | null
           expected_impact?: string | null
           id?: string
+          kpis_linked_to?: string[] | null
           organization_id?: string | null
           priority: string
+          responsible_person?: string | null
+          status?: string | null
+          support_required_from?: string[] | null
+          target_completion_date?: string | null
           user_id?: string | null
         }
         Update: {
@@ -320,8 +330,13 @@ export type Database = {
           estimated_effort?: string | null
           expected_impact?: string | null
           id?: string
+          kpis_linked_to?: string[] | null
           organization_id?: string | null
           priority?: string
+          responsible_person?: string | null
+          status?: string | null
+          support_required_from?: string[] | null
+          target_completion_date?: string | null
           user_id?: string | null
         }
         Relationships: [
