@@ -70,6 +70,60 @@ export function ActionPlan({ scores, assessmentId }: ActionPlanProps) {
     loadActions();
   }, []);
 
+  useEffect(() => {
+    if (!loading && actions.length === 0 && assessmentId) {
+      generateActionsFromScores();
+    }
+  }, [loading, actions.length, assessmentId, scores]);
+
+  const generateActionsFromScores = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const actionsToCreate: any[] = [];
+      
+      Object.entries(scores).forEach(([department, score]) => {
+        if (score < 75) {
+          let priority = 'Medium';
+          if (score < 50) priority = 'Critical';
+          else if (score < 60) priority = 'High';
+          
+          const departmentName = department.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          
+          actionsToCreate.push({
+            assessment_id: assessmentId || 'temp',
+            user_id: user.id,
+            department: departmentName,
+            priority,
+            action_title: `Improve ${departmentName} Performance`,
+            action_description: `Implement comprehensive improvements to enhance ${departmentName.toLowerCase()} efficiency and effectiveness.`,
+            status: 'Open',
+            support_required_from: ['Coach', 'Management'],
+            kpis_linked_to: [`${departmentName} KPIs`]
+          });
+        }
+      });
+
+      if (actionsToCreate.length > 0) {
+        const { data, error } = await supabase
+          .from('improvement_actions')
+          .insert(actionsToCreate)
+          .select();
+
+        if (error) throw error;
+        setActions(data || []);
+        
+        toast({
+          title: "Actions Generated",
+          description: `${actionsToCreate.length} improvement actions created based on your assessment.`,
+        });
+      }
+    } catch (error) {
+      console.error('Error generating actions:', error);
+    }
+  };
+
   const loadActions = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
