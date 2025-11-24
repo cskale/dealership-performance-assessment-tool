@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { BookOpen, Video, FileText, Globe, Target, TrendingUp, Wrench, DollarSign } from "lucide-react";
+import { BookOpen, Video, FileText, Globe, Target, TrendingUp, Wrench, DollarSign, CheckCircle, BarChart, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface UsefulResourcesProps {
@@ -256,103 +256,124 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-8">
           {departmentResources.map((resource, index) => (
-            <Card key={index} className="border shadow-md">
-              <CardHeader className="bg-gradient-to-r from-background to-primary/5">
+            <Card key={index} className="border-2 shadow-lg bg-gradient-to-br from-background to-muted/20">
+              <CardHeader className="pb-4 bg-gradient-to-r from-primary/5 to-primary/10">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl">{resource.department}</CardTitle>
-                  <Badge variant="outline">Score: {resource.score}%</Badge>
+                  <CardTitle className="text-2xl">{resource.department}</CardTitle>
+                  <Badge variant={resource.score < 50 ? "destructive" : resource.score < 65 ? "default" : "secondary"} className="text-base px-3 py-1">
+                    Score: {resource.score}%
+                  </Badge>
                 </div>
               </CardHeader>
               <CardContent className="p-6 space-y-6">
-                {/* Implementation Guide */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                    <Target className="h-5 w-5 text-primary" />
-                    Implementation Guide
-                  </h3>
-                  <Accordion type="single" collapsible className="w-full">
-                    {resource.implementationGuide.map((phase, phaseIndex) => (
-                      <AccordionItem key={phaseIndex} value={`phase-${phaseIndex}`}>
-                        <AccordionTrigger className="text-left">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline">{phase.duration}</Badge>
-                            <span>{phase.phase}</span>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                          <div className="space-y-4 pt-2">
-                            <div>
-                              <h4 className="font-medium text-sm mb-2">Activities:</h4>
-                              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                                {phase.activities.map((activity, actIndex) => (
-                                  <li key={actIndex}>{activity}</li>
-                                ))}
-                              </ul>
-                            </div>
-                            <div>
-                              <h4 className="font-medium text-sm mb-2">Deliverables:</h4>
-                              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                                {phase.deliverables.map((deliverable, delIndex) => (
-                                  <li key={delIndex}>{deliverable}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                </div>
-
-                {/* Key Performance Metrics */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-primary" />
-                    Key Performance Metrics
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {resource.keyMetrics.map((metric, metricIndex) => (
-                      <Card key={metricIndex} className="border-primary/20">
-                        <CardContent className="p-3">
-                          <p className="text-sm font-medium flex items-center gap-2">
-                            <DollarSign className="h-4 w-4 text-primary" />
-                            {metric}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Learning Resources */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                    <Wrench className="h-5 w-5 text-primary" />
-                    Learning Resources
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {resource.learningResources.map((learningResource, lrIndex) => {
-                      const Icon = getIcon(learningResource.type);
-                      return (
-                        <Card key={lrIndex} className="border hover:border-primary/50 transition-colors">
-                          <CardContent className="p-4">
-                            <div className="flex items-start gap-3">
-                              <div className={cn("p-2 rounded-lg", getTypeColor(learningResource.type))}>
-                                <Icon className="h-4 w-4 text-white" />
+                {/* Implementation Guide - Now Accordion */}
+                <Accordion type="single" collapsible defaultValue="implementation">
+                  <AccordionItem value="implementation" className="border rounded-lg">
+                    <AccordionTrigger className="px-4 hover:no-underline">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <BookOpen className="h-5 w-5 text-primary" />
+                        Implementation Guide
+                      </h3>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-4 pb-4">
+                      <div className="space-y-3 pt-2">
+                        {resource.implementationGuide.map((phase, phaseIndex) => (
+                          <Card key={phaseIndex} className="border-primary/20">
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-2 mb-3">
+                                <Target className="h-4 w-4 text-primary" />
+                                <h4 className="font-medium">{phase.phase}</h4>
+                                <Badge variant="outline" className="ml-auto">{phase.duration}</Badge>
                               </div>
-                              <div className="flex-1">
-                                <Badge variant="outline" className="mb-2">{learningResource.type}</Badge>
-                                <p className="text-sm font-medium">{learningResource.title}</p>
+                              <div className="space-y-3">
+                                <div>
+                                  <h5 className="text-sm font-medium mb-1">Activities:</h5>
+                                  <ul className="text-sm text-muted-foreground space-y-1">
+                                    {phase.activities.map((activity, actIndex) => (
+                                      <li key={actIndex} className="flex items-start gap-2">
+                                        <span className="text-primary mt-1">•</span>
+                                        {activity}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                <div>
+                                  <h5 className="text-sm font-medium mb-1">Deliverables:</h5>
+                                  <ul className="text-sm text-muted-foreground space-y-1">
+                                    {phase.deliverables.map((deliverable, delIndex) => (
+                                      <li key={delIndex} className="flex items-start gap-2">
+                                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                                        {deliverable}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
                               </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+
+                {/* Key Performance Metrics - Now Accordion */}
+                <Accordion type="single" collapsible defaultValue="metrics">
+                  <AccordionItem value="metrics" className="border rounded-lg">
+                    <AccordionTrigger className="px-4 hover:no-underline">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <BarChart className="h-5 w-5 text-primary" />
+                        Key Performance Metrics
+                      </h3>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-4 pb-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                        {resource.keyMetrics.map((metric, metricIndex) => (
+                          <Card key={metricIndex} className="border-primary/20 bg-primary/5">
+                            <CardContent className="p-3 flex items-center gap-2">
+                              <TrendingUp className="h-4 w-4 text-primary flex-shrink-0" />
+                              <span className="text-sm font-medium">{metric}</span>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+
+                {/* Learning Resources - Now Accordion */}
+                <Accordion type="single" collapsible defaultValue="resources">
+                  <AccordionItem value="resources" className="border rounded-lg">
+                    <AccordionTrigger className="px-4 hover:no-underline">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <Lightbulb className="h-5 w-5 text-primary" />
+                        Learning Resources
+                      </h3>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-4 pb-4">
+                      <div className="grid grid-cols-1 gap-2 pt-2">
+                        {resource.learningResources.map((learningResource, lrIndex) => {
+                          const Icon = getIcon(learningResource.type);
+                          return (
+                            <Card key={lrIndex} className="border hover:border-primary/50 transition-colors cursor-pointer">
+                              <CardContent className="p-3 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className={cn("p-2 rounded-lg", getTypeColor(learningResource.type))}>
+                                    <Icon className="h-4 w-4 text-white" />
+                                  </div>
+                                  <span className="text-sm font-medium">{learningResource.title}</span>
+                                </div>
+                                <Badge variant="outline">{learningResource.type}</Badge>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </CardContent>
             </Card>
           ))}

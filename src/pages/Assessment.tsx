@@ -87,6 +87,7 @@ export default function Assessment() {
   const nextSection = () => {
     if (currentSection < sections.length - 1) {
       setCurrentSection(currentSection + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       handleFinishAssessment();
     }
@@ -95,6 +96,7 @@ export default function Assessment() {
   const prevSection = () => {
     if (currentSection > 0) {
       setCurrentSection(currentSection - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
