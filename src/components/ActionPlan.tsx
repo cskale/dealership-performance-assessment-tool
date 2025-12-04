@@ -105,9 +105,9 @@ export function ActionPlan({ scores, assessmentId }: ActionPlanProps) {
         console.log(`📈 ${department}: ${score}`);
         
         if (score < 75) {
-          let priority = 'Medium';
-          if (score < 50) priority = 'Critical';
-          else if (score < 60) priority = 'High';
+          let priority = 'medium';
+          if (score < 50) priority = 'critical';
+          else if (score < 60) priority = 'high';
           
           const departmentName = department.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
           
@@ -433,10 +433,10 @@ export function ActionPlan({ scores, assessmentId }: ActionPlanProps) {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Critical">Critical</SelectItem>
-                        <SelectItem value="High">High</SelectItem>
-                        <SelectItem value="Medium">Medium</SelectItem>
-                        <SelectItem value="Low">Low</SelectItem>
+                        <SelectItem value="critical">Critical</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="low">Low</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
