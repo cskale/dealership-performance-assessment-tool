@@ -1,0 +1,2 @@
+ALTER TABLE improvement_actions 
+DROP CONSTRAINT IF EXISTS improvement_actions_assessment_id_fkey;
