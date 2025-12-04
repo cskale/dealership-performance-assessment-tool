@@ -171,12 +171,14 @@ export default function Assessment() {
       // Clear assessment from localStorage to allow fresh start
       localStorage.removeItem('assessment_data');
       
-      // Store completed assessment results for the results page
+      // Store completed assessment results for the results page with unique ID
+      const assessmentId = crypto.randomUUID();
       localStorage.setItem('completed_assessment_results', JSON.stringify({
         answers,
         scores: finalScores,
         overallScore,
-        completedAt: new Date().toISOString()
+        completedAt: new Date().toISOString(),
+        assessmentId
       }));
       
       // Show success message and navigate

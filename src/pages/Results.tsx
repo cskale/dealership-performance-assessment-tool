@@ -31,6 +31,13 @@ export default function Results() {
     const completedResults = localStorage.getItem('completed_assessment_results');
     if (completedResults) {
       const data = JSON.parse(completedResults);
+      
+      // Ensure assessmentId exists (for backwards compatibility)
+      if (!data.assessmentId) {
+        data.assessmentId = crypto.randomUUID();
+        localStorage.setItem('completed_assessment_results', JSON.stringify(data));
+      }
+      
       setResultsData(data);
       generateImprovementActions(data.scores);
     } else {

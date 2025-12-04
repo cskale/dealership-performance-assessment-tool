@@ -70,11 +70,14 @@ export function ActionPlan({ scores, assessmentId }: ActionPlanProps) {
     loadActions();
   }, []);
 
+  // Auto-generate actions when no actions exist and scores are available
   useEffect(() => {
-    if (!loading && actions.length === 0 && assessmentId) {
+    console.log('[ActionPlan] Auto-generate check:', { loading, actionsLength: actions.length, scoresLength: Object.keys(scores || {}).length, assessmentId });
+    if (!loading && actions.length === 0 && scores && Object.keys(scores).length > 0) {
+      console.log('[ActionPlan] Triggering auto-generation from scores');
       generateActionsFromScores();
     }
-  }, [loading, actions.length, assessmentId, scores]);
+  }, [loading, actions.length, scores]);
 
   const generateActionsFromScores = async () => {
     try {
@@ -265,8 +268,11 @@ export function ActionPlan({ scores, assessmentId }: ActionPlanProps) {
 
       {actions.length === 0 ? (
         <Card>
-          <CardContent className="p-12 text-center">
-            <p className="text-muted-foreground">No actions found. Complete an assessment to generate improvement actions.</p>
+          <CardContent className="p-12 text-center space-y-4">
+            <p className="text-muted-foreground">No actions found. Click below to generate improvement actions based on your assessment.</p>
+            <Button onClick={generateActionsFromScores} disabled={!scores || Object.keys(scores).length === 0}>
+              Generate Action Plan
+            </Button>
           </CardContent>
         </Card>
       ) : (
