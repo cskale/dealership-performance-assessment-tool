@@ -80,13 +80,30 @@ export function ActionPlan({ scores, assessmentId }: ActionPlanProps) {
   }, [loading, actions.length, scores]);
 
   const generateActionsFromScores = async () => {
+    console.log('🔵 Generate Actions Started');
+    console.log('📊 Scores:', scores);
+    console.log('🆔 AssessmentID:', assessmentId);
+
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        console.error('❌ Auth error:', authError);
+        toast({
+          title: "Authentication Error",
+          description: "You must be logged in to generate actions.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('✅ User authenticated:', user.id);
 
       const actionsToCreate: any[] = [];
       
       Object.entries(scores).forEach(([department, score]) => {
+        console.log(`📈 ${department}: ${score}`);
+        
         if (score < 75) {
           let priority = 'Medium';
           if (score < 50) priority = 'Critical';
@@ -95,35 +112,56 @@ export function ActionPlan({ scores, assessmentId }: ActionPlanProps) {
           const departmentName = department.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
           
           actionsToCreate.push({
-            assessment_id: assessmentId || 'temp',
+            assessment_id: assessmentId || null,
             user_id: user.id,
             department: departmentName,
             priority,
             action_title: `Improve ${departmentName} Performance`,
-            action_description: `Implement comprehensive improvements to enhance ${departmentName.toLowerCase()} efficiency and effectiveness.`,
+            action_description: `Current score: ${score}/100. Implement comprehensive improvements to enhance ${departmentName.toLowerCase()} efficiency and effectiveness.`,
             status: 'Open',
             support_required_from: ['Coach', 'Management'],
-            kpis_linked_to: [`${departmentName} KPIs`]
+            kpis_linked_to: [`${departmentName} KPIs`],
+            responsible_person: null,
+            target_completion_date: null
           });
         }
       });
 
-      if (actionsToCreate.length > 0) {
-        const { data, error } = await supabase
-          .from('improvement_actions')
-          .insert(actionsToCreate)
-          .select();
+      console.log('📝 Actions to insert:', actionsToCreate.length);
 
-        if (error) throw error;
-        setActions(data || []);
-        
+      if (actionsToCreate.length === 0) {
         toast({
-          title: "Actions Generated",
-          description: `${actionsToCreate.length} improvement actions created based on your assessment.`,
+          title: "Great Performance!",
+          description: "All departments scoring above 75%. No improvement actions needed."
         });
+        return;
       }
-    } catch (error) {
-      console.error('Error generating actions:', error);
+
+      console.log('💾 Inserting into Supabase...');
+      const { data, error } = await supabase
+        .from('improvement_actions')
+        .insert(actionsToCreate)
+        .select();
+
+      if (error) {
+        console.error('❌ Supabase error:', error);
+        throw error;
+      }
+
+      console.log('✅ Actions created:', data);
+      setActions(data || []);
+      
+      toast({
+        title: "Actions Generated Successfully",
+        description: `${actionsToCreate.length} improvement actions have been created.`,
+      });
+    } catch (error: any) {
+      console.error('💥 Error:', error);
+      toast({
+        title: "Action Generation Failed",
+        description: error?.message || "An unexpected error occurred. Check console for details.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -269,10 +307,23 @@ export function ActionPlan({ scores, assessmentId }: ActionPlanProps) {
       {actions.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center space-y-4">
-            <p className="text-muted-foreground">No actions found. Click below to generate improvement actions based on your assessment.</p>
-            <Button onClick={generateActionsFromScores} disabled={!scores || Object.keys(scores).length === 0}>
-              Generate Action Plan
-            </Button>
+            <p className="text-muted-foreground">
+              No actions found. Click below to generate improvement actions based on your assessment.
+            </p>
+            {scores && Object.keys(scores).length > 0 ? (
+              <Button 
+                onClick={generateActionsFromScores}
+                className="flex items-center gap-2"
+                size="lg"
+              >
+                <CheckCircle className="h-5 w-5" />
+                Generate Action Plan
+              </Button>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Complete an assessment first to generate actions.
+              </p>
+            )}
           </CardContent>
         </Card>
       ) : (
