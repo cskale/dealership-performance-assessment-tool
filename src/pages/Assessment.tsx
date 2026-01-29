@@ -1,17 +1,16 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { ChevronLeft, ChevronRight, Car, Wrench, Package, DollarSign, BarChart3, Bot, ArrowLeft, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Car, Wrench, Package, BarChart3, Bot, ArrowLeft, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { CategoryAssessment } from "@/components/assessment/CategoryAssessment";
 import { SmartAssistant } from "@/components/SmartAssistant";
-import { questionnaire } from "@/data/questionnaire";
+import { questionnaire, getTranslatedSection } from "@/data/questionnaire";
 import { useAssessmentData } from "@/hooks/useAssessmentData";
-import { AssessmentData } from "@/types/dealership";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Assessment() {
   const [currentSection, setCurrentSection] = useState(0);
@@ -21,6 +20,7 @@ export default function Assessment() {
   
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { language, t } = useLanguage();
   const { 
     assessment, 
     saveAssessment, 
@@ -28,18 +28,22 @@ export default function Assessment() {
     isLoading 
   } = useAssessmentData();
 
-  const sections = questionnaire.sections;
-  const totalQuestions = sections.reduce((sum, section) => sum + section.questions.length, 0);
+  // Get translated sections
+  const translatedSections = useMemo(() => {
+    return questionnaire.sections.map(section => getTranslatedSection(section, language));
+  }, [language]);
+
+  const totalQuestions = translatedSections.reduce((sum, section) => sum + section.questions.length, 0);
   const answeredQuestions = Object.keys(answers).length;
   const progress = (answeredQuestions / totalQuestions) * 100;
 
-  const currentSectionData = sections[currentSection];
+  const currentSectionData = translatedSections[currentSection];
 
   // Calculate real-time scores
   const calculateScores = useCallback((currentAnswers: Record<string, number>) => {
     const sectionScores: Record<string, number> = {};
     
-    sections.forEach((section) => {
+    translatedSections.forEach((section) => {
       const sectionAnswers = section.questions
         .map(q => currentAnswers[q.id])
         .filter(answer => answer !== undefined);
@@ -51,7 +55,7 @@ export default function Assessment() {
     });
     
     return sectionScores;
-  }, [sections]);
+  }, [translatedSections]);
 
   const handleAnswer = async (questionId: string, value: number) => {
     const newAnswers = { ...answers, [questionId]: value };
@@ -78,14 +82,14 @@ export default function Assessment() {
     }
     
     toast({
-      title: "Answer Saved",
-      description: "Your response has been recorded.",
+      title: t('assessment.answerSaved'),
+      description: t('assessment.responseRecorded'),
       duration: 1000,
     });
   };
 
   const nextSection = () => {
-    if (currentSection < sections.length - 1) {
+    if (currentSection < translatedSections.length - 1) {
       setCurrentSection(currentSection + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -107,10 +111,10 @@ export default function Assessment() {
 
 
   const getSectionIcon = (sectionTitle: string) => {
-    if (sectionTitle.includes("New Vehicle")) return Car;
-    if (sectionTitle.includes("Used Vehicle")) return Car;
+    if (sectionTitle.includes("New Vehicle") || sectionTitle.includes("Neuwagen")) return Car;
+    if (sectionTitle.includes("Used Vehicle") || sectionTitle.includes("Gebrauchtwagen")) return Car;
     if (sectionTitle.includes("Service")) return Wrench;
-    if (sectionTitle.includes("Parts")) return Package;
+    if (sectionTitle.includes("Parts") || sectionTitle.includes("Teile")) return Package;
     return BarChart3;
   };
 
@@ -148,13 +152,13 @@ export default function Assessment() {
         : 0;
         
       // Check if all questions are answered
-      const totalQuestions = sections.reduce((total, section) => total + section.questions.length, 0);
-      const answeredQuestions = Object.keys(answers).length;
+      const totalQs = translatedSections.reduce((total, section) => total + section.questions.length, 0);
+      const answeredQs = Object.keys(answers).length;
       
-      if (answeredQuestions < totalQuestions) {
+      if (answeredQs < totalQs) {
         toast({
-          title: "Assessment Incomplete",
-          description: `Please answer all questions. ${answeredQuestions}/${totalQuestions} completed.`,
+          title: t('assessment.incomplete'),
+          description: `${t('assessment.pleaseAnswerAll')} ${answeredQs}/${totalQs} ${t('assessment.completed')}.`,
           variant: "destructive",
         });
         return;
@@ -183,15 +187,15 @@ export default function Assessment() {
       
       // Show success message and navigate
       toast({
-        title: "Assessment Complete!",
-        description: "Your results are ready for review.",
+        title: t('assessment.assessmentComplete'),
+        description: t('assessment.resultsReady'),
       });
       
       navigate('/app/results');
     } catch (error) {
       console.error('Assessment completion error:', error);
       toast({
-        title: "Error",
+        title: t('common.error'),
         description: "Failed to save assessment. Please try again.",
         variant: "destructive",
       });
@@ -216,16 +220,16 @@ export default function Assessment() {
               className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Dashboard
+              {t('nav.backToDashboard')}
             </Button>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-medium text-foreground">Dealership Assessment</h1>
+              <h1 className="text-lg font-medium text-foreground">{t('assessment.title')}</h1>
             </div>
             <div className="text-center">
               <div className="text-xl font-medium text-foreground">
                 {Math.round(progress)}%
               </div>
-              <div className="text-xs text-muted-foreground">Complete</div>
+              <div className="text-xs text-muted-foreground">{t('assessment.complete')}</div>
             </div>
           </div>
         </div>
@@ -240,11 +244,11 @@ export default function Assessment() {
                 <CardHeader className="pb-4">
                   <div className="flex items-center gap-2">
                     <BarChart3 className="h-5 w-5 text-primary" />
-                    <CardTitle className="text-lg">Sections</CardTitle>
+                    <CardTitle className="text-lg">{t('assessment.sections')}</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3 max-h-[calc(100vh-12rem)] overflow-y-auto">
-                  {sections.map((section, sectionIndex) => {
+                  {translatedSections.map((section, sectionIndex) => {
                     const sectionAnswered = section.questions.filter(q => answers[q.id] !== undefined).length;
                     const sectionTotal = section.questions.length;
                     const sectionProgress = (sectionAnswered / sectionTotal) * 100;
@@ -271,14 +275,14 @@ export default function Assessment() {
                                 {section.title}
                               </h3>
                               <p className="text-xs text-muted-foreground mt-0.5">
-                                {sectionTotal} questions
+                                {sectionTotal} {t('assessment.questions')}
                               </p>
                             </div>
                           </div>
                           <div className="space-y-1.5">
                             <div className="flex justify-between items-center text-xs">
                               <span className="text-muted-foreground">
-                                {sectionAnswered} completed
+                                {sectionAnswered} {t('assessment.completed')}
                               </span>
                               <Badge 
                                 variant={sectionProgress === 100 ? "default" : "secondary"}
@@ -299,11 +303,11 @@ export default function Assessment() {
                     <CardContent className="p-3">
                       <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
                         <Check className="h-4 w-4" />
-                        Overall Progress
+                        {t('assessment.overallProgress')}
                       </h3>
                       <div className="space-y-2">
                         <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>{answeredQuestions} of {totalQuestions}</span>
+                          <span>{answeredQuestions} {t('assessment.of')} {totalQuestions}</span>
                           <span>{Math.round(progress)}%</span>
                         </div>
                         <Progress value={progress} className="h-2" />
@@ -323,11 +327,11 @@ export default function Assessment() {
               onAnswer={handleAnswer}
               onContinue={nextSection}
               canContinue={canContinue()}
-              isLastSection={currentSection === sections.length - 1}
+              isLastSection={currentSection === translatedSections.length - 1}
             />
             
             {/* Section Navigation Buttons */}
-            {sections.length > 1 && (
+            {translatedSections.length > 1 && (
               <Card className="mt-6 bg-muted/50">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -338,12 +342,12 @@ export default function Assessment() {
                       className="flex items-center gap-2"
                     >
                       <ChevronLeft className="h-4 w-4" />
-                      Previous Section
+                      {t('assessment.previousSection')}
                     </Button>
                     
                     <div className="text-center">
                       <div className="text-sm text-muted-foreground">
-                        Section {currentSection + 1} of {sections.length}
+                        {t('assessment.section')} {currentSection + 1} {t('assessment.of')} {translatedSections.length}
                       </div>
                       <div className="font-medium">{currentSectionData.title}</div>
                     </div>
@@ -351,10 +355,10 @@ export default function Assessment() {
                     <Button
                       variant="outline"
                       onClick={nextSection}
-                      disabled={currentSection === sections.length - 1 && !canContinue()}
+                      disabled={currentSection === translatedSections.length - 1 && !canContinue()}
                       className="flex items-center gap-2"
                     >
-                      {currentSection === sections.length - 1 ? "Finish" : "Next Section"}
+                      {currentSection === translatedSections.length - 1 ? t('assessment.finish') : t('assessment.nextSection')}
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </div>

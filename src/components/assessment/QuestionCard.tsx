@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { HelpCircle, MessageSquare, Info, TrendingUp, Target, Award } from "lucide-react";
 import { Question } from "@/data/questionnaire";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface QuestionCardProps {
   question: Question;
@@ -16,6 +17,7 @@ interface QuestionCardProps {
 export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
   const [showNotes, setShowNotes] = useState(false);
   const [notes, setNotes] = useState("");
+  const { t } = useLanguage();
 
   const handleRatingClick = (rating: number) => {
     onChange(rating);
@@ -38,11 +40,11 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
       <div className="space-y-3">
         <div className="flex items-start gap-3">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 leading-relaxed">
+            <h3 className="text-lg font-semibold text-foreground leading-relaxed">
               {question.text}
             </h3>
             {question.description && (
-              <p className="text-gray-600 mt-2 text-sm leading-relaxed">
+              <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
                 {question.description}
               </p>
             )}
@@ -57,8 +59,8 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
       {question.type === "scale" && question.scale && (
         <div className="space-y-4">
           <div className="text-center">
-            <p className="text-sm text-gray-600 mb-4">
-              Rate from {question.scale.min} (lowest) to {question.scale.max} (highest)
+            <p className="text-sm text-muted-foreground mb-4">
+              {t('assessment.rateFrom')} {question.scale.min} ({t('assessment.lowest')}) {t('assessment.to')} {question.scale.max} ({t('assessment.highest')})
             </p>
           </div>
 
@@ -75,7 +77,7 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
                   variant={isSelected ? "default" : "outline"}
                   onClick={() => handleRatingClick(rating)}
                   className={`h-auto p-4 flex flex-col items-center gap-2 transition-all duration-200 ${
-                    isSelected ? getRatingColor(rating) : "hover:bg-gray-50"
+                    isSelected ? getRatingColor(rating) : "hover:bg-muted/50"
                   }`}
                 >
                   <span className="text-2xl font-bold">{rating}</span>
@@ -89,9 +91,9 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
 
           {/* Selected Value Display */}
           {value && (
-            <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-800">
-                <strong>Selected:</strong> {value} - {getRatingText(value)}
+            <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20">
+              <p className="text-sm text-foreground">
+                <strong>{t('assessment.selected')}:</strong> {value} - {getRatingText(value)}
               </p>
             </div>
           )}
@@ -100,7 +102,7 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
 
       {/* Enhanced Context Information */}
       {(question.purpose || question.situationAnalysis || question.linkedKPIs || question.benefits) && (
-        <Card className="border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50">
+        <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
           <CardContent className="p-0">
             <Collapsible>
               <CollapsibleTrigger asChild>
@@ -109,40 +111,40 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
                   className="w-full justify-between p-4 h-auto text-left"
                 >
                   <div className="flex items-center gap-2">
-                    <Info className="h-4 w-4 text-indigo-600" />
-                    <span className="font-medium text-indigo-900">
-                      Why This Question Matters
+                    <Info className="h-4 w-4 text-primary" />
+                    <span className="font-medium text-foreground">
+                      {t('assessment.whyThisMatters')}
                     </span>
                   </div>
-                  <Award className="h-4 w-4 text-indigo-600" />
+                  <Award className="h-4 w-4 text-primary" />
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="px-4 pb-4 space-y-4">
                 {question.purpose && (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <Target className="h-4 w-4 text-purple-600" />
-                      <h4 className="font-semibold text-purple-900">Assessment Purpose</h4>
+                      <Target className="h-4 w-4 text-primary" />
+                      <h4 className="font-semibold text-foreground">{t('assessment.assessmentPurpose')}</h4>
                     </div>
-                    <p className="text-sm text-gray-700 pl-6">{question.purpose}</p>
+                    <p className="text-sm text-muted-foreground pl-6">{question.purpose}</p>
                   </div>
                 )}
                 
                 {question.situationAnalysis && (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-blue-600" />
-                      <h4 className="font-semibold text-blue-900">Situation Analysis</h4>
+                      <TrendingUp className="h-4 w-4 text-primary" />
+                      <h4 className="font-semibold text-foreground">{t('assessment.situationAnalysis')}</h4>
                     </div>
-                    <p className="text-sm text-gray-700 pl-6">{question.situationAnalysis}</p>
+                    <p className="text-sm text-muted-foreground pl-6">{question.situationAnalysis}</p>
                   </div>
                 )}
                 
                 {question.linkedKPIs && question.linkedKPIs.length > 0 && (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <Award className="h-4 w-4 text-green-600" />
-                      <h4 className="font-semibold text-green-900">Linked KPIs</h4>
+                      <Award className="h-4 w-4 text-primary" />
+                      <h4 className="font-semibold text-foreground">{t('assessment.linkedKPIs')}</h4>
                     </div>
                     <div className="pl-6">
                       <div className="flex flex-wrap gap-2">
@@ -159,10 +161,10 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
                 {question.benefits && (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <Award className="h-4 w-4 text-amber-600" />
-                      <h4 className="font-semibold text-amber-900">Business Benefits</h4>
+                      <Award className="h-4 w-4 text-primary" />
+                      <h4 className="font-semibold text-foreground">{t('assessment.businessBenefits')}</h4>
                     </div>
-                    <p className="text-sm text-gray-700 pl-6">{question.benefits}</p>
+                    <p className="text-sm text-muted-foreground pl-6">{question.benefits}</p>
                   </div>
                 )}
               </CollapsibleContent>
@@ -172,7 +174,7 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
       )}
 
       {/* Additional Features */}
-      <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+      <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
         <Button
           variant="ghost"
           size="sm"
@@ -180,10 +182,10 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
           className="flex items-center gap-2"
         >
           <MessageSquare className="h-4 w-4" />
-          {showNotes ? "Hide Notes" : "Add Notes"}
+          {showNotes ? t('assessment.additionalNotes') : t('assessment.additionalNotes')}
         </Button>
 
-        <div className="flex items-center gap-2 text-xs text-gray-500">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <HelpCircle className="h-4 w-4" />
           <span>Question weight: {question.weight}x</span>
         </div>
@@ -191,15 +193,15 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
 
       {/* Notes Section */}
       {showNotes && (
-        <Card className="border-blue-200">
+        <Card className="border-primary/20">
           <CardContent className="p-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Additional Notes (Optional)
+            <label className="block text-sm font-medium text-foreground mb-2">
+              {t('assessment.additionalNotes')}
             </label>
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Add any additional context or comments about this question..."
+              placeholder={t('assessment.placeholder.notes')}
               rows={3}
               className="w-full"
             />

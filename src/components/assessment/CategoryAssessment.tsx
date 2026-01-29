@@ -9,6 +9,7 @@ import { MessageSquare, Save, ChevronRight, AlertCircle, StickyNote } from "luci
 import { Question, Section } from "@/data/questionnaire";
 import { useAssessmentNotes } from "@/hooks/useAssessmentNotes";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface CategoryAssessmentProps {
   section: Section;
@@ -33,6 +34,7 @@ export function CategoryAssessment({
   
   const { notes, saveNote, hasNotes, getCategoryNoteCount } = useAssessmentNotes();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const initialNotesText: Record<string, string> = {};
@@ -62,8 +64,8 @@ export function CategoryAssessment({
     const timer = setTimeout(() => {
       saveNote(questionId, text);
       toast({
-        title: "Note Saved",
-        description: "Your note has been automatically saved.",
+        title: t('assessment.noteSaved'),
+        description: t('assessment.noteAutoSaved'),
         duration: 1500,
       });
     }, 2000);
@@ -112,7 +114,7 @@ export function CategoryAssessment({
             {noteCount > 0 && (
               <Badge variant="outline" className="flex items-center gap-1.5 text-xs font-normal">
                 <StickyNote className="h-3 w-3" />
-                {noteCount} {noteCount === 1 ? 'note' : 'notes'}
+                {noteCount} {noteCount === 1 ? t('common.note') : t('common.notes')}
               </Badge>
             )}
           </div>
@@ -120,7 +122,7 @@ export function CategoryAssessment({
           <div className="mt-4 space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">
-                {answeredQuestions} of {section.questions.length} completed
+                {answeredQuestions} {t('assessment.of')} {section.questions.length} {t('assessment.completed')}
               </span>
               <span className="font-medium text-foreground">
                 {Math.round(progress)}%
@@ -162,7 +164,7 @@ export function CategoryAssessment({
                 {question.type === "scale" && question.scale && (
                   <div className="space-y-4 mb-4">
                     <div className="text-xs text-muted-foreground text-center">
-                      Rate from {question.scale.min} (lowest) to {question.scale.max} (highest)
+                      {t('assessment.rateFrom')} {question.scale.min} ({t('assessment.lowest')}) {t('assessment.to')} {question.scale.max} ({t('assessment.highest')})
                     </div>
 
                     <div className="grid grid-cols-5 gap-2">
@@ -198,7 +200,7 @@ export function CategoryAssessment({
                     {value && (
                       <div className="text-center p-3 bg-muted/30 rounded border">
                         <p className="text-sm text-foreground">
-                          <span className="font-medium">Selected:</span> {value} - {getRatingText(question, value)}
+                          <span className="font-medium">{t('assessment.selected')}:</span> {value} - {getRatingText(question, value)}
                         </p>
                       </div>
                     )}
@@ -220,7 +222,7 @@ export function CategoryAssessment({
                             <div className="flex items-center gap-2">
                               <AlertCircle className="h-4 w-4 text-primary" />
                               <span className="font-medium text-foreground">
-                                Why This Question Matters
+                                {t('assessment.whyThisMatters')}
                               </span>
                             </div>
                             <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${
@@ -231,21 +233,21 @@ export function CategoryAssessment({
                         <CollapsibleContent className="px-4 pb-4 space-y-4">
                           {question.purpose && (
                             <div className="space-y-2">
-                              <h4 className="font-medium text-foreground">Assessment Purpose</h4>
+                              <h4 className="font-medium text-foreground">{t('assessment.assessmentPurpose')}</h4>
                               <p className="text-sm text-muted-foreground">{question.purpose}</p>
                             </div>
                           )}
                           
                           {question.situationAnalysis && (
                             <div className="space-y-2">
-                              <h4 className="font-medium text-foreground">Situation Analysis</h4>
+                              <h4 className="font-medium text-foreground">{t('assessment.situationAnalysis')}</h4>
                               <p className="text-sm text-muted-foreground">{question.situationAnalysis}</p>
                             </div>
                           )}
                           
                           {question.linkedKPIs && question.linkedKPIs.length > 0 && (
                             <div className="space-y-2">
-                              <h4 className="font-medium text-foreground">Linked KPIs</h4>
+                              <h4 className="font-medium text-foreground">{t('assessment.linkedKPIs')}</h4>
                               <div className="flex flex-wrap gap-2">
                                 {question.linkedKPIs.map((kpi, kpiIndex) => (
                                   <Badge key={kpiIndex} variant="outline" className="text-xs">
@@ -258,7 +260,7 @@ export function CategoryAssessment({
                           
                           {question.benefits && (
                             <div className="space-y-2">
-                              <h4 className="font-medium text-foreground">Business Benefits</h4>
+                              <h4 className="font-medium text-foreground">{t('assessment.businessBenefits')}</h4>
                               <p className="text-sm text-muted-foreground">{question.benefits}</p>
                             </div>
                           )}
@@ -273,10 +275,10 @@ export function CategoryAssessment({
                     <div className="flex items-center gap-2 mb-3">
                       <MessageSquare className="h-4 w-4 text-primary" />
                       <label className="text-sm font-medium text-foreground">
-                        Additional Notes & Insights
+                        {t('assessment.additionalNotes')}
                         {hasNotes(question.id) && (
                           <Badge variant="outline" className="ml-2 text-xs text-primary">
-                            Saved
+                            {t('assessment.saved')}
                           </Badge>
                         )}
                       </label>
@@ -284,13 +286,13 @@ export function CategoryAssessment({
                     <Textarea
                       value={notesText[question.id] || ''}
                       onChange={(e) => handleNotesChange(question.id, e.target.value)}
-                      placeholder="Add your observations, context, or improvement ideas for this question..."
+                      placeholder={t('assessment.placeholder.notes')}
                       rows={3}
                       className="w-full bg-white border"
                     />
                     <div className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
                       <Save className="h-3 w-3" />
-                      Auto-saves as you type
+                      {t('assessment.autoSaves')}
                     </div>
                   </CardContent>
                 </Card>
@@ -306,16 +308,16 @@ export function CategoryAssessment({
             <div>
               <h3 className="text-lg font-semibold">
                 {answeredQuestions === section.questions.length 
-                  ? "Section Complete!" 
-                  : `${answeredQuestions}/${section.questions.length} Questions Answered`
+                  ? t('assessment.sectionComplete')
+                  : `${answeredQuestions}/${section.questions.length} ${t('assessment.questionsAnswered')}`
                 }
               </h3>
               <p className="text-primary-foreground/80">
                 {answeredQuestions === section.questions.length
                   ? isLastSection 
-                    ? "Ready to view your comprehensive results"
-                    : "Continue to the next assessment category"
-                  : "Please answer all questions to continue"
+                    ? t('assessment.readyToView')
+                    : t('assessment.continueToNext')
+                  : t('assessment.pleaseAnswer')
                 }
               </p>
             </div>
@@ -326,7 +328,7 @@ export function CategoryAssessment({
               variant="secondary"
               className="flex items-center gap-2"
             >
-              {isLastSection ? "View Results" : "Save & Continue"}
+              {isLastSection ? t('assessment.viewResults') : t('assessment.saveAndContinue')}
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
