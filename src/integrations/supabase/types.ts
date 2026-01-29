@@ -431,6 +431,7 @@ export type Database = {
           id: string
           job_title: string | null
           last_sign_in_at: string | null
+          preferred_language: string | null
           role: string | null
           timezone: string | null
           updated_at: string
@@ -452,6 +453,7 @@ export type Database = {
           id?: string
           job_title?: string | null
           last_sign_in_at?: string | null
+          preferred_language?: string | null
           role?: string | null
           timezone?: string | null
           updated_at?: string
@@ -473,6 +475,7 @@ export type Database = {
           id?: string
           job_title?: string | null
           last_sign_in_at?: string | null
+          preferred_language?: string | null
           role?: string | null
           timezone?: string | null
           updated_at?: string

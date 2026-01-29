@@ -10,6 +10,7 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { OrganizationSwitcher } from './OrganizationSwitcher';
 import { RoleSelector } from './RoleSelector';
+import { LanguageSelector } from './LanguageSelector';
 import { useAuth } from '@/hooks/useAuth';
 import { User, Settings, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -37,6 +38,7 @@ export function AppHeader() {
         </div>
 
         <div className="flex items-center gap-4">
+          <LanguageSelector />
           <RoleSelector />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export type Language = 'en' | 'de';
 
@@ -6,6 +7,7 @@ interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
+  isLoading: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -60,6 +62,8 @@ const translations: Record<Language, Record<string, string>> = {
     'assessment.pleaseAnswerAll': 'Please answer all questions.',
     'assessment.assessmentComplete': 'Assessment Complete!',
     'assessment.resultsReady': 'Your results are ready for review.',
+    'assessment.noteSaved': 'Note Saved',
+    'assessment.noteAutoSaved': 'Your note has been automatically saved.',
     
     // Index/Landing Page
     'index.hero.title1': 'Optimize Your Dealership\'s',
@@ -168,6 +172,8 @@ const translations: Record<Language, Record<string, string>> = {
     'assessment.pleaseAnswerAll': 'Bitte beantworten Sie alle Fragen.',
     'assessment.assessmentComplete': 'Bewertung abgeschlossen!',
     'assessment.resultsReady': 'Ihre Ergebnisse sind zur Überprüfung bereit.',
+    'assessment.noteSaved': 'Notiz gespeichert',
+    'assessment.noteAutoSaved': 'Ihre Notiz wurde automatisch gespeichert.',
     
     // Index/Landing Page
     'index.hero.title1': 'Optimieren Sie die Leistung',
@@ -236,25 +242,88 @@ interface LanguageProviderProps {
 
 export function LanguageProvider({ children }: LanguageProviderProps) {
   const [language, setLanguageState] = useState<Language>(() => {
+    // Initial: check localStorage first
     const saved = localStorage.getItem('app_language');
     return (saved as Language) || 'en';
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const setLanguage = (lang: Language) => {
+  // Load language from user profile on auth state change
+  useEffect(() => {
+    const loadLanguageFromProfile = async (uid: string) => {
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('preferred_language')
+          .eq('user_id', uid)
+          .maybeSingle();
+
+        if (!error && profile?.preferred_language) {
+          const profileLang = profile.preferred_language as Language;
+          if (profileLang === 'en' || profileLang === 'de') {
+            setLanguageState(profileLang);
+            localStorage.setItem('app_language', profileLang);
+          }
+        }
+      } catch (err) {
+        console.error('Error loading language preference:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user?.id) {
+        setUserId(session.user.id);
+        loadLanguageFromProfile(session.user.id);
+      } else {
+        setUserId(null);
+        setIsLoading(false);
+      }
+    });
+
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.id) {
+        setUserId(session.user.id);
+        loadLanguageFromProfile(session.user.id);
+      } else {
+        setIsLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const setLanguage = useCallback(async (lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem('app_language', lang);
-  };
 
-  const t = (key: string): string => {
+    // Save to user profile if logged in
+    if (userId) {
+      try {
+        await supabase
+          .from('profiles')
+          .update({ preferred_language: lang })
+          .eq('user_id', userId);
+      } catch (err) {
+        console.error('Error saving language preference:', err);
+      }
+    }
+  }, [userId]);
+
+  const t = useCallback((key: string): string => {
     return translations[language][key] || translations['en'][key] || key;
-  };
+  }, [language]);
 
   useEffect(() => {
     document.documentElement.lang = language;
   }, [language]);
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, isLoading }}>
       {children}
     </LanguageContext.Provider>
   );
