@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ArrowRight, CheckCircle, Circle, Target, Zap } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface MaturityScoringProps {
   scores: Record<string, number>;
@@ -10,7 +11,7 @@ interface MaturityScoringProps {
 
 interface MaturityLevel {
   level: 1 | 2 | 3 | 4;
-  name: 'Basic' | 'Developing' | 'Mature' | 'Advanced';
+  name: string;
   emoji: string;
   color: string;
   description: string;
@@ -27,57 +28,59 @@ interface DepartmentMaturity {
 }
 
 export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
+  const { t, language } = useLanguage();
+
   const maturityLevels: MaturityLevel[] = [
     {
       level: 1,
-      name: 'Basic',
+      name: t('maturity.basic'),
       emoji: '🔴',
       color: 'bg-red-50 text-red-800 border-red-200',
-      description: 'Foundational processes in place with significant gaps',
+      description: t('maturity.basicDesc'),
       characteristics: [
-        'Manual processes dominate',
-        'Limited data-driven decisions',
-        'Reactive approach to problems',
-        'Inconsistent customer experience'
+        t('maturity.char.basic1'),
+        t('maturity.char.basic2'),
+        t('maturity.char.basic3'),
+        t('maturity.char.basic4')
       ]
     },
     {
       level: 2,
-      name: 'Developing',
+      name: t('maturity.developing'),
       emoji: '🟡',
       color: 'bg-orange-50 text-orange-800 border-orange-200',
-      description: 'Some optimization and standardization implemented',
+      description: t('maturity.developingDesc'),
       characteristics: [
-        'Basic automation in key areas',
-        'Some performance metrics tracked',
-        'Proactive problem-solving emerging',
-        'Customer experience improving'
+        t('maturity.char.developing1'),
+        t('maturity.char.developing2'),
+        t('maturity.char.developing3'),
+        t('maturity.char.developing4')
       ]
     },
     {
       level: 3,
-      name: 'Mature',
+      name: t('maturity.mature'),
       emoji: '🟦',
       color: 'bg-blue-50 text-blue-800 border-blue-200',
-      description: 'Well-established processes with consistent optimization',
+      description: t('maturity.matureDesc'),
       characteristics: [
-        'Integrated systems and workflows',
-        'Regular performance monitoring',
-        'Continuous improvement culture',
-        'Strong customer satisfaction'
+        t('maturity.char.mature1'),
+        t('maturity.char.mature2'),
+        t('maturity.char.mature3'),
+        t('maturity.char.mature4')
       ]
     },
     {
       level: 4,
-      name: 'Advanced',
+      name: t('maturity.advanced'),
       emoji: '🟢',
       color: 'bg-green-50 text-green-800 border-green-200',
-      description: 'Industry-leading practices with innovation focus',
+      description: t('maturity.advancedDesc'),
       characteristics: [
-        'AI and advanced analytics',
-        'Predictive insights and modeling',
-        'Innovation and experimentation',
-        'Exceptional customer experience'
+        t('maturity.char.advanced1'),
+        t('maturity.char.advanced2'),
+        t('maturity.char.advanced3'),
+        t('maturity.char.advanced4')
       ]
     }
   ];
@@ -87,6 +90,17 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
     if (score >= 70) return maturityLevels[2]; // Mature
     if (score >= 50) return maturityLevels[1]; // Developing
     return maturityLevels[0]; // Basic
+  };
+
+  const getDepartmentName = (dept: string): string => {
+    const names: Record<string, Record<string, string>> = {
+      'new-vehicle-sales': { en: 'New Vehicle Sales', de: 'Neuwagenverkauf' },
+      'used-vehicle-sales': { en: 'Used Vehicle Sales', de: 'Gebrauchtwagenverkauf' },
+      'service-performance': { en: 'Service Performance', de: 'Serviceleistung' },
+      'parts-inventory': { en: 'Parts & Inventory', de: 'Teile & Lager' },
+      'financial-operations': { en: 'Financial Operations', de: 'Finanzoperationen' }
+    };
+    return names[dept]?.[language] || dept.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
   const getDepartmentMaturity = (): DepartmentMaturity[] => {
@@ -112,7 +126,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
       const keyGaps = getKeyGaps(dept, score, currentLevel.level);
 
       return {
-        department: dept.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        department: getDepartmentName(dept),
         score,
         currentLevel,
         nextLevel,
@@ -123,7 +137,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
   };
 
   const getKeyGaps = (department: string, score: number, level: number): string[] => {
-    const gaps: Record<string, Record<number, string[]>> = {
+    const gapsEn: Record<string, Record<number, string[]>> = {
       'new-vehicle-sales': {
         1: ['Implement CRM system', 'Standardize sales process', 'Basic customer follow-up'],
         2: ['Digital lead management', 'Sales team training programs', 'Performance tracking systems'],
@@ -156,8 +170,46 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
       }
     };
 
+    const gapsDe: Record<string, Record<number, string[]>> = {
+      'new-vehicle-sales': {
+        1: ['CRM-System implementieren', 'Verkaufsprozess standardisieren', 'Grundlegende Kundennachverfolgung'],
+        2: ['Digitales Lead-Management', 'Verkaufsteam-Schulungsprogramme', 'Leistungsverfolgungssysteme'],
+        3: ['Erweiterte Analytik', 'Customer-Journey-Optimierung', 'Prädiktives Bestandsmanagement'],
+        4: ['KI-gestützte Empfehlungen', 'Omnichannel-Erlebnis', 'Erweiterte Personalisierung']
+      },
+      'used-vehicle-sales': {
+        1: ['Bestandsmanagement-System', 'Aufbereitungsstandards', 'Grundlegende Bewertungstools'],
+        2: ['Marktpreistools', 'Digitale Marketingpräsenz', 'Qualitätskontrollprozesse'],
+        3: ['Prädiktive Preismodelle', 'Automatisiertes Marketing', 'Erweiterte Analytik'],
+        4: ['KI-gesteuerte Bestandsoptimierung', 'Dynamische Preisgestaltung', 'Machine-Learning-Erkenntnisse']
+      },
+      'service-performance': {
+        1: ['Digitales Terminplanungssystem', 'Grundlegende Technikerschulung', 'Kundenkommunikationstools'],
+        2: ['Serviceberater-Produktivitätstools', 'Qualitätskennzahlen-Tracking', 'Kundenzufriedenheitsumfragen'],
+        3: ['Prädiktive Wartungsprogramme', 'Erweiterte Diagnostik', 'Workflow-Optimierung'],
+        4: ['IoT-Integration', 'KI-Diagnostik', 'Prädiktive Serviceempfehlungen']
+      },
+      'parts-inventory': {
+        1: ['Bestandsmanagement-System', 'Lieferantenbeziehungsmanagement', 'Grundlegende Prognosen'],
+        2: ['Automatisierte Bestellsysteme', 'Leistungskennzahlen', 'Obsolete-Teile-Management'],
+        3: ['Prädiktive Bestandsplanung', 'Erweiterte Analytik', 'Integrierte Lieferkette'],
+        4: ['KI-gestützte Bedarfsprognose', 'Echtzeit-Optimierung', 'Prädiktive Logistik']
+      },
+      'financial-operations': {
+        1: ['Grundlegendes Finanzreporting', 'Cashflow-Management', 'Budgetplanung'],
+        2: ['Automatisierte Berichtssysteme', 'Leistungs-Dashboards', 'Kostenstellenanalyse'],
+        3: ['Erweiterte Finanzanalytik', 'Prädiktive Modellierung', 'Integrierte Business Intelligence'],
+        4: ['KI-gesteuerte Finanzerkenntnisse', 'Echtzeit-Optimierung', 'Erweiterte Prognosemodelle']
+      }
+    };
+
+    const gaps = language === 'de' ? gapsDe : gapsEn;
     const nextLevel = Math.min(4, level + 1);
-    return gaps[department]?.[nextLevel] || ['Process optimization', 'Technology enhancement', 'Performance improvement'];
+    const defaultGaps = language === 'de' 
+      ? ['Prozessoptimierung', 'Technologieverbesserung', 'Leistungssteigerung']
+      : ['Process optimization', 'Technology enhancement', 'Performance improvement'];
+    
+    return gaps[department]?.[nextLevel] || defaultGaps;
   };
 
   const departmentMaturity = getDepartmentMaturity();
@@ -174,7 +226,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
             <span className="text-3xl">{overallMaturity.emoji}</span>
             <div>
               <CardTitle className="text-xl font-bold">
-                Overall Maturity Level: {overallMaturity.name}
+                {t('maturity.title')}: {overallMaturity.name}
               </CardTitle>
               <p className="text-sm opacity-80 mt-1">{overallMaturity.description}</p>
             </div>
@@ -183,7 +235,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h4 className="font-medium mb-3">Current Characteristics</h4>
+              <h4 className="font-medium mb-3">{t('maturity.currentCharacteristics')}</h4>
               <ul className="space-y-1">
                 {overallMaturity.characteristics.map((char, index) => (
                   <li key={index} className="flex items-start gap-2 text-sm">
@@ -194,7 +246,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
               </ul>
             </div>
             <div>
-              <h4 className="font-medium mb-3">Maturity Distribution</h4>
+              <h4 className="font-medium mb-3">{t('maturity.maturityDistribution')}</h4>
               <div className="space-y-2">
                 {maturityLevels.map((level) => {
                   const count = departmentMaturity.filter(d => d.currentLevel.level === level.level).length;
@@ -234,7 +286,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
               {/* Current Status */}
               <div className="bg-gray-50 rounded-lg p-3">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium text-gray-700">Current Score</span>
+                  <span className="font-medium text-gray-700">{t('maturity.currentScore')}</span>
                   <span className="text-xl font-bold">{Math.round(dept.score)}</span>
                 </div>
                 <Progress value={dept.score} className="mb-2" />
@@ -246,15 +298,15 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
                 <div className="bg-blue-50 rounded-lg p-3">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-blue-700">
-                      Progress to {dept.nextLevel.name}
+                      {t('maturity.progressTo')} {dept.nextLevel.name}
                     </span>
                     <span className="text-blue-600 font-bold">{dept.progressToNext}%</span>
                   </div>
                   <Progress value={dept.progressToNext} className="mb-2" />
                   <div className="flex items-center gap-2 text-sm">
-                    <span className="text-blue-600">Next milestone:</span>
+                    <span className="text-blue-600">{t('maturity.nextMilestone')}:</span>
                     <span className="text-blue-800 font-medium">
-                      {dept.nextLevel.emoji} {dept.nextLevel.name} Level
+                      {dept.nextLevel.emoji} {dept.nextLevel.name} {t('maturity.level')}
                     </span>
                   </div>
                 </div>
@@ -264,7 +316,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
               <div>
                 <h4 className="font-medium text-gray-700 mb-2 flex items-center gap-2">
                   <Target className="h-4 w-4" />
-                  Key Development Areas
+                  {t('maturity.keyDevelopmentAreas')}
                 </h4>
                 <ul className="space-y-1">
                   {dept.keyGaps.map((gap, gapIndex) => (
@@ -285,7 +337,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
         <CardHeader>
           <CardTitle className="text-blue-800 flex items-center gap-2">
             <Zap className="h-5 w-5" />
-            Maturity Development Roadmap
+            {t('maturity.developmentRoadmap')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -300,7 +352,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
                     <span className="text-lg">{level.emoji}</span>
                     <h3 className="font-bold text-lg">{level.name}</h3>
                     <Badge variant="outline" className="text-xs">
-                      {departmentMaturity.filter(d => d.currentLevel.level === level.level).length} departments
+                      {departmentMaturity.filter(d => d.currentLevel.level === level.level).length} {t('maturity.departments')}
                     </Badge>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">{level.description}</p>

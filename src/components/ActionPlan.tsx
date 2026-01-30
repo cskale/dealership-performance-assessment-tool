@@ -7,8 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CheckCircle2, Circle, Clock, AlertCircle, Plus, Sparkles, Loader2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { questionnaire } from '@/data/questionnaire';
 import { 
@@ -62,7 +62,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
     setLoading(true);
     try {
       let query = supabase
-        .from('action_plans')
+        .from('improvement_actions')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -75,7 +75,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
       const { data, error } = await query;
 
       if (error) throw error;
-      setActions(data || []);
+      setActions((data as unknown as Action[]) || []);
     } catch (error) {
       console.error('Error loading actions:', error);
       toast.error('Failed to load action plans');
@@ -144,8 +144,8 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
 
       // Insert actions into database
       const { data: insertedActions, error: insertError } = await supabase
-        .from('action_plans')
-        .insert(formattedActions)
+        .from('improvement_actions')
+        .insert(formattedActions as any)
         .select();
 
       if (insertError) throw insertError;
@@ -189,8 +189,8 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
       };
 
       const { error } = await supabase
-        .from('action_plans')
-        .insert([actionData]);
+        .from('improvement_actions')
+        .insert([actionData as any]);
 
       if (error) throw error;
 
@@ -216,7 +216,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
   const updateActionStatus = async (actionId: string, newStatus: Action['status']) => {
     try {
       const { error } = await supabase
-        .from('action_plans')
+        .from('improvement_actions')
         .update({ status: newStatus })
         .eq('id', actionId);
 
