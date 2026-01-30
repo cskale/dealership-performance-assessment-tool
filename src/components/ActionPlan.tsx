@@ -1,445 +1,534 @@
-import { useState, useEffect, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CheckCircle, Plus, Search, MoreHorizontal, Pencil, Trash2, Filter } from "lucide-react";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { ActionSheet } from "./ActionSheet";
-
-interface ActionPlanProps {
-  scores: Record<string, number>;
-  assessmentId?: string;
-}
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { CheckCircle2, Circle, Clock, AlertCircle, Plus, Sparkles, Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+import { questionnaire } from '@/data/questionnaire';
+import { 
+  analyzeAssessmentAnswers, 
+  generateActionsFromContext, 
+  formatActionsForDatabase 
+} from '@/utils/actionGenerator';
 
 interface Action {
   id: string;
   department: string;
+  priority: 'critical' | 'high' | 'medium' | 'low';
   action_title: string;
   action_description: string;
-  priority: string;
+  status: 'Open' | 'In Progress' | 'Completed';
   responsible_person: string | null;
   target_completion_date: string | null;
-  status: string;
-  support_required_from: string[] | null;
-  kpis_linked_to: string[] | null;
+  support_required_from: string[];
+  kpis_linked_to: string[];
+  assessment_id: string | null;
 }
 
-export function ActionPlan({ scores, assessmentId }: ActionPlanProps) {
+export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
+  const { user } = useAuth();
   const [actions, setActions] = useState<Action[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [priorityFilter, setPriorityFilter] = useState<string>("all");
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [sheetMode, setSheetMode] = useState<'create' | 'edit'>('create');
-  const [selectedAction, setSelectedAction] = useState<Action | null>(null);
-  const { toast } = useToast();
+  const [generating, setGenerating] = useState(false);
+  const [showAddAction, setShowAddAction] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterPriority, setFilterPriority] = useState<string>('all');
+  
+  // New action form state
+  const [newAction, setNewAction] = useState({
+    department: '',
+    priority: 'medium' as Action['priority'],
+    action_title: '',
+    action_description: '',
+    responsible_person: '',
+    target_completion_date: '',
+    support_required_from: '',
+    kpis_linked_to: ''
+  });
 
   useEffect(() => {
     loadActions();
-  }, []);
-
-  useEffect(() => {
-    if (!loading && actions.length === 0 && scores && Object.keys(scores).length > 0) {
-      generateActionsFromScores();
-    }
-  }, [loading, actions.length, scores]);
-
-  const filteredActions = useMemo(() => {
-    return actions.filter(action => {
-      const matchesSearch = searchQuery === "" || 
-        action.action_title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        action.department.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesStatus = statusFilter === "all" || action.status === statusFilter;
-      const matchesPriority = priorityFilter === "all" || action.priority === priorityFilter;
-      
-      return matchesSearch && matchesStatus && matchesPriority;
-    });
-  }, [actions, searchQuery, statusFilter, priorityFilter]);
-
-  const generateActionsFromScores = async () => {
-    try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) {
-        toast({ title: "Authentication Error", description: "You must be logged in.", variant: "destructive" });
-        return;
-      }
-
-      const actionsToCreate: any[] = [];
-      Object.entries(scores).forEach(([department, score]) => {
-        if (score < 75) {
-          let priority = 'medium';
-          if (score < 50) priority = 'critical';
-          else if (score < 60) priority = 'high';
-          
-          const departmentName = department.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-          actionsToCreate.push({
-            assessment_id: assessmentId || null,
-            user_id: user.id,
-            department: departmentName,
-            priority,
-            action_title: `Improve ${departmentName} Performance`,
-            action_description: `Current score: ${score}/100. Implement comprehensive improvements.`,
-            status: 'Open',
-            support_required_from: ['Coach', 'Management'],
-            kpis_linked_to: [`${departmentName} KPIs`],
-            responsible_person: null,
-            target_completion_date: null
-          });
-        }
-      });
-
-      if (actionsToCreate.length === 0) {
-        toast({ title: "Great Performance!", description: "All departments scoring above 75%." });
-        return;
-      }
-
-      const { data, error } = await supabase.from('improvement_actions').insert(actionsToCreate).select();
-      if (error) throw error;
-      setActions(data || []);
-      toast({ title: "Actions Generated", description: `${actionsToCreate.length} actions created.` });
-    } catch (error: any) {
-      toast({ title: "Generation Failed", description: error?.message, variant: "destructive" });
-    }
-  };
+  }, [user, assessmentId]);
 
   const loadActions = async () => {
+    if (!user) return;
+    
+    setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('improvement_actions')
+      let query = supabase
+        .from('action_plans')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
+
+      // If assessmentId provided, filter by it
+      if (assessmentId) {
+        query = query.eq('assessment_id', assessmentId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setActions(data || []);
     } catch (error) {
       console.error('Error loading actions:', error);
+      toast.error('Failed to load action plans');
     } finally {
       setLoading(false);
     }
   };
 
-  const createAction = async (actionData: Partial<Action>) => {
+  const generateIntelligentActions = async () => {
+    if (!user) return;
+    
+    setGenerating(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      // Get the latest assessment or use provided assessmentId
+      let targetAssessmentId = assessmentId;
+      
+      if (!targetAssessmentId) {
+        const { data: assessments, error: assessmentError } = await supabase
+          .from('assessments')
+          .select('id, answers')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
 
-      const insertData = {
-        action_title: actionData.action_title || '',
-        action_description: actionData.action_description || '',
-        department: actionData.department || '',
-        priority: actionData.priority || 'medium',
-        status: actionData.status || 'Open',
-        responsible_person: actionData.responsible_person,
-        target_completion_date: actionData.target_completion_date,
-        support_required_from: actionData.support_required_from,
-        kpis_linked_to: actionData.kpis_linked_to,
-        user_id: user.id,
-        assessment_id: assessmentId || null
-      };
+        if (assessmentError || !assessments) {
+          toast.error('No assessment found. Please complete an assessment first.');
+          setGenerating(false);
+          return;
+        }
+        
+        targetAssessmentId = assessments.id;
+      }
 
-      const { data, error } = await supabase
-        .from('improvement_actions')
-        .insert(insertData)
-        .select()
+      // Get assessment data
+      const { data: assessment, error: fetchError } = await supabase
+        .from('assessments')
+        .select('answers')
+        .eq('id', targetAssessmentId)
         .single();
 
-      if (error) throw error;
-      setActions(prev => [data, ...prev]);
-      toast({ title: "Action Created", description: "New action added successfully." });
-    } catch (error: any) {
-      toast({ title: "Create Failed", description: error?.message, variant: "destructive" });
+      if (fetchError || !assessment) {
+        toast.error('Failed to load assessment data');
+        setGenerating(false);
+        return;
+      }
+
+      // Analyze answers and generate actions
+      const weakPoints = analyzeAssessmentAnswers(
+        questionnaire.sections,
+        assessment.answers as Record<string, number>
+      );
+
+      if (weakPoints.length === 0) {
+        toast.success('Great! No critical improvement areas found.');
+        setGenerating(false);
+        return;
+      }
+
+      const generatedActions = generateActionsFromContext(weakPoints, 10);
+      const formattedActions = formatActionsForDatabase(
+        generatedActions,
+        user.id,
+        targetAssessmentId
+      );
+
+      // Insert actions into database
+      const { data: insertedActions, error: insertError } = await supabase
+        .from('action_plans')
+        .insert(formattedActions)
+        .select();
+
+      if (insertError) throw insertError;
+
+      toast.success(`Generated ${insertedActions?.length || 0} intelligent action items!`);
+      loadActions();
+    } catch (error) {
+      console.error('Error generating actions:', error);
+      toast.error('Failed to generate action plans');
+    } finally {
+      setGenerating(false);
     }
   };
 
-  const updateAction = async (actionId: string, updates: Partial<Action>) => {
+  const addManualAction = async () => {
+    if (!user) return;
+    if (!newAction.action_title || !newAction.department) {
+      toast.error('Please fill in required fields: Title and Department');
+      return;
+    }
+
+    try {
+      const actionData = {
+        user_id: user.id,
+        assessment_id: assessmentId || null,
+        department: newAction.department,
+        priority: newAction.priority,
+        action_title: newAction.action_title,
+        action_description: newAction.action_description,
+        status: 'Open',
+        responsible_person: newAction.responsible_person || null,
+        target_completion_date: newAction.target_completion_date || null,
+        support_required_from: newAction.support_required_from
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean),
+        kpis_linked_to: newAction.kpis_linked_to
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean)
+      };
+
+      const { error } = await supabase
+        .from('action_plans')
+        .insert([actionData]);
+
+      if (error) throw error;
+
+      toast.success('Action added successfully!');
+      setShowAddAction(false);
+      setNewAction({
+        department: '',
+        priority: 'medium',
+        action_title: '',
+        action_description: '',
+        responsible_person: '',
+        target_completion_date: '',
+        support_required_from: '',
+        kpis_linked_to: ''
+      });
+      loadActions();
+    } catch (error) {
+      console.error('Error adding action:', error);
+      toast.error('Failed to add action');
+    }
+  };
+
+  const updateActionStatus = async (actionId: string, newStatus: Action['status']) => {
     try {
       const { error } = await supabase
-        .from('improvement_actions')
-        .update(updates)
+        .from('action_plans')
+        .update({ status: newStatus })
         .eq('id', actionId);
 
       if (error) throw error;
-      setActions(prev => prev.map(action => 
-        action.id === actionId ? { ...action, ...updates } : action
+
+      setActions(actions.map(action => 
+        action.id === actionId ? { ...action, status: newStatus } : action
       ));
-      toast({ title: "Action Updated", description: "Changes saved." });
+      toast.success('Status updated successfully');
     } catch (error) {
-      toast({ title: "Update Failed", description: "Could not save changes.", variant: "destructive" });
+      console.error('Error updating status:', error);
+      toast.error('Failed to update status');
     }
   };
 
-  const deleteAction = async (actionId: string) => {
-    try {
-      const { error } = await supabase.from('improvement_actions').delete().eq('id', actionId);
-      if (error) throw error;
-      setActions(prev => prev.filter(action => action.id !== actionId));
-      toast({ title: "Action Deleted", description: "Action removed." });
-    } catch (error) {
-      toast({ title: "Delete Failed", description: "Could not delete action.", variant: "destructive" });
+  const getPriorityIcon = (priority: string) => {
+    switch (priority) {
+      case 'critical':
+        return <AlertCircle className="h-4 w-4 text-red-500" />;
+      case 'high':
+        return <AlertCircle className="h-4 w-4 text-orange-500" />;
+      case 'medium':
+        return <Clock className="h-4 w-4 text-yellow-500" />;
+      default:
+        return <Clock className="h-4 w-4 text-blue-500" />;
     }
   };
 
-  const handleRowClick = (action: Action) => {
-    setSelectedAction(action);
-    setSheetMode('edit');
-    setSheetOpen(true);
-  };
-
-  const handleCreateClick = () => {
-    setSelectedAction(null);
-    setSheetMode('create');
-    setSheetOpen(true);
-  };
-
-  const handleSheetSave = (actionData: Partial<Action>) => {
-    if (sheetMode === 'edit' && actionData.id) {
-      updateAction(actionData.id, actionData);
-    } else {
-      createAction(actionData);
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'Completed':
+        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+      case 'In Progress':
+        return <Clock className="h-5 w-5 text-blue-500" />;
+      default:
+        return <Circle className="h-5 w-5 text-gray-400" />;
     }
   };
 
-  const toggleSelect = (id: string) => {
-    setSelectedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedIds.size === filteredActions.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(filteredActions.map(a => a.id)));
-    }
-  };
-
-  const getPriorityBadge = (priority: string) => {
-    const colors: Record<string, string> = {
-      critical: 'bg-red-500 hover:bg-red-600',
-      high: 'bg-orange-500 hover:bg-orange-600',
-      medium: 'bg-yellow-500 hover:bg-yellow-600',
-      low: 'bg-green-500 hover:bg-green-600'
-    };
-    return (
-      <Badge className={cn("text-white capitalize text-xs", colors[priority] || 'bg-muted')}>
-        {priority}
-      </Badge>
-    );
-  };
-
-  const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      'Completed': 'bg-green-500/20 text-green-700 border-green-500/30',
-      'In Progress': 'bg-blue-500/20 text-blue-700 border-blue-500/30',
-      'Open': 'bg-muted text-muted-foreground border-border'
-    };
-    return (
-      <Badge variant="outline" className={cn("text-xs", colors[status] || '')}>
-        {status}
-      </Badge>
-    );
-  };
+  const filteredActions = actions.filter(action => {
+    if (filterStatus !== 'all' && action.status !== filterStatus) return false;
+    if (filterPriority !== 'all' && action.priority !== filterPriority) return false;
+    return true;
+  });
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+      <Card>
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin" />
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <Card className="border-primary/20">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-xl">
-            <CheckCircle className="h-5 w-5 text-primary" />
-            Action Plan
-          </CardTitle>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Action Plan</CardTitle>
+              <CardDescription>
+                Strategic initiatives to improve your dealership performance
+              </CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={generateIntelligentActions}
+                disabled={generating}
+                variant="default"
+              >
+                {generating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Generate AI Actions
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={() => setShowAddAction(!showAddAction)}
+                variant="outline"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Manual Action
+              </Button>
+            </div>
+          </div>
         </CardHeader>
-      </Card>
 
-      {actions.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center space-y-4">
-            <p className="text-muted-foreground">No actions found.</p>
-            <div className="flex justify-center gap-3">
-              {scores && Object.keys(scores).length > 0 && (
-                <Button onClick={generateActionsFromScores} size="lg">
-                  <CheckCircle className="h-5 w-5 mr-2" />
-                  Generate Action Plan
-                </Button>
-              )}
-              <Button variant="outline" onClick={handleCreateClick} size="lg">
-                <Plus className="h-5 w-5 mr-2" />
-                Create Action
-              </Button>
+        <CardContent className="space-y-6">
+          {/* Add Manual Action Form */}
+          {showAddAction && (
+            <Card className="border-2 border-dashed">
+              <CardHeader>
+                <CardTitle>Add New Action</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Department *</Label>
+                    <Input
+                      value={newAction.department}
+                      onChange={(e) => setNewAction({ ...newAction, department: e.target.value })}
+                      placeholder="e.g., New Vehicle Sales"
+                    />
+                  </div>
+                  <div>
+                    <Label>Priority *</Label>
+                    <Select
+                      value={newAction.priority}
+                      onValueChange={(value: Action['priority']) => 
+                        setNewAction({ ...newAction, priority: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="critical">Critical</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="low">Low</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Action Title *</Label>
+                  <Input
+                    value={newAction.action_title}
+                    onChange={(e) => setNewAction({ ...newAction, action_title: e.target.value })}
+                    placeholder="Brief action title"
+                  />
+                </div>
+
+                <div>
+                  <Label>Description</Label>
+                  <Textarea
+                    value={newAction.action_description}
+                    onChange={(e) => setNewAction({ ...newAction, action_description: e.target.value })}
+                    placeholder="Detailed action description"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Responsible Person</Label>
+                    <Input
+                      value={newAction.responsible_person}
+                      onChange={(e) => setNewAction({ ...newAction, responsible_person: e.target.value })}
+                      placeholder="Person name"
+                    />
+                  </div>
+                  <div>
+                    <Label>Target Completion Date</Label>
+                    <Input
+                      type="date"
+                      value={newAction.target_completion_date}
+                      onChange={(e) => setNewAction({ ...newAction, target_completion_date: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Support Required From</Label>
+                    <Input
+                      value={newAction.support_required_from}
+                      onChange={(e) => setNewAction({ ...newAction, support_required_from: e.target.value })}
+                      placeholder="Comma-separated names"
+                    />
+                  </div>
+                  <div>
+                    <Label>Linked KPIs</Label>
+                    <Input
+                      value={newAction.kpis_linked_to}
+                      onChange={(e) => setNewAction({ ...newAction, kpis_linked_to: e.target.value })}
+                      placeholder="Comma-separated KPIs"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button onClick={addManualAction}>Add Action</Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAddAction(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Filters */}
+          <div className="flex gap-4">
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="Open">Open</SelectItem>
+                <SelectItem value="In Progress">In Progress</SelectItem>
+                <SelectItem value="Completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filterPriority} onValueChange={setFilterPriority}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Priority</SelectItem>
+                <SelectItem value="critical">Critical</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Actions List */}
+          {filteredActions.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <p>No actions found. Generate AI actions or add manually.</p>
             </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="p-4">
-            {/* Controls */}
-            <div className="flex flex-wrap items-center gap-3 mb-4">
-              <Button onClick={handleCreateClick} className="shrink-0">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Action
-              </Button>
+          ) : (
+            <div className="space-y-4">
+              {filteredActions.map((action) => (
+                <Card key={action.id}>
+                  <CardContent className="pt-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          {getStatusIcon(action.status)}
+                          <h3 className="font-semibold text-lg">{action.action_title}</h3>
+                          <Badge variant="outline" className="flex items-center gap-1">
+                            {getPriorityIcon(action.priority)}
+                            {action.priority}
+                          </Badge>
+                          <Badge variant="secondary">{action.department}</Badge>
+                        </div>
+                        
+                        <p className="text-sm text-muted-foreground mb-4">
+                          {action.action_description}
+                        </p>
 
-              <div className="relative flex-1 min-w-[200px] max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search actions..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          {action.responsible_person && (
+                            <div>
+                              <span className="font-medium">Responsible:</span>
+                              <span className="ml-2">{action.responsible_person}</span>
+                            </div>
+                          )}
+                          {action.target_completion_date && (
+                            <div>
+                              <span className="font-medium">Target Date:</span>
+                              <span className="ml-2">
+                                {new Date(action.target_completion_date).toLocaleDateString()}
+                              </span>
+                            </div>
+                          )}
+                          {action.support_required_from?.length > 0 && (
+                            <div>
+                              <span className="font-medium">Support From:</span>
+                              <span className="ml-2">
+                                {action.support_required_from.join(', ')}
+                              </span>
+                            </div>
+                          )}
+                          {action.kpis_linked_to?.length > 0 && (
+                            <div>
+                              <span className="font-medium">KPIs:</span>
+                              <span className="ml-2">
+                                {action.kpis_linked_to.join(', ')}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
 
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[140px]">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="Open">Open</SelectItem>
-                  <SelectItem value="In Progress">In Progress</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                <SelectTrigger className="w-[140px]">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Priority</SelectItem>
-                  <SelectItem value="critical">Critical</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Table */}
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader className="bg-muted/50 sticky top-0">
-                  <TableRow>
-                    <TableHead className="w-[40px]">
-                      <Checkbox
-                        checked={selectedIds.size === filteredActions.length && filteredActions.length > 0}
-                        onCheckedChange={toggleSelectAll}
-                      />
-                    </TableHead>
-                    <TableHead className="w-[90px]">Priority</TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead className="w-[120px]">Department</TableHead>
-                    <TableHead className="w-[140px]">Assignee</TableHead>
-                    <TableHead className="w-[100px]">Status</TableHead>
-                    <TableHead className="w-[110px]">Due Date</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredActions.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                        No actions match your filters.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredActions.map((action) => (
-                      <TableRow
-                        key={action.id}
-                        className="h-11 cursor-pointer hover:bg-muted/50 transition-colors"
-                        onClick={() => handleRowClick(action)}
+                      <Select
+                        value={action.status}
+                        onValueChange={(value) => updateActionStatus(action.id, value as Action['status'])}
                       >
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <Checkbox
-                            checked={selectedIds.has(action.id)}
-                            onCheckedChange={() => toggleSelect(action.id)}
-                          />
-                        </TableCell>
-                        <TableCell>{getPriorityBadge(action.priority)}</TableCell>
-                        <TableCell className="font-medium truncate max-w-[300px]">
-                          {action.action_title}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {action.department}
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          {action.responsible_person || <span className="text-muted-foreground">—</span>}
-                        </TableCell>
-                        <TableCell>{getStatusBadge(action.status)}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {action.target_completion_date 
-                            ? format(new Date(action.target_completion_date), "MMM d, yyyy")
-                            : "—"}
-                        </TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-popover">
-                              <DropdownMenuItem onClick={() => handleRowClick(action)}>
-                                <Pencil className="h-4 w-4 mr-2" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => deleteAction(action.id)}
-                                className="text-destructive focus:text-destructive"
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                        <SelectTrigger className="w-[150px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Open">Open</SelectItem>
+                          <SelectItem value="In Progress">In Progress</SelectItem>
+                          <SelectItem value="Completed">Completed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <ActionSheet
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-        action={selectedAction}
-        mode={sheetMode}
-        onSave={handleSheetSave}
-        onDelete={deleteAction}
-      />
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
