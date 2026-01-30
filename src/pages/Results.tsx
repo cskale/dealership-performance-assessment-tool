@@ -16,6 +16,7 @@ import { MaturityScoring } from "@/components/MaturityScoring";
 import { ActionPlan } from "@/components/ActionPlan";
 import { UsefulResources } from "@/components/UsefulResources";
 import { formatEuro, formatPercentage } from "@/utils/euroFormatter";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Results() {
   const [activeTab, setActiveTab] = useState("executive");
@@ -25,6 +26,7 @@ export default function Results() {
   
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
 
   // Load completed assessment results
   useEffect(() => {
@@ -42,13 +44,13 @@ export default function Results() {
       generateImprovementActions(data.scores);
     } else {
       toast({
-        title: "No Results Found",
-        description: "Please complete the assessment first.",
+        title: t('results.noResults'),
+        description: t('results.completeFirst'),
         variant: "destructive",
       });
       navigate('/app/assessment');
     }
-  }, [navigate, toast]);
+  }, [navigate, toast, t]);
 
   const generateImprovementActions = (scores: Record<string, number>) => {
     const actions: any[] = [];
@@ -89,8 +91,8 @@ export default function Results() {
     localStorage.removeItem('completed_assessment_results');
     localStorage.removeItem('assessment_data');
     toast({
-      title: "Assessment Reset",
-      description: "Starting fresh assessment...",
+      title: t('results.assessmentReset'),
+      description: t('results.startingFresh'),
     });
     navigate('/app/assessment');
   };
@@ -127,14 +129,14 @@ export default function Results() {
 
       pdf.save('dealership-assessment-results.pdf');
       toast({
-        title: "PDF Exported",
-        description: "Your results have been downloaded successfully.",
+        title: t('results.pdfExported'),
+        description: t('results.pdfSuccess'),
       });
     } catch (error) {
       console.error('Export error:', error);
       toast({
-        title: "Export Failed",
-        description: "Unable to export PDF. Please try again.",
+        title: t('results.exportFailed'),
+        description: t('results.exportError'),
         variant: "destructive",
       });
     } finally {
@@ -142,16 +144,28 @@ export default function Results() {
     }
   };
 
+  const getScoreLabel = (score: number) => {
+    if (score >= 80) return { label: t('results.excellent'), emoji: '🟢' };
+    if (score >= 60) return { label: t('results.good'), emoji: '🟡' };
+    return { label: t('results.needsImprovement'), emoji: '🔴' };
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US');
+  };
+
   if (!resultsData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background to-muted/50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading your results...</p>
+          <p className="text-muted-foreground">{t('results.loading')}</p>
         </div>
       </div>
     );
   }
+
+  const scoreInfo = getScoreLabel(overallScore);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/50 p-4">
@@ -165,22 +179,22 @@ export default function Results() {
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Dashboard
+              {t('nav.backToDashboard')}
             </Button>
             <Button
               onClick={handleRetakeAssessment}
               className="flex items-center gap-2"
             >
               <RefreshCw className="h-4 w-4" />
-              Retake Assessment
+              {t('results.retakeAssessment')}
             </Button>
           </div>
           
           <h1 className="text-4xl font-bold text-foreground mb-2">
-            🏆 Industrial Assessment Results
+            🏆 {t('results.title')}
           </h1>
           <p className="text-muted-foreground mb-6">
-            Comprehensive analysis completed on {new Date(resultsData.completedAt).toLocaleDateString()}
+            {t('results.completedOn')} {formatDate(resultsData.completedAt)}
           </p>
           
           {/* Overall Score */}
@@ -188,9 +202,9 @@ export default function Results() {
             <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 shadow-lg">
               <CardContent className="p-8 text-center">
                 <div className="text-6xl font-bold text-primary mb-2">{overallScore}</div>
-                <div className="text-lg text-primary mb-4">Overall Performance Score</div>
+                <div className="text-lg text-primary mb-4">{t('results.overallScore')}</div>
                 <Badge className={`text-lg px-4 py-2 ${overallScore >= 80 ? 'bg-green-600' : overallScore >= 60 ? 'bg-yellow-600' : 'bg-red-600'}`}>
-                  {overallScore >= 80 ? '🟢 Excellent' : overallScore >= 60 ? '🟡 Good' : '🔴 Needs Improvement'}
+                  {scoreInfo.emoji} {scoreInfo.label}
                 </Badge>
               </CardContent>
             </Card>
@@ -204,7 +218,7 @@ export default function Results() {
               className="flex items-center gap-2"
             >
               <FileText className="h-4 w-4" />
-              {isExporting ? 'Exporting...' : 'Export PDF'}
+              {isExporting ? t('results.exporting') : t('results.exportPDF')}
             </Button>
           </div>
         </div>
@@ -212,11 +226,11 @@ export default function Results() {
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6" defaultValue="executive">
           <TabsList className="grid w-full grid-cols-5 bg-white/80 backdrop-blur-sm border shadow-lg">
-            <TabsTrigger value="executive">📋 Executive Summary</TabsTrigger>
-            <TabsTrigger value="kpi">💰 KPI Analytics</TabsTrigger>
-            <TabsTrigger value="maturity">🏆 Maturity</TabsTrigger>
-            <TabsTrigger value="action-plan">✅ Action Plan</TabsTrigger>
-            <TabsTrigger value="resources">📚 Useful Resources</TabsTrigger>
+            <TabsTrigger value="executive">📋 {t('results.tab.executive')}</TabsTrigger>
+            <TabsTrigger value="kpi">💰 {t('results.tab.kpi')}</TabsTrigger>
+            <TabsTrigger value="maturity">🏆 {t('results.tab.maturity')}</TabsTrigger>
+            <TabsTrigger value="action-plan">✅ {t('results.tab.actionPlan')}</TabsTrigger>
+            <TabsTrigger value="resources">📚 {t('results.tab.resources')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="executive" className="space-y-6 animate-fade-in">
@@ -244,7 +258,6 @@ export default function Results() {
 
           <TabsContent value="action-plan" className="space-y-6 animate-fade-in">
             <ActionPlan
-              scores={resultsData.scores}
               assessmentId={resultsData.assessmentId}
             />
           </TabsContent>
