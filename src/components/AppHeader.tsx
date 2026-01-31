@@ -12,12 +12,15 @@ import { OrganizationSwitcher } from './OrganizationSwitcher';
 import { RoleSelector } from './RoleSelector';
 import { LanguageSelector } from './LanguageSelector';
 import { useAuth } from '@/hooks/useAuth';
-import { User, Settings, LogOut } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { User, Settings, LogOut, BookOpen, BarChart3, ClipboardList, Home } from 'lucide-react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 
 export function AppHeader() {
   const { user, signOut } = useAuth();
+  const { language } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSignOut = async () => {
     await signOut();
@@ -29,11 +32,42 @@ export function AppHeader() {
     return user.email.substring(0, 2).toUpperCase();
   };
 
+  const navItems = [
+    { path: '/', label: language === 'de' ? 'Start' : 'Home', icon: Home },
+    { path: '/app/assessment', label: language === 'de' ? 'Bewertung' : 'Assessment', icon: ClipboardList },
+    { path: '/app/results', label: language === 'de' ? 'Ergebnisse' : 'Results', icon: BarChart3 },
+    { path: '/resources', label: language === 'de' ? 'Ressourcen' : 'Resources', icon: BookOpen },
+  ];
+
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-14 items-center justify-between px-4 lg:px-6">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-semibold text-primary">Dealership Assessment</h1>
+        <div className="flex items-center gap-6">
+          <Link to="/" className="text-xl font-semibold text-primary hover:opacity-80 transition-opacity">
+            Dealership Assessment
+          </Link>
+          
+          {/* Navigation Links */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path || 
+                (item.path !== '/' && location.pathname.startsWith(item.path));
+              return (
+                <Link key={item.path} to={item.path}>
+                  <Button
+                    variant={isActive ? "secondary" : "ghost"}
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </Button>
+                </Link>
+              );
+            })}
+          </nav>
+          
           <OrganizationSwitcher />
         </div>
 
@@ -53,23 +87,23 @@ export function AppHeader() {
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">{user?.email}</p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    Account Settings
+                    {language === 'de' ? 'Kontoeinstellungen' : 'Account Settings'}
                   </p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate('/account')}>
                 <User className="mr-2 h-4 w-4" />
-                Profile
+                {language === 'de' ? 'Profil' : 'Profile'}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate('/account?tab=security')}>
                 <Settings className="mr-2 h-4 w-4" />
-                Security
+                {language === 'de' ? 'Sicherheit' : 'Security'}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
-                Sign Out
+                {language === 'de' ? 'Abmelden' : 'Sign Out'}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
