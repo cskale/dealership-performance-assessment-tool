@@ -491,6 +491,51 @@ export type Database = {
           },
         ]
       }
+      resources: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          difficulty: string | null
+          duration: string | null
+          id: string
+          is_featured: boolean | null
+          related_kpis: string[] | null
+          resource_type: string
+          thumbnail_url: string | null
+          title: string
+          topics: string[]
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          difficulty?: string | null
+          duration?: string | null
+          id?: string
+          is_featured?: boolean | null
+          related_kpis?: string[] | null
+          resource_type: string
+          thumbnail_url?: string | null
+          title: string
+          topics?: string[]
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          difficulty?: string | null
+          duration?: string | null
+          id?: string
+          is_featured?: boolean | null
+          related_kpis?: string[] | null
+          resource_type?: string
+          thumbnail_url?: string | null
+          title?: string
+          topics?: string[]
+          url?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -519,6 +564,35 @@ export type Database = {
             columns: ["dealer_id"]
             isOneToOne: false
             referencedRelation: "dealerships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_saved_resources: {
+        Row: {
+          id: string
+          resource_id: string
+          saved_at: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          resource_id: string
+          saved_at?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          resource_id?: string
+          saved_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_saved_resources_resource_id_fkey"
+            columns: ["resource_id"]
+            isOneToOne: false
+            referencedRelation: "resources"
             referencedColumns: ["id"]
           },
         ]
