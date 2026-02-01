@@ -4,23 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Download, FileText, FileSpreadsheet, Image, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Target, Star, Brain, Globe, Building, RefreshCw, ArrowLeft, Award, Zap } from "lucide-react";
+import { Download, FileText, RefreshCw, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import * as XLSX from "xlsx";
 import { ExecutiveSummary } from "@/components/ExecutiveSummary";
 import { IndustrialKPIDashboard } from "@/components/IndustrialKPIDashboard";
 import { MaturityScoring } from "@/components/MaturityScoring";
 import { ActionPlan } from "@/components/ActionPlan";
 import { UsefulResources } from "@/components/UsefulResources";
-import { formatEuro, formatPercentage } from "@/utils/euroFormatter";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Results() {
   const [activeTab, setActiveTab] = useState("executive");
-  const [improvementActions, setImprovementActions] = useState<any[]>([]);
   const [resultsData, setResultsData] = useState<any>(null);
   const [isExporting, setIsExporting] = useState(false);
   
@@ -41,7 +38,6 @@ export default function Results() {
       }
       
       setResultsData(data);
-      generateImprovementActions(data.scores);
     } else {
       toast({
         title: t('results.noResults'),
@@ -52,40 +48,10 @@ export default function Results() {
     }
   }, [navigate, toast, t]);
 
-  const generateImprovementActions = (scores: Record<string, number>) => {
-    const actions: any[] = [];
-    
-    Object.entries(scores).forEach(([section, score]) => {
-      if (score < 75) {
-        let priority: 'critical' | 'high' | 'medium' = 'medium';
-        let emoji = '🟡';
-        
-        if (score < 50) {
-          priority = 'critical';
-          emoji = '🔴';
-        } else if (score < 60) {
-          priority = 'high'; 
-          emoji = '🟠';
-        }
-
-        actions.push({
-          id: Math.random(),
-          department: section.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()),
-          priority,
-          emoji,
-          title: `Improve ${section.replace('-', ' ')} Performance`,
-          description: `Focus on enhancing ${section.replace('-', ' ')} processes and efficiency.`,
-          impact: 'Significant improvement expected',
-          effort: '2-4 weeks implementation',
-          score: score
-        });
-      }
-    });
-
-    setImprovementActions(actions);
-  };
-
-  const overallScore = resultsData?.overallScore || 0;
+  // Calculate overall score ONCE - memoized
+  const overallScore = useMemo(() => {
+    return resultsData?.overallScore || 0;
+  }, [resultsData?.overallScore]);
 
   const handleRetakeAssessment = () => {
     localStorage.removeItem('completed_assessment_results');
@@ -152,6 +118,12 @@ export default function Results() {
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US');
+  };
+
+  // Handler to navigate to resources tab
+  const handleNavigateToResources = () => {
+    setActiveTab("resources");
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   if (!resultsData) {
@@ -246,6 +218,7 @@ export default function Results() {
             <IndustrialKPIDashboard
               scores={resultsData.scores}
               answers={resultsData.answers}
+              onNavigateToResources={handleNavigateToResources}
             />
           </TabsContent>
 

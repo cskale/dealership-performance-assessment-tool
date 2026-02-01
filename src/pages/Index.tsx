@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +7,14 @@ import { Link } from "react-router-dom";
 import { AppHeader } from "@/components/AppHeader";
 
 const Index = () => {
+  const [hasCompletedAssessment, setHasCompletedAssessment] = useState(false);
+
+  // Check if user has completed an assessment
+  useEffect(() => {
+    const completedResults = localStorage.getItem('completed_assessment_results');
+    setHasCompletedAssessment(!!completedResults);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <AppHeader />
@@ -22,11 +31,22 @@ const Index = () => {
             identifies growth opportunities, and provides actionable insights to boost performance across all departments.
           </p>
           
-          <Link to="/app/assessment">
-            <Button size="lg" className="h-14 px-8 text-lg font-semibold hover-scale">
-              Start Your Assessment <ArrowRight className="h-5 w-5 ml-2" />
-            </Button>
-          </Link>
+          <div className="flex justify-center gap-4">
+            <Link to="/app/assessment">
+              <Button size="lg" className="h-14 px-8 text-lg font-semibold hover-scale">
+                Start Your Assessment <ArrowRight className="h-5 w-5 ml-2" />
+              </Button>
+            </Link>
+            
+            {/* Only show Results button if user has completed an assessment */}
+            {hasCompletedAssessment && (
+              <Link to="/app/results">
+                <Button size="lg" variant="outline" className="h-14 px-8 text-lg font-semibold hover-scale">
+                  View Results <BarChart3 className="h-5 w-5 ml-2" />
+                </Button>
+              </Link>
+            )}
+          </div>
 
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
             <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
