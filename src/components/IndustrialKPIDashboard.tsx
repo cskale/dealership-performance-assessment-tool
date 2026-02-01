@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 interface IndustrialKPIDashboardProps {
   scores: Record<string, number>;
   answers: Record<string, number>;
+  onNavigateToResources?: () => void;
 }
 
 // KPI definitions with benchmarks and explanations
@@ -97,7 +98,7 @@ const kpiDefinitions: Record<string, {
   }
 };
 
-export function IndustrialKPIDashboard({ scores, answers }: IndustrialKPIDashboardProps) {
+export function IndustrialKPIDashboard({ scores, answers, onNavigateToResources }: IndustrialKPIDashboardProps) {
   const { t, language } = useLanguage();
   const [expandedKPIs, setExpandedKPIs] = useState<Set<string>>(new Set());
 
@@ -261,20 +262,26 @@ export function IndustrialKPIDashboard({ scores, answers }: IndustrialKPIDashboa
                       </p>
                     </div>
 
-                    {/* Related Resources */}
+                    {/* Related Resources - Links to Resources tab on Results page */}
                     {definition.topics.length > 0 && (
                       <div className="space-y-1">
                         <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                           <BookOpen className="h-3 w-3" />
                           {language === 'de' ? 'Ressourcen' : 'Resources'}
                         </div>
-                        <Link 
-                          to={`/resources?topic=${definition.topics[0]}`}
-                          className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                        <button
+                          onClick={() => {
+                            // Navigate to the Resources tab on the same Results page
+                            const resourcesTab = document.querySelector('[value="resources"]') as HTMLElement;
+                            if (resourcesTab) {
+                              resourcesTab.click();
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }
+                          }}
+                          className="inline-flex items-center gap-1 text-sm text-primary hover:underline cursor-pointer bg-transparent border-none p-0"
                         >
-                          {language === 'de' ? 'Passende Lernmaterialien' : 'Related learning materials'}
-                          <ExternalLink className="h-3 w-3" />
-                        </Link>
+                          📚 {language === 'de' ? 'Passende Lernmaterialien' : 'Related Learning'} ({definition.topics.length})
+                        </button>
                       </div>
                     )}
                   </div>

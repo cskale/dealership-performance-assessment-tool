@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +31,7 @@ export function CategoryAssessment({
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(new Set());
   const [notesText, setNotesText] = useState<Record<string, string>>({});
   const [autoSaveTimers, setAutoSaveTimers] = useState<Record<string, NodeJS.Timeout>>({});
+  const questionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   
   const { notes, saveNote, hasNotes, getCategoryNoteCount } = useAssessmentNotes();
   const { toast } = useToast();
@@ -52,6 +53,38 @@ export function CategoryAssessment({
 
   const handleRatingClick = (questionId: string, rating: number) => {
     onAnswer(questionId, rating);
+    
+    // Find the next unanswered question and scroll to it
+    const currentIndex = section.questions.findIndex(q => q.id === questionId);
+    let nextQuestion = null;
+    
+    // First, look for the next unanswered question after the current one
+    for (let i = currentIndex + 1; i < section.questions.length; i++) {
+      if (answers[section.questions[i].id] === undefined) {
+        nextQuestion = section.questions[i];
+        break;
+      }
+    }
+    
+    // If no unanswered question found after current, check from the beginning
+    if (!nextQuestion) {
+      for (let i = 0; i < currentIndex; i++) {
+        if (answers[section.questions[i].id] === undefined) {
+          nextQuestion = section.questions[i];
+          break;
+        }
+      }
+    }
+    
+    // If there's a next unanswered question, scroll to it smoothly
+    if (nextQuestion && questionRefs.current[nextQuestion.id]) {
+      setTimeout(() => {
+        questionRefs.current[nextQuestion.id]?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }, 150);
+    }
   };
 
   const handleNotesChange = (questionId: string, text: string) => {
@@ -138,7 +171,11 @@ export function CategoryAssessment({
           const value = answers[question.id];
           
           return (
-            <Card key={question.id} className="border bg-white hover:shadow-sm transition-all duration-200">
+            <Card 
+              key={question.id} 
+              ref={(el) => { questionRefs.current[question.id] = el; }}
+              className="border bg-white hover:shadow-sm transition-all duration-200"
+            >
               <CardContent className="p-5">
                 <div className="space-y-3 mb-4">
                   <div className="flex items-start gap-3">
@@ -148,6 +185,11 @@ export function CategoryAssessment({
                         <Badge variant="outline" className="text-xs h-5 font-normal">
                           {question.category}
                         </Badge>
+                        {value !== undefined && (
+                          <Badge className="text-xs h-5 bg-green-100 text-green-700 border-green-200">
+                            ✓ Answered
+                          </Badge>
+                        )}
                       </div>
                       <h3 className="text-base font-medium text-foreground leading-relaxed">
                         {question.text}
