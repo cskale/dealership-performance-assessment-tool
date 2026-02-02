@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import { Download, FileText, RefreshCw, ArrowLeft } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Download, FileText, RefreshCw, ArrowLeft, HelpCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
@@ -15,11 +15,13 @@ import { MaturityScoring } from "@/components/MaturityScoring";
 import { ActionPlan } from "@/components/ActionPlan";
 import { UsefulResources } from "@/components/UsefulResources";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { AppHeader } from "@/components/AppHeader";
 
 export default function Results() {
   const [activeTab, setActiveTab] = useState("executive");
   const [resultsData, setResultsData] = useState<any>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -27,25 +29,36 @@ export default function Results() {
 
   // Load completed assessment results
   useEffect(() => {
-    const completedResults = localStorage.getItem('completed_assessment_results');
-    if (completedResults) {
-      const data = JSON.parse(completedResults);
+    const loadData = async () => {
+      setIsLoading(true);
       
-      // Ensure assessmentId exists (for backwards compatibility)
-      if (!data.assessmentId) {
-        data.assessmentId = crypto.randomUUID();
-        localStorage.setItem('completed_assessment_results', JSON.stringify(data));
+      // Small delay for loading state visibility
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const completedResults = localStorage.getItem('completed_assessment_results');
+      if (completedResults) {
+        const data = JSON.parse(completedResults);
+        
+        // Ensure assessmentId exists (for backwards compatibility)
+        if (!data.assessmentId) {
+          data.assessmentId = crypto.randomUUID();
+          localStorage.setItem('completed_assessment_results', JSON.stringify(data));
+        }
+        
+        setResultsData(data);
+      } else {
+        toast({
+          title: t('results.noResults'),
+          description: t('results.completeFirst'),
+          variant: "destructive",
+        });
+        navigate('/app/assessment');
       }
       
-      setResultsData(data);
-    } else {
-      toast({
-        title: t('results.noResults'),
-        description: t('results.completeFirst'),
-        variant: "destructive",
-      });
-      navigate('/app/assessment');
-    }
+      setIsLoading(false);
+    };
+    
+    loadData();
   }, [navigate, toast, t]);
 
   // Calculate overall score ONCE - memoized
@@ -110,14 +123,24 @@ export default function Results() {
     }
   };
 
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'stroke-emerald-500';
+    if (score >= 60) return 'stroke-yellow-500';
+    return 'stroke-red-500';
+  };
+
   const getScoreLabel = (score: number) => {
-    if (score >= 80) return { label: t('results.excellent'), emoji: '🟢' };
-    if (score >= 60) return { label: t('results.good'), emoji: '🟡' };
-    return { label: t('results.needsImprovement'), emoji: '🔴' };
+    if (score >= 80) return { label: t('results.excellent'), color: 'bg-emerald-600' };
+    if (score >= 60) return { label: t('results.good'), color: 'bg-yellow-600' };
+    return { label: t('results.needsImprovement'), color: 'bg-red-600' };
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US');
+    return new Date(dateString).toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   // Handler to navigate to resources tab
@@ -125,6 +148,23 @@ export default function Results() {
     setActiveTab("resources");
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // Loading state with skeleton
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/50">
+        <AppHeader />
+        <div className="p-4 max-w-7xl mx-auto pt-8">
+          <div className="text-center mb-8 animate-fade-in">
+            <Skeleton className="h-8 w-48 mx-auto mb-4" />
+            <Skeleton className="h-4 w-64 mx-auto mb-8" />
+            <Skeleton className="h-48 w-48 rounded-full mx-auto mb-8" />
+            <Skeleton className="h-12 w-full max-w-2xl mx-auto" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!resultsData) {
     return (
@@ -140,14 +180,16 @@ export default function Results() {
   const scoreInfo = getScoreLabel(overallScore);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/50 p-4">
-      <div className="max-w-7xl mx-auto" id="results-content">
-        {/* Header */}
-        <div className="text-center mb-8 animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/50">
+      <AppHeader />
+      
+      <div className="p-4 max-w-7xl mx-auto" id="results-content">
+        {/* Unified Results Hero - Single Score Display */}
+        <div className="text-center mb-8 animate-fade-in pt-4">
           <div className="flex items-center justify-between mb-6">
             <Button
               variant="outline"
-              onClick={() => navigate('/app')}
+              onClick={() => navigate('/')}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -155,6 +197,7 @@ export default function Results() {
             </Button>
             <Button
               onClick={handleRetakeAssessment}
+              variant="outline"
               className="flex items-center gap-2"
             >
               <RefreshCw className="h-4 w-4" />
@@ -162,47 +205,69 @@ export default function Results() {
             </Button>
           </div>
           
-          <h1 className="text-4xl font-bold text-foreground mb-2">
-            🏆 {t('results.title')}
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+            {language === 'de' ? 'Industrielle Bewertungsergebnisse' : 'Industrial Assessment Results'}
           </h1>
-          <p className="text-muted-foreground mb-6">
-            {t('results.completedOn')} {formatDate(resultsData.completedAt)}
+          <p className="text-muted-foreground mb-8">
+            {language === 'de' ? 'Umfassende Analyse abgeschlossen am' : 'Comprehensive analysis completed on'} {formatDate(resultsData.completedAt)}
           </p>
           
-          {/* Overall Score */}
+          {/* Single Large Score Circle - NO DUPLICATE */}
           <div className="flex justify-center mb-8">
-            <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 shadow-lg">
-              <CardContent className="p-8 text-center">
-                <div className="text-6xl font-bold text-primary mb-2">{overallScore}</div>
-                <div className="text-lg text-primary mb-4">{t('results.overallScore')}</div>
-                <Badge className={`text-lg px-4 py-2 ${overallScore >= 80 ? 'bg-green-600' : overallScore >= 60 ? 'bg-yellow-600' : 'bg-red-600'}`}>
-                  {scoreInfo.emoji} {scoreInfo.label}
-                </Badge>
-              </CardContent>
-            </Card>
+            <div className="relative inline-block">
+              <svg className="w-40 h-40 md:w-48 md:h-48 transform -rotate-90">
+                <circle
+                  cx="50%"
+                  cy="50%"
+                  r="45%"
+                  fill="none"
+                  stroke="hsl(var(--muted))"
+                  strokeWidth="12"
+                />
+                <circle
+                  cx="50%"
+                  cy="50%"
+                  r="45%"
+                  fill="none"
+                  className={getScoreColor(overallScore)}
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                  strokeDasharray={`${(overallScore / 100) * 283} 283`}
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-5xl md:text-6xl font-bold text-foreground">{overallScore}</span>
+                <span className="text-lg text-muted-foreground">/100</span>
+              </div>
+            </div>
           </div>
 
+          {/* Score Badge */}
+          <Badge className={`${scoreInfo.color} text-white text-base px-4 py-2 mb-6`}>
+            {scoreInfo.label}
+          </Badge>
+
           {/* Export Options */}
-          <div className="flex justify-center gap-4 mb-8">
+          <div className="flex justify-center gap-4">
             <Button
               onClick={exportToPDF}
               disabled={isExporting}
               className="flex items-center gap-2"
             >
               <FileText className="h-4 w-4" />
-              {isExporting ? t('results.exporting') : t('results.exportPDF')}
+              {isExporting ? (language === 'de' ? 'Exportiere...' : 'Exporting...') : t('results.exportPDF')}
             </Button>
           </div>
         </div>
 
-        {/* Main Content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6" defaultValue="executive">
-          <TabsList className="grid w-full grid-cols-5 bg-white/80 backdrop-blur-sm border shadow-lg">
-            <TabsTrigger value="executive">📋 {t('results.tab.executive')}</TabsTrigger>
-            <TabsTrigger value="kpi">💰 {t('results.tab.kpi')}</TabsTrigger>
-            <TabsTrigger value="maturity">🏆 {t('results.tab.maturity')}</TabsTrigger>
-            <TabsTrigger value="action-plan">✅ {t('results.tab.actionPlan')}</TabsTrigger>
-            <TabsTrigger value="resources">📚 {t('results.tab.resources')}</TabsTrigger>
+        {/* Tab Navigation */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5 bg-white/90 backdrop-blur-sm border shadow-lg h-12">
+            <TabsTrigger value="executive" className="text-xs sm:text-sm">📋 {t('results.tab.executive')}</TabsTrigger>
+            <TabsTrigger value="kpi" className="text-xs sm:text-sm">💰 {t('results.tab.kpi')}</TabsTrigger>
+            <TabsTrigger value="maturity" className="text-xs sm:text-sm">🏆 {t('results.tab.maturity')}</TabsTrigger>
+            <TabsTrigger value="action-plan" className="text-xs sm:text-sm">✅ {t('results.tab.actionPlan')}</TabsTrigger>
+            <TabsTrigger value="resources" className="text-xs sm:text-sm">📚 {t('results.tab.resources')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="executive" className="space-y-6 animate-fade-in">
