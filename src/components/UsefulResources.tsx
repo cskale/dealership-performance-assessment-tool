@@ -441,37 +441,49 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
                       </h3>
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pb-4">
-                      <div className="space-y-3 pt-2">
+                      {/* 3-COLUMN HORIZONTAL TIMELINE LAYOUT */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
                         {resource.implementationGuide.map((phase, phaseIndex) => (
-                          <Card key={phaseIndex} className="border-primary/20">
-                            <CardContent className="p-4">
-                              <div className="flex items-center gap-2 mb-3">
-                                <Target className="h-4 w-4 text-primary" />
-                                <h4 className="font-medium">{phase.phase}</h4>
-                                <Badge variant="outline" className="ml-auto">{phase.duration}</Badge>
-                              </div>
-                              <div className="space-y-3">
-                                <div>
-                                  <h5 className="text-sm font-medium mb-1">{t('resources.activities')}:</h5>
-                                  <ul className="text-sm text-muted-foreground space-y-1">
-                                    {phase.activities.map((activity, actIndex) => (
-                                      <li key={actIndex} className="flex items-start gap-2">
-                                        <span className="text-primary mt-1">•</span>
-                                        {activity}
-                                      </li>
-                                    ))}
-                                  </ul>
+                          <Card key={phaseIndex} className="border-primary/20 h-full">
+                            <CardContent className="p-4 h-full flex flex-col">
+                              {/* Phase Header */}
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
+                                    {phaseIndex + 1}
+                                  </div>
+                                  <h4 className="font-medium text-sm">{phase.phase}</h4>
                                 </div>
-                                <div>
-                                  <h5 className="text-sm font-medium mb-1">{t('resources.deliverables')}:</h5>
-                                  <ul className="text-sm text-muted-foreground space-y-1">
-                                    {phase.deliverables.map((deliverable, delIndex) => (
-                                      <li key={delIndex} className="flex items-start gap-2">
-                                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                                        {deliverable}
-                                      </li>
-                                    ))}
-                                  </ul>
+                                <Badge variant="outline" className="text-xs">{phase.duration}</Badge>
+                              </div>
+                              
+                              {/* Activities */}
+                              <div className="flex-1 mb-3">
+                                <h5 className="text-xs font-medium text-muted-foreground mb-2">
+                                  {language === 'de' ? 'Aktivitäten' : 'Activities'}:
+                                </h5>
+                                <ul className="text-sm space-y-1">
+                                  {phase.activities.map((activity, actIndex) => (
+                                    <li key={actIndex} className="flex items-start gap-2 text-muted-foreground">
+                                      <span className="text-primary mt-1 text-xs">•</span>
+                                      <span className="text-xs">{activity}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                              
+                              {/* Deliverables */}
+                              <div className="pt-3 border-t">
+                                <h5 className="text-xs font-medium text-muted-foreground mb-2">
+                                  {language === 'de' ? 'Ergebnisse' : 'Deliverables'}:
+                                </h5>
+                                <div className="flex flex-wrap gap-1">
+                                  {phase.deliverables.map((deliverable, delIndex) => (
+                                    <span key={delIndex} className="inline-flex items-center gap-1 text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded">
+                                      <CheckCircle className="h-3 w-3 flex-shrink-0" />
+                                      {deliverable}
+                                    </span>
+                                  ))}
                                 </div>
                               </div>
                             </CardContent>

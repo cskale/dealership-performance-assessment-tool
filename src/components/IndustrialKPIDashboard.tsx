@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, Target, Award, AlertTriangle, Info, Lightbulb, BookOpen, ChevronDown, ExternalLink } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, Award, AlertTriangle, Info, Lightbulb, BookOpen, ChevronDown, ExternalLink, DollarSign } from "lucide-react";
 import { formatEuro, formatPercentage, formatNumber, generateRealisticData, industryBenchmarks } from "@/utils/euroFormatter";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
@@ -114,6 +114,52 @@ export function IndustrialKPIDashboard({ scores, answers, onNavigateToResources 
     });
   };
 
+  // CRITICAL FIX: Memoize ALL KPI data to prevent recalculation when clicking info button
+  // This ensures numbers stay STATIC and never change
+  const memoizedKPIData = useMemo(() => {
+    const allData: Record<string, { key: string; value: number; benchmark: number; performance: number; isGood: boolean }[]> = {};
+    
+    Object.entries(scores).forEach(([sectionId, sectionScore]) => {
+      const data = generateRealisticData(sectionScore, sectionId);
+      const benchmarks = industryBenchmarks[sectionId as keyof typeof industryBenchmarks];
+      
+      if (data && benchmarks) {
+        allData[sectionId] = Object.entries(data).map(([key, value]) => {
+          const benchmark = benchmarks[key as keyof typeof benchmarks];
+          const performance = typeof value === 'number' && typeof benchmark === 'number' 
+            ? ((value / benchmark) * 100) - 100 
+            : 0;
+          
+          return {
+            key,
+            value: value as number,
+            benchmark: benchmark as number,
+            performance,
+            isGood: performance >= 0
+          };
+        });
+      }
+    });
+    
+    return allData;
+  }, [scores]); // ONLY recalculate when scores change, NOT on info button click
+
+  // Calculate total revenue optimization potential
+  const revenueOptimizationPotential = useMemo(() => {
+    let totalPotential = 0;
+    Object.entries(scores).forEach(([sectionId, score]) => {
+      if (score < 70) {
+        // Calculate potential based on gap to 70%
+        const gap = 70 - score;
+        const basePotential = sectionId === 'service-performance' ? 150000 : 
+                             sectionId === 'parts-inventory' ? 95000 : 
+                             sectionId === 'used-vehicle-sales' ? 200000 : 100000;
+        totalPotential += Math.round(basePotential * (gap / 100) * 2);
+      }
+    });
+    return totalPotential;
+  }, [scores]);
+
   const getKPILabel = (key: string): string => {
     const labels: Record<string, Record<string, string>> = {
       monthlyRevenue: { en: 'Monthly Revenue', de: 'Monatsumsatz' },
@@ -161,26 +207,11 @@ export function IndustrialKPIDashboard({ scores, answers, onNavigateToResources 
     return formatNumber(value);
   };
 
+  // Use memoized data - values are now STABLE
   const generateKPICards = (sectionId: string, sectionScore: number) => {
-    const data = generateRealisticData(sectionScore, sectionId);
-    const benchmarks = industryBenchmarks[sectionId as keyof typeof industryBenchmarks];
+    const kpiData = memoizedKPIData[sectionId];
     
-    if (!data || !benchmarks) return null;
-
-    const kpiData = Object.entries(data).map(([key, value]) => {
-      const benchmark = benchmarks[key as keyof typeof benchmarks];
-      const performance = typeof value === 'number' && typeof benchmark === 'number' 
-        ? ((value / benchmark) * 100) - 100 
-        : 0;
-      
-      return {
-        key,
-        value: value as number,
-        benchmark: benchmark as number,
-        performance,
-        isGood: performance >= 0
-      };
-    });
+    if (!kpiData) return null;
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
@@ -324,14 +355,38 @@ export function IndustrialKPIDashboard({ scores, answers, onNavigateToResources 
 
   return (
     <div className="space-y-8">
+      {/* Revenue Optimization Banner */}
+      {revenueOptimizationPotential > 0 && (
+        <Card className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white border-0 shadow-xl">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                  <DollarSign className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold">{formatEuro(revenueOptimizationPotential)}</h3>
+                  <p className="text-emerald-100">
+                    {language === 'de' ? 'Umsatzoptimierungspotenzial' : 'Revenue Optimization Potential'}
+                  </p>
+                </div>
+              </div>
+              <Badge className="bg-white/20 text-white border-white/30">
+                {language === 'de' ? 'Basierend auf Ihrer Bewertung | Jährliches Potenzial' : 'Based on your assessment | Annual Potential'}
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="text-center mb-6">
         <h2 className="text-3xl font-bold text-foreground mb-2">
           {language === 'de' ? 'Leistungskennzahlen (KPIs)' : 'Key Performance Indicators'}
         </h2>
         <p className="text-muted-foreground">
           {language === 'de' 
-            ? 'Klicken Sie auf ℹ️ für Details zu jedem KPI' 
-            : 'Click ℹ️ on any KPI for detailed insights'}
+            ? 'Klicken Sie auf ℹ️ für Details zu jedem KPI – Zahlen bleiben konstant' 
+            : 'Click ℹ️ on any KPI for detailed insights – numbers remain static'}
         </p>
       </div>
 

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,7 +14,7 @@ import { RoleSelector } from './RoleSelector';
 import { LanguageSelector } from './LanguageSelector';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { User, Settings, LogOut, BookOpen, BarChart3, ClipboardList, Home } from 'lucide-react';
+import { User, Settings, LogOut, BarChart3, ClipboardList, Home } from 'lucide-react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 
 export function AppHeader() {
@@ -21,6 +22,12 @@ export function AppHeader() {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
+  const [hasCompletedAssessment, setHasCompletedAssessment] = useState(false);
+
+  useEffect(() => {
+    const completedResults = localStorage.getItem('completed_assessment_results');
+    setHasCompletedAssessment(!!completedResults);
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
@@ -32,11 +39,11 @@ export function AppHeader() {
     return user.email.substring(0, 2).toUpperCase();
   };
 
+  // Navigation items - Resources REMOVED from nav (it's inside Results now)
   const navItems = [
-    { path: '/', label: language === 'de' ? 'Start' : 'Home', icon: Home },
-    { path: '/app/assessment', label: language === 'de' ? 'Bewertung' : 'Assessment', icon: ClipboardList },
-    { path: '/app/results', label: language === 'de' ? 'Ergebnisse' : 'Results', icon: BarChart3 },
-    { path: '/resources', label: language === 'de' ? 'Ressourcen' : 'Resources', icon: BookOpen },
+    { path: '/', label: language === 'de' ? 'Start' : 'Home', icon: Home, alwaysShow: true },
+    { path: '/app/assessment', label: language === 'de' ? 'Bewertung' : 'Assessment', icon: ClipboardList, alwaysShow: true },
+    { path: '/app/results', label: language === 'de' ? 'Ergebnisse' : 'Results', icon: BarChart3, alwaysShow: false },
   ];
 
   return (
@@ -47,9 +54,12 @@ export function AppHeader() {
             Dealership Assessment
           </Link>
           
-          {/* Navigation Links */}
+          {/* Navigation Links - Smart hiding based on assessment completion */}
           <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => {
+              // Hide Results if no completed assessment
+              if (!item.alwaysShow && !hasCompletedAssessment) return null;
+              
               const Icon = item.icon;
               const isActive = location.pathname === item.path || 
                 (item.path !== '/' && location.pathname.startsWith(item.path));

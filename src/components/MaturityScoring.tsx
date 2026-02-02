@@ -2,9 +2,10 @@ import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowRight, CheckCircle, Circle, Target, Zap } from "lucide-react";
+import { CheckCircle, Zap } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Legend } from "recharts";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface MaturityScoringProps {
   scores: Record<string, number>;
@@ -26,57 +27,57 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
   const maturityLevels: MaturityLevel[] = useMemo(() => [
     {
       level: 1,
-      name: t('maturity.basic'),
+      name: language === 'de' ? 'Basis' : 'Basic',
       emoji: '🔴',
       color: 'bg-red-50 text-red-800 border-red-200',
-      description: t('maturity.basicDesc'),
+      description: language === 'de' ? 'Grundlegende Prozesse vorhanden' : 'Basic processes in place',
       characteristics: [
-        t('maturity.char.basic1'),
-        t('maturity.char.basic2'),
-        t('maturity.char.basic3'),
-        t('maturity.char.basic4')
+        language === 'de' ? 'Grundlegende Prozesse vorhanden' : 'Basic processes in place',
+        language === 'de' ? 'Begrenzte Datennutzung' : 'Limited data usage',
+        language === 'de' ? 'Reaktiver Ansatz' : 'Reactive approach',
+        language === 'de' ? 'Verbesserungspotenzial' : 'Room for improvement'
       ]
     },
     {
       level: 2,
-      name: t('maturity.developing'),
+      name: language === 'de' ? 'Entwickelnd' : 'Developing',
       emoji: '🟡',
       color: 'bg-orange-50 text-orange-800 border-orange-200',
-      description: t('maturity.developingDesc'),
+      description: language === 'de' ? 'Prozesse werden standardisiert' : 'Processes being standardized',
       characteristics: [
-        t('maturity.char.developing1'),
-        t('maturity.char.developing2'),
-        t('maturity.char.developing3'),
-        t('maturity.char.developing4')
+        language === 'de' ? 'Strukturierte Prozesse' : 'Structured processes',
+        language === 'de' ? 'Regelmäßige Datenanalyse' : 'Regular data analysis',
+        language === 'de' ? 'Proaktive Maßnahmen' : 'Proactive measures',
+        language === 'de' ? 'Kontinuierliche Verbesserung' : 'Continuous improvement'
       ]
     },
     {
       level: 3,
-      name: t('maturity.mature'),
+      name: language === 'de' ? 'Ausgereift' : 'Mature',
       emoji: '🟦',
       color: 'bg-blue-50 text-blue-800 border-blue-200',
-      description: t('maturity.matureDesc'),
+      description: language === 'de' ? 'Optimierte Prozesse' : 'Optimized processes',
       characteristics: [
-        t('maturity.char.mature1'),
-        t('maturity.char.mature2'),
-        t('maturity.char.mature3'),
-        t('maturity.char.mature4')
+        language === 'de' ? 'Optimierte Arbeitsabläufe' : 'Optimized workflows',
+        language === 'de' ? 'Datengesteuerte Entscheidungen' : 'Data-driven decisions',
+        language === 'de' ? 'Starke Kundenorientierung' : 'Strong customer focus',
+        language === 'de' ? 'Marktführende Praktiken' : 'Market-leading practices'
       ]
     },
     {
       level: 4,
-      name: t('maturity.advanced'),
+      name: language === 'de' ? 'Fortgeschritten' : 'Advanced',
       emoji: '🟢',
       color: 'bg-green-50 text-green-800 border-green-200',
-      description: t('maturity.advancedDesc'),
+      description: language === 'de' ? 'Branchenführend' : 'Industry leading',
       characteristics: [
-        t('maturity.char.advanced1'),
-        t('maturity.char.advanced2'),
-        t('maturity.char.advanced3'),
-        t('maturity.char.advanced4')
+        language === 'de' ? 'Innovation und Best Practices' : 'Innovation and best practices',
+        language === 'de' ? 'Exzellente Leistung' : 'Excellent performance',
+        language === 'de' ? 'Digitale Transformation' : 'Digital transformation',
+        language === 'de' ? 'Benchmarking-Standard' : 'Benchmarking standard'
       ]
     }
-  ], [t]);
+  ], [language]);
 
   const getMaturityLevel = (score: number): MaturityLevel => {
     if (score >= 85) return maturityLevels[3]; // Advanced
@@ -98,45 +99,60 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
     return Object.entries(sectionNames).map(([key, name]) => ({
       subject: name,
       score: scores[key] || 0,
-      benchmark: 70, // Industry average benchmark
+      benchmark: 75, // Industry average benchmark
       fullMark: 100
     }));
+  }, [scores, language]);
+
+  // Gap Analysis Data
+  const gapAnalysisData = useMemo(() => {
+    const INDUSTRY_AVG = 75;
+    const sectionNames: Record<string, Record<string, string>> = {
+      'new-vehicle-sales': { en: 'New Vehicle Sales', de: 'Neuwagenverkauf' },
+      'used-vehicle-sales': { en: 'Used Vehicle Sales', de: 'Gebrauchtwagenverkauf' },
+      'service-performance': { en: 'Service Performance', de: 'Serviceleistung' },
+      'parts-inventory': { en: 'Parts & Inventory', de: 'Teile & Lager' },
+      'financial-operations': { en: 'Financial Operations', de: 'Finanzoperationen' }
+    };
+
+    return Object.entries(scores)
+      .map(([dept, score]) => {
+        const gap = score - INDUSTRY_AVG;
+        let priority: 'critical' | 'medium' | 'low';
+        let priorityLabel: string;
+        let priorityColor: string;
+        
+        if (gap <= -30) {
+          priority = 'critical';
+          priorityLabel = language === 'de' ? 'Kritisch' : 'Critical';
+          priorityColor = 'bg-red-100 text-red-800';
+        } else if (gap <= -10) {
+          priority = 'medium';
+          priorityLabel = language === 'de' ? 'Mittel' : 'Medium';
+          priorityColor = 'bg-yellow-100 text-yellow-800';
+        } else {
+          priority = 'low';
+          priorityLabel = language === 'de' ? 'Niedrig' : 'Low';
+          priorityColor = 'bg-green-100 text-green-800';
+        }
+
+        return {
+          category: sectionNames[dept]?.[language] || dept,
+          yourScore: score,
+          industryAvg: INDUSTRY_AVG,
+          gap,
+          priority,
+          priorityLabel,
+          priorityColor
+        };
+      })
+      .sort((a, b) => a.gap - b.gap); // Sort by gap (most critical first)
   }, [scores, language]);
 
   const overallMaturity = useMemo(() => {
     const avgScore = Object.values(scores).reduce((sum, s) => sum + s, 0) / Object.values(scores).length || 0;
     return getMaturityLevel(avgScore);
   }, [scores, maturityLevels]);
-
-  const getStepsToNextLevel = (): string[] => {
-    const avgScore = Object.values(scores).reduce((sum, s) => sum + s, 0) / Object.values(scores).length || 0;
-    
-    if (avgScore >= 85) {
-      return [
-        language === 'de' ? 'Innovationskultur weiter stärken' : 'Continue strengthening innovation culture',
-        language === 'de' ? 'Best Practices mit anderen teilen' : 'Share best practices with others',
-        language === 'de' ? 'Marktführerschaft ausbauen' : 'Expand market leadership'
-      ];
-    } else if (avgScore >= 70) {
-      return [
-        language === 'de' ? 'Schwächste Bereiche auf 85+ bringen' : 'Bring weakest areas to 85+',
-        language === 'de' ? 'Erweiterte Analytik implementieren' : 'Implement advanced analytics',
-        language === 'de' ? 'Vollständige Prozessautomatisierung' : 'Full process automation'
-      ];
-    } else if (avgScore >= 50) {
-      return [
-        language === 'de' ? 'Kernprozesse standardisieren' : 'Standardize core processes',
-        language === 'de' ? 'Digitale Tools einführen' : 'Introduce digital tools',
-        language === 'de' ? 'Team-Schulungsprogramme starten' : 'Start team training programs'
-      ];
-    } else {
-      return [
-        language === 'de' ? 'Grundlegende Systeme implementieren' : 'Implement basic systems',
-        language === 'de' ? 'Klare Prozesse definieren' : 'Define clear processes',
-        language === 'de' ? 'Performance-Tracking einrichten' : 'Set up performance tracking'
-      ];
-    }
-  };
 
   const departmentMaturityData = useMemo(() => {
     return Object.entries(scores).map(([dept, score]) => {
@@ -148,15 +164,10 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
         'financial-operations': { en: 'Financial Operations', de: 'Finanzoperationen' }
       };
       
-      const level = getMaturityLevel(score);
-      const nextLevel = level.level < 4 ? maturityLevels[level.level] : null;
-      
       return {
         department: deptNames[dept]?.[language] || dept,
         score,
-        level,
-        nextLevel,
-        progressToNext: nextLevel ? Math.min(100, ((score % 20) / 20) * 100) : 100
+        level: getMaturityLevel(score),
       };
     });
   }, [scores, language, maturityLevels]);
@@ -171,8 +182,8 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
           </CardTitle>
           <p className="text-sm text-muted-foreground">
             {language === 'de' 
-              ? 'Ihre Bewertung vs. Branchendurchschnitt (graue Linie)'
-              : 'Your assessment vs. industry benchmark (gray line)'}
+              ? 'Ihre Bewertung (blau) vs. Branchendurchschnitt 75% (graue Linie)'
+              : 'Your assessment (blue) vs. industry benchmark 75% (gray line)'}
           </p>
         </CardHeader>
         <CardContent>
@@ -182,7 +193,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
                 <PolarGrid stroke="#e5e7eb" />
                 <PolarAngleAxis 
                   dataKey="subject" 
-                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                  tick={{ fontSize: 11, fill: '#6b7280' }}
                   className="text-xs"
                 />
                 <PolarRadiusAxis 
@@ -191,11 +202,11 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
                   tick={{ fontSize: 10, fill: '#9ca3af' }}
                 />
                 <Radar
-                  name={language === 'de' ? 'Branchendurchschnitt' : 'Industry Benchmark'}
+                  name={language === 'de' ? 'Branchendurchschnitt (75%)' : 'Industry Benchmark (75%)'}
                   dataKey="benchmark"
                   stroke="#9ca3af"
                   fill="#9ca3af"
-                  fillOpacity={0.2}
+                  fillOpacity={0.15}
                   strokeWidth={2}
                   strokeDasharray="5 5"
                 />
@@ -214,6 +225,50 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
         </CardContent>
       </Card>
 
+      {/* Gap Analysis Table - NEW */}
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            📈 {language === 'de' ? 'Lückenanalyse' : 'Performance Gap Analysis'}
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            {language === 'de' 
+              ? 'Vergleich Ihrer Leistung mit dem Branchendurchschnitt'
+              : 'Comparison of your performance against industry average'}
+          </p>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{language === 'de' ? 'Kategorie' : 'Category'}</TableHead>
+                <TableHead className="text-center">{language === 'de' ? 'Ihre Punktzahl' : 'Your Score'}</TableHead>
+                <TableHead className="text-center">{language === 'de' ? 'Branchendurchschnitt' : 'Industry Avg'}</TableHead>
+                <TableHead className="text-center">{language === 'de' ? 'Lücke' : 'Gap'}</TableHead>
+                <TableHead className="text-center">{language === 'de' ? 'Priorität' : 'Priority'}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {gapAnalysisData.map((row, index) => (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">{row.category}</TableCell>
+                  <TableCell className="text-center font-semibold">{row.yourScore}</TableCell>
+                  <TableCell className="text-center text-muted-foreground">{row.industryAvg}</TableCell>
+                  <TableCell className={`text-center font-semibold ${row.gap >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                    {row.gap >= 0 ? '+' : ''}{row.gap}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge className={row.priorityColor}>
+                      {row.priority === 'critical' ? '🔴' : row.priority === 'medium' ? '🟡' : '🟢'} {row.priorityLabel}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
       {/* Overall Maturity Assessment */}
       <Card className={`border-2 shadow-lg ${overallMaturity.color}`}>
         <CardHeader>
@@ -221,7 +276,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
             <span className="text-3xl">{overallMaturity.emoji}</span>
             <div>
               <CardTitle className="text-xl font-bold">
-                {t('maturity.title')}: {overallMaturity.name}
+                {language === 'de' ? 'Reifestufe' : 'Maturity Level'}: {overallMaturity.name}
               </CardTitle>
               <p className="text-sm opacity-80 mt-1">{overallMaturity.description}</p>
             </div>
@@ -230,7 +285,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h4 className="font-medium mb-3">{t('maturity.currentCharacteristics')}</h4>
+              <h4 className="font-medium mb-3">{language === 'de' ? 'Aktuelle Merkmale' : 'Current Characteristics'}</h4>
               <ul className="space-y-1">
                 {overallMaturity.characteristics.map((char, index) => (
                   <li key={index} className="flex items-start gap-2 text-sm">
@@ -241,7 +296,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
               </ul>
             </div>
             <div>
-              <h4 className="font-medium mb-3">{t('maturity.maturityDistribution')}</h4>
+              <h4 className="font-medium mb-3">{language === 'de' ? 'Reifeverteilung' : 'Maturity Distribution'}</h4>
               <div className="space-y-2">
                 {maturityLevels.map((level) => {
                   const count = departmentMaturityData.filter(d => d.level.level === level.level).length;
@@ -254,7 +309,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
                       </span>
                       <div className="flex items-center gap-2">
                         <Progress value={percentage} className="w-20" />
-                        <span className="text-xs w-8">{count}</span>
+                        <span className="text-xs w-8">{count} {language === 'de' ? 'Bereiche' : 'areas'}</span>
                       </div>
                     </div>
                   );
@@ -265,97 +320,29 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
         </CardContent>
       </Card>
 
-      {/* Steps to Next Level */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-        <CardHeader>
-          <CardTitle className="text-blue-800 flex items-center gap-2">
-            <Target className="h-5 w-5" />
-            {language === 'de' ? '3 Schritte zur nächsten Stufe' : '3 Steps to Next Maturity Level'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {getStepsToNextLevel().map((step, index) => (
-              <div key={index} className="flex items-start gap-3 bg-white rounded-lg p-4 shadow-sm">
-                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold flex-shrink-0">
-                  {index + 1}
-                </div>
-                <p className="text-sm text-blue-800 font-medium">{step}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Department Maturity Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {departmentMaturityData.map((dept, index) => (
-          <Card key={index} className="border hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">{dept.department}</CardTitle>
-                <Badge className={dept.level.color} variant="outline">
-                  {dept.level.emoji} {dept.level.name}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Current Status */}
-              <div className="bg-gray-50 rounded-lg p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium text-gray-700">{t('maturity.currentScore')}</span>
-                  <span className="text-xl font-bold">{Math.round(dept.score)}</span>
-                </div>
-                <Progress value={dept.score} className="mb-2" />
-                <p className="text-sm text-gray-600">{dept.level.description}</p>
-              </div>
-
-              {/* Progress to Next Level */}
-              {dept.nextLevel && (
-                <div className="bg-blue-50 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-blue-700">
-                      {t('maturity.progressTo')} {dept.nextLevel.name}
-                    </span>
-                    <span className="text-blue-600 font-bold">{Math.round(dept.progressToNext)}%</span>
-                  </div>
-                  <Progress value={dept.progressToNext} className="mb-2" />
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-blue-600">{t('maturity.nextMilestone')}:</span>
-                    <span className="text-blue-800 font-medium">
-                      {dept.nextLevel.emoji} {dept.nextLevel.name} {t('maturity.level')}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
       {/* Maturity Roadmap */}
       <Card className="bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200">
         <CardHeader>
           <CardTitle className="text-slate-800 flex items-center gap-2">
             <Zap className="h-5 w-5" />
-            {t('maturity.developmentRoadmap')}
+            {language === 'de' ? 'Entwicklungs-Roadmap' : 'Development Roadmap'}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap justify-center gap-4">
             {maturityLevels.map((level, index) => (
               <div key={level.level} className="flex items-center gap-2">
-                <div className={`w-16 h-16 rounded-full border-2 flex flex-col items-center justify-center font-bold ${level.color}`}>
+                <div className={`w-16 h-16 rounded-full border-2 flex flex-col items-center justify-center font-bold ${level.color} ${overallMaturity.level === level.level ? 'ring-2 ring-primary ring-offset-2' : ''}`}>
                   <span className="text-2xl">{level.emoji}</span>
                 </div>
                 <div className="text-sm">
                   <div className="font-bold">{level.name}</div>
                   <div className="text-muted-foreground">
-                    {departmentMaturityData.filter(d => d.level.level === level.level).length} {t('maturity.departments')}
+                    {departmentMaturityData.filter(d => d.level.level === level.level).length} {language === 'de' ? 'Bereiche' : 'depts'}
                   </div>
                 </div>
                 {index < maturityLevels.length - 1 && (
-                  <ArrowRight className="h-6 w-6 text-gray-400 mx-2" />
+                  <div className="hidden md:block w-8 h-0.5 bg-gray-300 mx-2" />
                 )}
               </div>
             ))}
