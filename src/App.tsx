@@ -12,6 +12,7 @@ import AuthCallback from "./pages/AuthCallback";
 import Account from "./pages/Account";
 import Actions from "./pages/Actions";
 import ResourceHub from "./pages/ResourceHub";
+import Methodology from "./pages/Methodology";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/hooks/useAuth";
 import { MultiTenantProvider } from "@/hooks/useMultiTenant";
@@ -32,6 +33,7 @@ const App = () => (
             <Routes>
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/methodology" element={<Methodology />} />
               <Route path="/app/*" element={
                 <ProtectedRoute>
                   <Routes>

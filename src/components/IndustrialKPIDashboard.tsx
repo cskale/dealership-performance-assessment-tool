@@ -302,11 +302,16 @@ export function IndustrialKPIDashboard({ scores, answers, onNavigateToResources 
                         </div>
                         <button
                           onClick={() => {
-                            // Navigate to the Resources tab on the same Results page
-                            const resourcesTab = document.querySelector('[value="resources"]') as HTMLElement;
-                            if (resourcesTab) {
-                              resourcesTab.click();
-                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            // Use the callback prop to navigate to Resources tab
+                            if (onNavigateToResources) {
+                              onNavigateToResources();
+                            } else {
+                              // Fallback: directly click the resources tab
+                              const resourcesTab = document.querySelector('[value="resources"]') as HTMLElement;
+                              if (resourcesTab) {
+                                resourcesTab.click();
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                              }
                             }
                           }}
                           className="inline-flex items-center gap-1 text-sm text-primary hover:underline cursor-pointer bg-transparent border-none p-0"

@@ -205,6 +205,45 @@ export type Database = {
         }
         Relationships: []
       }
+      dealer_contexts: {
+        Row: {
+          annual_unit_sales: number
+          avg_gross_profit_per_unit: number | null
+          avg_monthly_leads: number | null
+          brand_represented: string
+          brand_tier: string
+          created_at: string | null
+          id: string
+          market_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          annual_unit_sales: number
+          avg_gross_profit_per_unit?: number | null
+          avg_monthly_leads?: number | null
+          brand_represented: string
+          brand_tier: string
+          created_at?: string | null
+          id?: string
+          market_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          annual_unit_sales?: number
+          avg_gross_profit_per_unit?: number | null
+          avg_monthly_leads?: number | null
+          brand_represented?: string
+          brand_tier?: string
+          created_at?: string | null
+          id?: string
+          market_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       dealership_contacts: {
         Row: {
           contact_email: string | null
