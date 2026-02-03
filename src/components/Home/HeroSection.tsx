@@ -69,7 +69,7 @@ export function HeroSection({ hasCompletedAssessment }: HeroSectionProps) {
             </Button>
           </Link>
           
-          <Link to="/resources">
+          <Link to="/methodology">
             <Button 
               size="lg" 
               variant="outline" 

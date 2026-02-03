@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Download, FileText, RefreshCw, ArrowLeft, HelpCircle } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { Download, FileText, RefreshCw, ArrowLeft, HelpCircle, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
@@ -16,12 +17,14 @@ import { ActionPlan } from "@/components/ActionPlan";
 import { UsefulResources } from "@/components/UsefulResources";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AppHeader } from "@/components/AppHeader";
+import { calculateWeightedScore, CATEGORY_WEIGHTS } from "@/lib/scoringEngine";
 
 export default function Results() {
   const [activeTab, setActiveTab] = useState("executive");
   const [resultsData, setResultsData] = useState<any>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [animatedScore, setAnimatedScore] = useState(0);
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -61,10 +64,34 @@ export default function Results() {
     loadData();
   }, [navigate, toast, t]);
 
-  // Calculate overall score ONCE - memoized
+  // Calculate weighted overall score ONCE - memoized
   const overallScore = useMemo(() => {
-    return resultsData?.overallScore || 0;
-  }, [resultsData?.overallScore]);
+    if (!resultsData?.scores) return 0;
+    // Use weighted scoring engine for proper calculation
+    return calculateWeightedScore(resultsData.scores);
+  }, [resultsData?.scores]);
+
+  // Animate score on load - smooth clockwise animation
+  useEffect(() => {
+    if (overallScore > 0 && !isLoading) {
+      const duration = 1200; // 1.2 seconds
+      const startTime = Date.now();
+      
+      const animate = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease-out cubic for smooth deceleration
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setAnimatedScore(Math.round(overallScore * eased));
+        
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      };
+      
+      requestAnimationFrame(animate);
+    }
+  }, [overallScore, isLoading]);
 
   const handleRetakeAssessment = () => {
     localStorage.removeItem('completed_assessment_results');
@@ -212,33 +239,60 @@ export default function Results() {
             {language === 'de' ? 'Umfassende Analyse abgeschlossen am' : 'Comprehensive analysis completed on'} {formatDate(resultsData.completedAt)}
           </p>
           
-          {/* Single Large Score Circle - NO DUPLICATE */}
+          {/* Single Large Score Circle with smooth clockwise animation */}
           <div className="flex justify-center mb-8">
             <div className="relative inline-block">
-              <svg className="w-40 h-40 md:w-48 md:h-48 transform -rotate-90">
-                <circle
-                  cx="50%"
-                  cy="50%"
-                  r="45%"
-                  fill="none"
-                  stroke="hsl(var(--muted))"
-                  strokeWidth="12"
-                />
-                <circle
-                  cx="50%"
-                  cy="50%"
-                  r="45%"
-                  fill="none"
-                  className={getScoreColor(overallScore)}
-                  strokeWidth="12"
-                  strokeLinecap="round"
-                  strokeDasharray={`${(overallScore / 100) * 283} 283`}
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-5xl md:text-6xl font-bold text-foreground">{overallScore}</span>
-                <span className="text-lg text-muted-foreground">/100</span>
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="cursor-help">
+                    <svg className="w-40 h-40 md:w-48 md:h-48" viewBox="0 0 100 100">
+                      {/* Background circle */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="45"
+                        fill="none"
+                        stroke="hsl(var(--muted))"
+                        strokeWidth="8"
+                      />
+                      {/* Animated progress circle - starts from top (12 o'clock) */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="45"
+                        fill="none"
+                        className={getScoreColor(overallScore)}
+                        strokeWidth="8"
+                        strokeLinecap="round"
+                        strokeDasharray={`${(animatedScore / 100) * 283} 283`}
+                        transform="rotate(-90 50 50)"
+                        style={{ 
+                          transition: 'stroke-dasharray 0.1s ease-out'
+                        }}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-5xl md:text-6xl font-bold text-foreground">{animatedScore}</span>
+                      <span className="text-lg text-muted-foreground">/100</span>
+                    </div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs p-3">
+                  <p className="font-medium mb-2">{language === 'de' ? 'Gewichtete Punktzahl' : 'Weighted Score'}</p>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    {language === 'de' 
+                      ? 'Diese Punktzahl wird nach Geschäftsbereich gewichtet berechnet:' 
+                      : 'This score is calculated with weighted categories:'}
+                  </p>
+                  <ul className="text-xs space-y-1">
+                    <li>• {language === 'de' ? 'Neuwagenverkauf' : 'New Vehicle Sales'}: 25%</li>
+                    <li>• {language === 'de' ? 'Gebrauchtwagenverkauf' : 'Used Vehicle Sales'}: 20%</li>
+                    <li>• {language === 'de' ? 'Serviceleistung' : 'Service Performance'}: 20%</li>
+                    <li>• {language === 'de' ? 'Finanzoperationen' : 'Financial Operations'}: 20%</li>
+                    <li>• {language === 'de' ? 'Teile & Lager' : 'Parts & Inventory'}: 15%</li>
+                  </ul>
+                </TooltipContent>
+              </Tooltip>
             </div>
           </div>
 
