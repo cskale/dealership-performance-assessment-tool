@@ -14,10 +14,25 @@ export type Database = {
   }
   public: {
     Tables: {
+      _migration_guards: {
+        Row: {
+          applied_at: string
+          name: string
+        }
+        Insert: {
+          applied_at?: string
+          name: string
+        }
+        Update: {
+          applied_at?: string
+          name?: string
+        }
+        Relationships: []
+      }
       actions: {
         Row: {
           created_at: string
-          created_by: string | null
+          created_by: string
           dealer_id: string
           description: string | null
           due_date: string | null
@@ -28,7 +43,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          created_by?: string | null
+          created_by: string
           dealer_id: string
           description?: string | null
           due_date?: string | null
@@ -39,7 +54,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          created_by?: string | null
+          created_by?: string
           dealer_id?: string
           description?: string | null
           due_date?: string | null
@@ -205,6 +220,50 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_dealership_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          coach_user_id: string
+          dealership_id: string
+          id: string
+          is_active: boolean
+          revoked_at: string | null
+          valid_from: string | null
+          valid_to: string | null
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          coach_user_id: string
+          dealership_id: string
+          id?: string
+          is_active?: boolean
+          revoked_at?: string | null
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          coach_user_id?: string
+          dealership_id?: string
+          id?: string
+          is_active?: boolean
+          revoked_at?: string | null
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_dealership_assignments_dealership_id_fkey"
+            columns: ["dealership_id"]
+            isOneToOne: false
+            referencedRelation: "dealerships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dealer_contexts: {
         Row: {
           annual_unit_sales: number
@@ -287,7 +346,7 @@ export type Database = {
           id: string
           location: string
           name: string
-          organization_id: string | null
+          organization_id: string
           updated_at: string
           user_id: string | null
         }
@@ -298,7 +357,7 @@ export type Database = {
           id?: string
           location: string
           name: string
-          organization_id?: string | null
+          organization_id: string
           updated_at?: string
           user_id?: string | null
         }
@@ -309,7 +368,7 @@ export type Database = {
           id?: string
           location?: string
           name?: string
-          organization_id?: string | null
+          organization_id?: string
           updated_at?: string
           user_id?: string | null
         }
@@ -334,7 +393,7 @@ export type Database = {
           expected_impact: string | null
           id: string
           kpis_linked_to: string[] | null
-          organization_id: string | null
+          organization_id: string
           priority: string
           responsible_person: string | null
           status: string | null
@@ -352,7 +411,7 @@ export type Database = {
           expected_impact?: string | null
           id?: string
           kpis_linked_to?: string[] | null
-          organization_id?: string | null
+          organization_id: string
           priority: string
           responsible_person?: string | null
           status?: string | null
@@ -370,7 +429,7 @@ export type Database = {
           expected_impact?: string | null
           id?: string
           kpis_linked_to?: string[] | null
-          organization_id?: string | null
+          organization_id?: string
           priority?: string
           responsible_person?: string | null
           status?: string | null
@@ -379,6 +438,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "improvement_actions_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "improvement_actions_organization_id_fkey"
             columns: ["organization_id"]
@@ -677,6 +743,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_read_dealership: {
+        Args: { p_dealership_id: string }
+        Returns: boolean
+      }
       delete_user_account: { Args: { _user_id: string }; Returns: boolean }
       export_user_data: { Args: { _user_id: string }; Returns: Json }
       get_user_dealer_id: { Args: { _user_id: string }; Returns: string }
@@ -685,6 +755,19 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_admin_in_dealer_org: {
+        Args: { p_dealership_id: string }
+        Returns: boolean
+      }
+      is_assigned_coach: { Args: { p_dealership_id: string }; Returns: boolean }
+      is_member_of_dealer_org: {
+        Args: { p_dealership_id: string }
+        Returns: boolean
+      }
+      is_privileged_in_dealer_org: {
+        Args: { p_dealership_id: string }
         Returns: boolean
       }
     }
