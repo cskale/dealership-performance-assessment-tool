@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, AlertTriangle, Target } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { TOTAL_QUESTIONS } from "@/lib/constants";
 
 interface ExecutiveSummaryProps {
   overallScore: number;
@@ -298,7 +299,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt }:
               <div className="text-sm text-white/80">{industryComparison.percentile}</div>
             </div>
             <div>
-              <div className="text-2xl font-bold">{questionsAnswered}/60</div>
+              <div className="text-2xl font-bold">{questionsAnswered}/{TOTAL_QUESTIONS}</div>
               <div className="text-sm text-white/80">{language === 'de' ? 'Fragen' : 'Questions'}</div>
             </div>
             <div>

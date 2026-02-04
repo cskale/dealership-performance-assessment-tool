@@ -336,8 +336,6 @@ export default function Results() {
           <TabsContent value="kpi" className="space-y-6 animate-fade-in">
             <IndustrialKPIDashboard
               scores={resultsData.scores}
-              answers={resultsData.answers}
-              onNavigateToResources={handleNavigateToResources}
             />
           </TabsContent>
 

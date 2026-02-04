@@ -302,15 +302,11 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
                   const count = departmentMaturityData.filter(d => d.level.level === level.level).length;
                   const percentage = (count / departmentMaturityData.length) * 100;
                   return (
-                    <div key={level.level} className="flex items-center justify-between text-sm">
-                      <span className="flex items-center gap-2">
-                        <span>{level.emoji}</span>
-                        <span>{level.name}</span>
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <Progress value={percentage} className="w-20" />
-                        <span className="text-xs w-8">{count} {language === 'de' ? 'Bereiche' : 'areas'}</span>
-                      </div>
+                    <div key={level.level} className="flex items-center gap-2 text-sm whitespace-nowrap">
+                      <span className="flex-shrink-0">{level.emoji}</span>
+                      <span className="flex-shrink-0 w-20">{level.name}</span>
+                      <Progress value={percentage} className="flex-1 h-2 min-w-[60px]" />
+                      <span className="flex-shrink-0 text-xs w-16 text-right">{count} {language === 'de' ? 'Bereiche' : 'areas'}</span>
                     </div>
                   );
                 })}

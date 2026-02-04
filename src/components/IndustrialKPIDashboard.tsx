@@ -1,13 +1,10 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, Target, Award, AlertTriangle, Info, Lightbulb, BookOpen, ChevronDown, ExternalLink, DollarSign } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, DollarSign } from "lucide-react";
 import { formatEuro, formatPercentage, formatNumber, generateRealisticData, industryBenchmarks } from "@/utils/euroFormatter";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Link } from "react-router-dom";
 
 interface IndustrialKPIDashboardProps {
   scores: Record<string, number>;
@@ -98,21 +95,8 @@ const kpiDefinitions: Record<string, {
   }
 };
 
-export function IndustrialKPIDashboard({ scores, answers, onNavigateToResources }: IndustrialKPIDashboardProps) {
-  const { t, language } = useLanguage();
-  const [expandedKPIs, setExpandedKPIs] = useState<Set<string>>(new Set());
-
-  const toggleKPI = (key: string) => {
-    setExpandedKPIs(prev => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
-      }
-      return next;
-    });
-  };
+export function IndustrialKPIDashboard({ scores }: { scores: Record<string, number> }) {
+  const { language } = useLanguage();
 
   // CRITICAL FIX: Memoize ALL KPI data to prevent recalculation when clicking info button
   // This ensures numbers stay STATIC and never change
@@ -216,9 +200,6 @@ export function IndustrialKPIDashboard({ scores, answers, onNavigateToResources 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         {kpiData.map(({ key, value, benchmark, performance, isGood }) => {
-          const definition = kpiDefinitions[key];
-          const isExpanded = expandedKPIs.has(key);
-          
           return (
             <Card key={key} className={`border-l-4 ${isGood ? 'border-l-green-500' : 'border-l-red-500'}`}>
               <CardContent className="p-4">
@@ -227,16 +208,7 @@ export function IndustrialKPIDashboard({ scores, answers, onNavigateToResources 
                     {getKPILabel(key)}
                   </h4>
                   <div className="flex items-center gap-1">
-                    {definition && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0"
-                        onClick={() => toggleKPI(key)}
-                      >
-                        <Info className={`h-4 w-4 ${isExpanded ? 'text-primary' : 'text-muted-foreground'}`} />
-                      </Button>
-                    )}
+                    {/* BUG #7 FIX: Tooltip icons REMOVED from all KPIs */}
                     {isGood ? (
                       <TrendingUp className="h-4 w-4 text-green-600" />
                     ) : (
@@ -244,7 +216,8 @@ export function IndustrialKPIDashboard({ scores, answers, onNavigateToResources 
                     )}
                   </div>
                 </div>
-                
+
+                {/* BUG #8 FIX: New Progress Bar with Benchmark Indicator */}
                 <div className="space-y-2">
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold">{formatValue(key, value)}</span>
@@ -253,75 +226,42 @@ export function IndustrialKPIDashboard({ scores, answers, onNavigateToResources 
                     </span>
                   </div>
                   
+                  {/* Progress Bar with Benchmark Marker */}
+                  <div className="relative">
+                    {/* Background track */}
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                      {/* Filled progress */}
+                      <div 
+                        className={`h-full transition-all duration-300 ease-out rounded-full ${
+                          isGood ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' : 
+                          performance >= -30 ? 'bg-gradient-to-r from-orange-400 to-orange-500' :
+                          'bg-gradient-to-r from-red-400 to-red-500'
+                        }`}
+                        style={{ width: `${Math.min(100, Math.max(0, (value / benchmark) * 100))}%` }}
+                      />
+                    </div>
+                    {/* Benchmark marker line at 100% of benchmark */}
+                    <div 
+                      className="absolute top-0 w-0.5 h-3 bg-slate-700 -translate-y-0.5"
+                      style={{ left: `${Math.min(100, 100)}%`, transform: 'translateX(-50%)' }}
+                      title={`Benchmark: ${formatValue(key, benchmark)}`}
+                    />
+                  </div>
+                  
+                  {/* Values display */}
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">
-                      {language === 'de' ? 'Benchmark' : 'Benchmark'}
+                      Current: {formatValue(key, value)} | Benchmark: {formatValue(key, benchmark)}
                     </span>
-                    <Badge variant={isGood ? "default" : "destructive"} className="text-xs">
+                    <Badge 
+                      variant={isGood ? "default" : "destructive"} 
+                      className="text-xs"
+                      aria-label={`Performance: ${performance >= 0 ? '+' : ''}${performance.toFixed(1)}% variance from benchmark`}
+                    >
                       {performance >= 0 ? '+' : ''}{formatPercentage(Math.abs(performance))}
                     </Badge>
                   </div>
-                  
-                  <Progress 
-                    value={Math.min(100, Math.max(0, 50 + performance))} 
-                    className="h-2"
-                  />
                 </div>
-
-                {/* Collapsible Info Section */}
-                {definition && isExpanded && (
-                  <div className="mt-4 pt-4 border-t space-y-3">
-                    {/* What is this? */}
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                        <Info className="h-3 w-3" />
-                        {language === 'de' ? 'Was ist das?' : 'What is this?'}
-                      </div>
-                      <p className="text-sm">
-                        {definition.definition[language]}
-                      </p>
-                    </div>
-
-                    {/* Why it matters */}
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                        <Lightbulb className="h-3 w-3" />
-                        {language === 'de' ? 'Warum wichtig?' : 'Why it matters?'}
-                      </div>
-                      <p className="text-sm">
-                        {definition.whyMatters[language]}
-                      </p>
-                    </div>
-
-                    {/* Related Resources - Links to Resources tab on Results page */}
-                    {definition.topics.length > 0 && (
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                          <BookOpen className="h-3 w-3" />
-                          {language === 'de' ? 'Ressourcen' : 'Resources'}
-                        </div>
-                        <button
-                          onClick={() => {
-                            // Use the callback prop to navigate to Resources tab
-                            if (onNavigateToResources) {
-                              onNavigateToResources();
-                            } else {
-                              // Fallback: directly click the resources tab
-                              const resourcesTab = document.querySelector('[value="resources"]') as HTMLElement;
-                              if (resourcesTab) {
-                                resourcesTab.click();
-                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                              }
-                            }
-                          }}
-                          className="inline-flex items-center gap-1 text-sm text-primary hover:underline cursor-pointer bg-transparent border-none p-0"
-                        >
-                          📚 {language === 'de' ? 'Passende Lernmaterialien' : 'Related Learning'} ({definition.topics.length})
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
               </CardContent>
             </Card>
           );
@@ -426,75 +366,35 @@ export function IndustrialKPIDashboard({ scores, answers, onNavigateToResources 
         </div>
       ))}
 
-      {/* Overall Performance Summary */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-primary/20">
+      {/* Strategic Recommendations - Kept for actionable insights, NOT redundant with Overall Performance */}
+      <Card className="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200">
         <CardHeader>
-          <CardTitle className="text-2xl text-center text-primary flex items-center justify-center gap-2">
-            <Award className="h-6 w-6" />
-            {language === 'de' ? 'Gesamtleistung' : 'Overall Performance'}
+          <CardTitle className="text-xl text-amber-800 flex items-center gap-2">
+            <Target className="h-5 w-5" />
+            {language === 'de' ? 'Strategische Empfehlungen' : 'Strategic Recommendations'}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">
-                {Math.round(Object.values(scores).reduce((sum, score) => sum + score, 0) / Object.values(scores).length)}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {language === 'de' ? 'Gesamtwert' : 'Overall Score'}
-              </div>
-            </div>
-            
-            <div className="text-center">
-              <div className="text-4xl font-bold text-green-600 mb-2">
-                {Object.values(scores).filter(score => score >= 70).length}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {language === 'de' ? 'Starke Bereiche' : 'Strong Areas'}
-              </div>
-            </div>
-            
-            <div className="text-center">
-              <div className="text-4xl font-bold text-orange-600 mb-2">
-                {Object.values(scores).filter(score => score < 70).length}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {language === 'de' ? 'Verbesserungsbereiche' : 'Improvement Areas'}
-              </div>
-            </div>
-          </div>
-          
-          <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <Target className="h-5 w-5 text-yellow-600" />
-              <h4 className="font-semibold text-yellow-800">
-                {language === 'de' ? 'Strategische Empfehlungen' : 'Strategic Recommendations'}
-              </h4>
-            </div>
-            <ul className="text-sm text-yellow-700 space-y-1">
-              {Object.entries(scores)
-                .filter(([_, score]) => score < 70)
-                .map(([sectionId, _]) => (
-                  <li key={sectionId}>
-                    • {language === 'de' ? 'Fokus auf Verbesserung von' : 'Focus on improving'} {getSectionTitle(sectionId).toLowerCase()} {language === 'de' ? 'durch gezielte Schulung' : 'through targeted training'}
-                  </li>
-                ))
-              }
-              {Object.values(scores).every(score => score >= 70) && (
-                <li>• {language === 'de' ? 'Hervorragende Leistung in allen Bereichen!' : 'Excellent performance across all areas!'}</li>
-              )}
-            </ul>
-          </div>
-
-          {/* Link to Resource Hub */}
-          <div className="mt-6 text-center">
-            <Link to="/resources">
-              <Button variant="outline" className="gap-2">
-                <BookOpen className="h-4 w-4" />
-                {language === 'de' ? 'Lernressourcen erkunden' : 'Explore Learning Resources'}
-              </Button>
-            </Link>
-          </div>
+          <ul className="text-sm text-amber-800 space-y-2">
+            {Object.entries(scores)
+              .filter(([_, score]) => score < 70)
+              .slice(0, 3)
+              .map(([sectionId, score]) => (
+                <li key={sectionId} className="flex items-start gap-2">
+                  <span className="text-amber-600 mt-0.5">•</span>
+                  <span>
+                    {language === 'de' ? 'Fokus auf Verbesserung von' : 'Focus on improving'} <strong>{getSectionTitle(sectionId)}</strong> ({score}%) {language === 'de' ? 'durch gezielte Schulung und Prozessoptimierung' : 'through targeted training and process optimization'}
+                  </span>
+                </li>
+              ))
+            }
+            {Object.values(scores).every(score => score >= 70) && (
+              <li className="flex items-start gap-2">
+                <span className="text-green-600">✓</span>
+                {language === 'de' ? 'Hervorragende Leistung in allen Bereichen! Fokus auf kontinuierliche Verbesserung.' : 'Excellent performance across all areas! Focus on continuous improvement.'}
+              </li>
+            )}
+          </ul>
         </CardContent>
       </Card>
     </div>

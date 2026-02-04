@@ -34,9 +34,17 @@ export const useAssessmentData = () => {
       // Extract contact info before saving dealership
       const { contactEmail, phone, ...dealershipFields } = dealershipData;
       
+      // Get user's active organization
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('active_organization_id')
+        .eq('user_id', user.id)
+        .single();
+        
       const dealershipWithUser = {
         ...dealershipFields,
-        user_id: user.id
+        user_id: user.id,
+        organization_id: profile?.active_organization_id || dealershipFields.id || crypto.randomUUID()
       };
 
       // Save dealership (without contact info)
