@@ -11,6 +11,8 @@ import { SmartAssistant } from "@/components/SmartAssistant";
 import { questionnaire, getTranslatedSection } from "@/data/questionnaire";
 import { useAssessmentData } from "@/hooks/useAssessmentData";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAutoActionGeneration } from "@/hooks/useAutoActionGeneration";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Assessment() {
   const [currentSection, setCurrentSection] = useState(0);
@@ -27,6 +29,8 @@ export default function Assessment() {
     loadAssessment, 
     isLoading 
   } = useAssessmentData();
+  
+  const { generateActions } = useAutoActionGeneration();
 
   // Get translated sections
   const translatedSections = useMemo(() => {
@@ -184,6 +188,29 @@ export default function Assessment() {
         completedAt: new Date().toISOString(),
         assessmentId
       }));
+      
+      // AUTO-GENERATE ACTIONS: Trigger deterministic signal engine
+      try {
+        // Get user's active organization
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('active_organization_id')
+          .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+          .single();
+        
+        const organizationId = profile?.active_organization_id;
+        
+        if (organizationId) {
+          const result = await generateActions(assessmentId, answers, organizationId);
+          
+          if (result.success && result.actionsGenerated > 0) {
+            console.log(`[Assessment] Auto-generated ${result.actionsGenerated} improvement actions`);
+          }
+        }
+      } catch (actionError) {
+        // Don't block assessment completion if action generation fails
+        console.error('[Assessment] Action generation failed:', actionError);
+      }
       
       // Show success message and navigate
       toast({
