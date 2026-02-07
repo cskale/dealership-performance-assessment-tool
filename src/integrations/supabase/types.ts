@@ -521,6 +521,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active_dealership_id: string | null
           active_organization_id: string | null
           avatar_url: string | null
           bio: string | null
@@ -543,6 +544,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          active_dealership_id?: string | null
           active_organization_id?: string | null
           avatar_url?: string | null
           bio?: string | null
@@ -565,6 +567,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          active_dealership_id?: string | null
           active_organization_id?: string | null
           avatar_url?: string | null
           bio?: string | null
@@ -587,6 +590,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_active_dealership_id_fkey"
+            columns: ["active_dealership_id"]
+            isOneToOne: false
+            referencedRelation: "dealerships"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profiles_active_organization_id_fkey"
             columns: ["active_organization_id"]
