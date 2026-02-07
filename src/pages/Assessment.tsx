@@ -3,22 +3,27 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, Car, Wrench, Package, BarChart3, Bot, ArrowLeft, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Car, Wrench, Package, BarChart3, Bot, ArrowLeft, Check, Loader2, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { CategoryAssessment } from "@/components/assessment/CategoryAssessment";
 import { SmartAssistant } from "@/components/SmartAssistant";
 import { questionnaire, getTranslatedSection } from "@/data/questionnaire";
-import { useAssessmentData } from "@/hooks/useAssessmentData";
+import { useAssessmentData, OnboardingError } from "@/hooks/useAssessmentData";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAutoActionGeneration } from "@/hooks/useAutoActionGeneration";
+import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
+
+type CompletionState = 'idle' | 'saving' | 'generating_actions' | 'complete' | 'error';
 
 export default function Assessment() {
   const [currentSection, setCurrentSection] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [showAssistant, setShowAssistant] = useState(false);
   const [scores, setScores] = useState<Record<string, number>>({});
+  const [completionState, setCompletionState] = useState<CompletionState>('idle');
+  const [completionError, setCompletionError] = useState<string | null>(null);
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -30,7 +35,15 @@ export default function Assessment() {
     isLoading 
   } = useAssessmentData();
   
-  const { generateActions } = useAutoActionGeneration();
+  const { generateActions, isEnabled: autoActionsEnabled } = useAutoActionGeneration();
+  const { status: onboardingStatus, context: onboardingContext } = useOnboarding();
+
+  // Redirect to onboarding if not complete
+  useEffect(() => {
+    if (onboardingStatus === 'needs_organization' || onboardingStatus === 'needs_dealership') {
+      navigate('/app/onboarding');
+    }
+  }, [onboardingStatus, navigate]);
 
   // Get translated sections
   const translatedSections = useMemo(() => {
@@ -69,7 +82,7 @@ export default function Assessment() {
     const newScores = calculateScores(newAnswers);
     setScores(newScores);
     
-    // Auto-save to local storage
+    // Auto-save to local storage (in-progress, non-blocking)
     try {
       const overallScore = Object.values(newScores).length > 0 
         ? Math.round(Object.values(newScores).reduce((sum, score) => sum + score, 0) / Object.values(newScores).length)
@@ -82,7 +95,10 @@ export default function Assessment() {
         status: 'in_progress' as const
       });
     } catch (error) {
-      console.error('Failed to save assessment:', error);
+      // Don't show error for in-progress saves - just log
+      if (import.meta.env.DEV) {
+        console.warn('Failed to auto-save assessment:', error);
+      }
     }
     
     toast({
@@ -148,7 +164,24 @@ export default function Assessment() {
     }
   }, [assessment]);
 
+  /**
+   * CRITICAL: Assessment completion flow
+   * 
+   * This is an ATOMIC operation that:
+   * 1. Validates user has org/dealership context
+   * 2. Saves assessment to DB with DB-generated ID
+   * 3. Generates actions using that real ID
+   * 4. Only then navigates to results
+   * 
+   * NO fire-and-forget. NO client UUIDs. NO silent failures.
+   */
   const handleFinishAssessment = async () => {
+    // Prevent double-submission
+    if (completionState !== 'idle') return;
+
+    setCompletionState('saving');
+    setCompletionError(null);
+    
     try {
       const finalScores = calculateScores(answers);
       const overallScore = Object.values(finalScores).length > 0 
@@ -165,67 +198,124 @@ export default function Assessment() {
           description: `${t('assessment.pleaseAnswerAll')} ${answeredQs}/${totalQs} ${t('assessment.completed')}.`,
           variant: "destructive",
         });
+        setCompletionState('idle');
         return;
       }
       
-      await saveAssessment({
+      // STEP 1: Save assessment to database
+      // This validates org/dealership and returns real DB ID
+      const savedAssessment = await saveAssessment({
         answers,
         scores: finalScores,
         overallScore,
         status: 'completed' as const,
         completedAt: new Date().toISOString()
       });
+
+      // Get the real DB-generated assessment ID
+      const realAssessmentId = savedAssessment.dbId || savedAssessment.id;
       
-      // Clear assessment from localStorage to allow fresh start
+      if (!realAssessmentId) {
+        throw new Error('Failed to get assessment ID from database');
+      }
+
+      if (import.meta.env.DEV) {
+        console.log('[Assessment] Saved with DB ID:', realAssessmentId);
+      }
+      
+      // Clear in-progress data from localStorage
       localStorage.removeItem('assessment_data');
       
-      // Store completed assessment results for the results page with unique ID
-      const assessmentId = crypto.randomUUID();
+      // Store completed results for the results page
       localStorage.setItem('completed_assessment_results', JSON.stringify({
         answers,
         scores: finalScores,
         overallScore,
         completedAt: new Date().toISOString(),
-        assessmentId
+        assessmentId: realAssessmentId // Real DB ID
       }));
       
-      // AUTO-GENERATE ACTIONS: Trigger deterministic signal engine
-      try {
-        // Get user's active organization
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('active_organization_id')
-          .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-          .single();
-        
-        const organizationId = profile?.active_organization_id;
-        
-        if (organizationId) {
-          const result = await generateActions(assessmentId, answers, organizationId);
+      // STEP 2: Generate actions using REAL assessment ID
+      setCompletionState('generating_actions');
+      
+      let actionResult: { success: boolean; actionsGenerated: number; error?: string } = { success: true, actionsGenerated: 0, error: undefined };
+      
+      if (autoActionsEnabled && onboardingContext.organizationId) {
+        try {
+          actionResult = await generateActions(
+            realAssessmentId,  // Real DB-generated UUID
+            answers,
+            onboardingContext.organizationId
+          );
           
-          if (result.success && result.actionsGenerated > 0) {
-            console.log(`[Assessment] Auto-generated ${result.actionsGenerated} improvement actions`);
+          if (actionResult.success && actionResult.actionsGenerated > 0) {
+            if (import.meta.env.DEV) {
+              console.log(`[Assessment] Auto-generated ${actionResult.actionsGenerated} improvement actions`);
+            }
+          } else if (!actionResult.success) {
+            // Log but don't block - action generation failure is non-fatal
+            console.warn('[Assessment] Action generation failed:', actionResult.error);
           }
+        } catch (actionError) {
+          // Don't block assessment completion if action generation fails
+          console.error('[Assessment] Action generation error:', actionError);
+          actionResult = { success: false, actionsGenerated: 0, error: 'Action generation failed' };
         }
-      } catch (actionError) {
-        // Don't block assessment completion if action generation fails
-        console.error('[Assessment] Action generation failed:', actionError);
       }
       
-      // Show success message and navigate
-      toast({
-        title: t('assessment.assessmentComplete'),
-        description: t('assessment.resultsReady'),
-      });
+      setCompletionState('complete');
       
+      // Show appropriate success message
+      if (actionResult.actionsGenerated > 0) {
+        toast({
+          title: t('assessment.assessmentComplete'),
+          description: `${t('assessment.resultsReady')} ${actionResult.actionsGenerated} improvement actions generated.`,
+        });
+      } else if (actionResult.error) {
+        // Assessment saved but actions failed - show warning
+        toast({
+          title: t('assessment.assessmentComplete'),
+          description: "Assessment saved. Action generation encountered an issue - you can generate actions manually.",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: t('assessment.assessmentComplete'),
+          description: t('assessment.resultsReady'),
+        });
+      }
+      
+      // Navigate to results
       navigate('/app/results');
+      
     } catch (error) {
       console.error('Assessment completion error:', error);
-      toast({
-        title: t('common.error'),
-        description: "Failed to save assessment. Please try again.",
-        variant: "destructive",
-      });
+      setCompletionState('error');
+      
+      // Handle specific error types
+      if (error instanceof OnboardingError) {
+        setCompletionError(error.message);
+        toast({
+          title: "Setup Required",
+          description: error.message,
+          variant: "destructive",
+        });
+        // Redirect to onboarding
+        navigate('/app/onboarding');
+      } else {
+        const errorMessage = error instanceof Error ? error.message : "Failed to save assessment. Please try again.";
+        setCompletionError(errorMessage);
+        toast({
+          title: t('common.error'),
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
+      
+      // Reset state after a delay to allow retry
+      setTimeout(() => {
+        setCompletionState('idle');
+      }, 2000);
     }
   };
 
@@ -235,8 +325,36 @@ export default function Assessment() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Show blocking overlay during completion
+  const isCompleting = completionState !== 'idle' && completionState !== 'error';
+
   return (
     <div className="min-h-screen bg-[hsl(var(--neutral-bg))]">
+      {/* Completion Overlay */}
+      {isCompleting && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <Card className="w-full max-w-md mx-4">
+            <CardContent className="pt-6">
+              <div className="text-center space-y-4">
+                <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
+                <div>
+                  <h3 className="text-lg font-semibold">
+                    {completionState === 'saving' && 'Saving Assessment...'}
+                    {completionState === 'generating_actions' && 'Generating Action Plan...'}
+                    {completionState === 'complete' && 'Complete!'}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {completionState === 'saving' && 'Please wait while we save your assessment results.'}
+                    {completionState === 'generating_actions' && 'Analyzing responses and creating improvement actions.'}
+                    {completionState === 'complete' && 'Redirecting to your results...'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white border-b">
         <div className="container mx-auto px-4 py-4">
@@ -245,12 +363,18 @@ export default function Assessment() {
               variant="ghost"
               onClick={() => navigate('/app')}
               className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+              disabled={isCompleting}
             >
               <ArrowLeft className="h-4 w-4" />
               {t('nav.backToDashboard')}
             </Button>
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-medium text-foreground">{t('assessment.title')}</h1>
+              {onboardingContext.dealershipName && (
+                <Badge variant="secondary" className="hidden sm:inline-flex">
+                  {onboardingContext.dealershipName}
+                </Badge>
+              )}
             </div>
             <div className="text-center">
               <div className="text-xl font-medium text-foreground">
@@ -290,7 +414,7 @@ export default function Assessment() {
                             ? "border-primary shadow-md bg-primary/5" 
                             : "border-border hover:border-primary/50 hover:shadow-sm"
                         }`}
-                        onClick={() => handleNavigateToSection(sectionIndex, 0)}
+                        onClick={() => !isCompleting && handleNavigateToSection(sectionIndex, 0)}
                       >
                         <CardContent className="p-3">
                           <div className="flex items-start gap-2 mb-2">
@@ -365,7 +489,7 @@ export default function Assessment() {
                     <Button
                       variant="outline"
                       onClick={prevSection}
-                      disabled={currentSection === 0}
+                      disabled={currentSection === 0 || isCompleting}
                       className="flex items-center gap-2"
                     >
                       <ChevronLeft className="h-4 w-4" />
@@ -382,7 +506,7 @@ export default function Assessment() {
                     <Button
                       variant="outline"
                       onClick={nextSection}
-                      disabled={currentSection === translatedSections.length - 1 && !canContinue()}
+                      disabled={(currentSection === translatedSections.length - 1 && !canContinue()) || isCompleting}
                       className="flex items-center gap-2"
                     >
                       {currentSection === translatedSections.length - 1 ? t('assessment.finish') : t('assessment.nextSection')}
@@ -397,10 +521,11 @@ export default function Assessment() {
       </div>
 
       {/* Smart Assistant Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-6 right-6 z-40">
         <Button
           onClick={() => setShowAssistant(true)}
           className="h-14 w-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg animate-bounce"
+          disabled={isCompleting}
         >
           <Bot className="h-6 w-6" />
         </Button>

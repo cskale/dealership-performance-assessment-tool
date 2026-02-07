@@ -3,6 +3,26 @@ import { supabase } from '@/integrations/supabase/client';
 import { DealershipInfo, AssessmentData, BenchmarkData, ImprovementAction } from '@/types/dealership';
 import { useAuth } from './useAuth';
 
+// Error types for proper error handling
+export class OnboardingError extends Error {
+  constructor(
+    message: string,
+    public readonly type: 'organization' | 'dealership'
+  ) {
+    super(message);
+    this.name = 'OnboardingError';
+  }
+}
+
+interface AssessmentContext {
+  organizationId: string;
+  dealershipId: string;
+}
+
+interface SavedAssessment extends AssessmentData {
+  dbId: string; // Real database ID - never client-generated
+}
+
 export const useAssessmentData = () => {
   const { user } = useAuth();
   const [dealership, setDealership] = useState<DealershipInfo | null>(null);
@@ -21,6 +41,77 @@ export const useAssessmentData = () => {
     return sessionId;
   }, []);
 
+  /**
+   * CRITICAL: Validate user has proper org/dealership context
+   * Throws OnboardingError if validation fails
+   */
+  const validateAssessmentContext = useCallback(async (): Promise<AssessmentContext> => {
+    if (!user) {
+      throw new Error('User must be authenticated');
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('active_organization_id, active_dealership_id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (profileError) {
+      throw new Error('Failed to load profile');
+    }
+
+    // HARD VALIDATION: Organization is required
+    if (!profile?.active_organization_id) {
+      throw new OnboardingError(
+        'No organization selected. Please complete onboarding.',
+        'organization'
+      );
+    }
+
+    // HARD VALIDATION: Dealership is required
+    if (!profile?.active_dealership_id) {
+      throw new OnboardingError(
+        'No dealership selected. Please select or create a dealership.',
+        'dealership'
+      );
+    }
+
+    // Validate dealership belongs to organization
+    const { data: dealershipData, error: dealershipError } = await supabase
+      .from('dealerships')
+      .select('id, name, brand, country, location, organization_id')
+      .eq('id', profile.active_dealership_id)
+      .single();
+
+    if (dealershipError || !dealershipData) {
+      throw new OnboardingError(
+        'Selected dealership not found. Please select a valid dealership.',
+        'dealership'
+      );
+    }
+
+    if (dealershipData.organization_id !== profile.active_organization_id) {
+      throw new OnboardingError(
+        'Dealership does not belong to current organization. Please re-select.',
+        'dealership'
+      );
+    }
+
+    // Set dealership state for other operations
+    setDealership({
+      id: dealershipData.id,
+      name: dealershipData.name,
+      brand: dealershipData.brand,
+      country: dealershipData.country,
+      location: dealershipData.location,
+    });
+
+    return {
+      organizationId: profile.active_organization_id,
+      dealershipId: profile.active_dealership_id,
+    };
+  }, [user]);
+
   // Save dealership information
   const saveDealership = useCallback(async (dealershipData: DealershipInfo) => {
     if (!user) {
@@ -34,24 +125,20 @@ export const useAssessmentData = () => {
       // Extract contact info before saving dealership
       const { contactEmail, phone, ...dealershipFields } = dealershipData;
       
-      // Get user's active organization
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('active_organization_id')
-        .eq('user_id', user.id)
-        .single();
+      // Get user's active organization (required)
+      const context = await validateAssessmentContext();
         
       const dealershipWithUser = {
         ...dealershipFields,
         user_id: user.id,
-        organization_id: profile?.active_organization_id || dealershipFields.id || crypto.randomUUID()
+        organization_id: context.organizationId
       };
 
-      // Save dealership (without contact info)
+      // Save dealership (without contact info) - use DB-generated ID
       const { data: dealershipResult, error: dealershipError } = await supabase
         .from('dealerships')
         .upsert(dealershipWithUser, { onConflict: 'id' })
-        .select()
+        .select('id, name, brand, country, location')
         .single();
 
       if (dealershipError) throw dealershipError;
@@ -86,10 +173,17 @@ export const useAssessmentData = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, validateAssessmentContext]);
 
-  // Save assessment progress
-  const saveAssessment = useCallback(async (assessmentData: Partial<AssessmentData>) => {
+  /**
+   * Save assessment progress (in-progress) or complete (completed)
+   * CRITICAL: 
+   * - For in_progress: Uses localStorage + DB with temp client ID
+   * - For completed: MUST use DB-generated ID, validates org/dealership first
+   */
+  const saveAssessment = useCallback(async (
+    assessmentData: Partial<AssessmentData>
+  ): Promise<SavedAssessment> => {
     if (!user) {
       throw new Error('User must be authenticated');
     }
@@ -99,12 +193,104 @@ export const useAssessmentData = () => {
     
     try {
       const sessionId = getSessionId();
+      const isCompleting = assessmentData.status === 'completed';
+
+      // CRITICAL: For completed assessments, hard-validate context
+      let context: AssessmentContext;
       
-      // Create assessment data with minimal required fields
-      const mappedData: AssessmentData = {
-        id: assessment?.id || crypto.randomUUID(),
-        sessionId: sessionId,
-        dealershipId: dealership?.id || 'temp-id',
+      if (isCompleting) {
+        // This will throw OnboardingError if validation fails
+        context = await validateAssessmentContext();
+        
+        if (import.meta.env.DEV) {
+          console.log('[Assessment] Saving completed assessment:', {
+            organizationId: context.organizationId,
+            dealershipId: context.dealershipId,
+          });
+        }
+      } else {
+        // For in-progress saves, try to get context but don't fail
+        try {
+          context = await validateAssessmentContext();
+        } catch (err) {
+          // Allow in-progress saves without full context for backwards compatibility
+          // but log a warning
+          if (import.meta.env.DEV) {
+            console.warn('[Assessment] Saving in-progress without full context');
+          }
+          
+          // Still save to localStorage for recovery
+          const localData: AssessmentData = {
+            id: assessment?.id,
+            sessionId,
+            dealershipId: undefined,
+            answers: assessmentData.answers || {},
+            scores: assessmentData.scores || {},
+            overallScore: assessmentData.overallScore || 0,
+            status: assessmentData.status || 'in_progress',
+            completedAt: assessmentData.completedAt || undefined
+          };
+          
+          setAssessment(localData);
+          localStorage.setItem('assessment_data', JSON.stringify(localData));
+          
+          return { ...localData, dbId: '' };
+        }
+      }
+
+      // Build database insert/update data
+      // DO NOT use client-generated UUIDs for the primary key when completing
+      const dbData: Record<string, unknown> = {
+        session_id: sessionId,
+        dealership_id: context.dealershipId,
+        organization_id: context.organizationId,
+        user_id: user.id,
+        answers: assessmentData.answers || {},
+        scores: assessmentData.scores || {},
+        overall_score: assessmentData.overallScore || 0,
+        status: assessmentData.status || 'in_progress',
+        completed_at: assessmentData.completedAt || null
+      };
+
+      // For existing in-progress assessments, include the ID for upsert
+      if (assessment?.id && !isCompleting) {
+        dbData.id = assessment.id;
+      }
+
+      let result: { id: string };
+      
+      if (isCompleting) {
+        // CRITICAL: For completion, always INSERT to get a fresh DB-generated ID
+        // This ensures we never use a client-generated ID for the final record
+        const { data, error: insertError } = await supabase
+          .from('assessments')
+          .insert(dbData as any)
+          .select('id, organization_id, dealership_id, created_at')
+          .single();
+
+        if (insertError) throw insertError;
+        result = data;
+        
+        if (import.meta.env.DEV) {
+          console.log('[Assessment] Completed assessment saved with DB ID:', result.id);
+        }
+      } else {
+        // For in-progress, use upsert
+        const { data, error: upsertError } = await supabase
+          .from('assessments')
+          .upsert(dbData as any, { onConflict: 'id' })
+          .select('id')
+          .single();
+
+        if (upsertError) throw upsertError;
+        result = data;
+      }
+
+      const savedData: SavedAssessment = {
+        id: result.id,
+        dbId: result.id, // This is the real DB ID
+        sessionId,
+        dealershipId: context.dealershipId,
         answers: assessmentData.answers || {},
         scores: assessmentData.scores || {},
         overallScore: assessmentData.overallScore || 0,
@@ -112,38 +298,27 @@ export const useAssessmentData = () => {
         completedAt: assessmentData.completedAt || undefined
       };
 
-      // Save to database if we have a dealership
-      if (dealership?.id) {
-        const dbData = {
-          id: mappedData.id,
-          session_id: mappedData.sessionId,
-          dealership_id: dealership.id,
-          user_id: user.id,
-          answers: mappedData.answers,
-          scores: mappedData.scores,
-          overall_score: mappedData.overallScore,
-          status: mappedData.status,
-          completed_at: mappedData.completedAt
-        };
-
-        const { error } = await supabase
-          .from('assessments')
-          .upsert(dbData, { onConflict: 'id' });
-
-        if (error) throw error;
+      setAssessment(savedData);
+      
+      // Only cache in-progress assessments to localStorage
+      if (!isCompleting) {
+        localStorage.setItem('assessment_data', JSON.stringify(savedData));
       }
       
-      setAssessment(mappedData);
-      localStorage.setItem('assessment_data', JSON.stringify(mappedData));
-      return mappedData;
+      return savedData;
     } catch (err) {
+      // Rethrow OnboardingError for proper handling upstream
+      if (err instanceof OnboardingError) {
+        throw err;
+      }
+      
       const errorMessage = err instanceof Error ? err.message : 'Failed to save assessment';
       setError(errorMessage);
       throw err;
     } finally {
       setIsLoading(false);
     }
-  }, [assessment, dealership, user, getSessionId]);
+  }, [assessment, user, getSessionId, validateAssessmentContext]);
 
   // Load assessment data
   const loadAssessment = useCallback(async () => {
@@ -217,7 +392,23 @@ export const useAssessmentData = () => {
       throw new Error('User must be authenticated');
     }
 
-    const actions: any[] = [];
+    // Validate that assessmentId is a real DB ID (not empty, not temp)
+    if (!assessmentId || assessmentId === '' || assessmentId.startsWith('temp')) {
+      throw new Error('Invalid assessment ID - cannot generate actions without a saved assessment');
+    }
+
+    const actions: Record<string, unknown>[] = [];
+    
+    // Get organization ID
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('active_organization_id')
+      .eq('user_id', user.id)
+      .single();
+    
+    if (!profile?.active_organization_id) {
+      throw new Error('No organization context');
+    }
     
     // Analyze scores and generate targeted actions
     Object.entries(scores).forEach(([section, score]) => {
@@ -231,6 +422,7 @@ export const useAssessmentData = () => {
             actions.push({
               assessment_id: assessmentId,
               user_id: user.id,
+              organization_id: profile.active_organization_id,
               department: 'New Vehicle Sales',
               priority,
               action_title: 'Enhance Sales Process Training',
@@ -243,6 +435,7 @@ export const useAssessmentData = () => {
             actions.push({
               assessment_id: assessmentId,
               user_id: user.id,
+              organization_id: profile.active_organization_id,
               department: 'Used Vehicle Sales',
               priority,
               action_title: 'Optimize Used Vehicle Inventory Management',
@@ -255,6 +448,7 @@ export const useAssessmentData = () => {
             actions.push({
               assessment_id: assessmentId,
               user_id: user.id,
+              organization_id: profile.active_organization_id,
               department: 'Service',
               priority,
               action_title: 'Service Efficiency Improvement Program',
@@ -267,6 +461,7 @@ export const useAssessmentData = () => {
             actions.push({
               assessment_id: assessmentId,
               user_id: user.id,
+              organization_id: profile.active_organization_id,
               department: 'Parts',
               priority,
               action_title: 'Parts Inventory Optimization',
@@ -279,6 +474,7 @@ export const useAssessmentData = () => {
             actions.push({
               assessment_id: assessmentId,
               user_id: user.id,
+              organization_id: profile.active_organization_id,
               department: 'Finance',
               priority,
               action_title: 'Financial Process Automation',
@@ -294,7 +490,7 @@ export const useAssessmentData = () => {
     try {
       const { data, error } = await supabase
         .from('improvement_actions')
-        .insert(actions)
+        .insert(actions as any)
         .select();
 
       if (error) throw error;
@@ -339,6 +535,7 @@ export const useAssessmentData = () => {
     loadAssessment,
     loadBenchmarks,
     generateImprovementActions,
-    getSessionId
+    getSessionId,
+    validateAssessmentContext // Export for use in Assessment page
   };
 };
