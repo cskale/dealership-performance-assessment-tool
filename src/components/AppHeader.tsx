@@ -9,8 +9,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { OrganizationSwitcher } from './OrganizationSwitcher';
-import { RoleSelector } from './RoleSelector';
 import { LanguageSelector } from './LanguageSelector';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -40,6 +38,7 @@ export function AppHeader() {
   };
 
   // Navigation items - Resources REMOVED from nav (it's inside Results now)
+  // RoleSelector and OrganizationSwitcher removed from UI per P0.1/P0.5
   const navItems = [
     { path: '/', label: language === 'de' ? 'Start' : 'Home', icon: Home, alwaysShow: true },
     { path: '/app/assessment', label: language === 'de' ? 'Bewertung' : 'Assessment', icon: ClipboardList, alwaysShow: true },
@@ -77,13 +76,12 @@ export function AppHeader() {
               );
             })}
           </nav>
-          
-          <OrganizationSwitcher />
         </div>
 
         <div className="flex items-center gap-4">
           <LanguageSelector />
-          <RoleSelector />
+          {/* RoleSelector removed per P0.1 - RBAC still enforced in backend */}
+          {/* OrganizationSwitcher removed per P0.5 - internal tool only */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -92,7 +90,7 @@ export function AppHeader() {
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuContent className="w-56 bg-popover" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">{user?.email}</p>

@@ -11,9 +11,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { LanguageSelectorWithFlags } from './LanguageSelectorWithFlags';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useRoleContext } from '@/contexts/RoleContext';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
-import { User, Settings, LogOut, ClipboardList, BarChart3, Building2, UserCog, Shield } from 'lucide-react';
+import { User, Settings, LogOut, ClipboardList, BarChart3, Building2 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
 interface HomeHeaderProps {
@@ -23,7 +22,7 @@ interface HomeHeaderProps {
 export function HomeHeader({ hasCompletedAssessment }: HomeHeaderProps) {
   const { user, signOut } = useAuth();
   const { language } = useLanguage();
-  const { testRole, setTestRole } = useRoleContext();
+  // Role selector removed per P0.1 - RBAC still enforced in backend
   const { organizations, currentOrganization, switchOrganization } = useMultiTenant();
   const navigate = useNavigate();
 
@@ -44,10 +43,7 @@ export function HomeHeader({ hasCompletedAssessment }: HomeHeaderProps) {
       profile: 'Profile',
       security: 'Security',
       signOut: 'Sign Out',
-      testRole: 'Test Role',
       organization: 'Organization',
-      coach: 'Coach',
-      dealer: 'Dealer',
       account: 'Account Settings',
     },
     de: {
@@ -56,10 +52,7 @@ export function HomeHeader({ hasCompletedAssessment }: HomeHeaderProps) {
       profile: 'Profil',
       security: 'Sicherheit',
       signOut: 'Abmelden',
-      testRole: 'Testrolle',
       organization: 'Organisation',
-      coach: 'Coach',
-      dealer: 'Händler',
       account: 'Kontoeinstellungen',
     }
   };
@@ -110,7 +103,7 @@ export function HomeHeader({ hasCompletedAssessment }: HomeHeaderProps) {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-64" align="end" forceMount>
+              <DropdownMenuContent className="w-64 bg-popover" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{user?.email}</p>
@@ -122,30 +115,10 @@ export function HomeHeader({ hasCompletedAssessment }: HomeHeaderProps) {
                 
                 <DropdownMenuSeparator />
                 
-                {/* Test Role Selector */}
-                <DropdownMenuLabel className="text-xs text-muted-foreground flex items-center gap-2">
-                  <UserCog className="h-3 w-3" />
-                  {t.testRole}
-                </DropdownMenuLabel>
-                <DropdownMenuItem 
-                  onClick={() => setTestRole('coach')}
-                  className={testRole === 'coach' ? 'bg-primary/10' : ''}
-                >
-                  <Shield className="mr-2 h-4 w-4" />
-                  {t.coach}
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => setTestRole('dealer')}
-                  className={testRole === 'dealer' ? 'bg-primary/10' : ''}
-                >
-                  <Building2 className="mr-2 h-4 w-4" />
-                  {t.dealer}
-                </DropdownMenuItem>
+                {/* Test Role Selector REMOVED per P0.1 - RBAC still enforced in backend */}
                 
-                <DropdownMenuSeparator />
-                
-                {/* Organization Selector */}
-                {organizations && organizations.length > 0 && (
+                {/* Organization Selector - Only for users with multiple orgs */}
+                {organizations && organizations.length > 1 && (
                   <>
                     <DropdownMenuLabel className="text-xs text-muted-foreground flex items-center gap-2">
                       <Building2 className="h-3 w-3" />
