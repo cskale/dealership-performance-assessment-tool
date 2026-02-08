@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -22,16 +22,18 @@ import {
   User, Shield, Download, Trash2, Monitor, Smartphone, Globe, Calendar, 
   Mail, CheckCircle, XCircle, Building2, Users, Activity, Link2, Key,
   MapPin, Clock, TrendingUp, FileText, Settings, Lock, Eye, EyeOff,
-  AlertCircle, ChevronRight, Zap, BarChart3
+  AlertCircle, ChevronRight, Zap, BarChart3, ArrowLeft
 } from 'lucide-react';
 import { format } from 'date-fns';
 
 const Account = () => {
+  // All hooks MUST be called first, before any conditional returns
   const { user } = useAuth();
   const { sessions, loading: sessionsLoading, fetchSessions, revokeSession } = useSessionManager();
   const { exportUserData, deleteAccount, updateConsent, loading: gdprLoading } = useGDPR();
   const { organizations, currentOrganization, switchOrganization } = useMultiTenant();
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const [profile, setProfile] = useState<any>(null);
   const [profileLoading, setProfileLoading] = useState(true);
@@ -43,8 +45,12 @@ const Account = () => {
   const [timezone, setTimezone] = useState('UTC');
   const [deleteConfirmStep, setDeleteConfirmStep] = useState(0);
   const [activeTab, setActiveTab] = useState('profile');
+  
+  // Privacy consent states for optimistic UI (P0.3)
+  const [analyticsConsent, setAnalyticsConsent] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated - AFTER all hooks
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
@@ -203,11 +209,20 @@ const Account = () => {
     return Math.round((completed / total) * 100);
   };
 
+  // Sync profile data and consent states on load
   useEffect(() => {
     if (user) {
       fetchProfile();
     }
   }, [user]);
+
+  // Sync consent states with profile data (P0.3 - optimistic UI sync)
+  useEffect(() => {
+    if (profile) {
+      setAnalyticsConsent(profile.consent_analytics || false);
+      setMarketingConsent(profile.consent_marketing || false);
+    }
+  }, [profile]);
 
   if (profileLoading) {
     return (
@@ -217,15 +232,30 @@ const Account = () => {
     );
   }
 
+  const navigateToDashboard = () => {
+    navigate('/');
+  };
+
   return (
     <div className="min-h-screen bg-dashboard-bg">
-      {/* Header */}
+      {/* Header with Back to Dashboard CTA - P0.2 fix */}
       <div className="bg-card border-b border-border">
         <div className="container max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold text-foreground">Account Settings</h1>
-              <p className="text-sm text-muted-foreground mt-1">Manage your profile, security, and preferences</p>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={navigateToDashboard}
+                className="flex items-center gap-2"
+              >
+                <ChevronRight className="h-4 w-4 rotate-180" />
+                Back to Dashboard
+              </Button>
+              <div>
+                <h1 className="text-2xl font-semibold text-foreground">Account Settings</h1>
+                <p className="text-sm text-muted-foreground mt-1">Manage your profile, security, and preferences</p>
+              </div>
             </div>
             <Avatar className="h-12 w-12">
               <AvatarImage src={profile?.avatar_url} />
@@ -760,9 +790,18 @@ const Account = () => {
                         </div>
                       </div>
                     </div>
+                    {/* P0.3 fix: Controlled component with optimistic UI */}
                     <Switch
-                      checked={profile?.consent_analytics || false}
-                      onCheckedChange={(checked) => updateConsent('analytics', checked)}
+                      checked={analyticsConsent}
+                      onCheckedChange={async (checked) => {
+                        // Optimistic UI update
+                        setAnalyticsConsent(checked);
+                        const success = await updateConsent('analytics', checked);
+                        if (!success) {
+                          // Rollback on failure
+                          setAnalyticsConsent(!checked);
+                        }
+                      }}
                     />
                   </div>
                   
@@ -776,9 +815,18 @@ const Account = () => {
                         </div>
                       </div>
                     </div>
+                    {/* P0.3 fix: Controlled component with optimistic UI */}
                     <Switch
-                      checked={profile?.consent_marketing || false}
-                      onCheckedChange={(checked) => updateConsent('marketing', checked)}
+                      checked={marketingConsent}
+                      onCheckedChange={async (checked) => {
+                        // Optimistic UI update
+                        setMarketingConsent(checked);
+                        const success = await updateConsent('marketing', checked);
+                        if (!success) {
+                          // Rollback on failure
+                          setMarketingConsent(!checked);
+                        }
+                      }}
                     />
                   </div>
                 </div>

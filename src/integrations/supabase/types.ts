@@ -399,6 +399,7 @@ export type Database = {
           status: string | null
           support_required_from: string[] | null
           target_completion_date: string | null
+          updated_at: string | null
           user_id: string | null
         }
         Insert: {
@@ -417,6 +418,7 @@ export type Database = {
           status?: string | null
           support_required_from?: string[] | null
           target_completion_date?: string | null
+          updated_at?: string | null
           user_id?: string | null
         }
         Update: {
@@ -435,6 +437,7 @@ export type Database = {
           status?: string | null
           support_required_from?: string[] | null
           target_completion_date?: string | null
+          updated_at?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -776,6 +779,8 @@ export type Database = {
         Args: { p_dealership_id: string }
         Returns: boolean
       }
+      is_org_admin: { Args: { p_org: string }; Returns: boolean }
+      is_org_member: { Args: { p_org: string }; Returns: boolean }
       is_privileged_in_dealer_org: {
         Args: { p_dealership_id: string }
         Returns: boolean
