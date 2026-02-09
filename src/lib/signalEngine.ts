@@ -278,20 +278,35 @@ export function formatActionsForDatabaseInsert(
   assessmentId: string,
   organizationId: string
 ): any[] {
-  return actions.map(action => ({
-    user_id: userId,
-    organization_id: organizationId,
-    assessment_id: assessmentId,
-    department: action.department,
-    priority: action.priority,
-    action_title: action.title,
-    action_description: `${action.description}\n\nTriggered because: ${action.signalCode}\nRelated questions: ${action.triggeringQuestionIds.join(', ')}\nRationale: ${action.rationale}`,
-    status: 'Open',
-    responsible_person: action.defaultOwnerRole,
-    target_completion_date: calculateTargetDate(action.defaultTimeframeDays),
-    support_required_from: [],
-    kpis_linked_to: []
-  }));
+  return actions.map(action => {
+    // B2/B3: Clean title - strip "Assess:", "Address:" prefixes
+    const cleanTitle = action.title
+      .replace(/^(Assess|Address|Evaluate):\s*/i, '')
+      .trim();
+
+    // Build human-readable description (no system language)
+    // Keep signal code as metadata at end for rationale extraction, but don't lead with it
+    const descriptionParts = [
+      action.description.replace(/^Triggered because:.*?\.\s*/i, '').trim(),
+      '',
+      `Triggered because: ${action.signalCode}`,
+    ];
+
+    return {
+      user_id: userId,
+      organization_id: organizationId,
+      assessment_id: assessmentId,
+      department: action.department,
+      priority: action.priority,
+      action_title: cleanTitle,
+      action_description: descriptionParts.join('\n'),
+      status: 'Open',
+      responsible_person: action.defaultOwnerRole,
+      target_completion_date: calculateTargetDate(action.defaultTimeframeDays),
+      support_required_from: [],
+      kpis_linked_to: []
+    };
+  });
 }
 
 /**

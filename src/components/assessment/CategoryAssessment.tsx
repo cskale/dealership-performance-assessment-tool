@@ -250,7 +250,7 @@ export function CategoryAssessment({
                 )}
 
                 {(question.purpose || question.situationAnalysis || question.linkedKPIs || question.benefits) && (
-                  <Card className="border bg-white mb-4">
+                  <Card className="border bg-card mb-4">
                     <CardContent className="p-0">
                       <Collapsible 
                         open={expandedQuestions.has(question.id)}
@@ -272,40 +272,48 @@ export function CategoryAssessment({
                             }`} />
                           </Button>
                         </CollapsibleTrigger>
-                        <CollapsibleContent className="px-4 pb-4 space-y-4">
-                          {question.purpose && (
-                            <div className="space-y-2">
-                              <h4 className="font-medium text-foreground">{t('assessment.assessmentPurpose')}</h4>
-                              <p className="text-sm text-muted-foreground">{question.purpose}</p>
-                            </div>
-                          )}
-                          
-                          {question.situationAnalysis && (
-                            <div className="space-y-2">
-                              <h4 className="font-medium text-foreground">{t('assessment.situationAnalysis')}</h4>
-                              <p className="text-sm text-muted-foreground">{question.situationAnalysis}</p>
-                            </div>
-                          )}
-                          
-                          {question.linkedKPIs && question.linkedKPIs.length > 0 && (
-                            <div className="space-y-2">
-                              <h4 className="font-medium text-foreground">{t('assessment.linkedKPIs')}</h4>
-                              <div className="flex flex-wrap gap-2">
-                                {question.linkedKPIs.map((kpi, kpiIndex) => (
-                                  <Badge key={kpiIndex} variant="outline" className="text-xs">
-                                    {kpi}
-                                  </Badge>
-                                ))}
+                        <CollapsibleContent className="px-4 pb-4">
+                          {/* P2.1: Structured sub-cards */}
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            {question.purpose && (
+                              <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
+                                <h4 className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                                  🎯 {t('assessment.assessmentPurpose')}
+                                </h4>
+                                <p className="text-xs text-muted-foreground leading-relaxed">{question.purpose}</p>
                               </div>
-                            </div>
-                          )}
-                          
-                          {question.benefits && (
-                            <div className="space-y-2">
-                              <h4 className="font-medium text-foreground">{t('assessment.businessBenefits')}</h4>
-                              <p className="text-sm text-muted-foreground">{question.benefits}</p>
-                            </div>
-                          )}
+                            )}
+                            {question.situationAnalysis && (
+                              <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
+                                <h4 className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                                  🔎 {t('assessment.situationAnalysis')}
+                                </h4>
+                                <p className="text-xs text-muted-foreground leading-relaxed">{question.situationAnalysis}</p>
+                              </div>
+                            )}
+                            {question.linkedKPIs && question.linkedKPIs.length > 0 && (
+                              <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
+                                <h4 className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                                  📊 {t('assessment.linkedKPIs')}
+                                </h4>
+                                <div className="flex flex-wrap gap-1.5 mt-1">
+                                  {question.linkedKPIs.map((kpi, kpiIndex) => (
+                                    <Badge key={kpiIndex} variant="outline" className="text-xs">
+                                      {kpi}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {question.benefits && (
+                              <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
+                                <h4 className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                                  💼 {t('assessment.businessBenefits')}
+                                </h4>
+                                <p className="text-xs text-muted-foreground leading-relaxed">{question.benefits}</p>
+                              </div>
+                            )}
+                          </div>
                         </CollapsibleContent>
                       </Collapsible>
                     </CardContent>
