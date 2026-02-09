@@ -3,18 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Sheet, 
-  SheetContent, 
-  SheetDescription, 
-  SheetHeader, 
-  SheetTitle,
-  SheetFooter 
-} from '@/components/ui/sheet';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -26,12 +16,13 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { 
-  CheckCircle2, Circle, Clock, AlertCircle, Plus, Sparkles, 
-  Loader2, Pencil, RefreshCw, AlertTriangle, Info, ChevronDown,
-  ChevronUp, User, Calendar, Target
+  CheckCircle2, Circle, Clock, Plus, Sparkles, 
+  Loader2, Pencil, AlertTriangle, Target, ArrowUpDown,
+  Eye
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { toast } from 'sonner';
 import { questionnaire } from '@/data/questionnaire';
 import { 
@@ -39,8 +30,8 @@ import {
   generateActionsFromContext, 
   formatActionsForDatabase 
 } from '@/utils/actionGenerator';
-import { getHumanRationale, priorityDisplay, statusDisplay } from '@/lib/actionRationaleMap';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { getHumanRationale, cleanActionTitle, cleanActionDescription, priorityDisplay, statusDisplay } from '@/lib/actionRationaleMap';
+import { ActionSheet } from './ActionSheet';
 
 interface Action {
   id: string;
@@ -54,55 +45,35 @@ interface Action {
   support_required_from: string[];
   kpis_linked_to: string[];
   assessment_id: string | null;
+  organization_id: string | null;
+  user_id: string | null;
   updated_at?: string;
-  // For tracking conflicts
   _loadedAt?: string;
-}
-
-interface EditFormState {
-  action_title: string;
-  action_description: string;
-  priority: Action['priority'];
-  status: Action['status'];
-  responsible_person: string;
-  target_completion_date: string;
 }
 
 export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
   const { user } = useAuth();
+  const { currentOrganization, canPerformAction } = useMultiTenant();
   const [actions, setActions] = useState<Action[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [showAddAction, setShowAddAction] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'priority' | 'status' | 'date'>('priority');
   
-  // Edit state
+  // Edit/create state
   const [editingAction, setEditingAction] = useState<Action | null>(null);
-  const [editForm, setEditForm] = useState<EditFormState>({
-    action_title: '',
-    action_description: '',
-    priority: 'medium',
-    status: 'Open',
-    responsible_person: '',
-    target_completion_date: ''
-  });
-  const [saving, setSaving] = useState(false);
+  const [sheetMode, setSheetMode] = useState<'create' | 'edit'>('edit');
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [conflictDetected, setConflictDetected] = useState(false);
   const [conflictAction, setConflictAction] = useState<Action | null>(null);
   
-  // New action form state
-  const [newAction, setNewAction] = useState({
-    department: '',
-    priority: 'medium' as Action['priority'],
-    action_title: '',
-    action_description: '',
-    responsible_person: '',
-    target_completion_date: '',
-    support_required_from: '',
-    kpis_linked_to: ''
-  });
+  // Regeneration confirmation
+  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+
+  // Permission check
+  const canEdit = canPerformAction('update');
+  const canCreate = canPerformAction('create');
 
   // Calculate progress stats
   const completedCount = actions.filter(a => a.status === 'Completed').length;
@@ -115,8 +86,9 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
 
   useEffect(() => {
     loadActions();
-  }, [user, assessmentId]);
+  }, [user, assessmentId, currentOrganization]);
 
+  // A2: Multi-tenant scoped action loading
   const loadActions = async () => {
     if (!user) return;
     
@@ -125,17 +97,23 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
       let query = supabase
         .from('improvement_actions')
         .select('*')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
+
+      // Scope by organization if available
+      if (currentOrganization?.id) {
+        query = query.eq('organization_id', currentOrganization.id);
+      } else {
+        // Fallback: only own actions
+        query = query.eq('user_id', user.id);
+      }
 
       if (assessmentId) {
         query = query.eq('assessment_id', assessmentId);
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
-      // Add load timestamp for conflict detection
+      
       const actionsWithTimestamp = (data || []).map(a => ({
         ...a,
         _loadedAt: new Date().toISOString()
@@ -149,15 +127,30 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
     }
   };
 
-  const generateIntelligentActions = async () => {
+  // B1: Check for existing auto-generated actions before generating
+  const hasAutoGeneratedActions = actions.some(a => 
+    a.assessment_id === assessmentId && a.action_description?.includes('Triggered because:')
+  );
+
+  const handleGenerateClick = () => {
+    if (hasAutoGeneratedActions) {
+      setShowRegenerateConfirm(true);
+    } else {
+      generateIntelligentActions(false);
+    }
+  };
+
+  const generateIntelligentActions = async (replaceExisting: boolean) => {
     if (!user) return;
     
     setGenerating(true);
+    setShowRegenerateConfirm(false);
+    
     try {
       let targetAssessmentId = assessmentId;
       
       if (!targetAssessmentId) {
-        const { data: assessments, error: assessmentError } = await supabase
+        const { data: assessments } = await supabase
           .from('assessments')
           .select('id, answers')
           .eq('user_id', user.id)
@@ -165,22 +158,36 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
           .limit(1)
           .single();
 
-        if (assessmentError || !assessments) {
+        if (!assessments) {
           toast.error('No assessment found. Please complete an assessment first.');
           setGenerating(false);
           return;
         }
-        
         targetAssessmentId = assessments.id;
       }
 
-      const { data: assessment, error: fetchError } = await supabase
+      // B1: If replacing, delete ONLY auto-generated actions (preserve manual ones)
+      if (replaceExisting && targetAssessmentId) {
+        const autoActions = actions.filter(a => 
+          a.assessment_id === targetAssessmentId && 
+          a.action_description?.includes('Triggered because:')
+        );
+        if (autoActions.length > 0) {
+          const { error: deleteError } = await supabase
+            .from('improvement_actions')
+            .delete()
+            .in('id', autoActions.map(a => a.id));
+          if (deleteError) console.error('Error deleting old auto-actions:', deleteError);
+        }
+      }
+
+      const { data: assessment } = await supabase
         .from('assessments')
         .select('answers')
         .eq('id', targetAssessmentId)
         .single();
 
-      if (fetchError || !assessment) {
+      if (!assessment) {
         toast.error('Failed to load assessment data');
         setGenerating(false);
         return;
@@ -192,13 +199,14 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
       );
 
       if (weakPoints.length === 0) {
-        toast.success('Great! No critical improvement areas found.');
+        toast.success('No critical improvement areas found.');
         setGenerating(false);
         return;
       }
 
       // P1.5: Dynamic action count (3-7 based on severity)
-      const maxActions = Math.min(7, Math.max(3, weakPoints.length));
+      const severePoints = weakPoints.filter(p => p.score <= 2);
+      const maxActions = Math.min(7, Math.max(3, severePoints.length > 0 ? severePoints.length + 2 : weakPoints.length));
       const generatedActions = generateActionsFromContext(weakPoints, maxActions);
       const formattedActions = formatActionsForDatabase(
         generatedActions,
@@ -206,9 +214,15 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
         targetAssessmentId
       );
 
+      // Add organization_id
+      const actionsWithOrg = formattedActions.map((a: any) => ({
+        ...a,
+        organization_id: currentOrganization?.id || null,
+      }));
+
       const { data: insertedActions, error: insertError } = await supabase
         .from('improvement_actions')
-        .insert(formattedActions as any)
+        .insert(actionsWithOrg as any)
         .select();
 
       if (insertError) throw insertError;
@@ -223,133 +237,136 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
     }
   };
 
-  const addManualAction = async () => {
-    if (!user) return;
-    if (!newAction.action_title || !newAction.department) {
-      toast.error('Please fill in required fields: Title and Department');
+  // Open edit or create sheet
+  const openEditPanel = (action: Action) => {
+    if (!canEdit) {
+      toast.info('You have view-only access to actions.');
       return;
     }
+    setEditingAction(action);
+    setSheetMode('edit');
+    setSheetOpen(true);
+  };
 
-    try {
-      const actionData = {
-        user_id: user.id,
-        assessment_id: assessmentId || null,
-        department: newAction.department,
-        priority: newAction.priority,
-        action_title: newAction.action_title,
-        action_description: newAction.action_description,
-        status: 'Open',
-        responsible_person: newAction.responsible_person || null,
-        target_completion_date: newAction.target_completion_date || null,
-        support_required_from: newAction.support_required_from
-          .split(',').map(s => s.trim()).filter(Boolean),
-        kpis_linked_to: newAction.kpis_linked_to
-          .split(',').map(s => s.trim()).filter(Boolean)
-      };
+  const openCreatePanel = () => {
+    setEditingAction(null);
+    setSheetMode('create');
+    setSheetOpen(true);
+  };
 
-      const { error } = await supabase
-        .from('improvement_actions')
-        .insert([actionData as any]);
+  // Save with conflict detection
+  const handleSheetSave = async (formData: Partial<Action>) => {
+    if (!user) return;
+    
+    if (sheetMode === 'create') {
+      // Manual action creation
+      try {
+        const actionData = {
+          user_id: user.id,
+          assessment_id: assessmentId || null,
+          organization_id: currentOrganization?.id || null,
+          department: formData.department || 'General',
+          priority: formData.priority || 'medium',
+          action_title: formData.action_title || '',
+          action_description: formData.action_description || '',
+          status: formData.status || 'Open',
+          responsible_person: formData.responsible_person || null,
+          target_completion_date: formData.target_completion_date || null,
+          support_required_from: formData.support_required_from || [],
+          kpis_linked_to: formData.kpis_linked_to || []
+        };
 
-      if (error) throw error;
+        const { error } = await supabase
+          .from('improvement_actions')
+          .insert([actionData as any]);
 
-      toast.success('Action added successfully');
-      setShowAddAction(false);
-      setNewAction({
-        department: '',
-        priority: 'medium',
-        action_title: '',
-        action_description: '',
-        responsible_person: '',
-        target_completion_date: '',
-        support_required_from: '',
-        kpis_linked_to: ''
-      });
-      loadActions();
-    } catch (error) {
-      console.error('Error adding action:', error);
-      toast.error('Failed to add action');
+        if (error) throw error;
+        toast.success('Action added successfully');
+        loadActions();
+      } catch (error) {
+        console.error('Error adding action:', error);
+        toast.error('Failed to add action');
+      }
+    } else if (sheetMode === 'edit' && formData.id) {
+      // Edit existing action with conflict detection
+      try {
+        const original = actions.find(a => a.id === formData.id);
+        
+        if (original?.updated_at) {
+          const { data: currentAction } = await supabase
+            .from('improvement_actions')
+            .select('*')
+            .eq('id', formData.id)
+            .single();
+
+          if (currentAction) {
+            const currentData = currentAction as unknown as { updated_at?: string };
+            if (currentData?.updated_at) {
+              const serverTime = new Date(currentData.updated_at).getTime();
+              const loadedTime = new Date(original.updated_at).getTime();
+              
+              if (serverTime > loadedTime) {
+                // A3: Show conflict without referencing unknown user
+                setConflictAction(currentAction as unknown as Action);
+                setConflictDetected(true);
+                return;
+              }
+            }
+          }
+        }
+
+        await performUpdate(formData);
+      } catch (error) {
+        console.error('Error updating action:', error);
+        toast.error('Failed to update action');
+      }
     }
   };
 
-  // P1.3: Open edit panel
-  const openEditPanel = (action: Action) => {
-    setEditingAction(action);
-    setEditForm({
-      action_title: action.action_title,
-      action_description: action.action_description || '',
-      priority: action.priority,
-      status: action.status,
-      responsible_person: action.responsible_person || '',
-      target_completion_date: action.target_completion_date || ''
-    });
+  const performUpdate = async (formData: Partial<Action>) => {
+    const { error } = await supabase
+      .from('improvement_actions')
+      .update({
+        action_title: formData.action_title,
+        action_description: formData.action_description,
+        department: formData.department,
+        priority: formData.priority,
+        status: formData.status,
+        responsible_person: formData.responsible_person || null,
+        target_completion_date: formData.target_completion_date || null,
+        support_required_from: formData.support_required_from || [],
+        kpis_linked_to: formData.kpis_linked_to || [],
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', formData.id!);
+
+    if (error) throw error;
+    toast.success('Action updated successfully');
+    setSheetOpen(false);
     setConflictDetected(false);
+    loadActions();
   };
 
-  // P1.3: Save with conflict detection
-  const saveEditedAction = async (forceOverwrite = false) => {
-    if (!editingAction || !user) return;
-    
-    setSaving(true);
+  const handleDelete = async (actionId: string) => {
     try {
-      // Check for conflicts (optimistic locking)
-      if (!forceOverwrite && editingAction.updated_at) {
-        const { data: currentAction, error: fetchError } = await supabase
-          .from('improvement_actions')
-          .select('*')
-          .eq('id', editingAction.id)
-          .single();
-
-        if (fetchError) throw fetchError;
-
-        // Cast to access updated_at since types may not be updated yet
-        const currentData = currentAction as unknown as { updated_at?: string };
-        
-        // Compare timestamps
-        if (currentData?.updated_at) {
-          const serverTime = new Date(currentData.updated_at).getTime();
-          const loadedTime = new Date(editingAction.updated_at).getTime();
-          
-          if (serverTime > loadedTime) {
-            // Conflict detected - reload with full data
-            setConflictAction(currentAction as unknown as Action);
-            setConflictDetected(true);
-            setSaving(false);
-            return;
-          }
-        }
-      }
-
-      // Perform update
-      const { error: updateError } = await supabase
+      const { error } = await supabase
         .from('improvement_actions')
-        .update({
-          action_title: editForm.action_title,
-          action_description: editForm.action_description,
-          priority: editForm.priority,
-          status: editForm.status,
-          responsible_person: editForm.responsible_person || null,
-          target_completion_date: editForm.target_completion_date || null,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', editingAction.id);
-
-      if (updateError) throw updateError;
-
-      toast.success('Action updated successfully');
-      setEditingAction(null);
-      setConflictDetected(false);
-      setConflictAction(null);
+        .delete()
+        .eq('id', actionId);
+      if (error) throw error;
+      toast.success('Action deleted');
       loadActions();
     } catch (error) {
-      console.error('Error updating action:', error);
-      toast.error('Failed to update action');
-    } finally {
-      setSaving(false);
+      console.error('Error deleting action:', error);
+      toast.error('Failed to delete action');
     }
   };
 
   const updateActionStatus = async (actionId: string, newStatus: Action['status']) => {
+    if (!canEdit) {
+      toast.info('You have view-only access.');
+      return;
+    }
     try {
       const { error } = await supabase
         .from('improvement_actions')
@@ -357,7 +374,6 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
         .eq('id', actionId);
 
       if (error) throw error;
-
       setActions(actions.map(action => 
         action.id === actionId ? { ...action, status: newStatus } : action
       ));
@@ -372,15 +388,11 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
     return priorityDisplay[priority as keyof typeof priorityDisplay] || priorityDisplay.medium;
   };
 
-  const getStatusConfig = (status: string) => {
-    return statusDisplay[status as keyof typeof statusDisplay] || statusDisplay.Open;
-  };
-
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'Completed': return <CheckCircle2 className="h-5 w-5 text-green-600" />;
-      case 'In Progress': return <Clock className="h-5 w-5 text-blue-600" />;
-      default: return <Circle className="h-5 w-5 text-muted-foreground" />;
+      case 'Completed': return <CheckCircle2 className="h-4 w-4 text-green-600" />;
+      case 'In Progress': return <Clock className="h-4 w-4 text-blue-600" />;
+      default: return <Circle className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
@@ -422,12 +434,24 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
 
   return (
     <div className="space-y-6">
+      {/* View-only banner for restricted roles */}
+      {!canEdit && (
+        <Card className="bg-muted/50 border-muted">
+          <CardContent className="py-3">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Eye className="h-4 w-4" />
+              <span>You have view-only access to actions. Contact your administrator for editing permissions.</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* P3.3: Progress Summary Card */}
       {totalCount > 0 && (
         <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
           <CardContent className="py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-4 flex-wrap">
                 <div className="flex items-center gap-2">
                   <Target className="h-5 w-5 text-primary" />
                   <span className="font-medium">
@@ -451,7 +475,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
               <CardTitle>Action Plan</CardTitle>
               <CardDescription>
@@ -459,120 +483,38 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
               </CardDescription>
             </div>
             <div className="flex gap-2">
-              <Button
-                onClick={generateIntelligentActions}
-                disabled={generating}
-                variant="default"
-              >
-                {generating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Generate Actions
-                  </>
-                )}
-              </Button>
-              <Button
-                onClick={() => setShowAddAction(!showAddAction)}
-                variant="outline"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Add Action
-              </Button>
+              {canEdit && (
+                <Button
+                  onClick={handleGenerateClick}
+                  disabled={generating}
+                  variant="default"
+                >
+                  {generating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Generate Actions
+                    </>
+                  )}
+                </Button>
+              )}
+              {canCreate && (
+                <Button onClick={openCreatePanel} variant="outline">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Action
+                </Button>
+              )}
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6">
-          {/* Add Manual Action Form */}
-          {showAddAction && (
-            <Card className="border-2 border-dashed border-primary/30">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-base">Add New Action</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Department *</Label>
-                    <Input
-                      value={newAction.department}
-                      onChange={(e) => setNewAction({ ...newAction, department: e.target.value })}
-                      placeholder="e.g., New Vehicle Sales"
-                    />
-                  </div>
-                  <div>
-                    <Label>Priority</Label>
-                    <Select
-                      value={newAction.priority}
-                      onValueChange={(value: Action['priority']) => 
-                        setNewAction({ ...newAction, priority: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="critical">Critical</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="low">Low</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div>
-                  <Label>Action Title *</Label>
-                  <Input
-                    value={newAction.action_title}
-                    onChange={(e) => setNewAction({ ...newAction, action_title: e.target.value })}
-                    placeholder="Brief, actionable title"
-                  />
-                </div>
-
-                <div>
-                  <Label>Description</Label>
-                  <Textarea
-                    value={newAction.action_description}
-                    onChange={(e) => setNewAction({ ...newAction, action_description: e.target.value })}
-                    placeholder="Detailed description and expected outcomes"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Responsible Person</Label>
-                    <Input
-                      value={newAction.responsible_person}
-                      onChange={(e) => setNewAction({ ...newAction, responsible_person: e.target.value })}
-                      placeholder="Person name"
-                    />
-                  </div>
-                  <div>
-                    <Label>Target Date</Label>
-                    <Input
-                      type="date"
-                      value={newAction.target_completion_date}
-                      onChange={(e) => setNewAction({ ...newAction, target_completion_date: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button onClick={addManualAction}>Add Action</Button>
-                  <Button variant="outline" onClick={() => setShowAddAction(false)}>Cancel</Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Filters & Sort */}
-          <div className="flex flex-wrap gap-3">
+        <CardContent className="space-y-4">
+          {/* B4: Clean filters - only Status and Priority */}
+          <div className="flex flex-wrap gap-3 items-center">
             <Select value={filterStatus} onValueChange={setFilterStatus}>
               <SelectTrigger className="w-[140px]">
                 <SelectValue placeholder="Status" />
@@ -598,19 +540,18 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
               </SelectContent>
             </Select>
 
-            <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="priority">Priority</SelectItem>
-                <SelectItem value="status">Status</SelectItem>
-                <SelectItem value="date">Due Date</SelectItem>
-              </SelectContent>
-            </Select>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setSortBy(prev => prev === 'priority' ? 'status' : prev === 'status' ? 'date' : 'priority')}
+              className="flex items-center gap-1 text-xs"
+            >
+              <ArrowUpDown className="h-3 w-3" />
+              Sort: {sortBy === 'priority' ? 'Priority' : sortBy === 'status' ? 'Status' : 'Due Date'}
+            </Button>
           </div>
 
-          {/* Actions List */}
+          {/* P3.1A: Table View */}
           {filteredActions.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Target className="h-12 w-12 mx-auto mb-4 opacity-20" />
@@ -618,228 +559,142 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
               <p className="text-sm mt-1">Generate actions from your assessment or add them manually.</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {filteredActions.map((action) => {
-                const priorityConfig = getPriorityConfig(action.priority);
-                const statusConfig = getStatusConfig(action.status);
-                // P1.2: Get human-readable rationale
-                const rationale = getHumanRationale(action.department);
+            <div className="border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-8"></TableHead>
+                    <TableHead>Action</TableHead>
+                    <TableHead className="hidden md:table-cell">Department</TableHead>
+                    <TableHead>Priority</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="hidden lg:table-cell">Owner</TableHead>
+                    <TableHead className="hidden lg:table-cell">Due Date</TableHead>
+                    {canEdit && <TableHead className="w-10"></TableHead>}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredActions.map((action) => {
+                    const priorityConfig = getPriorityConfig(action.priority);
+                    // A1: Get rationale from action object (not department)
+                    const rationale = getHumanRationale({ action_description: action.action_description });
+                    // B2: Clean the title
+                    const displayTitle = cleanActionTitle(action.action_title);
+                    // B3: Clean the description
+                    const displayDesc = cleanActionDescription(action.action_description);
 
-                return (
-                  <Card key={action.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="py-4">
-                      <div className="flex items-start gap-4">
-                        {/* Status Icon */}
-                        <div className="mt-1">
+                    return (
+                      <TableRow 
+                        key={action.id} 
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => openEditPanel(action)}
+                      >
+                        <TableCell className="pr-0">
                           {getStatusIcon(action.status)}
-                        </div>
-
-                        {/* Main Content */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-foreground leading-tight">
-                                {action.action_title}
-                              </h3>
-                              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                                <Badge className={priorityConfig.color}>
-                                  {priorityConfig.label}
-                                </Badge>
-                                <Badge variant="secondary">{action.department}</Badge>
-                                {action.responsible_person && (
-                                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                    <User className="h-3 w-3" />
-                                    {action.responsible_person}
-                                  </span>
-                                )}
-                                {action.target_completion_date && (
-                                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                    <Calendar className="h-3 w-3" />
-                                    {new Date(action.target_completion_date).toLocaleDateString()}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Actions */}
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => openEditPanel(action)}
-                                className="h-8 w-8 p-0"
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Select
-                                value={action.status}
-                                onValueChange={(value) => updateActionStatus(action.id, value as Action['status'])}
-                              >
-                                <SelectTrigger className="w-[130px] h-8">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Open">Open</SelectItem>
-                                  <SelectItem value="In Progress">In Progress</SelectItem>
-                                  <SelectItem value="Completed">Completed</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <p className="font-medium text-sm leading-tight">{displayTitle}</p>
+                            <p className="text-xs text-muted-foreground line-clamp-1">{rationale.summary}</p>
                           </div>
-
-                          {/* Description & Details */}
-                          {action.action_description && (
-                            <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                              {action.action_description}
-                            </p>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <Badge variant="secondary" className="text-xs">{action.department}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={`${priorityConfig.color} text-xs`}>
+                            {priorityConfig.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {canEdit ? (
+                            <Select
+                              value={action.status}
+                              onValueChange={(value) => {
+                                // Prevent row click from firing
+                                updateActionStatus(action.id, value as Action['status']);
+                              }}
+                            >
+                              <SelectTrigger 
+                                className="w-[120px] h-7 text-xs"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Open">Open</SelectItem>
+                                <SelectItem value="In Progress">In Progress</SelectItem>
+                                <SelectItem value="Completed">Completed</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">{action.status}</span>
                           )}
-
-                          {/* P1.2: Human-readable rationale */}
-                          <Collapsible className="mt-3">
-                            <CollapsibleTrigger className="flex items-center gap-1 text-xs text-primary hover:text-primary/80">
-                              <Info className="h-3 w-3" />
-                              View analysis
-                              <ChevronDown className="h-3 w-3" />
-                            </CollapsibleTrigger>
-                            <CollapsibleContent className="mt-2 p-3 bg-muted/50 rounded-md">
-                              <p className="text-sm font-medium text-foreground">{rationale.title}</p>
-                              <p className="text-xs text-muted-foreground mt-1">{rationale.summary}</p>
-                              <p className="text-xs text-primary mt-2">
-                                <strong>Recommendation:</strong> {rationale.recommendation}
-                              </p>
-                            </CollapsibleContent>
-                          </Collapsible>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">
+                          {action.responsible_person || '—'}
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">
+                          {action.target_completion_date 
+                            ? new Date(action.target_completion_date).toLocaleDateString()
+                            : '—'}
+                        </TableCell>
+                        {canEdit && (
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openEditPanel(action);
+                              }}
+                            >
+                              <Pencil className="h-3 w-3" />
+                            </Button>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* P1.3: Edit Sheet */}
-      <Sheet open={!!editingAction} onOpenChange={(open) => !open && setEditingAction(null)}>
-        <SheetContent className="sm:max-w-lg">
-          <SheetHeader>
-            <SheetTitle>Edit Action</SheetTitle>
-            <SheetDescription>
-              Update the details for this improvement action
-            </SheetDescription>
-          </SheetHeader>
+      {/* Edit/Create Sheet (ActionSheet) */}
+      <ActionSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        action={editingAction}
+        mode={sheetMode}
+        onSave={handleSheetSave}
+        onDelete={canEdit ? handleDelete : undefined}
+        readOnly={!canEdit}
+        rationale={editingAction ? getHumanRationale({ action_description: editingAction.action_description }) : undefined}
+        cleanDescription={editingAction ? cleanActionDescription(editingAction.action_description) : undefined}
+      />
 
-          <div className="space-y-4 py-6">
-            <div>
-              <Label>Title</Label>
-              <Input
-                value={editForm.action_title}
-                onChange={(e) => setEditForm({ ...editForm, action_title: e.target.value })}
-              />
-            </div>
-
-            <div>
-              <Label>Description</Label>
-              <Textarea
-                value={editForm.action_description}
-                onChange={(e) => setEditForm({ ...editForm, action_description: e.target.value })}
-                rows={4}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Priority</Label>
-                <Select
-                  value={editForm.priority}
-                  onValueChange={(v) => setEditForm({ ...editForm, priority: v as Action['priority'] })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="critical">Critical</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label>Status</Label>
-                <Select
-                  value={editForm.status}
-                  onValueChange={(v) => setEditForm({ ...editForm, status: v as Action['status'] })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Open">Open</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div>
-              <Label>Responsible Person</Label>
-              <Input
-                value={editForm.responsible_person}
-                onChange={(e) => setEditForm({ ...editForm, responsible_person: e.target.value })}
-                placeholder="Assign to..."
-              />
-            </div>
-
-            <div>
-              <Label>Target Completion Date</Label>
-              <Input
-                type="date"
-                value={editForm.target_completion_date}
-                onChange={(e) => setEditForm({ ...editForm, target_completion_date: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <SheetFooter>
-            <Button variant="outline" onClick={() => setEditingAction(null)}>
-              Cancel
-            </Button>
-            <Button onClick={() => saveEditedAction()} disabled={saving}>
-              {saving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                'Save Changes'
-              )}
-            </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
-
-      {/* P1.3: Conflict Resolution Dialog */}
+      {/* A3: Conflict Resolution Dialog - no user reference since updated_by doesn't exist */}
       <AlertDialog open={conflictDetected} onOpenChange={setConflictDetected}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-warning" />
+              <AlertTriangle className="h-5 w-5 text-yellow-500" />
               Edit Conflict Detected
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This action was updated by another user since you started editing.
-              Would you like to review their changes or overwrite with yours?
+              This action has been modified since you started editing. 
+              Would you like to review the latest version or overwrite with your changes?
             </AlertDialogDescription>
           </AlertDialogHeader>
           
           {conflictAction && (
             <div className="p-4 bg-muted rounded-md text-sm">
-              <p><strong>Current version:</strong></p>
-              <p className="mt-1">{conflictAction.action_title}</p>
+              <p><strong>Latest version:</strong></p>
+              <p className="mt-1">{cleanActionTitle(conflictAction.action_title)}</p>
               <p className="text-xs text-muted-foreground mt-2">
                 Updated: {conflictAction.updated_at ? new Date(conflictAction.updated_at).toLocaleString() : 'Unknown'}
               </p>
@@ -848,24 +703,44 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
 
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => {
-              // Reload with latest data
+              setConflictDetected(false);
               if (conflictAction) {
                 setEditingAction(conflictAction);
-                setEditForm({
-                  action_title: conflictAction.action_title,
-                  action_description: conflictAction.action_description || '',
-                  priority: conflictAction.priority,
-                  status: conflictAction.status,
-                  responsible_person: conflictAction.responsible_person || '',
-                  target_completion_date: conflictAction.target_completion_date || ''
-                });
+              }
+              loadActions();
+            }}>
+              Review Latest
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={async () => {
+              if (editingAction) {
+                try {
+                  await performUpdate(editingAction);
+                } catch (error) {
+                  toast.error('Failed to overwrite');
+                }
               }
               setConflictDetected(false);
             }}>
-              Review Changes
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={() => saveEditedAction(true)}>
-              Overwrite Anyway
+              Overwrite
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* B1: Regeneration confirmation dialog */}
+      <AlertDialog open={showRegenerateConfirm} onOpenChange={setShowRegenerateConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Regenerate Actions?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Auto-generated actions already exist for this assessment. 
+              Regenerating will replace them with new ones. Manually created actions will be preserved.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => generateIntelligentActions(true)}>
+              Regenerate
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

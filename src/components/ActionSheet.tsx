@@ -8,9 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Save, X } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { CalendarIcon, Save, X, Trash2, Lightbulb } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { ActionRationale } from "@/lib/actionRationaleMap";
 
 interface Action {
   id: string;
@@ -32,6 +34,9 @@ interface ActionSheetProps {
   mode: 'create' | 'edit';
   onSave: (action: Partial<Action>) => void;
   onDelete?: (actionId: string) => void;
+  readOnly?: boolean;
+  rationale?: ActionRationale;
+  cleanDescription?: string;
 }
 
 const RESPONSIBLE_PERSONS = [
@@ -45,36 +50,14 @@ const RESPONSIBLE_PERSONS = [
   "Marketing Manager"
 ];
 
-const SUPPORT_OPTIONS = [
-  "Coach",
-  "IT Team",
-  "Parts Vendor",
-  "OEM",
-  "Management",
-  "Training Provider",
-  "Consultant"
-];
+const SUPPORT_OPTIONS = ["Coach", "IT Team", "Parts Vendor", "OEM", "Management", "Training Provider", "Consultant"];
 
-const KPI_CATEGORIES = [
-  "Parts KPIs",
-  "Workshop KPIs",
-  "Sales KPIs",
-  "Aftersales KPIs",
-  "Financial KPIs",
-  "Customer Satisfaction KPIs"
-];
+const KPI_CATEGORIES = ["Parts KPIs", "Workshop KPIs", "Sales KPIs", "Aftersales KPIs", "Financial KPIs", "Customer Satisfaction KPIs"];
 
-const DEPARTMENTS = [
-  "Parts",
-  "Workshop",
-  "Sales",
-  "Aftersales",
-  "Finance",
-  "Marketing",
-  "Customer Service"
-];
+const DEPARTMENTS = ["Parts", "Workshop", "Sales", "Aftersales", "Finance", "Marketing", "Customer Service",
+  "New Vehicle Sales", "Used Vehicle Sales", "Service", "Parts & Inventory", "Financial Operations"];
 
-export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete }: ActionSheetProps) {
+export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete, readOnly, rationale, cleanDescription }: ActionSheetProps) {
   const [formData, setFormData] = useState<Partial<Action>>({
     action_title: '',
     action_description: '',
@@ -91,7 +74,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
     if (action && mode === 'edit') {
       setFormData({
         action_title: action.action_title,
-        action_description: action.action_description,
+        action_description: cleanDescription || action.action_description,
         department: action.department,
         priority: action.priority,
         status: action.status,
@@ -102,24 +85,16 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
       });
     } else if (mode === 'create') {
       setFormData({
-        action_title: '',
-        action_description: '',
-        department: '',
-        priority: 'medium',
-        status: 'Open',
-        responsible_person: null,
-        target_completion_date: null,
-        support_required_from: [],
-        kpis_linked_to: []
+        action_title: '', action_description: '', department: '', priority: 'medium',
+        status: 'Open', responsible_person: null, target_completion_date: null,
+        support_required_from: [], kpis_linked_to: []
       });
     }
-  }, [action, mode, open]);
+  }, [action, mode, open, cleanDescription]);
 
   const toggleArrayItem = (field: 'support_required_from' | 'kpis_linked_to', item: string) => {
     const current = formData[field] || [];
-    const newArray = current.includes(item)
-      ? current.filter(i => i !== item)
-      : [...current, item];
+    const newArray = current.includes(item) ? current.filter(i => i !== item) : [...current, item];
     setFormData(prev => ({ ...prev, [field]: newArray }));
   };
 
@@ -132,206 +107,161 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
     onOpenChange(false);
   };
 
-  const handleDelete = () => {
-    if (action && onDelete) {
-      onDelete(action.id);
-      onOpenChange(false);
-    }
-  };
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
         <SheetHeader>
           <SheetTitle>
-            {mode === 'create' ? 'Create New Action' : 'Edit Action'}
+            {readOnly ? 'View Action' : mode === 'create' ? 'Create New Action' : 'Edit Action'}
           </SheetTitle>
         </SheetHeader>
 
         <div className="space-y-4 py-4">
-          {/* Action Title */}
+          {/* B3: Human rationale section (for auto-generated actions) */}
+          {rationale && mode === 'edit' && (
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Lightbulb className="h-4 w-4 text-primary" />
+                Why this matters
+              </div>
+              <p className="text-sm text-muted-foreground">{rationale.summary}</p>
+              <Separator />
+              <div className="text-sm font-medium text-foreground">Our recommendation</div>
+              <p className="text-sm text-muted-foreground">{rationale.recommendation}</p>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="title">Action Title</Label>
             <Input
-              id="title"
+              id="title" disabled={readOnly}
               value={formData.action_title || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, action_title: e.target.value }))}
-              placeholder="Enter action title"
+              placeholder="Short, imperative action title"
             />
           </div>
 
-          {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
-              id="description"
+              id="description" disabled={readOnly}
               value={formData.action_description || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, action_description: e.target.value }))}
-              placeholder="Enter action description"
+              placeholder="Describe what needs to be done and expected outcomes"
               rows={3}
             />
           </div>
 
-          {/* Department */}
           <div className="space-y-2">
             <Label>Department</Label>
-            <Select
-              value={formData.department || ''}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, department: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select department" />
-              </SelectTrigger>
+            <Select disabled={readOnly} value={formData.department || ''} onValueChange={(value) => setFormData(prev => ({ ...prev, department: value }))}>
+              <SelectTrigger><SelectValue placeholder="Select department" /></SelectTrigger>
               <SelectContent>
-                {DEPARTMENTS.map(dept => (
-                  <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                ))}
+                {DEPARTMENTS.map(dept => (<SelectItem key={dept} value={dept}>{dept}</SelectItem>))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Priority */}
-          <div className="space-y-2">
-            <Label>Priority</Label>
-            <Select
-              value={formData.priority || 'medium'}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="critical">Critical</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Priority</Label>
+              <Select disabled={readOnly} value={formData.priority || 'medium'} onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="critical">Critical</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select disabled={readOnly} value={formData.status || 'Open'} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Open">Open</SelectItem>
+                  <SelectItem value="In Progress">In Progress</SelectItem>
+                  <SelectItem value="Completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          {/* Status */}
-          <div className="space-y-2">
-            <Label>Status</Label>
-            <Select
-              value={formData.status || 'Open'}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Open">Open</SelectItem>
-                <SelectItem value="In Progress">In Progress</SelectItem>
-                <SelectItem value="Completed">Completed</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Responsible Person */}
           <div className="space-y-2">
             <Label>Responsible Person</Label>
-            <Select
-              value={formData.responsible_person || ''}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, responsible_person: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select person" />
-              </SelectTrigger>
+            <Select disabled={readOnly} value={formData.responsible_person || ''} onValueChange={(value) => setFormData(prev => ({ ...prev, responsible_person: value }))}>
+              <SelectTrigger><SelectValue placeholder="Assign owner" /></SelectTrigger>
               <SelectContent>
-                {RESPONSIBLE_PERSONS.map(person => (
-                  <SelectItem key={person} value={person}>{person}</SelectItem>
-                ))}
+                {RESPONSIBLE_PERSONS.map(person => (<SelectItem key={person} value={person}>{person}</SelectItem>))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Due Date */}
           <div className="space-y-2">
             <Label>Target Completion Date</Label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !formData.target_completion_date && "text-muted-foreground"
-                  )}
-                >
+                <Button variant="outline" disabled={readOnly} className={cn("w-full justify-start text-left font-normal", !formData.target_completion_date && "text-muted-foreground")}>
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.target_completion_date
-                    ? format(new Date(formData.target_completion_date), "PPP")
-                    : "Pick a date"}
+                  {formData.target_completion_date ? format(new Date(formData.target_completion_date), "PPP") : "Pick a date"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
                   selected={formData.target_completion_date ? new Date(formData.target_completion_date) : undefined}
-                  onSelect={(date) => setFormData(prev => ({ 
-                    ...prev, 
-                    target_completion_date: date ? format(date, "yyyy-MM-dd") : null 
-                  }))}
-                  initialFocus
-                  className="pointer-events-auto"
+                  onSelect={(date) => setFormData(prev => ({ ...prev, target_completion_date: date ? format(date, "yyyy-MM-dd") : null }))}
+                  initialFocus className="pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
           </div>
 
-          {/* Support Required */}
           <div className="space-y-2">
             <Label>Support Required From</Label>
             <div className="grid grid-cols-2 gap-2">
               {SUPPORT_OPTIONS.map(support => (
                 <div key={support} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`support-${support}`}
+                  <Checkbox id={`support-${support}`} disabled={readOnly}
                     checked={formData.support_required_from?.includes(support) || false}
-                    onCheckedChange={() => toggleArrayItem('support_required_from', support)}
-                  />
-                  <label htmlFor={`support-${support}`} className="text-sm cursor-pointer">
-                    {support}
-                  </label>
+                    onCheckedChange={() => toggleArrayItem('support_required_from', support)} />
+                  <label htmlFor={`support-${support}`} className="text-sm cursor-pointer">{support}</label>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* KPIs */}
           <div className="space-y-2">
             <Label>KPIs Linked To</Label>
             <div className="grid grid-cols-1 gap-2">
               {KPI_CATEGORIES.map(kpi => (
                 <div key={kpi} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`kpi-${kpi}`}
+                  <Checkbox id={`kpi-${kpi}`} disabled={readOnly}
                     checked={formData.kpis_linked_to?.includes(kpi) || false}
-                    onCheckedChange={() => toggleArrayItem('kpis_linked_to', kpi)}
-                  />
-                  <label htmlFor={`kpi-${kpi}`} className="text-sm cursor-pointer">
-                    {kpi}
-                  </label>
+                    onCheckedChange={() => toggleArrayItem('kpis_linked_to', kpi)} />
+                  <label htmlFor={`kpi-${kpi}`} className="text-sm cursor-pointer">{kpi}</label>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        <SheetFooter className="flex gap-2 pt-4 border-t">
-          {mode === 'edit' && onDelete && (
-            <Button variant="destructive" onClick={handleDelete} className="mr-auto">
-              Delete
+        {!readOnly && (
+          <SheetFooter className="flex gap-2 pt-4 border-t">
+            {mode === 'edit' && onDelete && action && (
+              <Button variant="destructive" onClick={() => { onDelete(action.id); onOpenChange(false); }} className="mr-auto">
+                <Trash2 className="h-4 w-4 mr-2" /> Delete
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              <X className="h-4 w-4 mr-2" /> Cancel
             </Button>
-          )}
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            <X className="h-4 w-4 mr-2" />
-            Cancel
-          </Button>
-          <Button onClick={handleSave}>
-            <Save className="h-4 w-4 mr-2" />
-            Save
-          </Button>
-        </SheetFooter>
+            <Button onClick={handleSave}>
+              <Save className="h-4 w-4 mr-2" /> {mode === 'create' ? 'Create' : 'Save'}
+            </Button>
+          </SheetFooter>
+        )}
       </SheetContent>
     </Sheet>
   );
