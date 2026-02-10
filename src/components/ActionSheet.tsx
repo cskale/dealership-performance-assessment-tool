@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ import { CalendarIcon, Save, X, Trash2, Lightbulb } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ActionRationale } from "@/lib/actionRationaleMap";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Action {
   id: string;
@@ -108,147 +109,149 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg max-h-[90vh] p-0">
+        <DialogHeader className="px-6 pt-6 pb-0">
+          <DialogTitle>
             {readOnly ? 'View Action' : mode === 'create' ? 'Create New Action' : 'Edit Action'}
-          </SheetTitle>
-        </SheetHeader>
+          </DialogTitle>
+        </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {/* B3: Human rationale section (for auto-generated actions) */}
-          {rationale && mode === 'edit' && (
-            <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
-              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                <Lightbulb className="h-4 w-4 text-primary" />
-                Why this matters
+        <ScrollArea className="max-h-[calc(90vh-140px)] px-6">
+          <div className="space-y-4 py-4">
+            {/* B3: Human rationale section */}
+            {rationale && mode === 'edit' && (
+              <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <Lightbulb className="h-4 w-4 text-primary" />
+                  Why this matters
+                </div>
+                <p className="text-sm text-muted-foreground">{rationale.summary}</p>
+                <Separator />
+                <div className="text-sm font-medium text-foreground">Our recommendation</div>
+                <p className="text-sm text-muted-foreground">{rationale.recommendation}</p>
               </div>
-              <p className="text-sm text-muted-foreground">{rationale.summary}</p>
-              <Separator />
-              <div className="text-sm font-medium text-foreground">Our recommendation</div>
-              <p className="text-sm text-muted-foreground">{rationale.recommendation}</p>
-            </div>
-          )}
+            )}
 
-          <div className="space-y-2">
-            <Label htmlFor="title">Action Title</Label>
-            <Input
-              id="title" disabled={readOnly}
-              value={formData.action_title || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, action_title: e.target.value }))}
-              placeholder="Short, imperative action title"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description" disabled={readOnly}
-              value={formData.action_description || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, action_description: e.target.value }))}
-              placeholder="Describe what needs to be done and expected outcomes"
-              rows={3}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Department</Label>
-            <Select disabled={readOnly} value={formData.department || ''} onValueChange={(value) => setFormData(prev => ({ ...prev, department: value }))}>
-              <SelectTrigger><SelectValue placeholder="Select department" /></SelectTrigger>
-              <SelectContent>
-                {DEPARTMENTS.map(dept => (<SelectItem key={dept} value={dept}>{dept}</SelectItem>))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Priority</Label>
-              <Select disabled={readOnly} value={formData.priority || 'medium'} onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Label htmlFor="title">Action Title</Label>
+              <Input
+                id="title" disabled={readOnly}
+                value={formData.action_title || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, action_title: e.target.value }))}
+                placeholder="Short, imperative action title"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description" disabled={readOnly}
+                value={formData.action_description || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, action_description: e.target.value }))}
+                placeholder="Describe what needs to be done and expected outcomes"
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Department</Label>
+              <Select disabled={readOnly} value={formData.department || ''} onValueChange={(value) => setFormData(prev => ({ ...prev, department: value }))}>
+                <SelectTrigger><SelectValue placeholder="Select department" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="critical">Critical</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
+                  {DEPARTMENTS.map(dept => (<SelectItem key={dept} value={dept}>{dept}</SelectItem>))}
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Priority</Label>
+                <Select disabled={readOnly} value={formData.priority || 'medium'} onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="critical">Critical</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select disabled={readOnly} value={formData.status || 'Open'} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Open">Open</SelectItem>
+                    <SelectItem value="In Progress">In Progress</SelectItem>
+                    <SelectItem value="Completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <Label>Status</Label>
-              <Select disabled={readOnly} value={formData.status || 'Open'} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Label>Responsible Person</Label>
+              <Select disabled={readOnly} value={formData.responsible_person || ''} onValueChange={(value) => setFormData(prev => ({ ...prev, responsible_person: value }))}>
+                <SelectTrigger><SelectValue placeholder="Assign owner" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Open">Open</SelectItem>
-                  <SelectItem value="In Progress">In Progress</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
+                  {RESPONSIBLE_PERSONS.map(person => (<SelectItem key={person} value={person}>{person}</SelectItem>))}
                 </SelectContent>
               </Select>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label>Responsible Person</Label>
-            <Select disabled={readOnly} value={formData.responsible_person || ''} onValueChange={(value) => setFormData(prev => ({ ...prev, responsible_person: value }))}>
-              <SelectTrigger><SelectValue placeholder="Assign owner" /></SelectTrigger>
-              <SelectContent>
-                {RESPONSIBLE_PERSONS.map(person => (<SelectItem key={person} value={person}>{person}</SelectItem>))}
-              </SelectContent>
-            </Select>
-          </div>
+            <div className="space-y-2">
+              <Label>Target Completion Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" disabled={readOnly} className={cn("w-full justify-start text-left font-normal", !formData.target_completion_date && "text-muted-foreground")}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.target_completion_date ? format(new Date(formData.target_completion_date), "PPP") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.target_completion_date ? new Date(formData.target_completion_date) : undefined}
+                    onSelect={(date) => setFormData(prev => ({ ...prev, target_completion_date: date ? format(date, "yyyy-MM-dd") : null }))}
+                    initialFocus className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
 
-          <div className="space-y-2">
-            <Label>Target Completion Date</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" disabled={readOnly} className={cn("w-full justify-start text-left font-normal", !formData.target_completion_date && "text-muted-foreground")}>
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.target_completion_date ? format(new Date(formData.target_completion_date), "PPP") : "Pick a date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={formData.target_completion_date ? new Date(formData.target_completion_date) : undefined}
-                  onSelect={(date) => setFormData(prev => ({ ...prev, target_completion_date: date ? format(date, "yyyy-MM-dd") : null }))}
-                  initialFocus className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
+            <div className="space-y-2">
+              <Label>Support Required From</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {SUPPORT_OPTIONS.map(support => (
+                  <div key={support} className="flex items-center space-x-2">
+                    <Checkbox id={`support-${support}`} disabled={readOnly}
+                      checked={formData.support_required_from?.includes(support) || false}
+                      onCheckedChange={() => toggleArrayItem('support_required_from', support)} />
+                    <label htmlFor={`support-${support}`} className="text-sm cursor-pointer">{support}</label>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-          <div className="space-y-2">
-            <Label>Support Required From</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {SUPPORT_OPTIONS.map(support => (
-                <div key={support} className="flex items-center space-x-2">
-                  <Checkbox id={`support-${support}`} disabled={readOnly}
-                    checked={formData.support_required_from?.includes(support) || false}
-                    onCheckedChange={() => toggleArrayItem('support_required_from', support)} />
-                  <label htmlFor={`support-${support}`} className="text-sm cursor-pointer">{support}</label>
-                </div>
-              ))}
+            <div className="space-y-2">
+              <Label>KPIs Linked To</Label>
+              <div className="grid grid-cols-1 gap-2">
+                {KPI_CATEGORIES.map(kpi => (
+                  <div key={kpi} className="flex items-center space-x-2">
+                    <Checkbox id={`kpi-${kpi}`} disabled={readOnly}
+                      checked={formData.kpis_linked_to?.includes(kpi) || false}
+                      onCheckedChange={() => toggleArrayItem('kpis_linked_to', kpi)} />
+                    <label htmlFor={`kpi-${kpi}`} className="text-sm cursor-pointer">{kpi}</label>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-
-          <div className="space-y-2">
-            <Label>KPIs Linked To</Label>
-            <div className="grid grid-cols-1 gap-2">
-              {KPI_CATEGORIES.map(kpi => (
-                <div key={kpi} className="flex items-center space-x-2">
-                  <Checkbox id={`kpi-${kpi}`} disabled={readOnly}
-                    checked={formData.kpis_linked_to?.includes(kpi) || false}
-                    onCheckedChange={() => toggleArrayItem('kpis_linked_to', kpi)} />
-                  <label htmlFor={`kpi-${kpi}`} className="text-sm cursor-pointer">{kpi}</label>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        </ScrollArea>
 
         {!readOnly && (
-          <SheetFooter className="flex gap-2 pt-4 border-t">
+          <DialogFooter className="flex gap-2 px-6 pb-6 pt-4 border-t">
             {mode === 'edit' && onDelete && action && (
               <Button variant="destructive" onClick={() => { onDelete(action.id); onOpenChange(false); }} className="mr-auto">
                 <Trash2 className="h-4 w-4 mr-2" /> Delete
@@ -260,9 +263,9 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
             <Button onClick={handleSave}>
               <Save className="h-4 w-4 mr-2" /> {mode === 'create' ? 'Create' : 'Save'}
             </Button>
-          </SheetFooter>
+          </DialogFooter>
         )}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }
