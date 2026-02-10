@@ -200,67 +200,60 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         {kpiData.map(({ key, value, benchmark, performance, isGood }) => {
+          // D2.3: Benchmark band segments
+          const pct = Math.min(100, Math.max(0, (value / benchmark) * 100));
+          const markerLeft = Math.min(95, Math.max(5, pct));
+          
           return (
-            <Card key={key} className={`border-l-4 ${isGood ? 'border-l-green-500' : 'border-l-red-500'}`}>
+            <Card key={key} className={`border-l-4 kpi-card ${isGood ? 'border-l-emerald-500' : 'border-l-red-500'}`}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-medium text-muted-foreground">
                     {getKPILabel(key)}
                   </h4>
                   <div className="flex items-center gap-1">
-                    {/* BUG #7 FIX: Tooltip icons REMOVED from all KPIs */}
                     {isGood ? (
-                      <TrendingUp className="h-4 w-4 text-green-600" />
+                      <TrendingUp className="h-4 w-4 text-emerald-600" />
                     ) : (
                       <TrendingDown className="h-4 w-4 text-red-600" />
                     )}
                   </div>
                 </div>
 
-                {/* BUG #8 FIX: New Progress Bar with Benchmark Indicator */}
+                {/* D2.3: Benchmark band visualization */}
                 <div className="space-y-2">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold">{formatValue(key, value)}</span>
+                    <span className="text-2xl font-bold text-foreground">{formatValue(key, value)}</span>
                     <span className="text-xs text-muted-foreground">
-                      vs {formatValue(key, benchmark)}
+                      vs. Benchmark ({formatValue(key, benchmark)})
                     </span>
                   </div>
                   
-                  {/* Progress Bar with Benchmark Marker */}
-                  <div className="relative">
-                    {/* Background track */}
-                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                      {/* Filled progress */}
-                      <div 
-                        className={`h-full transition-all duration-300 ease-out rounded-full ${
-                          isGood ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' : 
-                          performance >= -30 ? 'bg-gradient-to-r from-orange-400 to-orange-500' :
-                          'bg-gradient-to-r from-red-400 to-red-500'
-                        }`}
-                        style={{ width: `${Math.min(100, Math.max(0, (value / benchmark) * 100))}%` }}
-                      />
-                    </div>
-                    {/* Benchmark marker line at 100% of benchmark */}
+                  {/* Benchmark band: Red(<60) Amber(60-79) Green(80-89) Excellence(90+) */}
+                  <div className="relative h-3 rounded-full overflow-hidden flex">
+                    <div className="h-full bg-red-300" style={{ width: '30%' }} />
+                    <div className="h-full bg-amber-300" style={{ width: '20%' }} />
+                    <div className="h-full bg-emerald-300" style={{ width: '20%' }} />
+                    <div className="h-full bg-emerald-500" style={{ width: '30%' }} />
+                    {/* Dealer marker */}
                     <div 
-                      className="absolute top-0 w-0.5 h-3 bg-slate-700 -translate-y-0.5"
-                      style={{ left: `${Math.min(100, 100)}%`, transform: 'translateX(-50%)' }}
-                      title={`Benchmark: ${formatValue(key, benchmark)}`}
+                      className="absolute top-0 w-0.5 h-full bg-foreground"
+                      style={{ left: `${markerLeft}%` }}
                     />
                   </div>
                   
-                  {/* Values display */}
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
-                      Current: {formatValue(key, value)} | Benchmark: {formatValue(key, benchmark)}
-                    </span>
+                    <span className="text-muted-foreground">Current Performance</span>
                     <Badge 
                       variant={isGood ? "default" : "destructive"} 
                       className="text-xs"
-                      aria-label={`Performance: ${performance >= 0 ? '+' : ''}${performance.toFixed(1)}% variance from benchmark`}
                     >
                       {performance >= 0 ? '+' : ''}{formatPercentage(Math.abs(performance))}
                     </Badge>
                   </div>
+                  
+                  {/* D2.4: Card-level credibility */}
+                  <p className="text-xs text-muted-foreground text-right">Based on assessment data</p>
                 </div>
               </CardContent>
             </Card>
@@ -324,15 +317,36 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
         </Card>
       )}
 
+      {/* D2.4: Assessment credibility signal */}
+      <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+        <span>{language === 'de' ? 'Basierend auf Bewertungsdaten' : 'Based on assessment data'}</span>
+      </div>
+
+      {/* D2.1: Performance Hero Card — spans 2 columns, 3rem score */}
+      {(() => {
+        const avgScore = Math.round(Object.values(scores).reduce((a, b) => a + b, 0) / Math.max(Object.values(scores).length, 1));
+        const badge = avgScore >= 80 ? (language === 'de' ? 'Stark' : 'Strong') : avgScore >= 60 ? (language === 'de' ? 'Auf Kurs' : 'On Track') : (language === 'de' ? 'Fokus erforderlich' : 'Needs Focus');
+        const badgeColor = avgScore >= 80 ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : avgScore >= 60 ? 'bg-yellow-100 text-yellow-800 border-yellow-300' : 'bg-red-100 text-red-800 border-red-300';
+        return (
+          <Card className="col-span-2 mb-6 border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+            <CardContent className="p-6 flex items-center gap-6">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">{language === 'de' ? 'Gesamtleistung' : 'Overall Performance Score'}</p>
+                <div className="text-5xl font-bold text-foreground leading-none">{avgScore}</div>
+                <Badge className={`mt-2 ${badgeColor}`}>{badge}</Badge>
+              </div>
+              <div className="flex-1 text-sm text-muted-foreground">
+                <p>{language === 'de' ? 'Aggregierte Leistung über alle bewerteten Abteilungen.' : 'Aggregated performance across all assessed departments.'}</p>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })()}
+
       <div className="text-center mb-6">
         <h2 className="text-3xl font-bold text-foreground mb-2">
           {language === 'de' ? 'Leistungskennzahlen (KPIs)' : 'Key Performance Indicators'}
         </h2>
-        <p className="text-muted-foreground">
-          {language === 'de' 
-            ? 'Klicken Sie auf ℹ️ für Details zu jedem KPI – Zahlen bleiben konstant' 
-            : 'Click ℹ️ on any KPI for detailed insights – numbers remain static'}
-        </p>
       </div>
 
       {Object.entries(scores).map(([sectionId, score]) => (

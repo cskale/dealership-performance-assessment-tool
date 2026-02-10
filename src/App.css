@@ -40,3 +40,12 @@
 .read-the-docs {
   color: #888;
 }
+
+/* D2.5: KPI card micro-interactions */
+.kpi-card {
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px hsl(var(--foreground) / 0.08);
+}
