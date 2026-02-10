@@ -22,16 +22,23 @@ import {
   User, Shield, Download, Trash2, Monitor, Smartphone, Globe, Calendar, 
   Mail, CheckCircle, XCircle, Building2, Users, Activity, Link2, Key,
   MapPin, Clock, TrendingUp, FileText, Settings, Lock, Eye, EyeOff,
-  AlertCircle, ChevronRight, Zap, BarChart3, ArrowLeft
+  AlertCircle, ChevronRight, Zap, BarChart3, ArrowLeft, Pencil, Save, X
 } from 'lucide-react';
 import { format } from 'date-fns';
 
+interface AssessmentRecord {
+  id: string;
+  overall_score: number | null;
+  status: string;
+  completed_at: string | null;
+  created_at: string;
+}
+
 const Account = () => {
-  // All hooks MUST be called first, before any conditional returns
   const { user } = useAuth();
   const { sessions, loading: sessionsLoading, fetchSessions, revokeSession } = useSessionManager();
   const { exportUserData, deleteAccount, updateConsent, loading: gdprLoading } = useGDPR();
-  const { organizations, currentOrganization, switchOrganization } = useMultiTenant();
+  const { organizations, currentOrganization, switchOrganization, userMemberships } = useMultiTenant();
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -50,12 +57,23 @@ const Account = () => {
   const [analyticsConsent, setAnalyticsConsent] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
 
-  // Redirect if not authenticated - AFTER all hooks
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
+  // P1.4 - Organization edit state
+  const [orgEditing, setOrgEditing] = useState(false);
+  const [orgName, setOrgName] = useState('');
+  const [orgSaving, setOrgSaving] = useState(false);
+
+  // P2.3 - Assessment history
+  const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
+  const [assessmentsLoading, setAssessmentsLoading] = useState(true);
+
+  // P1.4: Determine if user is admin/owner in current org
+  const currentMembership = userMemberships.find(
+    m => m.organization_id === currentOrganization?.id
+  );
+  const isOrgAdmin = currentMembership?.role === 'owner' || currentMembership?.role === 'admin';
 
   const fetchProfile = async () => {
+    if (!user) return;
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -63,9 +81,7 @@ const Account = () => {
         .eq('user_id', user.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
+      if (error && error.code !== 'PGRST116') throw error;
 
       setProfile(data);
       setDisplayName(data?.display_name || '');
@@ -75,26 +91,37 @@ const Account = () => {
       setTimezone(data?.timezone || 'UTC');
     } catch (error: any) {
       console.error('Error fetching profile:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load profile data",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to load profile data", variant: "destructive" });
     } finally {
       setProfileLoading(false);
     }
   };
 
+  // P2.3: Fetch assessment history
+  const fetchAssessments = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from('assessments')
+        .select('id, overall_score, status, completed_at, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+      setAssessments(data || []);
+    } catch (error) {
+      console.error('Error fetching assessments:', error);
+    } finally {
+      setAssessmentsLoading(false);
+    }
+  };
+
   const updateProfile = async () => {
-    if (!displayName.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Display name cannot be empty",
-        variant: "destructive",
-      });
+    if (!user || !displayName.trim()) {
+      toast({ title: "Validation Error", description: "Display name cannot be empty", variant: "destructive" });
       return;
     }
-
     setSaving(true);
     try {
       const { error } = await supabase
@@ -108,83 +135,65 @@ const Account = () => {
         })
         .eq('user_id', user.id);
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      setProfile((prev: any) => ({ 
-        ...prev, 
-        display_name: displayName.trim(),
-        job_title: jobTitle.trim(),
-        department: department.trim(),
-        bio: bio.trim(),
-        timezone: timezone
-      }));
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been saved successfully",
-      });
+      setProfile((prev: any) => ({ ...prev, display_name: displayName.trim(), job_title: jobTitle.trim(), department: department.trim(), bio: bio.trim(), timezone }));
+      toast({ title: "Profile updated", description: "Your profile has been saved successfully" });
     } catch (error: any) {
       console.error('Error updating profile:', error);
-      toast({
-        title: "Update failed",
-        description: error.message || "Failed to update profile",
-        variant: "destructive",
-      });
+      toast({ title: "Update failed", description: error.message || "Failed to update profile", variant: "destructive" });
     } finally {
       setSaving(false);
     }
   };
 
+  // P1.4: Save organization name
+  const saveOrgName = async () => {
+    if (!currentOrganization || !orgName.trim()) return;
+    setOrgSaving(true);
+    try {
+      const { error } = await supabase
+        .from('organizations')
+        .update({ name: orgName.trim() })
+        .eq('id', currentOrganization.id);
+
+      if (error) throw error;
+      toast({ title: "Organization updated", description: "Organization name has been saved" });
+      setOrgEditing(false);
+    } catch (error: any) {
+      console.error('Error updating organization:', error);
+      toast({ title: "Update failed", description: error.message || "Failed to update organization", variant: "destructive" });
+    } finally {
+      setOrgSaving(false);
+    }
+  };
+
   const handleRevokeSession = async (sessionId: string) => {
     const success = await revokeSession(sessionId);
-    if (success) {
-      toast({
-        title: "Session revoked",
-        description: "The session has been terminated",
-      });
-    } else {
-      toast({
-        title: "Error",
-        description: "Failed to revoke session",
-        variant: "destructive",
-      });
-    }
+    toast(success 
+      ? { title: "Session revoked", description: "The session has been terminated" }
+      : { title: "Error", description: "Failed to revoke session", variant: "destructive" }
+    );
   };
 
-  const handleExportData = async () => {
-    await exportUserData();
-  };
+  const handleExportData = async () => { await exportUserData(); };
 
   const handleDeleteAccount = async () => {
-    if (deleteConfirmStep === 0) {
-      setDeleteConfirmStep(1);
-      return;
-    }
-
+    if (deleteConfirmStep === 0) { setDeleteConfirmStep(1); return; }
     const success = await deleteAccount();
-    if (success) {
-      setDeleteConfirmStep(0);
-    }
+    if (success) setDeleteConfirmStep(0);
   };
 
   const getDeviceIcon = (deviceType: string) => {
-    switch (deviceType?.toLowerCase()) {
-      case 'mobile':
-        return <Smartphone className="h-4 w-4" />;
-      case 'tablet':
-        return <Monitor className="h-4 w-4" />;
-      default:
-        return <Monitor className="h-4 w-4" />;
-    }
+    return deviceType?.toLowerCase() === 'mobile' 
+      ? <Smartphone className="h-4 w-4" /> 
+      : <Monitor className="h-4 w-4" />;
   };
 
   const maskIP = (ip: string) => {
     if (!ip) return 'Unknown';
     const parts = ip.split('.');
-    if (parts.length === 4) {
-      return `${parts[0]}.${parts[1]}.***.**`;
-    }
+    if (parts.length === 4) return `${parts[0]}.${parts[1]}.***.**`;
     return ip.split(':')[0] + ':****';
   };
 
@@ -198,25 +207,22 @@ const Account = () => {
   const calculateProfileCompletion = () => {
     let completed = 0;
     const total = 6;
-    
     if (displayName) completed++;
-    if (user.email) completed++;
+    if (user?.email) completed++;
     if (jobTitle) completed++;
     if (department) completed++;
     if (bio) completed++;
     if (currentOrganization) completed++;
-    
     return Math.round((completed / total) * 100);
   };
 
-  // Sync profile data and consent states on load
   useEffect(() => {
     if (user) {
       fetchProfile();
+      fetchAssessments();
     }
   }, [user]);
 
-  // Sync consent states with profile data (P0.3 - optimistic UI sync)
   useEffect(() => {
     if (profile) {
       setAnalyticsConsent(profile.consent_analytics || false);
@@ -224,322 +230,254 @@ const Account = () => {
     }
   }, [profile]);
 
+  useEffect(() => {
+    if (currentOrganization) {
+      setOrgName(currentOrganization.name || '');
+    }
+  }, [currentOrganization]);
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
   if (profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dashboard-bg">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
-  const navigateToDashboard = () => {
-    navigate('/');
-  };
+  const completedAssessments = assessments.filter(a => a.status === 'completed');
+  const hasActivityData = assessments.length > 0;
+
+  // Build tabs dynamically — P2.3: remove Activity if no data
+  const tabs = [
+    { value: 'profile', label: 'Profile', icon: User },
+    { value: 'organization', label: 'Organization', icon: Building2 },
+    ...(hasActivityData ? [{ value: 'activity', label: 'Activity', icon: Activity }] : []),
+    { value: 'security', label: 'Security', icon: Shield },
+    { value: 'privacy', label: 'Privacy', icon: Globe },
+    { value: 'integrations', label: 'Integrations', icon: Link2 },
+  ];
 
   return (
-    <div className="min-h-screen bg-dashboard-bg">
-      {/* Header with Back to Dashboard CTA - P0.2 fix */}
+    <div className="min-h-screen bg-background">
+      {/* P2.2: Uplifted header with hero summary */}
       <div className="bg-card border-b border-border">
-        <div className="container max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={navigateToDashboard}
-                className="flex items-center gap-2"
-              >
-                <ChevronRight className="h-4 w-4 rotate-180" />
-                Back to Dashboard
-              </Button>
-              <div>
-                <h1 className="text-2xl font-semibold text-foreground">Account Settings</h1>
-                <p className="text-sm text-muted-foreground mt-1">Manage your profile, security, and preferences</p>
-              </div>
-            </div>
-            <Avatar className="h-12 w-12">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 py-6">
+          <div className="flex items-center gap-3 mb-6">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <Avatar className="h-16 w-16 border-2 border-primary/20">
               <AvatarImage src={profile?.avatar_url} />
-              <AvatarFallback className="bg-primary text-primary-foreground font-medium">
+              <AvatarFallback className="bg-primary text-primary-foreground text-xl font-medium">
                 {getInitials(displayName || user.email || '')}
               </AvatarFallback>
             </Avatar>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl font-semibold text-foreground truncate">{displayName || user.email}</h1>
+              <div className="flex flex-wrap items-center gap-3 mt-1 text-sm text-muted-foreground">
+                {jobTitle && <span>{jobTitle}</span>}
+                {jobTitle && currentOrganization && <span>•</span>}
+                {currentOrganization && (
+                  <span className="flex items-center gap-1">
+                    <Building2 className="h-3.5 w-3.5" />
+                    {currentOrganization.name}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right hidden sm:block">
+                <p className="text-xs text-muted-foreground">Profile completion</p>
+                <p className="text-lg font-semibold text-primary">{calculateProfileCompletion()}%</p>
+              </div>
+              <div className="w-16">
+                <Progress value={calculateProfileCompletion()} className="h-2" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="container max-w-7xl mx-auto px-6 py-8">
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        {/* P2.2: Quick summary cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          <Card className="border-border">
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">Assessments</p>
+              <p className="text-2xl font-bold text-foreground">{assessments.length}</p>
+            </CardContent>
+          </Card>
+          <Card className="border-border">
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">Completed</p>
+              <p className="text-2xl font-bold text-foreground">{completedAssessments.length}</p>
+            </CardContent>
+          </Card>
+          <Card className="border-border">
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">Organizations</p>
+              <p className="text-2xl font-bold text-foreground">{organizations.length}</p>
+            </CardContent>
+          </Card>
+          <Card className="border-border">
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">Status</p>
+              <Badge className="bg-success/10 text-success border-success/20 mt-1">Active</Badge>
+            </CardContent>
+          </Card>
+        </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Atlassian-style Tab Navigation */}
           <div className="bg-card rounded-lg border border-border p-1">
-            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 bg-transparent gap-1">
-              <TabsTrigger 
-                value="profile" 
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                <User className="h-4 w-4 mr-2" />
-                Profile
-              </TabsTrigger>
-              <TabsTrigger 
-                value="organization"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                <Building2 className="h-4 w-4 mr-2" />
-                Organization
-              </TabsTrigger>
-              <TabsTrigger 
-                value="activity"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                <Activity className="h-4 w-4 mr-2" />
-                Activity
-              </TabsTrigger>
-              <TabsTrigger 
-                value="security"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                <Shield className="h-4 w-4 mr-2" />
-                Security
-              </TabsTrigger>
-              <TabsTrigger 
-                value="privacy"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                <Globe className="h-4 w-4 mr-2" />
-                Privacy
-              </TabsTrigger>
-              <TabsTrigger 
-                value="integrations"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                <Link2 className="h-4 w-4 mr-2" />
-                Integrations
-              </TabsTrigger>
+            <TabsList className={`grid w-full bg-transparent gap-1`} style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
+              {tabs.map(tab => (
+                <TabsTrigger 
+                  key={tab.value}
+                  value={tab.value} 
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm"
+                >
+                  <tab.icon className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                </TabsTrigger>
+              ))}
             </TabsList>
           </div>
 
-          {/* Profile Tab */}
+          {/* ===================== PROFILE TAB (P2.2 uplift) ===================== */}
           <TabsContent value="profile" className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-3">
-              {/* Profile Completion Card */}
-              <Card className="lg:col-span-1">
-                <CardHeader>
-                  <CardTitle className="text-lg">Profile Completion</CardTitle>
-                  <CardDescription>Complete your profile to unlock all features</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-primary mb-2">
-                      {calculateProfileCompletion()}%
-                    </div>
-                    <Progress value={calculateProfileCompletion()} className="h-2" />
-                  </div>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Display Name</span>
-                      {displayName ? <CheckCircle className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-muted-foreground" />}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Email</span>
-                      {user.email ? <CheckCircle className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-muted-foreground" />}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Job Title</span>
-                      {jobTitle ? <CheckCircle className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-muted-foreground" />}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Department</span>
-                      {department ? <CheckCircle className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-muted-foreground" />}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Bio</span>
-                      {bio ? <CheckCircle className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-muted-foreground" />}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Organization</span>
-                      {currentOrganization ? <CheckCircle className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-muted-foreground" />}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Main Profile Form */}
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle>Personal Information</CardTitle>
-                  <CardDescription>Update your personal details and preferences</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="display-name">Display Name *</Label>
-                      <Input
-                        id="display-name"
-                        value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
-                        placeholder="John Doe"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          id="email"
-                          value={user.email || ''}
-                          disabled
-                          className="flex-1"
-                        />
-                        {user.email_confirmed_at ? (
-                          <Badge variant="secondary" className="flex items-center gap-1 bg-success text-success-foreground">
-                            <CheckCircle className="h-3 w-3" />
-                            Verified
-                          </Badge>
-                        ) : (
-                          <Badge variant="destructive" className="flex items-center gap-1">
-                            <XCircle className="h-3 w-3" />
-                            Unverified
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="job-title">Job Title</Label>
-                      <Input
-                        id="job-title"
-                        value={jobTitle}
-                        onChange={(e) => setJobTitle(e.target.value)}
-                        placeholder="Sales Manager"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="department">Department</Label>
-                      <Input
-                        id="department"
-                        value={department}
-                        onChange={(e) => setDepartment(e.target.value)}
-                        placeholder="Sales"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="bio">Bio</Label>
-                    <Textarea
-                      id="bio"
-                      value={bio}
-                      onChange={(e) => setBio(e.target.value)}
-                      placeholder="Tell us about yourself..."
-                      rows={4}
-                    />
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="timezone">Timezone</Label>
-                      <Input
-                        id="timezone"
-                        value={timezone}
-                        onChange={(e) => setTimezone(e.target.value)}
-                        placeholder="UTC"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Organization</Label>
-                      <Input
-                        value={currentOrganization?.name || 'No organization'}
-                        disabled
-                      />
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label>Account Created</Label>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        {user.created_at ? format(new Date(user.created_at), 'PPP') : 'Unknown'}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Last Sign In</Label>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Clock className="h-4 w-4" />
-                        {profile?.last_sign_in_at ? format(new Date(profile.last_sign_in_at), 'PPP p') : 'Never'}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end">
-                    <Button 
-                      onClick={updateProfile} 
-                      disabled={saving || !displayName.trim()}
-                      className="bg-primary hover:bg-primary/90"
-                    >
-                      {saving ? "Saving..." : "Save Changes"}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Summary KPIs */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Account Summary
-                </CardTitle>
-                <CardDescription>Your account metrics at a glance</CardDescription>
+                <CardTitle>Personal Information</CardTitle>
+                <CardDescription>Update your personal details and preferences</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-4">
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Total Assessments</p>
-                    <p className="text-2xl font-bold text-primary">0</p>
+              <CardContent className="space-y-6">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="display-name">Display Name *</Label>
+                    <Input id="display-name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="John Doe" />
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Active Projects</p>
-                    <p className="text-2xl font-bold text-primary">0</p>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address</Label>
+                    <div className="flex items-center gap-2">
+                      <Input id="email" value={user.email || ''} disabled className="flex-1" />
+                      {user.email_confirmed_at ? (
+                        <Badge variant="secondary" className="bg-success/10 text-success border-success/20 flex items-center gap-1">
+                          <CheckCircle className="h-3 w-3" /> Verified
+                        </Badge>
+                      ) : (
+                        <Badge variant="destructive" className="flex items-center gap-1">
+                          <XCircle className="h-3 w-3" /> Unverified
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Team Members</p>
-                    <p className="text-2xl font-bold text-primary">{organizations.length}</p>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="job-title">Job Title</Label>
+                    <Input id="job-title" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder="Sales Manager" />
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Account Status</p>
-                    <Badge className="bg-success text-success-foreground">Active</Badge>
+                  <div className="space-y-2">
+                    <Label htmlFor="department">Department</Label>
+                    <Input id="department" value={department} onChange={(e) => setDepartment(e.target.value)} placeholder="Sales" />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="bio">Bio</Label>
+                  <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell us about yourself..." rows={3} />
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="timezone">Timezone</Label>
+                    <Input id="timezone" value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="UTC" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Account Created</Label>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
+                      <Calendar className="h-4 w-4" />
+                      {user.created_at ? format(new Date(user.created_at), 'PPP') : 'Unknown'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <Button onClick={updateProfile} disabled={saving || !displayName.trim()}>
+                    {saving ? "Saving..." : "Save Changes"}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Organization & Access Tab */}
+          {/* ===================== ORGANIZATION TAB (P1.4) ===================== */}
           <TabsContent value="organization" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Organization Details</CardTitle>
-                <CardDescription>View and manage your organization membership</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-start gap-4 p-4 rounded-lg border border-border bg-muted/30">
-                  <Building2 className="h-10 w-10 text-primary" />
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">{currentOrganization?.name || 'No Organization'}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Member since {currentOrganization?.created_at ? format(new Date(currentOrganization.created_at), 'PPP') : 'Unknown'}
-                    </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Organization Details</CardTitle>
+                    <CardDescription>
+                      {isOrgAdmin ? 'Manage your organization settings' : 'View your organization membership'}
+                    </CardDescription>
                   </div>
-                  {organizations.length > 1 && (
-                    <Button variant="outline">
-                      Switch Organization
+                  {isOrgAdmin && currentOrganization && !orgEditing && (
+                    <Button variant="outline" size="sm" onClick={() => { setOrgName(currentOrganization.name); setOrgEditing(true); }}>
+                      <Pencil className="h-4 w-4 mr-2" /> Edit
                     </Button>
                   )}
                 </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-start gap-4 p-4 rounded-lg border border-border bg-muted/30">
+                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Building2 className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    {orgEditing ? (
+                      <div className="space-y-3">
+                        <div className="space-y-1">
+                          <Label htmlFor="org-name">Organization Name</Label>
+                          <Input id="org-name" value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder="Organization name" />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button size="sm" onClick={saveOrgName} disabled={orgSaving || !orgName.trim()}>
+                            <Save className="h-4 w-4 mr-1" /> {orgSaving ? 'Saving...' : 'Save'}
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => { setOrgEditing(false); setOrgName(currentOrganization?.name || ''); }}>
+                            <X className="h-4 w-4 mr-1" /> Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <h3 className="font-semibold text-lg">{currentOrganization?.name || 'No Organization'}</h3>
+                        {currentOrganization?.slug && (
+                          <p className="text-sm text-muted-foreground">Slug: {currentOrganization.slug}</p>
+                        )}
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Member since {currentOrganization?.created_at ? format(new Date(currentOrganization.created_at), 'PPP') : 'Unknown'}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {!isOrgAdmin && currentOrganization && (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground">
+                    <Eye className="h-4 w-4 flex-shrink-0" />
+                    <span>You don't have permission to edit organization details.</span>
+                  </div>
+                )}
 
                 <Separator />
 
@@ -549,10 +487,10 @@ const Account = () => {
                     <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
                       <div className="flex items-center gap-2">
                         <Shield className="h-4 w-4 text-primary" />
-                        <span className="font-medium">Current Role</span>
+                        <span className="font-medium">Membership Role</span>
                       </div>
-                      <Badge className="bg-primary text-primary-foreground capitalize">
-                        {profile?.role || 'User'}
+                      <Badge className="bg-primary/10 text-primary border-primary/20 capitalize">
+                        {currentMembership?.role || 'Member'}
                       </Badge>
                     </div>
                     <div className="grid gap-2 text-sm">
@@ -564,116 +502,98 @@ const Account = () => {
                         <CheckCircle className="h-4 w-4 text-success" />
                         <span>Create and edit assessments</span>
                       </div>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <CheckCircle className="h-4 w-4 text-success" />
-                        <span>Export reports</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div>
-                  <h4 className="font-medium mb-4">Organization Members</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between p-3 rounded-lg border border-border">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                            {getInitials(displayName || user.email || '')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-sm">{displayName || user.email}</p>
-                          <p className="text-xs text-muted-foreground">You</p>
+                      {isOrgAdmin && (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <CheckCircle className="h-4 w-4 text-success" />
+                          <span>Manage organization settings</span>
                         </div>
-                      </div>
-                      <Badge variant="secondary">{profile?.role || 'User'}</Badge>
+                      )}
                     </div>
                   </div>
                 </div>
+
+                {organizations.length > 1 && (
+                  <>
+                    <Separator />
+                    <div>
+                      <h4 className="font-medium mb-4">Your Organizations</h4>
+                      <div className="space-y-2">
+                        {organizations.map(org => (
+                          <div key={org.id} className="flex items-center justify-between p-3 rounded-lg border border-border">
+                            <div className="flex items-center gap-3">
+                              <Building2 className="h-4 w-4 text-muted-foreground" />
+                              <span className="font-medium text-sm">{org.name}</span>
+                            </div>
+                            {org.id === currentOrganization?.id ? (
+                              <Badge variant="secondary" className="bg-success/10 text-success border-success/20">Active</Badge>
+                            ) : (
+                              <Button variant="ghost" size="sm" onClick={() => switchOrganization(org.id)}>Switch</Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Activity Tab */}
-          <TabsContent value="activity" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Your recent actions and engagement</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4 p-4 rounded-lg border border-border">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <FileText className="h-5 w-5 text-primary" />
+          {/* ===================== ACTIVITY TAB (P2.3) ===================== */}
+          {hasActivityData && (
+            <TabsContent value="activity" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Assessment History</CardTitle>
+                  <CardDescription>Your assessment runs and results</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {assessmentsLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                     </div>
-                    <div className="flex-1">
-                      <p className="font-medium">Account created</p>
-                      <p className="text-sm text-muted-foreground">
-                        {user.created_at ? format(new Date(user.created_at), 'PPP p') : 'Unknown'}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {profile?.last_sign_in_at && (
-                    <div className="flex items-start gap-4 p-4 rounded-lg border border-border">
-                      <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center">
-                        <Activity className="h-5 w-5 text-accent" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium">Last sign in</p>
-                        <p className="text-sm text-muted-foreground">
-                          {format(new Date(profile.last_sign_in_at), 'PPP p')}
-                        </p>
-                      </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {assessments.map(assessment => (
+                        <div key={assessment.id} className="flex items-center gap-4 p-4 rounded-lg border border-border hover:bg-muted/30 transition-colors">
+                          <div className="h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0"
+                            style={{ backgroundColor: assessment.status === 'completed' ? 'hsl(var(--success) / 0.1)' : 'hsl(var(--warning) / 0.1)' }}>
+                            {assessment.status === 'completed' 
+                              ? <CheckCircle className="h-5 w-5 text-success" />
+                              : <Clock className="h-5 w-5 text-warning" />
+                            }
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm">
+                              {assessment.status === 'completed' ? 'Completed Assessment' : 'Assessment In Progress'}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {format(new Date(assessment.completed_at || assessment.created_at), 'PPP')}
+                            </p>
+                          </div>
+                          {assessment.overall_score !== null && (
+                            <div className="text-right flex-shrink-0">
+                              <p className="text-lg font-bold text-primary">{Math.round(assessment.overall_score)}%</p>
+                              <p className="text-xs text-muted-foreground">Score</p>
+                            </div>
+                          )}
+                          <Badge variant="secondary" className={
+                            assessment.status === 'completed' 
+                              ? 'bg-success/10 text-success border-success/20' 
+                              : 'bg-warning/10 text-warning border-warning/20'
+                          }>
+                            {assessment.status === 'completed' ? 'Completed' : 'In Progress'}
+                          </Badge>
+                        </div>
+                      ))}
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
 
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Activity className="h-12 w-12 mx-auto mb-2 opacity-20" />
-                    <p className="text-sm">No additional activity to display</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Performance Overview</CardTitle>
-                <CardDescription>Your engagement metrics</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div className="p-4 rounded-lg bg-muted/30">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-muted-foreground">Assessments</span>
-                      <TrendingUp className="h-4 w-4 text-primary" />
-                    </div>
-                    <p className="text-2xl font-bold">0</p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-muted/30">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-muted-foreground">Reports</span>
-                      <FileText className="h-4 w-4 text-primary" />
-                    </div>
-                    <p className="text-2xl font-bold">0</p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-muted/30">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-muted-foreground">Collaborations</span>
-                      <Users className="h-4 w-4 text-primary" />
-                    </div>
-                    <p className="text-2xl font-bold">0</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Security Tab */}
+          {/* ===================== SECURITY TAB ===================== */}
           <TabsContent value="security" className="space-y-6">
             <Card>
               <CardHeader>
@@ -699,21 +619,16 @@ const Account = () => {
                             {getDeviceIcon(session.device_info?.device_type)}
                           </div>
                           <div>
-                            <div className="font-medium">
+                            <div className="font-medium text-sm">
                               {session.device_info?.browser || 'Unknown Browser'} on {session.device_info?.os || 'Unknown OS'}
                             </div>
-                            <div className="text-sm text-muted-foreground">
-                              IP: {maskIP(session.ip_address)} • 
-                              Last active: {format(new Date(session.last_seen), 'PPP p')}
+                            <div className="text-xs text-muted-foreground">
+                              IP: {maskIP(session.ip_address)} • Last active: {format(new Date(session.last_seen), 'PPP p')}
                             </div>
                           </div>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleRevokeSession(session.session_id)}
-                          className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                        >
+                        <Button variant="outline" size="sm" onClick={() => handleRevokeSession(session.session_id)}
+                          className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground">
                           Revoke
                         </Button>
                       </div>
@@ -731,19 +646,15 @@ const Account = () => {
               <CardContent>
                 <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-warning/10 flex items-center justify-center">
-                      <Lock className="h-5 w-5 text-warning" />
+                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                      <Lock className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div>
-                      <div className="font-medium">Enable 2FA</div>
-                      <div className="text-sm text-muted-foreground">
-                        Secure your account with two-factor authentication
-                      </div>
+                      <div className="font-medium">Two-Factor Authentication</div>
+                      <div className="text-sm text-muted-foreground">Not configured</div>
                     </div>
                   </div>
-                  <Badge variant="secondary" className="bg-warning/10 text-warning border-warning/20">
-                    Coming Soon
-                  </Badge>
+                  <Badge variant="secondary">Not Enabled</Badge>
                 </div>
               </CardContent>
             </Card>
@@ -771,7 +682,7 @@ const Account = () => {
             </Card>
           </TabsContent>
 
-          {/* Privacy Tab */}
+          {/* ===================== PRIVACY TAB ===================== */}
           <TabsContent value="privacy" className="space-y-6">
             <Card>
               <CardHeader>
@@ -785,49 +696,28 @@ const Account = () => {
                       <BarChart3 className="h-5 w-5 text-primary" />
                       <div>
                         <div className="font-medium">Analytics Tracking</div>
-                        <div className="text-sm text-muted-foreground">
-                          Help us improve by sharing anonymous usage data
-                        </div>
+                        <div className="text-sm text-muted-foreground">Help us improve by sharing anonymous usage data</div>
                       </div>
                     </div>
-                    {/* P0.3 fix: Controlled component with optimistic UI */}
-                    <Switch
-                      checked={analyticsConsent}
-                      onCheckedChange={async (checked) => {
-                        // Optimistic UI update
-                        setAnalyticsConsent(checked);
-                        const success = await updateConsent('analytics', checked);
-                        if (!success) {
-                          // Rollback on failure
-                          setAnalyticsConsent(!checked);
-                        }
-                      }}
-                    />
+                    <Switch checked={analyticsConsent} onCheckedChange={async (checked) => {
+                      setAnalyticsConsent(checked);
+                      const success = await updateConsent('analytics', checked);
+                      if (!success) setAnalyticsConsent(!checked);
+                    }} />
                   </div>
-                  
                   <div className="flex items-center justify-between p-4 rounded-lg border border-border">
                     <div className="flex items-center gap-3">
                       <Mail className="h-5 w-5 text-primary" />
                       <div>
                         <div className="font-medium">Marketing Communications</div>
-                        <div className="text-sm text-muted-foreground">
-                          Receive updates about new features and improvements
-                        </div>
+                        <div className="text-sm text-muted-foreground">Receive updates about new features and improvements</div>
                       </div>
                     </div>
-                    {/* P0.3 fix: Controlled component with optimistic UI */}
-                    <Switch
-                      checked={marketingConsent}
-                      onCheckedChange={async (checked) => {
-                        // Optimistic UI update
-                        setMarketingConsent(checked);
-                        const success = await updateConsent('marketing', checked);
-                        if (!success) {
-                          // Rollback on failure
-                          setMarketingConsent(!checked);
-                        }
-                      }}
-                    />
+                    <Switch checked={marketingConsent} onCheckedChange={async (checked) => {
+                      setMarketingConsent(checked);
+                      const success = await updateConsent('marketing', checked);
+                      if (!success) setMarketingConsent(!checked);
+                    }} />
                   </div>
                 </div>
 
@@ -859,17 +749,10 @@ const Account = () => {
                     </div>
                     <div>
                       <div className="font-medium">Export My Data</div>
-                      <div className="text-sm text-muted-foreground">
-                        Download all your data in JSON format
-                      </div>
+                      <div className="text-sm text-muted-foreground">Download all your data in JSON format</div>
                     </div>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    onClick={handleExportData} 
-                    disabled={gdprLoading}
-                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                  >
+                  <Button variant="outline" onClick={handleExportData} disabled={gdprLoading}>
                     {gdprLoading ? "Exporting..." : "Export"}
                   </Button>
                 </div>
@@ -881,9 +764,7 @@ const Account = () => {
                     </div>
                     <div>
                       <div className="font-medium text-destructive">Delete Account</div>
-                      <div className="text-sm text-muted-foreground">
-                        Permanently delete your account and all data
-                      </div>
+                      <div className="text-sm text-muted-foreground">Permanently delete your account and all data</div>
                     </div>
                   </div>
                   <AlertDialog>
@@ -904,17 +785,12 @@ const Account = () => {
                             <li>Organization memberships and data</li>
                             <li>All improvement actions and recommendations</li>
                           </ul>
-                          <p className="mt-4 font-medium text-destructive">
-                            This action is irreversible and cannot be recovered.
-                          </p>
+                          <p className="mt-4 font-medium text-destructive">This action is irreversible and cannot be recovered.</p>
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={handleDeleteAccount}
-                          className="bg-destructive hover:bg-destructive/90"
-                        >
+                        <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive hover:bg-destructive/90">
                           {deleteConfirmStep === 0 ? "Delete Account" : "Confirm Deletion"}
                         </AlertDialogAction>
                       </AlertDialogFooter>
@@ -925,7 +801,7 @@ const Account = () => {
             </Card>
           </TabsContent>
 
-          {/* Integrations Tab */}
+          {/* ===================== INTEGRATIONS TAB ===================== */}
           <TabsContent value="integrations" className="space-y-6">
             <Card>
               <CardHeader>
@@ -935,29 +811,24 @@ const Account = () => {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-red-500/10 flex items-center justify-center">
-                      <Mail className="h-5 w-5 text-red-500" />
+                    <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                      <Mail className="h-5 w-5 text-destructive" />
                     </div>
                     <div>
                       <div className="font-medium">Google Account</div>
-                      <div className="text-sm text-muted-foreground">
-                        Connect your Google account
-                      </div>
+                      <div className="text-sm text-muted-foreground">Connect your Google account</div>
                     </div>
                   </div>
                   <Button variant="outline">Connect</Button>
                 </div>
-
                 <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-                      <Building2 className="h-5 w-5 text-blue-500" />
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Building2 className="h-5 w-5 text-primary" />
                     </div>
                     <div>
                       <div className="font-medium">Microsoft 365</div>
-                      <div className="text-sm text-muted-foreground">
-                        Connect your Microsoft account
-                      </div>
+                      <div className="text-sm text-muted-foreground">Connect your Microsoft account</div>
                     </div>
                   </div>
                   <Button variant="outline">Connect</Button>
@@ -974,9 +845,7 @@ const Account = () => {
                 <div className="text-center py-8">
                   <Key className="h-12 w-12 mx-auto mb-2 text-muted-foreground opacity-20" />
                   <p className="text-muted-foreground text-sm">No API tokens configured</p>
-                  <Button variant="outline" className="mt-4">
-                    Generate API Token
-                  </Button>
+                  <Button variant="outline" className="mt-4">Generate API Token</Button>
                 </div>
               </CardContent>
             </Card>
@@ -993,17 +862,11 @@ const Account = () => {
                       <div className="flex items-center gap-3">
                         {getDeviceIcon(session.device_info?.device_type)}
                         <div>
-                          <p className="text-sm font-medium">
-                            {session.device_info?.browser || 'Unknown'} • {session.device_info?.os || 'Unknown OS'}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Last active: {format(new Date(session.last_seen), 'PPP')}
-                          </p>
+                          <p className="text-sm font-medium">{session.device_info?.browser || 'Unknown'} • {session.device_info?.os || 'Unknown OS'}</p>
+                          <p className="text-xs text-muted-foreground">Last active: {format(new Date(session.last_seen), 'PPP')}</p>
                         </div>
                       </div>
-                      <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
-                        Active
-                      </Badge>
+                      <Badge variant="secondary" className="bg-success/10 text-success border-success/20">Active</Badge>
                     </div>
                   ))}
                 </div>
