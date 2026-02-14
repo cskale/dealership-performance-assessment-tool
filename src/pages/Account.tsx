@@ -42,7 +42,11 @@ const ROLES_MATRIX = [
   { permission: 'Edit action plans', owner: true, admin: true, coach: true, user: false, viewer: false },
   { permission: 'Export PDF reports', owner: true, admin: true, coach: true, user: true, viewer: true },
   { permission: 'Manage organization', owner: true, admin: true, coach: false, user: false, viewer: false },
+  { permission: 'Edit organization settings', owner: true, admin: true, coach: false, user: false, viewer: false },
+  { permission: 'Invite members', owner: true, admin: true, coach: false, user: false, viewer: false },
+  { permission: 'Assign coaches', owner: true, admin: true, coach: false, user: false, viewer: false },
   { permission: 'Delete records', owner: true, admin: true, coach: false, user: false, viewer: false },
+  { permission: 'Delete organization', owner: true, admin: false, coach: false, user: false, viewer: false },
 ];
 
 const Account = () => {
@@ -70,7 +74,7 @@ const Account = () => {
   const [orgSaving, setOrgSaving] = useState(false);
   const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
   const [assessmentsLoading, setAssessmentsLoading] = useState(true);
-  const [activityFilter, setActivityFilter] = useState<'completed' | 'in_progress'>('completed');
+  // Activity shows completed only (drafts accessible via Dashboard)
 
   const currentMembership = userMemberships.find(
     m => m.organization_id === currentOrganization?.id
@@ -245,11 +249,8 @@ const Account = () => {
   }
 
   const completedAssessments = assessments.filter(a => a.status === 'completed');
-  const inProgressAssessments = assessments.filter(a => a.status !== 'completed');
-  const hasActivityData = assessments.length > 0;
+  const hasActivityData = completedAssessments.length > 0;
   const latestCompleted = completedAssessments[0];
-
-  const filteredAssessments = activityFilter === 'completed' ? completedAssessments : inProgressAssessments;
 
   const tabs = [
     { value: 'profile', label: 'Profile', icon: User },
@@ -555,65 +556,44 @@ const Account = () => {
                     </TableBody>
                   </Table>
                 </div>
+                <p className="text-xs text-muted-foreground mt-3">Permissions are enforced by system role.</p>
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* ===================== ACTIVITY TAB (P1-1) ===================== */}
+          {/* ===================== ACTIVITY TAB (Completed only) ===================== */}
           {hasActivityData && (
             <TabsContent value="activity" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Assessment History</CardTitle>
-                  <CardDescription>Your assessment runs and results</CardDescription>
+                  <CardTitle>Completed Assessments ({completedAssessments.length})</CardTitle>
+                  <CardDescription>Click any assessment to view its results</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {/* Activity filter tabs */}
-                  <div className="flex gap-2 mb-4">
-                    <Button
-                      variant={activityFilter === 'completed' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setActivityFilter('completed')}
-                    >
-                      Completed ({completedAssessments.length})
-                    </Button>
-                    <Button
-                      variant={activityFilter === 'in_progress' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setActivityFilter('in_progress')}
-                    >
-                      In Progress ({inProgressAssessments.length})
-                    </Button>
-                  </div>
-
                   {assessmentsLoading ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                     </div>
-                  ) : filteredAssessments.length === 0 ? (
+                  ) : completedAssessments.length === 0 ? (
                     <div className="text-center py-8">
                       <FileText className="h-10 w-10 mx-auto mb-2 text-muted-foreground/30" />
-                      <p className="text-sm text-muted-foreground">
-                        No {activityFilter === 'completed' ? 'completed' : 'in-progress'} assessments
-                      </p>
+                      <p className="text-sm text-muted-foreground">No completed assessments</p>
                     </div>
                   ) : (
-                    <div className="space-y-3">
-                      {filteredAssessments.map(assessment => (
-                        <div key={assessment.id} className="flex items-center gap-4 p-4 rounded-lg border border-border hover:bg-muted/30 transition-colors">
-                          <div className="h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0"
-                            style={{ backgroundColor: assessment.status === 'completed' ? 'hsl(var(--success) / 0.1)' : 'hsl(var(--warning) / 0.1)' }}>
-                            {assessment.status === 'completed' 
-                              ? <CheckCircle className="h-5 w-5 text-success" />
-                              : <Clock className="h-5 w-5 text-warning" />
-                            }
+                    <div className="space-y-2">
+                      {completedAssessments.map(assessment => (
+                        <div
+                          key={assessment.id}
+                          onClick={() => navigate(`/assessment/${assessment.id}/results`)}
+                          className="flex items-center gap-4 p-4 rounded-lg border border-border hover:bg-muted/30 hover:shadow-sm hover:-translate-y-px transition-all cursor-pointer"
+                        >
+                          <div className="h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 bg-success/10">
+                            <CheckCircle className="h-5 w-5 text-success" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm">
-                              {assessment.status === 'completed' ? 'Completed Assessment' : 'Assessment In Progress'}
-                            </p>
+                            <p className="font-medium text-sm">Completed Assessment</p>
                             <p className="text-xs text-muted-foreground">
-                              {format(new Date(assessment.status === 'completed' ? (assessment.completed_at || assessment.created_at) : assessment.created_at), 'PPP')}
+                              {format(new Date(assessment.completed_at || assessment.created_at), 'PPP')}
                             </p>
                           </div>
                           {assessment.overall_score !== null && (
@@ -622,13 +602,7 @@ const Account = () => {
                               <p className="text-xs text-muted-foreground">Score</p>
                             </div>
                           )}
-                          <Badge variant="secondary" className={
-                            assessment.status === 'completed' 
-                              ? 'bg-success/10 text-success border-success/20' 
-                              : 'bg-warning/10 text-warning border-warning/20'
-                          }>
-                            {assessment.status === 'completed' ? 'Completed' : 'In Progress'}
-                          </Badge>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         </div>
                       ))}
                     </div>
