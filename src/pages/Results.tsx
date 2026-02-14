@@ -8,8 +8,6 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { Download, FileText, RefreshCw, ArrowLeft, HelpCircle, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import { ExecutiveSummary } from "@/components/ExecutiveSummary";
 import { IndustrialKPIDashboard } from "@/components/IndustrialKPIDashboard";
 import { MaturityScoring } from "@/components/MaturityScoring";
@@ -17,18 +15,26 @@ import { ActionPlan } from "@/components/ActionPlan";
 import { UsefulResources } from "@/components/UsefulResources";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AppHeader } from "@/components/AppHeader";
+import { ExportPDFModal } from "@/components/ExportPDFModal";
+import { useAuth } from "@/hooks/useAuth";
+import { useMultiTenant } from "@/hooks/useMultiTenant";
+import { supabase } from "@/integrations/supabase/client";
+import type { PDFExportData } from "@/lib/pdfReportGenerator";
 import { calculateWeightedScore, CATEGORY_WEIGHTS } from "@/lib/scoringEngine";
 
 export default function Results() {
   const [activeTab, setActiveTab] = useState("executive");
   const [resultsData, setResultsData] = useState<any>(null);
-  const [isExporting, setIsExporting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [animatedScore, setAnimatedScore] = useState(0);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [pdfActions, setPdfActions] = useState<PDFExportData['actions']>([]);
   
   const { toast } = useToast();
   const navigate = useNavigate();
   const { t, language } = useLanguage();
+  const { user } = useAuth();
+  const { currentOrganization, userMemberships } = useMultiTenant();
 
   // Load completed assessment results
   useEffect(() => {
@@ -103,52 +109,49 @@ export default function Results() {
     navigate('/app/assessment');
   };
 
-  const exportToPDF = async () => {
-    setIsExporting(true);
-    try {
-      const element = document.getElementById('results-content');
-      if (!element) throw new Error('Results content not found');
+  // Load actions for PDF export
+  useEffect(() => {
+    const loadActions = async () => {
+      if (!user || !resultsData?.assessmentId) return;
+      try {
+        let query = supabase
+          .from('improvement_actions')
+          .select('action_title, action_description, priority, status, responsible_person, target_completion_date, department')
+          .eq('assessment_id', resultsData.assessmentId);
+        if (currentOrganization?.id) {
+          query = query.eq('organization_id', currentOrganization.id);
+        }
+        const { data } = await query;
+        setPdfActions((data as any) || []);
+      } catch {}
+    };
+    loadActions();
+  }, [user, resultsData?.assessmentId, currentOrganization?.id]);
 
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true
-      });
-      
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210;
-      const pageHeight = 295;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      pdf.save('dealership-assessment-results.pdf');
-      toast({
-        title: t('results.pdfExported'),
-        description: t('results.pdfSuccess'),
-      });
-    } catch (error) {
-      console.error('Export error:', error);
-      toast({
-        title: t('results.exportFailed'),
-        description: t('results.exportError'),
-        variant: "destructive",
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  };
+  // Build PDF export data
+  const pdfExportData: PDFExportData | null = resultsData ? {
+    organization: currentOrganization ? {
+      name: currentOrganization.name,
+      logo_url: (currentOrganization as any).logo_url || null,
+      default_language: (currentOrganization as any).default_language || language,
+    } : {
+      name: 'Dealership',
+      default_language: language,
+    },
+    user: {
+      fullName: user?.user_metadata?.full_name || user?.email || 'User',
+      role: userMemberships.find(m => m.organization_id === currentOrganization?.id)?.role || 'user',
+    },
+    assessment: {
+      id: resultsData.assessmentId || '',
+      completedAt: resultsData.completedAt || new Date().toISOString(),
+      overallScore,
+      scores: resultsData.scores,
+      answers: resultsData.answers,
+    },
+    actions: pdfActions,
+    includeWatermark: false,
+  } : null;
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'stroke-emerald-500';
@@ -304,15 +307,21 @@ export default function Results() {
           {/* Export Options */}
           <div className="flex justify-center gap-4">
             <Button
-              onClick={exportToPDF}
-              disabled={isExporting}
+              onClick={() => setShowExportModal(true)}
               className="flex items-center gap-2"
             >
               <FileText className="h-4 w-4" />
-              {isExporting ? (language === 'de' ? 'Exportiere...' : 'Exporting...') : t('results.exportPDF')}
+              {t('results.exportPDF')}
             </Button>
           </div>
         </div>
+
+        {/* PDF Export Modal */}
+        <ExportPDFModal
+          open={showExportModal}
+          onOpenChange={setShowExportModal}
+          exportData={pdfExportData}
+        />
 
         {/* Tab Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
