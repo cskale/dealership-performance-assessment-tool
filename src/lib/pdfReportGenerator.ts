@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { generateRealisticData, industryBenchmarks, formatEuro, formatPercentage, formatNumber } from '@/utils/euroFormatter';
+import { generateRealisticData, industryBenchmarks, formatEuro, formatNumber } from '@/utils/euroFormatter';
 import { calculateWeightedScore, CATEGORY_WEIGHTS, DEPARTMENT_TO_CATEGORY } from '@/lib/scoringEngine';
 
 // ── i18n labels ──
@@ -36,8 +36,6 @@ const LABELS: Record<string, Record<string, string>> = {
     unassigned: 'Unassigned',
     page: 'Page',
     of: 'of',
-    user: 'User',
-    language: 'Language',
     organization: 'Organization',
     assessmentId: 'Assessment ID',
     completionDate: 'Completion Date',
@@ -47,135 +45,145 @@ const LABELS: Record<string, Record<string, string>> = {
     department: 'Department',
     score: 'Score',
     weight: 'Weight',
+    insightOverall: 'Overall Assessment',
+    insightStrongest: 'Strongest Area',
+    insightFocus: 'Priority Focus',
+    user: 'User',
   },
   de: {
-    reportTitle: 'Händler-Leistungsbewertungsbericht',
+    reportTitle: 'Haendler-Leistungsbewertungsbericht',
     confidential: 'Vertraulich',
     generated: 'Erstellt',
     completedOn: 'Abgeschlossen',
-    preparedFor: 'Erstellt für',
+    preparedFor: 'Erstellt fuer',
     overallScore: 'Gesamtpunktzahl',
     maturityLevel: 'Reifestufe',
     executiveSummary: 'Zusammenfassung',
     kpiAnalytics: 'KPI-Analyse',
-    actionPlan: 'Maßnahmenplan',
+    actionPlan: 'Massnahmenplan',
     methodology: 'Methodik',
     appendix: 'Anhang',
-    keyStrengths: 'Schlüsselstärken',
+    keyStrengths: 'Schluesselstaerken',
     areasForImprovement: 'Verbesserungsbereiche',
-    whatToDoNext: 'Nächste Schritte',
+    whatToDoNext: 'Naechste Schritte',
     kpiName: 'KPI',
     yourValue: 'Ihr Wert',
     benchmark: 'Benchmark',
     gap: 'Differenz',
     interpretation: 'Interpretation',
-    action: 'Maßnahme',
+    action: 'Massnahme',
     owner: 'Verantwortlich',
     dueDate: 'Zieldatum',
     status: 'Status',
     description: 'Beschreibung',
-    priority: 'Priorität',
-    dataNotAvailable: 'Für diese Bewertung sind keine Daten verfügbar.',
+    priority: 'Prioritaet',
+    dataNotAvailable: 'Fuer diese Bewertung sind keine Daten verfuegbar.',
     unassigned: 'Nicht zugewiesen',
     page: 'Seite',
     of: 'von',
-    user: 'Benutzer',
-    language: 'Sprache',
     organization: 'Organisation',
     assessmentId: 'Bewertungs-ID',
     completionDate: 'Abschlussdatum',
     generatedDate: 'Erstellungsdatum',
     role: 'Rolle',
-    departmentOverview: 'Abteilungsübersicht',
+    departmentOverview: 'Abteilungsuebersicht',
     department: 'Abteilung',
     score: 'Punktzahl',
     weight: 'Gewichtung',
+    insightOverall: 'Gesamtbewertung',
+    insightStrongest: 'Staerkster Bereich',
+    insightFocus: 'Schwerpunkt',
+    user: 'Benutzer',
   },
   fr: {
-    reportTitle: 'Rapport d\'évaluation des performances du concessionnaire',
+    reportTitle: "Rapport d'evaluation des performances du concessionnaire",
     confidential: 'Confidentiel',
-    generated: 'Généré',
-    completedOn: 'Terminé',
-    preparedFor: 'Préparé pour',
+    generated: 'Genere',
+    completedOn: 'Termine',
+    preparedFor: 'Prepare pour',
     overallScore: 'Score global',
-    maturityLevel: 'Niveau de maturité',
-    executiveSummary: 'Résumé exécutif',
+    maturityLevel: 'Niveau de maturite',
+    executiveSummary: 'Resume executif',
     kpiAnalytics: 'Analyse KPI',
-    actionPlan: 'Plan d\'action',
-    methodology: 'Méthodologie',
+    actionPlan: "Plan d'action",
+    methodology: 'Methodologie',
     appendix: 'Annexe',
     keyStrengths: 'Points forts',
-    areasForImprovement: 'Axes d\'amélioration',
-    whatToDoNext: 'Prochaines étapes',
+    areasForImprovement: "Axes d'amelioration",
+    whatToDoNext: 'Prochaines etapes',
     kpiName: 'KPI',
     yourValue: 'Votre valeur',
-    benchmark: 'Référence',
-    gap: 'Écart',
-    interpretation: 'Interprétation',
+    benchmark: 'Reference',
+    gap: 'Ecart',
+    interpretation: 'Interpretation',
     action: 'Action',
     owner: 'Responsable',
     dueDate: 'Date cible',
     status: 'Statut',
     description: 'Description',
-    priority: 'Priorité',
-    dataNotAvailable: 'Données non disponibles pour cette évaluation.',
-    unassigned: 'Non assigné',
+    priority: 'Priorite',
+    dataNotAvailable: 'Donnees non disponibles pour cette evaluation.',
+    unassigned: 'Non assigne',
     page: 'Page',
     of: 'de',
-    user: 'Utilisateur',
-    language: 'Langue',
     organization: 'Organisation',
-    assessmentId: 'ID d\'évaluation',
-    completionDate: 'Date d\'achèvement',
-    generatedDate: 'Date de génération',
-    role: 'Rôle',
-    departmentOverview: 'Aperçu des départements',
-    department: 'Département',
+    assessmentId: "ID d'evaluation",
+    completionDate: "Date d'achevement",
+    generatedDate: 'Date de generation',
+    role: 'Role',
+    departmentOverview: 'Apercu des departements',
+    department: 'Departement',
     score: 'Score',
-    weight: 'Pondération',
+    weight: 'Ponderation',
+    insightOverall: 'Evaluation globale',
+    insightStrongest: 'Domaine le plus fort',
+    insightFocus: 'Priorite',
+    user: 'Utilisateur',
   },
   es: {
-    reportTitle: 'Informe de evaluación del rendimiento del concesionario',
+    reportTitle: 'Informe de evaluacion del rendimiento del concesionario',
     confidential: 'Confidencial',
     generated: 'Generado',
     completedOn: 'Completado',
     preparedFor: 'Preparado para',
-    overallScore: 'Puntuación general',
+    overallScore: 'Puntuacion general',
     maturityLevel: 'Nivel de madurez',
     executiveSummary: 'Resumen ejecutivo',
-    kpiAnalytics: 'Análisis KPI',
-    actionPlan: 'Plan de acción',
-    methodology: 'Metodología',
-    appendix: 'Apéndice',
+    kpiAnalytics: 'Analisis KPI',
+    actionPlan: 'Plan de accion',
+    methodology: 'Metodologia',
+    appendix: 'Apendice',
     keyStrengths: 'Fortalezas clave',
-    areasForImprovement: 'Áreas de mejora',
-    whatToDoNext: 'Próximos pasos',
+    areasForImprovement: 'Areas de mejora',
+    whatToDoNext: 'Proximos pasos',
     kpiName: 'KPI',
     yourValue: 'Su valor',
     benchmark: 'Referencia',
     gap: 'Brecha',
-    interpretation: 'Interpretación',
-    action: 'Acción',
+    interpretation: 'Interpretacion',
+    action: 'Accion',
     owner: 'Responsable',
     dueDate: 'Fecha objetivo',
     status: 'Estado',
-    description: 'Descripción',
+    description: 'Descripcion',
     priority: 'Prioridad',
-    dataNotAvailable: 'Datos no disponibles para esta evaluación.',
+    dataNotAvailable: 'Datos no disponibles para esta evaluacion.',
     unassigned: 'Sin asignar',
-    page: 'Página',
+    page: 'Pagina',
     of: 'de',
-    user: 'Usuario',
-    language: 'Idioma',
-    organization: 'Organización',
-    assessmentId: 'ID de evaluación',
-    completionDate: 'Fecha de finalización',
-    generatedDate: 'Fecha de generación',
+    organization: 'Organizacion',
+    assessmentId: 'ID de evaluacion',
+    completionDate: 'Fecha de finalizacion',
+    generatedDate: 'Fecha de generacion',
     role: 'Rol',
     departmentOverview: 'Resumen de departamentos',
     department: 'Departamento',
-    score: 'Puntuación',
-    weight: 'Ponderación',
+    score: 'Puntuacion',
+    weight: 'Ponderacion',
+    insightOverall: 'Evaluacion general',
+    insightStrongest: 'Area mas fuerte',
+    insightFocus: 'Enfoque prioritario',
+    user: 'Usuario',
   },
   it: {
     reportTitle: 'Rapporto di valutazione delle prestazioni del concessionario',
@@ -184,10 +192,10 @@ const LABELS: Record<string, Record<string, string>> = {
     completedOn: 'Completato',
     preparedFor: 'Preparato per',
     overallScore: 'Punteggio complessivo',
-    maturityLevel: 'Livello di maturità',
+    maturityLevel: 'Livello di maturita',
     executiveSummary: 'Riepilogo esecutivo',
     kpiAnalytics: 'Analisi KPI',
-    actionPlan: 'Piano d\'azione',
+    actionPlan: "Piano d'azione",
     methodology: 'Metodologia',
     appendix: 'Appendice',
     keyStrengths: 'Punti di forza',
@@ -203,13 +211,11 @@ const LABELS: Record<string, Record<string, string>> = {
     dueDate: 'Data obiettivo',
     status: 'Stato',
     description: 'Descrizione',
-    priority: 'Priorità',
+    priority: 'Priorita',
     dataNotAvailable: 'Dati non disponibili per questa valutazione.',
     unassigned: 'Non assegnato',
     page: 'Pagina',
     of: 'di',
-    user: 'Utente',
-    language: 'Lingua',
     organization: 'Organizzazione',
     assessmentId: 'ID valutazione',
     completionDate: 'Data di completamento',
@@ -219,15 +225,19 @@ const LABELS: Record<string, Record<string, string>> = {
     department: 'Reparto',
     score: 'Punteggio',
     weight: 'Ponderazione',
+    insightOverall: 'Valutazione complessiva',
+    insightStrongest: 'Area piu forte',
+    insightFocus: 'Focus prioritario',
+    user: 'Utente',
   },
 };
 
 const DEPT_NAMES: Record<string, Record<string, string>> = {
-  'new-vehicle-sales': { en: 'New Vehicle Sales', de: 'Neuwagenverkauf', fr: 'Ventes de véhicules neufs', es: 'Ventas de vehículos nuevos', it: 'Vendite veicoli nuovi' },
-  'used-vehicle-sales': { en: 'Used Vehicle Sales', de: 'Gebrauchtwagenverkauf', fr: 'Ventes de véhicules d\'occasion', es: 'Ventas de vehículos usados', it: 'Vendite veicoli usati' },
+  'new-vehicle-sales': { en: 'New Vehicle Sales', de: 'Neuwagenverkauf', fr: 'Ventes de vehicules neufs', es: 'Ventas de vehiculos nuevos', it: 'Vendite veicoli nuovi' },
+  'used-vehicle-sales': { en: 'Used Vehicle Sales', de: 'Gebrauchtwagenverkauf', fr: "Ventes de vehicules d'occasion", es: 'Ventas de vehiculos usados', it: 'Vendite veicoli usati' },
   'service-performance': { en: 'Service Performance', de: 'Serviceleistung', fr: 'Performance du service', es: 'Rendimiento del servicio', it: 'Performance del servizio' },
-  'parts-inventory': { en: 'Parts & Inventory', de: 'Teile & Lager', fr: 'Pièces & Inventaire', es: 'Repuestos e inventario', it: 'Ricambi e inventario' },
-  'financial-operations': { en: 'Financial Operations', de: 'Finanzoperationen', fr: 'Opérations financières', es: 'Operaciones financieras', it: 'Operazioni finanziarie' },
+  'parts-inventory': { en: 'Parts & Inventory', de: 'Teile & Lager', fr: 'Pieces & Inventaire', es: 'Repuestos e inventario', it: 'Ricambi e inventario' },
+  'financial-operations': { en: 'Financial Operations', de: 'Finanzoperationen', fr: 'Operations financieres', es: 'Operaciones financieras', it: 'Operazioni finanziarie' },
 };
 
 const KPI_LABELS: Record<string, Record<string, string>> = {
@@ -250,6 +260,37 @@ const KPI_LABELS: Record<string, Record<string, string>> = {
   roiMarketing: { en: 'Marketing ROI', de: 'Marketing-ROI' },
   operationalEfficiency: { en: 'Operational Efficiency', de: 'Betriebliche Effizienz' },
 };
+
+// ── KPI unit type classification ──
+type KpiUnit = 'currency' | 'percent' | 'days' | 'rate' | 'number';
+
+const KPI_UNIT_MAP: Record<string, KpiUnit> = {
+  monthlyRevenue: 'currency',
+  averageTransactionValue: 'currency',
+  averageRO: 'currency',
+  costPerSale: 'currency',
+  roiMarketing: 'percent',
+  averageMargin: 'percent',
+  customerSatisfaction: 'percent',
+  leadConversion: 'percent',
+  laborEfficiency: 'percent',
+  customerRetention: 'percent',
+  technicianUtilization: 'percent',
+  grossMargin: 'percent',
+  stockoutRate: 'percent',
+  supplierPerformance: 'percent',
+  profitMargin: 'percent',
+  operationalEfficiency: 'percent',
+  cashFlowDays: 'days',
+  turnoverRate: 'rate',
+};
+
+// KPIs where lower values are better
+const LOWER_IS_BETTER: Set<string> = new Set([
+  'cashFlowDays',
+  'costPerSale',
+  'stockoutRate',
+]);
 
 export interface PDFExportData {
   organization: {
@@ -286,29 +327,97 @@ function l(lang: string, key: string): string {
 
 function getMaturityLevel(score: number, lang: string): string {
   const levels: Record<string, Record<string, string>> = {
-    advanced: { en: 'Advanced', de: 'Fortgeschritten', fr: 'Avancé', es: 'Avanzado', it: 'Avanzato' },
+    advanced: { en: 'Advanced', de: 'Fortgeschritten', fr: 'Avance', es: 'Avanzado', it: 'Avanzato' },
     mature: { en: 'Mature', de: 'Ausgereift', fr: 'Mature', es: 'Maduro', it: 'Maturo' },
-    developing: { en: 'Developing', de: 'Entwickelnd', fr: 'En développement', es: 'En desarrollo', it: 'In sviluppo' },
-    basic: { en: 'Basic', de: 'Basis', fr: 'Basique', es: 'Básico', it: 'Base' },
+    developing: { en: 'Developing', de: 'Entwickelnd', fr: 'En developpement', es: 'En desarrollo', it: 'In sviluppo' },
+    basic: { en: 'Basic', de: 'Basis', fr: 'Basique', es: 'Basico', it: 'Base' },
   };
   const key = score >= 85 ? 'advanced' : score >= 70 ? 'mature' : score >= 50 ? 'developing' : 'basic';
   return levels[key][lang] || levels[key].en;
 }
 
-function formatPDFValue(key: string, value: number): string {
-  if (key.includes('Revenue') || key.includes('Value') || key.includes('RO') || key.includes('costPerSale') || key.includes('cashFlow') || key.includes('counterSales') || key.includes('roiMarketing')) {
-    return formatEuro(value);
+// ── Unified KPI value formatter ──
+function formatKpiValue(key: string, value: number, lang: string): string {
+  const unit = KPI_UNIT_MAP[key] || 'number';
+  const daysLabel = lang === 'de' ? 'Tage' : 'days';
+  switch (unit) {
+    case 'currency':
+      return formatEuro(value);
+    case 'percent':
+      return `${value.toFixed(1)}%`;
+    case 'days':
+      return `${Math.round(value)} ${daysLabel}`;
+    case 'rate':
+      return `${value.toFixed(1)}x/yr`;
+    default:
+      return formatNumber(value);
   }
-  if (key.includes('Margin') || key.includes('Efficiency') || key.includes('Satisfaction') || key.includes('Retention') || key.includes('Utilization') || key.includes('Conversion') || key.includes('stockoutRate') || key.includes('supplierPerformance') || key.includes('operationalEfficiency') || key.includes('leadConversion') || key.includes('grossMargin') || key.includes('profitMargin') || key.includes('laborEfficiency') || key.includes('customerRetention') || key.includes('technicianUtilization') || key.includes('customerSatisfaction')) {
-    return `${value.toFixed(1)}%`;
+}
+
+// ── Gap formatting with explicit +/- and unit ──
+function formatGap(key: string, gap: number, lang: string): string {
+  const sign = gap > 0 ? '+' : gap < 0 ? '-' : '';
+  const absGap = Math.abs(gap);
+  const unit = KPI_UNIT_MAP[key] || 'number';
+  const daysLabel = lang === 'de' ? 'Tage' : 'days';
+  switch (unit) {
+    case 'currency':
+      return `${sign}${formatEuro(absGap)}`;
+    case 'percent':
+      return `${sign}${absGap.toFixed(1)}%`;
+    case 'days':
+      return `${sign}${Math.round(absGap)} ${daysLabel}`;
+    case 'rate':
+      return `${sign}${absGap.toFixed(1)}x`;
+    default:
+      return `${sign}${formatNumber(absGap)}`;
   }
-  if (key.includes('Days') || key.includes('cashFlowDays')) {
-    return `${Math.round(value)} days`;
-  }
-  if (key.includes('turnoverRate')) {
-    return `${value.toFixed(1)}x/yr`;
-  }
-  return formatNumber(value);
+}
+
+function gapIsPositive(key: string, gap: number): boolean {
+  if (LOWER_IS_BETTER.has(key)) return gap < 0;
+  return gap > 0;
+}
+
+// ── Normalize role label ──
+function formatRole(role: string): string {
+  if (!role) return 'User';
+  const clean = role.trim().toLowerCase();
+  const map: Record<string, string> = {
+    owner: 'Owner', admin: 'Admin', manager: 'Manager',
+    analyst: 'Analyst', viewer: 'Viewer', coach: 'Coach',
+    dealer: 'Dealer', user: 'User',
+  };
+  return map[clean] || (role.charAt(0).toUpperCase() + role.slice(1));
+}
+
+// ── Normalize status/priority labels ──
+function normalizeStatus(s: string): string {
+  const map: Record<string, string> = {
+    open: 'Open', in_progress: 'In Progress', 'in progress': 'In Progress',
+    completed: 'Completed', done: 'Completed', pending: 'Open',
+  };
+  return map[s?.toLowerCase()] || (s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : 'Open');
+}
+function normalizePriority(p: string): string {
+  const map: Record<string, string> = {
+    low: 'Low', medium: 'Medium', high: 'High', critical: 'High',
+  };
+  return map[p?.toLowerCase()] || (p ? p.charAt(0).toUpperCase() + p.slice(1).toLowerCase() : 'Medium');
+}
+
+// ── Resolve user full name ──
+function resolveFullName(raw: string): string {
+  if (!raw || raw.length <= 2) return raw || 'User';
+  // Already looks like a name
+  return raw;
+}
+
+// ── Short assessment ID: first 8 + last 4 ──
+function shortId(id: string): string {
+  if (!id) return '--';
+  if (id.length <= 16) return id;
+  return `${id.slice(0, 8)}...${id.slice(-4)}`;
 }
 
 export async function generatePDFReport(data: PDFExportData): Promise<void> {
@@ -317,13 +426,17 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   const dateStr = now.toISOString().slice(0, 10);
   const timeStr = now.toISOString().slice(11, 16);
   const orgName = data.organization?.name || 'Dealership';
-  const langCode = lang.toUpperCase();
+  const fullName = resolveFullName(data.user.fullName);
+  const roleLabel = formatRole(data.user.role);
 
   const pdf = new jsPDF('p', 'mm', 'a4');
   const pageW = pdf.internal.pageSize.getWidth();
   const pageH = pdf.internal.pageSize.getHeight();
   const margin = 20;
   const contentW = pageW - margin * 2;
+  const headerY = 14;
+  const footerY = pageH - 10;
+  const contentTop = 26; // below header line
 
   // ── Try loading logo ──
   let logoDataUrl: string | null = null;
@@ -337,103 +450,100 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
         img.src = data.organization!.logo_url!;
       });
       const canvas = document.createElement('canvas');
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
+      canvas.width = Math.min(img.naturalWidth, 400);
+      canvas.height = Math.min(img.naturalHeight, 400);
       const ctx = canvas.getContext('2d');
-      ctx?.drawImage(img, 0, 0);
+      ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
       logoDataUrl = canvas.toDataURL('image/png');
     } catch {
       logoDataUrl = null;
     }
   }
 
-  // ── Utility: add header/footer to current page (not cover) ──
-  let totalPages = 0; // will be set at the end
-  const pageNumbers: number[] = [];
-
-  const addHeaderFooter = (pageNum: number, isCover = false) => {
-    const prevFont = pdf.getFont();
-    // Footer on every page
-    pdf.setFontSize(8);
-    pdf.setTextColor(120, 120, 120);
-    pdf.text(`${l(lang, 'page')} ${pageNum}`, margin, pageH - 10);
-    pdf.text(`${l(lang, 'user')}: ${data.user.fullName} (${data.user.role})`, pageW / 2, pageH - 10, { align: 'center' });
-    pdf.text(`${l(lang, 'language')}: ${langCode}`, pageW - margin, pageH - 10, { align: 'right' });
-
-    if (!isCover) {
-      // Header
-      pdf.setDrawColor(200, 200, 200);
-      pdf.line(margin, 18, pageW - margin, 18);
-      pdf.setFontSize(7);
-      pdf.setTextColor(100, 100, 100);
-
-      const headerLeft = logoDataUrl ? margin + 12 : margin;
-      if (logoDataUrl) {
-        try { pdf.addImage(logoDataUrl, 'PNG', margin, 8, 10, 10); } catch {}
-      }
-      pdf.text(`${orgName}  |  ${l(lang, 'confidential')}  |  ${l(lang, 'generated')}: ${dateStr} ${timeStr}`, headerLeft, 14);
+  // ── Header (content pages only, not cover) ──
+  const addHeader = () => {
+    pdf.setFontSize(7);
+    pdf.setTextColor(130, 130, 130);
+    pdf.setFont('helvetica', 'normal');
+    const headerLeft = logoDataUrl ? margin + 12 : margin;
+    if (logoDataUrl) {
+      try { pdf.addImage(logoDataUrl, 'PNG', margin, 6, 10, 10); } catch {}
     }
-
-    // Watermark
-    if (data.includeWatermark) {
-      pdf.saveGraphicsState();
-      pdf.setGState(new (pdf as any).GState({ opacity: 0.06 }));
-      pdf.setFontSize(40);
-      pdf.setTextColor(0, 0, 0);
-      const wmText = `${orgName} – Internal Use Only`;
-      // Rotate text diagonally
-      const cx = pageW / 2;
-      const cy = pageH / 2;
-      pdf.text(wmText, cx, cy, { angle: 45, align: 'center' });
-      pdf.restoreGraphicsState();
-    }
-
-    pdf.setFont(prevFont.fontName, prevFont.fontStyle);
+    pdf.text(`${orgName}  |  ${l(lang, 'confidential')}  |  ${l(lang, 'generated')}: ${dateStr} ${timeStr}`, headerLeft, headerY);
+    pdf.setDrawColor(210, 210, 210);
+    pdf.line(margin, 18, pageW - margin, 18);
   };
 
-  // ── PAGE 1: COVER ──
+  // ── Footer (all pages) ──
+  // We'll write placeholder footers and fix "Page X of Y" at the end
+  const addFooter = (pageNum: number) => {
+    pdf.setFontSize(8);
+    pdf.setTextColor(130, 130, 130);
+    pdf.setFont('helvetica', 'normal');
+    // Placeholder – will be overwritten with correct total at end
+    pdf.text(`${l(lang, 'page')} ${pageNum}`, margin, footerY);
+  };
+
+  // ── Watermark (content pages only, not cover) ──
+  const addWatermark = () => {
+    if (!data.includeWatermark) return;
+    pdf.saveGraphicsState();
+    pdf.setGState(new (pdf as any).GState({ opacity: 0.04 }));
+    pdf.setFontSize(38);
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'normal');
+    const wmText = `${orgName} -- Internal Use Only`;
+    pdf.text(wmText, pageW / 2, pageH / 2, { angle: 45, align: 'center' });
+    pdf.restoreGraphicsState();
+  };
+
+  const overallScore = data.assessment.overallScore;
+  const maturity = getMaturityLevel(overallScore, lang);
+
+  // ═══════════════════════════════════════════
+  // PAGE 1: COVER
+  // ═══════════════════════════════════════════
   let pageNum = 1;
 
-  // Background accent
-  pdf.setFillColor(24, 24, 27); // zinc-900
+  // Dark header band
+  pdf.setFillColor(24, 24, 27);
   pdf.rect(0, 0, pageW, 120, 'F');
 
   // Logo on cover
   if (logoDataUrl) {
-    try { pdf.addImage(logoDataUrl, 'PNG', pageW - margin - 30, 20, 30, 30); } catch {}
+    try { pdf.addImage(logoDataUrl, 'PNG', pageW - margin - 28, 18, 28, 28); } catch {}
   }
 
   // Title
   pdf.setTextColor(255, 255, 255);
-  pdf.setFontSize(28);
+  pdf.setFontSize(26);
   pdf.setFont('helvetica', 'bold');
-  pdf.text(l(lang, 'reportTitle'), margin, 50, { maxWidth: contentW - 40 });
+  pdf.text(l(lang, 'reportTitle'), margin, 48, { maxWidth: contentW - 40 });
 
   pdf.setFontSize(12);
   pdf.setFont('helvetica', 'normal');
-  pdf.text(orgName, margin, 75);
+  pdf.text(orgName, margin, 74);
 
   pdf.setFontSize(10);
   pdf.text(`${l(lang, 'completedOn')}: ${data.assessment.completedAt.slice(0, 10)}`, margin, 88);
   pdf.text(`${l(lang, 'generated')}: ${dateStr} ${timeStr}`, margin, 96);
-  pdf.text(`${l(lang, 'preparedFor')}: ${data.user.fullName} (${data.user.role})`, margin, 104);
+  pdf.text(`${l(lang, 'preparedFor')}: ${fullName} (${roleLabel})`, margin, 104);
 
-  // Score circle area
-  const overallScore = data.assessment.overallScore;
-  const maturity = getMaturityLevel(overallScore, lang);
-
+  // Score display
   pdf.setTextColor(24, 24, 27);
   pdf.setFontSize(14);
   pdf.setFont('helvetica', 'bold');
   pdf.text(l(lang, 'overallScore'), margin, 145);
 
+  const scoreColor = overallScore >= 70 ? [16, 185, 129] : overallScore >= 50 ? [234, 179, 8] : [220, 38, 38];
   pdf.setFontSize(48);
-  pdf.setTextColor(overallScore >= 70 ? 16 : overallScore >= 50 ? 161 : 220, overallScore >= 70 ? 185 : overallScore >= 50 ? 98 : 38, overallScore >= 70 ? 129 : overallScore >= 50 ? 4 : 38);
+  pdf.setTextColor(scoreColor[0], scoreColor[1], scoreColor[2]);
   pdf.text(`${overallScore}`, margin, 175);
 
+  const scoreTextW = pdf.getTextWidth(`${overallScore}`);
   pdf.setFontSize(16);
-  pdf.setTextColor(100, 100, 100);
-  pdf.text(`/ 100`, margin + pdf.getTextWidth(`${overallScore}`) + 3, 175);
+  pdf.setTextColor(130, 130, 130);
+  pdf.text('/100', margin + scoreTextW + 2, 175);
 
   pdf.setFontSize(12);
   pdf.setTextColor(24, 24, 27);
@@ -446,7 +556,8 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   pdf.text(l(lang, 'departmentOverview'), margin, coverY);
   coverY += 6;
 
-  const deptRows = Object.entries(data.assessment.scores).map(([dept, score]) => {
+  const sortedDepts = Object.entries(data.assessment.scores).sort(([, a], [, b]) => b - a);
+  const deptRows = sortedDepts.map(([dept, score]) => {
     const cat = DEPARTMENT_TO_CATEGORY[dept];
     const weight = cat ? CATEGORY_WEIGHTS[cat] : 0;
     return [
@@ -461,17 +572,21 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
     head: [[l(lang, 'department'), l(lang, 'score'), l(lang, 'weight')]],
     body: deptRows,
     margin: { left: margin, right: margin },
-    styles: { fontSize: 9, cellPadding: 3 },
+    styles: { fontSize: 9, cellPadding: 3, font: 'helvetica' },
     headStyles: { fillColor: [24, 24, 27], textColor: [255, 255, 255] },
     alternateRowStyles: { fillColor: [245, 245, 245] },
   });
 
-  addHeaderFooter(pageNum, true);
+  addFooter(pageNum);
 
-  // ── PAGE 2: EXECUTIVE SUMMARY ──
+  // ═══════════════════════════════════════════
+  // PAGE 2: EXECUTIVE SUMMARY
+  // ═══════════════════════════════════════════
   pdf.addPage();
   pageNum++;
-  let y = 28;
+  addHeader();
+  addWatermark();
+  let y = contentTop;
 
   pdf.setFontSize(18);
   pdf.setFont('helvetica', 'bold');
@@ -479,10 +594,8 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   pdf.text(l(lang, 'executiveSummary'), margin, y);
   y += 12;
 
-  // Generate executive summary text
-  const sortedScores = Object.entries(data.assessment.scores).sort(([, a], [, b]) => b - a);
-  const strengths = sortedScores.filter(([, s]) => s >= 60).slice(0, 3);
-  const weaknesses = sortedScores.filter(([, s]) => s < 60).sort(([, a], [, b]) => a - b).slice(0, 3);
+  const strengths = sortedDepts.filter(([, s]) => s >= 60).slice(0, 3);
+  const weaknesses = [...sortedDepts].reverse().filter(([, s]) => s < 60).slice(0, 3);
 
   // Summary paragraph
   pdf.setFontSize(10);
@@ -493,13 +606,13 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
     : `The assessment yields an overall score of ${overallScore}/100 (${maturity}). The analysis covers ${Object.keys(data.assessment.scores).length} departments with ${Object.keys(data.assessment.answers).length} questions answered.`;
   const summaryLines = pdf.splitTextToSize(summaryText, contentW);
   pdf.text(summaryLines, margin, y);
-  y += summaryLines.length * 5 + 8;
+  y += summaryLines.length * 5 + 10;
 
-  // Strengths
+  // Strengths – safe bullet
   pdf.setFontSize(12);
   pdf.setFont('helvetica', 'bold');
   pdf.setTextColor(16, 185, 129);
-  pdf.text(`✓ ${l(lang, 'keyStrengths')}`, margin, y);
+  pdf.text(l(lang, 'keyStrengths'), margin, y);
   y += 7;
   pdf.setFontSize(9);
   pdf.setFont('helvetica', 'normal');
@@ -507,20 +620,20 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   if (strengths.length > 0) {
     strengths.forEach(([dept, score]) => {
       const name = DEPT_NAMES[dept]?.[lang] || DEPT_NAMES[dept]?.en || dept;
-      pdf.text(`• ${name}: ${score}%`, margin + 4, y);
+      pdf.text(`  - ${name}: ${score}%`, margin, y);
       y += 5;
     });
   } else {
-    pdf.text(`• ${l(lang, 'dataNotAvailable')}`, margin + 4, y);
+    pdf.text(`  - ${l(lang, 'dataNotAvailable')}`, margin, y);
     y += 5;
   }
   y += 6;
 
-  // Weaknesses
+  // Weaknesses – safe bullet
   pdf.setFontSize(12);
   pdf.setFont('helvetica', 'bold');
   pdf.setTextColor(234, 179, 8);
-  pdf.text(`⚠ ${l(lang, 'areasForImprovement')}`, margin, y);
+  pdf.text(l(lang, 'areasForImprovement'), margin, y);
   y += 7;
   pdf.setFontSize(9);
   pdf.setFont('helvetica', 'normal');
@@ -528,21 +641,21 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   if (weaknesses.length > 0) {
     weaknesses.forEach(([dept, score]) => {
       const name = DEPT_NAMES[dept]?.[lang] || DEPT_NAMES[dept]?.en || dept;
-      pdf.text(`• ${name}: ${score}%`, margin + 4, y);
+      pdf.text(`  - ${name}: ${score}%`, margin, y);
       y += 5;
     });
   } else {
-    const noWeakText = lang === 'de' ? 'Alle Bereiche über 60%' : 'All areas performing above 60%';
-    pdf.text(`• ${noWeakText}`, margin + 4, y);
+    const noWeakText = lang === 'de' ? 'Alle Bereiche ueber 60%' : 'All areas performing above 60%';
+    pdf.text(`  - ${noWeakText}`, margin, y);
     y += 5;
   }
   y += 6;
 
-  // What to do next
+  // What to do next – safe arrow
   pdf.setFontSize(12);
   pdf.setFont('helvetica', 'bold');
   pdf.setTextColor(59, 130, 246);
-  pdf.text(`→ ${l(lang, 'whatToDoNext')}`, margin, y);
+  pdf.text(l(lang, 'whatToDoNext'), margin, y);
   y += 7;
   pdf.setFontSize(9);
   pdf.setFont('helvetica', 'normal');
@@ -551,62 +664,102 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
     const topActions = data.actions.filter(a => a.priority === 'critical' || a.priority === 'high').slice(0, 2);
     const actionsToShow = topActions.length > 0 ? topActions : data.actions.slice(0, 2);
     actionsToShow.forEach(a => {
-      const line = pdf.splitTextToSize(`• ${a.action_title}`, contentW - 8);
-      pdf.text(line, margin + 4, y);
+      const line = pdf.splitTextToSize(`  - ${a.action_title}`, contentW - 8);
+      pdf.text(line, margin, y);
       y += line.length * 5;
     });
   } else {
-    const nextText = lang === 'de' ? 'Maßnahmenplan erstellen und mit der Umsetzung beginnen.' : 'Create an action plan and begin implementation.';
-    pdf.text(`• ${nextText}`, margin + 4, y);
+    const nextText = lang === 'de' ? 'Massnahmenplan erstellen und mit der Umsetzung beginnen.' : 'Create an action plan and begin implementation.';
+    pdf.text(`  - ${nextText}`, margin, y);
     y += 5;
   }
+  y += 8;
 
-  addHeaderFooter(pageNum);
-
-  // ── PAGE 3+: KPI ANALYTICS ──
-  pdf.addPage();
-  pageNum++;
-  y = 28;
-
-  pdf.setFontSize(18);
+  // P1-2: Department insight block
+  pdf.setDrawColor(230, 230, 230);
+  pdf.setFillColor(248, 248, 250);
+  pdf.roundedRect(margin, y, contentW, 32, 2, 2, 'FD');
+  y += 7;
+  pdf.setFontSize(9);
   pdf.setFont('helvetica', 'bold');
   pdf.setTextColor(24, 24, 27);
-  pdf.text(l(lang, 'kpiAnalytics'), margin, y);
-  y += 10;
 
-  Object.entries(data.assessment.scores).forEach(([sectionId, sectionScore]) => {
+  // Overall maturity statement
+  const matStmt = lang === 'de'
+    ? `${l(lang, 'insightOverall')}: Das Autohaus befindet sich auf der Stufe "${maturity}" mit ${overallScore}/100 Punkten.`
+    : `${l(lang, 'insightOverall')}: The dealership is at "${maturity}" level with a score of ${overallScore}/100.`;
+  pdf.text(matStmt, margin + 4, y);
+  y += 6;
+
+  // Strongest department
+  if (sortedDepts.length > 0) {
+    const [topDept, topScore] = sortedDepts[0];
+    const topName = DEPT_NAMES[topDept]?.[lang] || DEPT_NAMES[topDept]?.en || topDept;
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`${l(lang, 'insightStrongest')}: ${topName} (${topScore}%)`, margin + 4, y);
+    y += 6;
+  }
+
+  // Priority focus
+  if (weaknesses.length > 0) {
+    const focusNames = weaknesses.map(([d]) => DEPT_NAMES[d]?.[lang] || DEPT_NAMES[d]?.en || d).join(', ');
+    pdf.text(`${l(lang, 'insightFocus')}: ${focusNames}`, margin + 4, y);
+  } else if (sortedDepts.length > 0) {
+    const [lastDept] = sortedDepts[sortedDepts.length - 1];
+    const lastName = DEPT_NAMES[lastDept]?.[lang] || DEPT_NAMES[lastDept]?.en || lastDept;
+    pdf.text(`${l(lang, 'insightFocus')}: ${lastName}`, margin + 4, y);
+  }
+
+  addFooter(pageNum);
+
+  // ═══════════════════════════════════════════
+  // KPI ANALYTICS PAGES
+  // ═══════════════════════════════════════════
+  const deptEntries = Object.entries(data.assessment.scores);
+
+  deptEntries.forEach(([sectionId, sectionScore]) => {
     const kpiData = generateRealisticData(sectionScore, sectionId);
     const benchmarks = industryBenchmarks[sectionId as keyof typeof industryBenchmarks];
     if (!kpiData || !benchmarks) return;
 
-    // Check if we need a new page
-    if (y > pageH - 60) {
-      addHeaderFooter(pageNum);
-      pdf.addPage();
-      pageNum++;
-      y = 28;
+    // Always start each department on a new page for clean presentation
+    pdf.addPage();
+    pageNum++;
+    addHeader();
+    addWatermark();
+    y = contentTop;
+
+    // First department gets section title
+    if (sectionId === deptEntries[0][0]) {
+      pdf.setFontSize(18);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(24, 24, 27);
+      pdf.text(l(lang, 'kpiAnalytics'), margin, y);
+      y += 12;
     }
 
-    // Section heading
-    pdf.setFontSize(11);
+    // Department heading
+    pdf.setFontSize(12);
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(24, 24, 27);
     const sectionName = DEPT_NAMES[sectionId]?.[lang] || DEPT_NAMES[sectionId]?.en || sectionId;
-    pdf.text(`${sectionName} (${sectionScore}%)`, margin, y);
-    y += 4;
+    pdf.text(`${sectionName} -- ${sectionScore}%`, margin, y);
+    y += 6;
 
     const kpiRows = Object.entries(kpiData).map(([key, value]) => {
       const benchmark = (benchmarks as any)[key];
       const numVal = value as number;
       const gap = benchmark ? numVal - benchmark : 0;
-      const gapStr = benchmark ? (gap >= 0 ? '+' : '') + formatPDFValue(key, Math.abs(gap)) : '—';
-      const interp = gap >= 0
-        ? (lang === 'de' ? 'Über Benchmark' : 'Above benchmark')
-        : (lang === 'de' ? 'Unter Benchmark' : 'Below benchmark');
+      const gapStr = benchmark ? formatGap(key, gap, lang) : '--';
+      const isGood = benchmark ? gapIsPositive(key, gap) : true;
+      const interp = !benchmark ? '--'
+        : isGood
+          ? (lang === 'de' ? 'Ueber Benchmark' : 'Above benchmark')
+          : (lang === 'de' ? 'Unter Benchmark' : 'Below benchmark');
       return [
         KPI_LABELS[key]?.[lang] || KPI_LABELS[key]?.en || key,
-        formatPDFValue(key, numVal),
-        benchmark ? formatPDFValue(key, benchmark) : '—',
+        formatKpiValue(key, numVal, lang),
+        benchmark ? formatKpiValue(key, benchmark, lang) : '--',
         gapStr,
         interp,
       ];
@@ -617,24 +770,27 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
       head: [[l(lang, 'kpiName'), l(lang, 'yourValue'), l(lang, 'benchmark'), l(lang, 'gap'), l(lang, 'interpretation')]],
       body: kpiRows,
       margin: { left: margin, right: margin },
-      styles: { fontSize: 8, cellPadding: 2.5 },
+      styles: { fontSize: 8, cellPadding: 3, font: 'helvetica' },
       headStyles: { fillColor: [24, 24, 27], textColor: [255, 255, 255], fontSize: 8 },
       alternateRowStyles: { fillColor: [250, 250, 250] },
       columnStyles: {
-        0: { cellWidth: 35 },
-        4: { cellWidth: 30 },
+        0: { cellWidth: 38 },
+        4: { cellWidth: 28 },
       },
     });
 
     y = (pdf as any).lastAutoTable.finalY + 8;
+    addFooter(pageNum);
   });
 
-  addHeaderFooter(pageNum);
-
-  // ── ACTION PLAN ──
+  // ═══════════════════════════════════════════
+  // ACTION PLAN
+  // ═══════════════════════════════════════════
   pdf.addPage();
   pageNum++;
-  y = 28;
+  addHeader();
+  addWatermark();
+  y = contentTop;
 
   pdf.setFontSize(18);
   pdf.setFont('helvetica', 'bold');
@@ -644,11 +800,11 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
 
   if (data.actions.length > 0) {
     const actionRows = data.actions.map(a => [
-      a.action_title.slice(0, 60),
+      a.action_title.length > 70 ? a.action_title.slice(0, 67) + '...' : a.action_title,
       a.responsible_person || l(lang, 'unassigned'),
-      a.target_completion_date?.slice(0, 10) || '—',
-      a.status,
-      a.priority,
+      a.target_completion_date?.slice(0, 10) || '--',
+      normalizeStatus(a.status),
+      normalizePriority(a.priority),
     ]);
 
     autoTable(pdf, {
@@ -656,56 +812,54 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
       head: [[l(lang, 'action'), l(lang, 'owner'), l(lang, 'dueDate'), l(lang, 'status'), l(lang, 'priority')]],
       body: actionRows,
       margin: { left: margin, right: margin },
-      styles: { fontSize: 8, cellPadding: 3 },
+      styles: { fontSize: 8, cellPadding: 3, font: 'helvetica' },
       headStyles: { fillColor: [24, 24, 27], textColor: [255, 255, 255] },
       alternateRowStyles: { fillColor: [250, 250, 250] },
-      columnStyles: {
-        0: { cellWidth: 55 },
-      },
+      columnStyles: { 0: { cellWidth: 55 } },
+      // Keep rows together – avoid orphan splits
+      rowPageBreak: 'avoid',
     });
 
-    y = (pdf as any).lastAutoTable.finalY + 8;
+    y = (pdf as any).lastAutoTable.finalY + 10;
 
-    // Action descriptions
-    if (y > pageH - 40) {
-      addHeaderFooter(pageNum);
-      pdf.addPage();
-      pageNum++;
-      y = 28;
-    }
-
-    pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(24, 24, 27);
-    pdf.text(l(lang, 'description') + 's', margin, y);
-    y += 6;
-
-    pdf.setFontSize(8);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(60, 60, 60);
-
+    // Action descriptions – card-style blocks
     data.actions.forEach((a, i) => {
-      if (y > pageH - 30) {
-        addHeaderFooter(pageNum);
-        pdf.addPage();
-        pageNum++;
-        y = 28;
-      }
-      pdf.setFont('helvetica', 'bold');
-      const titleLine = `${i + 1}. ${a.action_title}`;
-      pdf.text(titleLine.slice(0, 90), margin, y);
-      y += 4;
-      pdf.setFont('helvetica', 'normal');
-      // Clean description — remove "Triggered because:" metadata
+      const titleText = `${i + 1}. ${a.action_title}`;
       const cleanDesc = a.action_description
         .replace(/Triggered because:.*$/s, '')
         .trim()
-        .slice(0, 300);
-      if (cleanDesc) {
-        const descLines = pdf.splitTextToSize(cleanDesc, contentW - 4);
-        pdf.text(descLines, margin + 2, y);
-        y += descLines.length * 4 + 3;
+        .slice(0, 400);
+      const descLines = cleanDesc ? pdf.splitTextToSize(cleanDesc, contentW - 12) : [];
+      const blockH = 8 + descLines.length * 4;
+
+      // If block won't fit, new page
+      if (y + blockH > pageH - 20) {
+        addFooter(pageNum);
+        pdf.addPage();
+        pageNum++;
+        addHeader();
+        addWatermark();
+        y = contentTop;
       }
+
+      // Light card background
+      pdf.setFillColor(248, 248, 250);
+      pdf.setDrawColor(230, 230, 230);
+      pdf.roundedRect(margin, y - 2, contentW, blockH + 2, 1, 1, 'FD');
+
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(24, 24, 27);
+      pdf.text(titleText.slice(0, 100), margin + 3, y + 4);
+
+      if (descLines.length > 0) {
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(80, 80, 80);
+        pdf.text(descLines, margin + 5, y + 10);
+      }
+
+      y += blockH + 4;
     });
   } else {
     pdf.setFontSize(10);
@@ -714,12 +868,16 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
     pdf.text(l(lang, 'dataNotAvailable'), margin, y);
   }
 
-  addHeaderFooter(pageNum);
+  addFooter(pageNum);
 
-  // ── METHODOLOGY ──
+  // ═══════════════════════════════════════════
+  // METHODOLOGY
+  // ═══════════════════════════════════════════
   pdf.addPage();
   pageNum++;
-  y = 28;
+  addHeader();
+  addWatermark();
+  y = contentTop;
 
   pdf.setFontSize(18);
   pdf.setFont('helvetica', 'bold');
@@ -732,18 +890,60 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   pdf.setTextColor(60, 60, 60);
 
   const methodText = lang === 'de'
-    ? `Die Bewertung basiert auf einem strukturierten Fragebogen, der die wichtigsten Leistungsbereiche eines Autohauses abdeckt: Neuwagenverkauf (25%), Gebrauchtwagenverkauf (20%), Serviceleistung (20%), Finanzoperationen (20%) und Teile & Lager (15%).\n\nJede Frage wird auf einer Skala von 1 bis 5 bewertet, wobei die Punktzahlen auf 0-100 normalisiert werden. Die Gewichtung spiegelt die relative Bedeutung jedes Bereichs für die Gesamtrentabilität wider.\n\nReifestufen:\n• Fortgeschritten (85-100): Branchenführende Praktiken mit Innovationsfokus\n• Ausgereift (70-84): Gut etablierte Prozesse mit kontinuierlicher Optimierung\n• Entwickelnd (50-69): Grundlegende Optimierung und Standardisierung implementiert\n• Basis (0-49): Grundlegende Prozesse mit erheblichen Lücken\n\nBenchmarks basieren auf konfigurierten Referenzwerten für den europäischen Automobilmarkt.`
-    : `Scores are calculated from assessment responses across five key performance areas: New Vehicle Sales (25%), Used Vehicle Sales (20%), Service Performance (20%), Financial Operations (20%), and Parts & Inventory (15%).\n\nEach question is rated on a 1-5 scale, with scores normalized to 0-100. The weighting reflects each area's relative importance to overall dealership profitability.\n\nMaturity Levels:\n• Advanced (85-100): Industry-leading practices with innovation focus\n• Mature (70-84): Well-established processes with consistent optimization\n• Developing (50-69): Some optimization and standardization implemented\n• Basic (0-49): Foundational processes in place with significant gaps\n\nBenchmarks shown reflect the configured reference values for the European automotive market.`;
+    ? [
+        'Die Bewertung basiert auf einem strukturierten Fragebogen, der die wichtigsten Leistungsbereiche eines Autohauses abdeckt.',
+        '',
+        'Bewertete Bereiche und Gewichtung:',
+        '  - Neuwagenverkauf: 25%',
+        '  - Gebrauchtwagenverkauf: 20%',
+        '  - Serviceleistung: 20%',
+        '  - Finanzoperationen: 20%',
+        '  - Teile & Lager: 15%',
+        '',
+        'Jede Frage wird auf einer Skala von 1 bis 5 bewertet. Die Antworten werden auf eine Skala von 0-100 normalisiert. Die Gewichtung spiegelt die relative Bedeutung jedes Bereichs fuer die Gesamtrentabilitaet wider.',
+        '',
+        'Reifestufen:',
+        '  - Fortgeschritten (85-100): Branchenfuehrende Praktiken mit Innovationsfokus',
+        '  - Ausgereift (70-84): Gut etablierte Prozesse mit kontinuierlicher Optimierung',
+        '  - Entwickelnd (50-69): Grundlegende Optimierung und Standardisierung implementiert',
+        '  - Basis (0-49): Grundlegende Prozesse mit erheblichen Luecken',
+        '',
+        'Benchmarks basieren auf konfigurierten Referenzwerten fuer den europaeischen Automobilmarkt. Sie dienen als Orientierungshilfe und koennen je nach Markt und Segment variieren.',
+      ].join('\n')
+    : [
+        'Scores are calculated from assessment responses across five key performance areas of dealership operations.',
+        '',
+        'Assessed Areas and Weighting:',
+        '  - New Vehicle Sales: 25%',
+        '  - Used Vehicle Sales: 20%',
+        '  - Service Performance: 20%',
+        '  - Financial Operations: 20%',
+        '  - Parts & Inventory: 15%',
+        '',
+        'Each question is rated on a 1-5 scale. Responses are normalized to a 0-100 score. The weighting reflects each area\'s relative importance to overall dealership profitability.',
+        '',
+        'Maturity Levels:',
+        '  - Advanced (85-100): Industry-leading practices with innovation focus',
+        '  - Mature (70-84): Well-established processes with consistent optimization',
+        '  - Developing (50-69): Some optimization and standardization implemented',
+        '  - Basic (0-49): Foundational processes in place with significant gaps',
+        '',
+        'Benchmarks shown reflect the configured reference values for the European automotive market. They serve as directional guidance and may vary by market and segment.',
+      ].join('\n');
 
   const methodLines = pdf.splitTextToSize(methodText, contentW);
   pdf.text(methodLines, margin, y);
 
-  addHeaderFooter(pageNum);
+  addFooter(pageNum);
 
-  // ── APPENDIX ──
+  // ═══════════════════════════════════════════
+  // APPENDIX
+  // ═══════════════════════════════════════════
   pdf.addPage();
   pageNum++;
-  y = 28;
+  addHeader();
+  addWatermark();
+  y = contentTop;
 
   pdf.setFontSize(18);
   pdf.setFont('helvetica', 'bold');
@@ -753,12 +953,11 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
 
   const appendixData = [
     [l(lang, 'organization'), orgName],
-    [l(lang, 'assessmentId'), data.assessment.id.slice(0, 8) + '...'],
+    [l(lang, 'assessmentId'), shortId(data.assessment.id)],
     [l(lang, 'completionDate'), data.assessment.completedAt.slice(0, 10)],
     [l(lang, 'generatedDate'), `${dateStr} ${timeStr}`],
-    [l(lang, 'user'), data.user.fullName],
-    [l(lang, 'role'), data.user.role],
-    [l(lang, 'language'), langCode],
+    [l(lang, 'user'), fullName],
+    [l(lang, 'role'), roleLabel],
     [l(lang, 'overallScore'), `${overallScore}/100`],
     [l(lang, 'maturityLevel'), maturity],
   ];
@@ -767,29 +966,30 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
     startY: y,
     body: appendixData,
     margin: { left: margin, right: margin },
-    styles: { fontSize: 9, cellPadding: 4 },
-    columnStyles: {
-      0: { fontStyle: 'bold', cellWidth: 50 },
-    },
+    styles: { fontSize: 9, cellPadding: 4, font: 'helvetica' },
+    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } },
     alternateRowStyles: { fillColor: [250, 250, 250] },
   });
 
-  addHeaderFooter(pageNum);
+  addFooter(pageNum);
 
-  // ── Fix page numbers: "Page X of Y" ──
-  totalPages = pageNum;
+  // ═══════════════════════════════════════════
+  // FIX PAGE NUMBERS: "Page X of Y"
+  // ═══════════════════════════════════════════
   const pageCount = pdf.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     pdf.setPage(i);
     pdf.setFontSize(8);
-    pdf.setTextColor(120, 120, 120);
-    // Overwrite page number area
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(130, 130, 130);
+    // Clear old footer area and rewrite
     pdf.setFillColor(255, 255, 255);
-    pdf.rect(margin - 2, pageH - 14, 40, 6, 'F');
-    pdf.text(`${l(lang, 'page')} ${i} ${l(lang, 'of')} ${pageCount}`, margin, pageH - 10);
+    pdf.rect(margin - 2, footerY - 4, 50, 8, 'F');
+    pdf.text(`${l(lang, 'page')} ${i} ${l(lang, 'of')} ${pageCount}`, margin, footerY);
   }
 
   // ── Save ──
-  const fileName = `${orgName.replace(/[^a-zA-Z0-9]/g, '_')}_Assessment_Report_${dateStr}.pdf`;
+  const safeOrgName = orgName.replace(/[^a-zA-Z0-9]/g, '_');
+  const fileName = `${safeOrgName}_Assessment_Report_${dateStr}.pdf`;
   pdf.save(fileName);
 }
