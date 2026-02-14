@@ -497,25 +497,88 @@ export type Database = {
       }
       organizations: {
         Row: {
+          brand_mode: Database["public"]["Enums"]["enum_brand_mode"] | null
+          business_model:
+            | Database["public"]["Enums"]["enum_business_model"]
+            | null
+          city: string | null
+          country: string | null
           created_at: string
+          default_language:
+            | Database["public"]["Enums"]["enum_default_language"]
+            | null
+          group_name: string | null
           id: string
+          logo_url: string | null
           name: string
+          network_structure:
+            | Database["public"]["Enums"]["enum_network_structure"]
+            | null
+          oem_authorization:
+            | Database["public"]["Enums"]["enum_oem_authorization"]
+            | null
+          oem_brands: string[] | null
+          operational_focus: string[] | null
+          positioning: Database["public"]["Enums"]["enum_positioning"] | null
+          product_segments: string[] | null
           settings: Json | null
           slug: string
           updated_at: string
         }
         Insert: {
+          brand_mode?: Database["public"]["Enums"]["enum_brand_mode"] | null
+          business_model?:
+            | Database["public"]["Enums"]["enum_business_model"]
+            | null
+          city?: string | null
+          country?: string | null
           created_at?: string
+          default_language?:
+            | Database["public"]["Enums"]["enum_default_language"]
+            | null
+          group_name?: string | null
           id?: string
+          logo_url?: string | null
           name: string
+          network_structure?:
+            | Database["public"]["Enums"]["enum_network_structure"]
+            | null
+          oem_authorization?:
+            | Database["public"]["Enums"]["enum_oem_authorization"]
+            | null
+          oem_brands?: string[] | null
+          operational_focus?: string[] | null
+          positioning?: Database["public"]["Enums"]["enum_positioning"] | null
+          product_segments?: string[] | null
           settings?: Json | null
           slug: string
           updated_at?: string
         }
         Update: {
+          brand_mode?: Database["public"]["Enums"]["enum_brand_mode"] | null
+          business_model?:
+            | Database["public"]["Enums"]["enum_business_model"]
+            | null
+          city?: string | null
+          country?: string | null
           created_at?: string
+          default_language?:
+            | Database["public"]["Enums"]["enum_default_language"]
+            | null
+          group_name?: string | null
           id?: string
+          logo_url?: string | null
           name?: string
+          network_structure?:
+            | Database["public"]["Enums"]["enum_network_structure"]
+            | null
+          oem_authorization?:
+            | Database["public"]["Enums"]["enum_oem_authorization"]
+            | null
+          oem_brands?: string[] | null
+          operational_focus?: string[] | null
+          positioning?: Database["public"]["Enums"]["enum_positioning"] | null
+          product_segments?: string[] | null
           settings?: Json | null
           slug?: string
           updated_at?: string
@@ -788,6 +851,12 @@ export type Database = {
     }
     Enums: {
       app_role: "coach" | "dealer"
+      enum_brand_mode: "single_brand" | "multi_brand"
+      enum_business_model: "sales_only" | "service_only" | "2s" | "3s" | "4s"
+      enum_default_language: "en" | "de" | "fr" | "es" | "it"
+      enum_network_structure: "single_outlet" | "multi_outlet_group"
+      enum_oem_authorization: "authorized" | "independent"
+      enum_positioning: "mass_market" | "premium" | "luxury" | "super_luxury"
       membership_role: "owner" | "admin" | "manager" | "analyst" | "viewer"
     }
     CompositeTypes: {
@@ -917,6 +986,12 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["coach", "dealer"],
+      enum_brand_mode: ["single_brand", "multi_brand"],
+      enum_business_model: ["sales_only", "service_only", "2s", "3s", "4s"],
+      enum_default_language: ["en", "de", "fr", "es", "it"],
+      enum_network_structure: ["single_outlet", "multi_outlet_group"],
+      enum_oem_authorization: ["authorized", "independent"],
+      enum_positioning: ["mass_market", "premium", "luxury", "super_luxury"],
       membership_role: ["owner", "admin", "manager", "analyst", "viewer"],
     },
   },

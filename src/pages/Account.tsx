@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useSessionManager } from '@/hooks/useSessionManager';
@@ -18,6 +19,7 @@ import { useGDPR } from '@/hooks/useGDPR';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { OrganizationSettings } from '@/components/OrganizationSettings';
 import { 
   User, Shield, Download, Trash2, Monitor, Smartphone, Globe, Calendar, 
   Mail, CheckCircle, XCircle, Building2, Users, Activity, Link2, Key,
@@ -33,6 +35,15 @@ interface AssessmentRecord {
   completed_at: string | null;
   created_at: string;
 }
+
+const ROLES_MATRIX = [
+  { permission: 'View assessments & results', owner: true, admin: true, coach: true, user: true, viewer: true },
+  { permission: 'Create assessments', owner: true, admin: true, coach: true, user: true, viewer: false },
+  { permission: 'Edit action plans', owner: true, admin: true, coach: true, user: false, viewer: false },
+  { permission: 'Export PDF reports', owner: true, admin: true, coach: true, user: true, viewer: true },
+  { permission: 'Manage organization', owner: true, admin: true, coach: false, user: false, viewer: false },
+  { permission: 'Delete records', owner: true, admin: true, coach: false, user: false, viewer: false },
+];
 
 const Account = () => {
   const { user } = useAuth();
@@ -52,25 +63,20 @@ const Account = () => {
   const [timezone, setTimezone] = useState('UTC');
   const [deleteConfirmStep, setDeleteConfirmStep] = useState(0);
   const [activeTab, setActiveTab] = useState('profile');
-  
-  // Privacy consent states for optimistic UI (P0.3)
   const [analyticsConsent, setAnalyticsConsent] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
-
-  // P1.4 - Organization edit state
   const [orgEditing, setOrgEditing] = useState(false);
   const [orgName, setOrgName] = useState('');
   const [orgSaving, setOrgSaving] = useState(false);
-
-  // P2.3 - Assessment history
   const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
   const [assessmentsLoading, setAssessmentsLoading] = useState(true);
+  const [activityFilter, setActivityFilter] = useState<'completed' | 'in_progress'>('completed');
 
-  // P1.4: Determine if user is admin/owner in current org
   const currentMembership = userMemberships.find(
     m => m.organization_id === currentOrganization?.id
   );
   const isOrgAdmin = currentMembership?.role === 'owner' || currentMembership?.role === 'admin';
+  const currentRole = currentMembership?.role || 'viewer';
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -80,9 +86,7 @@ const Account = () => {
         .select('*')
         .eq('user_id', user.id)
         .single();
-
       if (error && error.code !== 'PGRST116') throw error;
-
       setProfile(data);
       setDisplayName(data?.display_name || '');
       setJobTitle(data?.job_title || '');
@@ -97,7 +101,6 @@ const Account = () => {
     }
   };
 
-  // P2.3: Fetch assessment history
   const fetchAssessments = async () => {
     if (!user) return;
     try {
@@ -107,7 +110,6 @@ const Account = () => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(20);
-
       if (error) throw error;
       setAssessments(data || []);
     } catch (error) {
@@ -134,9 +136,7 @@ const Account = () => {
           timezone: timezone
         })
         .eq('user_id', user.id);
-
       if (error) throw error;
-
       setProfile((prev: any) => ({ ...prev, display_name: displayName.trim(), job_title: jobTitle.trim(), department: department.trim(), bio: bio.trim(), timezone }));
       toast({ title: "Profile updated", description: "Your profile has been saved successfully" });
     } catch (error: any) {
@@ -147,7 +147,6 @@ const Account = () => {
     }
   };
 
-  // P1.4: Save organization name
   const saveOrgName = async () => {
     if (!currentOrganization || !orgName.trim()) return;
     setOrgSaving(true);
@@ -156,7 +155,6 @@ const Account = () => {
         .from('organizations')
         .update({ name: orgName.trim() })
         .eq('id', currentOrganization.id);
-
       if (error) throw error;
       toast({ title: "Organization updated", description: "Organization name has been saved" });
       setOrgEditing(false);
@@ -236,9 +234,7 @@ const Account = () => {
     }
   }, [currentOrganization]);
 
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
+  if (!user) return <Navigate to="/auth" replace />;
 
   if (profileLoading) {
     return (
@@ -249,9 +245,12 @@ const Account = () => {
   }
 
   const completedAssessments = assessments.filter(a => a.status === 'completed');
+  const inProgressAssessments = assessments.filter(a => a.status !== 'completed');
   const hasActivityData = assessments.length > 0;
+  const latestCompleted = completedAssessments[0];
 
-  // Build tabs dynamically — P2.3: remove Activity if no data
+  const filteredAssessments = activityFilter === 'completed' ? completedAssessments : inProgressAssessments;
+
   const tabs = [
     { value: 'profile', label: 'Profile', icon: User },
     { value: 'organization', label: 'Organization', icon: Building2 },
@@ -263,7 +262,7 @@ const Account = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* P2.2: Uplifted header with hero summary */}
+      {/* Header */}
       <div className="bg-card border-b border-border">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 py-6">
           <div className="flex items-center gap-3 mb-6">
@@ -306,14 +305,8 @@ const Account = () => {
       </div>
 
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        {/* P2.2: Quick summary cards */}
+        {/* P0-3: Profile Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">Assessments</p>
-              <p className="text-2xl font-bold text-foreground">{assessments.length}</p>
-            </CardContent>
-          </Card>
           <Card className="border-border">
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground">Completed</p>
@@ -322,21 +315,35 @@ const Account = () => {
           </Card>
           <Card className="border-border">
             <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">Organizations</p>
-              <p className="text-2xl font-bold text-foreground">{organizations.length}</p>
+              <p className="text-xs text-muted-foreground">Latest Score</p>
+              {latestCompleted ? (
+                <p className="text-2xl font-bold text-primary">{Math.round(latestCompleted.overall_score || 0)}/100</p>
+              ) : (
+                <p className="text-sm text-muted-foreground mt-1">No completed yet</p>
+              )}
             </CardContent>
           </Card>
           <Card className="border-border">
             <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">Status</p>
-              <Badge className="bg-success/10 text-success border-success/20 mt-1">Active</Badge>
+              <p className="text-xs text-muted-foreground">Latest Date</p>
+              {latestCompleted?.completed_at ? (
+                <p className="text-sm font-semibold text-foreground mt-1">{format(new Date(latestCompleted.completed_at), 'MMM d, yyyy')}</p>
+              ) : (
+                <p className="text-sm text-muted-foreground mt-1">—</p>
+              )}
+            </CardContent>
+          </Card>
+          <Card className="border-border">
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">Organizations</p>
+              <p className="text-2xl font-bold text-foreground">{organizations.length}</p>
             </CardContent>
           </Card>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="bg-card rounded-lg border border-border p-1">
-            <TabsList className={`grid w-full bg-transparent gap-1`} style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
+            <TabsList className="grid w-full bg-transparent gap-1" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
               {tabs.map(tab => (
                 <TabsTrigger 
                   key={tab.value}
@@ -350,7 +357,7 @@ const Account = () => {
             </TabsList>
           </div>
 
-          {/* ===================== PROFILE TAB (P2.2 uplift) ===================== */}
+          {/* ===================== PROFILE TAB ===================== */}
           <TabsContent value="profile" className="space-y-6">
             <Card>
               <CardHeader>
@@ -419,8 +426,9 @@ const Account = () => {
             </Card>
           </TabsContent>
 
-          {/* ===================== ORGANIZATION TAB (P1.4) ===================== */}
+          {/* ===================== ORGANIZATION TAB ===================== */}
           <TabsContent value="organization" className="space-y-6">
+            {/* Org Name + Basic Info */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -432,7 +440,7 @@ const Account = () => {
                   </div>
                   {isOrgAdmin && currentOrganization && !orgEditing && (
                     <Button variant="outline" size="sm" onClick={() => { setOrgName(currentOrganization.name); setOrgEditing(true); }}>
-                      <Pencil className="h-4 w-4 mr-2" /> Edit
+                      <Pencil className="h-4 w-4 mr-2" /> Edit Name
                     </Button>
                   )}
                 </div>
@@ -472,46 +480,6 @@ const Account = () => {
                   </div>
                 </div>
 
-                {!isOrgAdmin && currentOrganization && (
-                  <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground">
-                    <Eye className="h-4 w-4 flex-shrink-0" />
-                    <span>You don't have permission to edit organization details.</span>
-                  </div>
-                )}
-
-                <Separator />
-
-                <div>
-                  <h4 className="font-medium mb-4">Your Role & Permissions</h4>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                      <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4 text-primary" />
-                        <span className="font-medium">Membership Role</span>
-                      </div>
-                      <Badge className="bg-primary/10 text-primary border-primary/20 capitalize">
-                        {currentMembership?.role || 'Member'}
-                      </Badge>
-                    </div>
-                    <div className="grid gap-2 text-sm">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <CheckCircle className="h-4 w-4 text-success" />
-                        <span>View assessments and results</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <CheckCircle className="h-4 w-4 text-success" />
-                        <span>Create and edit assessments</span>
-                      </div>
-                      {isOrgAdmin && (
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <CheckCircle className="h-4 w-4 text-success" />
-                          <span>Manage organization settings</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
                 {organizations.length > 1 && (
                   <>
                     <Separator />
@@ -537,9 +505,61 @@ const Account = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* P0-2: Organization Settings (5 groups) */}
+            {currentOrganization && (
+              <OrganizationSettings organizationId={currentOrganization.id} isAdmin={isOrgAdmin} />
+            )}
+
+            {/* P1-2: Roles Matrix */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-primary" />
+                  <div>
+                    <CardTitle className="text-base">Roles & Permissions</CardTitle>
+                    <CardDescription>
+                      Your role: <Badge className="ml-1 bg-primary/10 text-primary border-primary/20 capitalize">{currentRole}</Badge>
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="min-w-[180px]">Permission</TableHead>
+                        {['Owner', 'Admin', 'Coach', 'User', 'Viewer'].map(role => (
+                          <TableHead key={role} className={`text-center ${role.toLowerCase() === currentRole ? 'bg-primary/5' : ''}`}>
+                            {role}
+                          </TableHead>
+                        ))}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {ROLES_MATRIX.map((row) => (
+                        <TableRow key={row.permission}>
+                          <TableCell className="font-medium text-sm">{row.permission}</TableCell>
+                          {(['owner', 'admin', 'coach', 'user', 'viewer'] as const).map(role => (
+                            <TableCell key={role} className={`text-center ${role === currentRole ? 'bg-primary/5' : ''}`}>
+                              {row[role as keyof typeof row] ? (
+                                <CheckCircle className="h-4 w-4 text-success mx-auto" />
+                              ) : (
+                                <XCircle className="h-4 w-4 text-muted-foreground/40 mx-auto" />
+                              )}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          {/* ===================== ACTIVITY TAB (P2.3) ===================== */}
+          {/* ===================== ACTIVITY TAB (P1-1) ===================== */}
           {hasActivityData && (
             <TabsContent value="activity" className="space-y-6">
               <Card>
@@ -548,13 +568,38 @@ const Account = () => {
                   <CardDescription>Your assessment runs and results</CardDescription>
                 </CardHeader>
                 <CardContent>
+                  {/* Activity filter tabs */}
+                  <div className="flex gap-2 mb-4">
+                    <Button
+                      variant={activityFilter === 'completed' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setActivityFilter('completed')}
+                    >
+                      Completed ({completedAssessments.length})
+                    </Button>
+                    <Button
+                      variant={activityFilter === 'in_progress' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setActivityFilter('in_progress')}
+                    >
+                      In Progress ({inProgressAssessments.length})
+                    </Button>
+                  </div>
+
                   {assessmentsLoading ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                     </div>
+                  ) : filteredAssessments.length === 0 ? (
+                    <div className="text-center py-8">
+                      <FileText className="h-10 w-10 mx-auto mb-2 text-muted-foreground/30" />
+                      <p className="text-sm text-muted-foreground">
+                        No {activityFilter === 'completed' ? 'completed' : 'in-progress'} assessments
+                      </p>
+                    </div>
                   ) : (
                     <div className="space-y-3">
-                      {assessments.map(assessment => (
+                      {filteredAssessments.map(assessment => (
                         <div key={assessment.id} className="flex items-center gap-4 p-4 rounded-lg border border-border hover:bg-muted/30 transition-colors">
                           <div className="h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0"
                             style={{ backgroundColor: assessment.status === 'completed' ? 'hsl(var(--success) / 0.1)' : 'hsl(var(--warning) / 0.1)' }}>
@@ -568,7 +613,7 @@ const Account = () => {
                               {assessment.status === 'completed' ? 'Completed Assessment' : 'Assessment In Progress'}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {format(new Date(assessment.completed_at || assessment.created_at), 'PPP')}
+                              {format(new Date(assessment.status === 'completed' ? (assessment.completed_at || assessment.created_at) : assessment.created_at), 'PPP')}
                             </p>
                           </div>
                           {assessment.overall_score !== null && (
