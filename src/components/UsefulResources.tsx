@@ -338,7 +338,7 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
     }
 
     // Order departments
-    const orderedDepts = ['new-vehicle-sales', 'used-vehicle-sales', 'service-performance', 'parts-inventory', 'financial-operations', 'other'];
+    const orderedDepts = ['new-vehicle-sales', 'used-vehicle-sales', 'service-performance', 'parts-inventory', 'financial-operations', 'customer-satisfaction', 'marketing-digital', 'workforce-hr', 'ev-readiness', 'sales-process', 'other'];
     return orderedDepts
       .filter(d => deptGroups[d] && deptGroups[d].length > 0)
       .map(d => ({
