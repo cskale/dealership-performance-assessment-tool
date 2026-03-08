@@ -6,7 +6,7 @@ import { Search, BookOpen, ArrowRight, ChevronDown } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { KPI_DEFINITIONS, KPIDefinition } from "@/lib/kpiDefinitions";
-import { ORDERED_DEPARTMENTS, getDepartmentConfig } from "./departmentConfig";
+import { ORDERED_DEPARTMENTS, getDepartmentConfig } from "@/lib/departmentConfig";
 import { KPIStudio } from "./KPIStudio";
 import {
   DropdownMenu,

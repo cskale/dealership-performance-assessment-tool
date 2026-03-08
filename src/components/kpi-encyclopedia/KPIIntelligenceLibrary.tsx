@@ -6,7 +6,7 @@ import { Search, BookOpen } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { KPI_DEFINITIONS, KPIDefinition } from "@/lib/kpiDefinitions";
-import { DEPARTMENT_CONFIG, ORDERED_DEPARTMENTS, getDepartmentConfig } from "./departmentConfig";
+import { DEPARTMENT_CONFIG, ORDERED_DEPARTMENTS, getDepartmentConfig } from "@/lib/departmentConfig";
 import { KPIListPane, KPIListItem } from "./KPIListPane";
 import { KPIDetailPreview } from "./KPIDetailPreview";
 import { KPIDetailWorkspace } from "./KPIDetailWorkspace";

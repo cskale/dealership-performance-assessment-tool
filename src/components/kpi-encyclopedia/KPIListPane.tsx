@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { getDepartmentConfig } from "./departmentConfig";
+import { getDepartmentConfig } from "@/lib/departmentConfig";
 import type { KPIDefinition } from "@/lib/kpiDefinitions";
 import { ChevronRight } from "lucide-react";
 
