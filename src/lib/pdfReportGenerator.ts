@@ -1,7 +1,16 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { generateRealisticData, industryBenchmarks, formatEuro, formatNumber } from '@/utils/euroFormatter';
-import { calculateWeightedScore, CATEGORY_WEIGHTS, DEPARTMENT_TO_CATEGORY } from '@/lib/scoringEngine';
+import {
+  calculateWeightedScore,
+  CATEGORY_WEIGHTS,
+  DEPARTMENT_TO_CATEGORY,
+  calculateSubCategoryScores,
+  calculateAllConfidenceMetrics,
+  detectSystemicPatterns,
+  calculateEnhancedMaturity,
+} from '@/lib/scoringEngine';
+import { questionnaire } from '@/data/questionnaire';
 
 // ── i18n labels ──
 const LABELS: Record<string, Record<string, string>> = {
@@ -708,6 +717,147 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
     const [lastDept] = sortedDepts[sortedDepts.length - 1];
     const lastName = DEPT_NAMES[lastDept]?.[lang] || DEPT_NAMES[lastDept]?.en || lastDept;
     pdf.text(`${l(lang, 'insightFocus')}: ${lastName}`, margin + 4, y);
+  }
+
+  addFooter(pageNum);
+
+  // ═══════════════════════════════════════════
+  // PAGE 3: SUB-CATEGORY BREAKDOWN & CONFIDENCE
+  // ═══════════════════════════════════════════
+  const subCatLabelTitle = lang === 'de' ? 'Capability-Analyse nach Teilbereich' : 'Capability Analysis by Sub-Category';
+  const confidenceLabelTitle = lang === 'de' ? 'Konfidenz' : 'Confidence';
+  const systemicTitle = lang === 'de' ? 'Systemische Muster erkannt' : 'Systemic Patterns Detected';
+  const subCatLabel = lang === 'de' ? 'Teilbereich' : 'Sub-Category';
+  const maturityLabel = lang === 'de' ? 'Reifegrad' : 'Maturity';
+  const reasonLabel = lang === 'de' ? 'Bewertung' : 'Assessment';
+  const consistencyLabel = lang === 'de' ? 'Konsistenz' : 'Consistency';
+
+  const subCategoryData = calculateSubCategoryScores(questionnaire.sections, data.assessment.answers as Record<string, number>);
+  const confidenceData = calculateAllConfidenceMetrics(questionnaire.sections, data.assessment.answers as Record<string, number>);
+  const systemicPatterns = detectSystemicPatterns(questionnaire.sections, data.assessment.answers as Record<string, number>);
+
+  pdf.addPage();
+  pageNum++;
+  addHeader();
+  addWatermark();
+  y = contentTop;
+
+  pdf.setFontSize(18);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(24, 24, 27);
+  pdf.text(subCatLabelTitle, margin, y);
+  y += 10;
+
+  // For each department, render sub-category table + confidence + enhanced maturity
+  const deptKeys = Object.keys(subCategoryData);
+  for (const dept of deptKeys) {
+    const deptData = subCategoryData[dept];
+    const conf = confidenceData[dept];
+    const enhancedMat = calculateEnhancedMaturity(deptData.overallScore, deptData.subCategories, conf);
+    const deptName = DEPT_NAMES[dept]?.[lang] || DEPT_NAMES[dept]?.en || dept;
+
+    // Check if we need a new page (estimate ~50mm per department block)
+    if (y > pageH - 70) {
+      addFooter(pageNum);
+      pdf.addPage();
+      pageNum++;
+      addHeader();
+      addWatermark();
+      y = contentTop;
+    }
+
+    // Department header with confidence badge and maturity
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(24, 24, 27);
+    pdf.text(deptName, margin, y);
+
+    // Confidence indicator text
+    const confLabel = conf.confidence === 'high'
+      ? (lang === 'de' ? 'Hohe Konfidenz' : 'High Confidence')
+      : conf.confidence === 'medium'
+        ? (lang === 'de' ? 'Mittlere Konfidenz' : 'Medium Confidence')
+        : (lang === 'de' ? 'Ueberprufung empfohlen' : 'Review Recommended');
+    const confColor: [number, number, number] = conf.confidence === 'high' ? [16, 185, 129] : conf.confidence === 'medium' ? [234, 179, 8] : [220, 38, 38];
+
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(confColor[0], confColor[1], confColor[2]);
+    const confX = margin + pdf.getTextWidth(deptName + '  ') + 12;
+    pdf.text(`[${confLabel} - ${consistencyLabel}: ${conf.consistencyScore}%]`, confX > pageW - margin - 60 ? margin : confX, y);
+
+    // Maturity level
+    y += 5;
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'italic');
+    pdf.setTextColor(100, 100, 100);
+    pdf.text(`${maturityLabel}: ${enhancedMat.level} -- ${enhancedMat.reason.slice(0, 120)}`, margin, y);
+    y += 5;
+
+    // Sub-category rows
+    if (deptData.subCategories.length > 0) {
+      const scRows = deptData.subCategories.map(sc => {
+        const bar = sc.score >= 75 ? '+++' : sc.score >= 50 ? '++' : '+';
+        return [
+          sc.category.charAt(0).toUpperCase() + sc.category.slice(1),
+          `${sc.score}%`,
+          bar,
+          `${sc.questionCount} Q`,
+        ];
+      });
+
+      autoTable(pdf, {
+        startY: y,
+        head: [[subCatLabel, l(lang, 'score'), 'Level', 'Questions']],
+        body: scRows,
+        margin: { left: margin, right: margin },
+        styles: { fontSize: 8, cellPadding: 2, font: 'helvetica' },
+        headStyles: { fillColor: [60, 60, 70], textColor: [255, 255, 255], fontSize: 7 },
+        alternateRowStyles: { fillColor: [250, 250, 252] },
+        columnStyles: { 0: { cellWidth: 45 }, 1: { cellWidth: 20 }, 2: { cellWidth: 18 }, 3: { cellWidth: 22 } },
+        tableWidth: contentW * 0.62,
+      });
+      y = (pdf as any).lastAutoTable.finalY + 6;
+    } else {
+      y += 4;
+    }
+  }
+
+  // Systemic Patterns section
+  const systemicOnly = systemicPatterns.filter(p => p.severity === 'systemic');
+  if (systemicOnly.length > 0) {
+    if (y > pageH - 50) {
+      addFooter(pageNum);
+      pdf.addPage();
+      pageNum++;
+      addHeader();
+      addWatermark();
+      y = contentTop;
+    }
+
+    // Alert box
+    pdf.setFillColor(254, 242, 242);
+    pdf.setDrawColor(220, 38, 38);
+    const alertH = 10 + systemicOnly.length * 14;
+    pdf.roundedRect(margin, y, contentW, Math.min(alertH, pageH - y - 20), 2, 2, 'FD');
+    y += 7;
+
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(185, 28, 28);
+    pdf.text(`! ${systemicTitle}`, margin + 4, y);
+    y += 7;
+
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(120, 30, 30);
+    for (const p of systemicOnly) {
+      const deptNames = p.departments.map(d => DEPT_NAMES[d]?.[lang] || DEPT_NAMES[d]?.en || d).join(', ');
+      const line = pdf.splitTextToSize(`- ${p.signalCode}: ${p.description} (${deptNames})`, contentW - 12);
+      pdf.text(line, margin + 5, y);
+      y += line.length * 4 + 2;
+    }
+    y += 4;
   }
 
   addFooter(pageNum);
