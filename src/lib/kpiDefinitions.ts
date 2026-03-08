@@ -2134,6 +2134,1161 @@ export const KPI_DEFINITIONS: Record<string, { en: KPIDefinition; de: KPIDefinit
   },
 
   // =====================================================
+  // PARTS & INVENTORY KPIs (52-60)
+  // =====================================================
+  warrantyVsRetailMix: {
+    en: {
+      title: 'Warranty vs Retail Mix %',
+      definition: 'The ratio of warranty labor hours to customer-pay (retail) labor hours in the service department, expressed as a percentage split.',
+      executiveSummary: 'A healthy warranty-to-retail mix ensures the service department is not overly dependent on warranty work, which typically has lower labor rates and margins. Best-practice dealers maintain a 30/70 warranty-to-retail split or better.',
+      whyItMatters: 'Over-dependence on warranty work reduces service department profitability due to lower reimbursement rates. A strong retail mix indicates customer loyalty and effective service marketing.',
+      formula: 'Warranty Mix % = (Warranty Labor Hours / Total Labor Hours) × 100; Retail Mix % = 100 − Warranty Mix %',
+      inclusions: ['All warranty claims (manufacturer, extended, goodwill)', 'All customer-pay repair orders'],
+      exclusions: ['Internal work', 'Sublet labor', 'Body shop warranty claims'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '70%+ retail, <30% warranty',
+      department: 'parts-inventory',
+      rootCauseDiagnostics: {
+        people: 'Service advisors not actively selling maintenance/repair work, technicians prefer warranty work (guaranteed time), weak customer retention',
+        process: 'No proactive service marketing, insufficient inspection driving retail recommendations, poor declined service follow-up',
+        tools: 'No CRM-based service marketing campaigns, insufficient digital inspection tools to generate retail work',
+        structure: 'Service department capacity filled with warranty leaving no room for retail growth, no separate warranty processing team',
+        incentives: 'Advisors paid equally on warranty vs. retail (no incentive to grow retail), no retention bonus'
+      },
+      improvementLevers: [
+        'Implement comprehensive multi-point inspection generating retail repair recommendations',
+        'Launch targeted service marketing campaigns to drive retail traffic',
+        'Create express service lane capturing routine maintenance work',
+        'Develop declined service follow-up process converting future retail revenue',
+        'Incentivize advisors with higher commission on retail vs. warranty work',
+        'Negotiate improved warranty labor rates with manufacturer'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Service Retention Rate', 'Customer base size and loyalty', 'Service marketing effectiveness', 'Vehicle park age distribution'],
+        downstreamImpacts: ['Service department gross margin', 'Effective labor rate', 'Service department profitability', 'Fixed absorption ratio']
+      }
+    },
+    de: {
+      title: 'Garantie- vs. Einzelhandelsmix %',
+      definition: 'Verhältnis von Garantie- zu Kundenarbeitsstunden in der Serviceabteilung.',
+      whyItMatters: 'Überabhängigkeit von Garantiearbeit reduziert die Rentabilität.',
+      benchmark: '70%+ Einzelhandel'
+    }
+  },
+  partsGrossMarginPct: {
+    en: {
+      title: 'Parts Gross Margin %',
+      definition: 'The percentage of parts revenue retained as gross profit after deducting the cost of parts sold.',
+      executiveSummary: 'Parts gross margin is the primary profitability metric for the parts department. Effective matrix pricing, discount control, and sourcing optimization can significantly impact margins. Best-practice dealers achieve 40-45% parts gross margin.',
+      whyItMatters: 'Parts is often the highest-margin department in the dealership. Optimizing parts pricing directly impacts overall dealership profitability.',
+      formula: 'Parts Gross Margin % = ((Parts Revenue − Cost of Parts Sold) / Parts Revenue) × 100',
+      inclusions: ['All parts sold (retail, wholesale, internal, warranty)'],
+      exclusions: ['Accessories and aftermarket products (may track separately)', 'Core charges and returns'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '40-45%',
+      department: 'parts-inventory',
+      rootCauseDiagnostics: {
+        people: 'Counter staff discounting excessively, poor pricing knowledge, lack of confidence in value-based pricing',
+        process: 'No pricing matrix, inconsistent discount policies, pricing too many parts at wholesale to body shops',
+        tools: 'No automated pricing matrix in DMS, manual pricing decisions, poor competitor pricing visibility',
+        structure: 'Over-reliance on wholesale business with low margins, insufficient retail counter traffic, too many discount levels',
+        incentives: 'Parts staff compensated on volume not margin, no penalty for excessive discounting, wholesale bonuses eroding margin'
+      },
+      improvementLevers: [
+        'Implement automated parts pricing matrix with tiered markup by part category and customer type',
+        'Establish discount authority levels and maximum discount percentages',
+        'Review and renegotiate wholesale account pricing quarterly',
+        'Source competitive aftermarket alternatives where quality is equivalent',
+        'Train counter staff on value-based selling and reducing unnecessary discounts',
+        'Track margin by parts category and customer type to identify low-margin areas'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Parts sourcing and cost', 'Pricing matrix effectiveness', 'Customer mix (retail vs. wholesale)', 'Discount discipline'],
+        downstreamImpacts: ['Parts department profitability', 'Total dealership gross profit', 'Fixed absorption ratio', 'Service department competitiveness']
+      }
+    },
+    de: {
+      title: 'Teile-Bruttomarge %',
+      definition: 'Prozentsatz des Teileumsatzes, der als Bruttogewinn einbehalten wird.',
+      whyItMatters: 'Teile ist oft die Abteilung mit der höchsten Marge.',
+      benchmark: '40-45%'
+    }
+  },
+  partsInventoryTurn: {
+    en: {
+      title: 'Parts Inventory Turn',
+      definition: 'The number of times the parts inventory is sold and replaced over a 12-month period.',
+      executiveSummary: 'Parts inventory turn measures how efficiently capital invested in parts inventory is being utilized. Higher turns mean less capital tied up in parts while still meeting customer demand. Best-practice dealers achieve 6-8 turns per year.',
+      whyItMatters: 'Higher turns reduce carrying costs, minimize obsolescence risk, and improve cash flow. Low turns indicate overstocking or poor demand forecasting.',
+      formula: 'Parts Inventory Turn = Annual Parts Cost of Goods Sold / Average Parts Inventory Value',
+      inclusions: ['All parts categories (mechanical, body, accessories)', 'Cost basis valuation'],
+      exclusions: ['Consignment inventory', 'Special-order parts received and immediately sold'],
+      unitOfMeasure: 'Turns per year',
+      benchmark: '6-8 turns/year',
+      department: 'parts-inventory',
+      rootCauseDiagnostics: {
+        people: 'Parts manager hoarding "safety stock," reluctance to return excess inventory, over-ordering based on gut feel',
+        process: 'No systematic stock review, no return policy utilization, poor demand forecasting, manual ordering',
+        tools: 'No demand forecasting software, manual min/max settings, poor DMS inventory reporting',
+        structure: 'No accountability for inventory investment levels, purchasing decisions not connected to financial targets',
+        incentives: 'Parts manager not measured on turn rate, no penalty for excess inventory, fill rate prioritized over efficiency'
+      },
+      improvementLevers: [
+        'Implement automated demand forecasting and replenishment system',
+        'Establish monthly stock review process to identify non-moving parts',
+        'Maximize manufacturer return allowances for slow-moving inventory',
+        'Set turn rate targets by parts category with monthly tracking',
+        'Create phase-out process for declining-demand parts',
+        'Implement just-in-time ordering for predictable maintenance parts'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Demand forecasting accuracy', 'Ordering policies', 'Return allowance utilization', 'Inventory review discipline'],
+        downstreamImpacts: ['Parts obsolescence cost', 'Carrying cost / floor plan interest', 'Cash flow', 'Fill Rate (inverse pressure)', 'Parts department ROI']
+      }
+    },
+    de: {
+      title: 'Teile-Bestandsumschlag',
+      definition: 'Anzahl der Male, die der Teilebestand pro Jahr verkauft und ersetzt wird.',
+      whyItMatters: 'Höherer Umschlag reduziert Lagerkosten und Obsoleszenzrisiko.',
+      benchmark: '6-8 Umschläge/Jahr'
+    }
+  },
+  partsObsolescence: {
+    en: {
+      title: 'Parts Obsolescence %',
+      definition: 'The percentage of total parts inventory value consisting of parts that have had no demand (zero sales) for 12+ months.',
+      executiveSummary: 'Obsolete parts represent dead capital generating zero revenue. Best-practice dealers maintain obsolescence below 5% through aggressive return programs, proactive phase-out processes, and disciplined initial stocking decisions.',
+      whyItMatters: 'Obsolete inventory is a direct financial write-off risk. Every euro invested in obsolete parts could be generating 6-8x return if invested in fast-moving stock.',
+      formula: 'Parts Obsolescence % = (Value of Parts with No Sales in 12+ Months / Total Parts Inventory Value) × 100',
+      inclusions: ['All parts with zero demand for 12+ months', 'Superseded part numbers with no cross-reference demand'],
+      exclusions: ['Seasonal parts with predictable annual demand', 'Insurance/safety stock required by regulation'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '<5%',
+      department: 'parts-inventory',
+      rootCauseDiagnostics: {
+        people: 'Parts manager emotionally attached to inventory, belief that "we might need it someday," resistance to write-offs',
+        process: 'No systematic obsolescence review, missed manufacturer return windows, no phase-out process for declining models',
+        tools: 'Poor reporting on no-sale parts, no automated alerts for approaching obsolescence thresholds',
+        structure: 'No financial accountability for obsolete inventory, write-off approval process too bureaucratic',
+        incentives: 'No penalty for high obsolescence rates, parts manager bonus not tied to inventory health metrics'
+      },
+      improvementLevers: [
+        'Maximize manufacturer return programs (typically 2-4x per year)',
+        'Implement 90/180/365-day no-sale alerts with automatic review triggers',
+        'Create regular obsolescence disposal process (quarterly auction/surplus sale)',
+        'Avoid initial stocking of slow-moving parts categories for aging vehicle models',
+        'Cross-reference obsolete parts with other dealers for inter-dealer sales',
+        'Track obsolescence % monthly with improvement targets and accountability'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Initial stocking decisions', 'Return program utilization', 'Vehicle model lifecycle', 'Demand forecasting accuracy'],
+        downstreamImpacts: ['Parts Inventory Turn', 'Parts department ROI', 'Cash flow', 'Write-off risk', 'Overall parts profitability']
+      }
+    },
+    de: {
+      title: 'Teile-Obsoleszenz %',
+      definition: 'Prozentsatz des Teilebestandswerts, der seit 12+ Monaten keine Nachfrage hatte.',
+      whyItMatters: 'Veraltete Teile repräsentieren totes Kapital ohne Umsatzgenerierung.',
+      benchmark: '<5%'
+    }
+  },
+  fillRateEnriched: {
+    en: {
+      title: 'Fill Rate %',
+      definition: 'The percentage of parts orders that can be fulfilled immediately from existing on-hand inventory.',
+      executiveSummary: 'Fill rate directly impacts service department efficiency and customer satisfaction. When parts are not available, repairs are delayed, technicians sit idle, and customers wait. Best-practice dealers achieve 92-95% fill rate by balancing inventory investment with demand forecasting.',
+      whyItMatters: 'Parts availability is the #1 constraint on service throughput. A 5% fill rate improvement can reduce customer wait times by 15-20% and increase technician productivity.',
+      formula: 'Fill Rate = (Parts Lines Filled from Stock / Total Parts Lines Requested) × 100',
+      inclusions: ['All parts requests from service, body shop, and counter sales'],
+      exclusions: ['Special-order parts (customer-requested non-stock items)', 'Back-ordered manufacturer parts'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '92-95%',
+      department: 'parts-inventory',
+      rootCauseDiagnostics: {
+        people: 'Poor demand anticipation, insufficient pre-ordering for scheduled appointments, counter staff not suggesting alternatives',
+        process: 'No appointment-based parts pre-staging, reactive ordering instead of proactive forecasting, slow stock replenishment',
+        tools: 'Inadequate demand forecasting, manual min/max settings not updated, poor DMS perpetual inventory accuracy',
+        structure: 'Insufficient inventory investment budget, too few vendor sources, poor parts department hours limiting emergency ordering',
+        incentives: 'Parts manager incentivized to minimize inventory (cost focus) rather than maximize availability (service focus)'
+      },
+      improvementLevers: [
+        'Implement pre-appointment parts check process to identify and order needed parts before customer arrival',
+        'Use automated demand forecasting to optimize stock levels',
+        'Conduct regular physical inventory counts to ensure DMS accuracy',
+        'Establish same-day or next-day delivery arrangements with key suppliers',
+        'Review and adjust min/max levels monthly based on actual demand patterns',
+        'Create emergency sourcing network with nearby dealers for urgent needs'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Demand forecasting accuracy', 'Inventory investment level', 'Supplier reliability', 'DMS stock accuracy'],
+        downstreamImpacts: ['Technician Productivity', 'Service throughput', 'Customer wait times', 'CSI – Service', 'Revenue per Customer']
+      }
+    },
+    de: {
+      title: 'Erfüllungsrate %',
+      definition: 'Prozentsatz der Teilebestellungen, die sofort aus dem vorhandenen Bestand erfüllt werden können.',
+      whyItMatters: 'Teileverfügbarkeit ist die größte Einschränkung für den Servicedurchsatz.',
+      benchmark: '92-95%'
+    }
+  },
+  lostSalesPct: {
+    en: {
+      title: 'Lost Sales %',
+      definition: 'The percentage of customer parts requests that result in a lost sale because the part was not in stock and the customer chose not to wait for it.',
+      executiveSummary: 'Lost sales represent immediate revenue loss and potential permanent customer defection. Every lost sale is revenue that goes to a competitor. Best-practice dealers keep lost sales below 5% through excellent fill rates and rapid sourcing alternatives.',
+      whyItMatters: 'Direct revenue loss plus risk of losing customer to competitor permanently. Lost sales data reveals stocking gaps and customer demand patterns.',
+      formula: 'Lost Sales % = (Parts Requests Lost / Total Parts Requests) × 100',
+      inclusions: ['All customer-facing parts requests where customer left without purchasing'],
+      exclusions: ['Internal requisitions deferred (not lost)', 'Customer price-shopping without intent to buy'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '<5%',
+      department: 'parts-inventory',
+      rootCauseDiagnostics: {
+        people: 'Counter staff not offering alternatives, poor customer communication on availability timeline, giving up too quickly',
+        process: 'No lost sale tracking process, no sourcing protocol when part is out of stock, slow response to customer inquiries',
+        tools: 'No inter-dealer parts network, limited aftermarket sourcing options, slow parts lookup systems',
+        structure: 'Parts counter hours not aligned with customer demand, insufficient counter staffing during peak times',
+        incentives: 'No tracking or accountability for lost sales, counter staff not penalized for lost transactions'
+      },
+      improvementLevers: [
+        'Implement mandatory lost sale tracking in DMS with reason codes',
+        'Create sourcing protocol: check 3+ sources before telling customer "not available"',
+        'Develop inter-dealer parts network for rapid emergency sourcing',
+        'Offer next-day delivery option rather than losing the sale entirely',
+        'Review lost sale data monthly to identify stocking gaps',
+        'Extend parts counter hours to capture after-hours demand'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Fill Rate %', 'Counter staff training', 'Sourcing network breadth', 'Parts counter accessibility'],
+        downstreamImpacts: ['Parts department revenue', 'Customer satisfaction', 'Customer retention (parts counter)', 'Market share in local parts market']
+      }
+    },
+    de: {
+      title: 'Verlorene Verkäufe %',
+      definition: 'Prozentsatz der Kundenteile-Anfragen, die zu einem verlorenen Verkauf führen.',
+      whyItMatters: 'Direkter Umsatzverlust plus Risiko, den Kunden dauerhaft an Wettbewerber zu verlieren.',
+      benchmark: '<5%'
+    }
+  },
+  counterSalesRatio: {
+    en: {
+      title: 'Counter Sales Ratio',
+      definition: 'The percentage of total parts revenue generated from over-the-counter retail and wholesale customers versus internal service department consumption.',
+      executiveSummary: 'A healthy counter sales ratio indicates the parts department is a revenue center attracting external customers, not just supporting internal service. Best-practice dealers achieve 25-35% of parts revenue from external counter sales.',
+      whyItMatters: 'External counter sales diversify parts revenue sources, increase parts turn, and generate higher margins than internal transfers.',
+      formula: 'Counter Sales Ratio = (External Counter Parts Revenue / Total Parts Revenue) × 100',
+      inclusions: ['Walk-in retail customers', 'Wholesale/body shop accounts', 'Online parts sales'],
+      exclusions: ['Internal service department parts consumption', 'Warranty parts reimbursement'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '25-35%',
+      department: 'parts-inventory',
+      rootCauseDiagnostics: {
+        people: 'Counter staff not actively marketing to walk-in trade, poor product knowledge for DIY customers, unfriendly counter experience',
+        process: 'No external customer marketing program, limited counter hours, no wholesale account development strategy',
+        tools: 'No online parts ordering system, poor parts catalog search for non-technical customers, limited delivery capability',
+        structure: 'Counter designed for service internal use, not customer-friendly, no dedicated wholesale sales representative',
+        incentives: 'No counter sales targets, staff not incentivized to grow external business'
+      },
+      improvementLevers: [
+        'Launch online parts store for retail customers',
+        'Develop wholesale account program targeting local body shops and independent garages',
+        'Create retail-friendly counter area with product displays and signage',
+        'Implement parts delivery service for wholesale accounts',
+        'Extend counter hours to capture after-hours DIY demand',
+        'Train counter staff on customer service and product recommendation'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Parts marketing efforts', 'Counter accessibility and hours', 'Pricing competitiveness', 'Delivery capability'],
+        downstreamImpacts: ['Parts department total revenue', 'Parts Inventory Turn', 'Parts Gross Margin %', 'Market share in local aftermarket']
+      }
+    },
+    de: {
+      title: 'Thekenverkaufsquote',
+      definition: 'Prozentsatz des Teileumsatzes aus externen Thekenkunden vs. internem Serviceverbrauch.',
+      whyItMatters: 'Externe Thekenverkäufe diversifizieren die Umsatzquellen und generieren höhere Margen.',
+      benchmark: '25-35%'
+    }
+  },
+  internalVsExternalMix: {
+    en: {
+      title: 'Internal vs External Mix %',
+      definition: 'The percentage split between parts consumed internally (service department, reconditioning) and parts sold externally (counter, wholesale, online).',
+      executiveSummary: 'This ratio reveals the parts department\'s dependency on internal service work versus external revenue generation. Best-practice dealers maintain 60/40 or 65/35 internal/external split, ensuring parts revenue grows beyond just supporting the service department.',
+      whyItMatters: 'A balanced mix reduces vulnerability to service volume fluctuations and maximizes parts department contribution to dealership profitability.',
+      formula: 'Internal Mix = (Internal Parts Revenue / Total Parts Revenue) × 100; External Mix = 100 − Internal Mix',
+      inclusions: ['All parts transactions categorized by customer type'],
+      exclusions: ['Warranty parts (may be classified separately by DMS)'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '60/40 internal/external',
+      department: 'parts-inventory',
+      rootCauseDiagnostics: {
+        people: 'Parts team focused only on filling service orders, no business development capability, limited external customer relationships',
+        process: 'No wholesale growth strategy, no external marketing program, no online sales channel',
+        tools: 'No e-commerce capability, limited delivery fleet, poor wholesale account management tools',
+        structure: 'Parts department structured as service support function rather than profit center, no dedicated wholesale representative',
+        incentives: 'Parts manager measured on fill rate only, no targets for external revenue growth'
+      },
+      improvementLevers: [
+        'Set external revenue growth targets with quarterly milestones',
+        'Hire dedicated wholesale account representative',
+        'Launch e-commerce parts sales channel',
+        'Develop competitive wholesale pricing program for body shops and independents',
+        'Create parts delivery service to serve external accounts efficiently',
+        'Track internal/external mix monthly with trend reporting'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Wholesale account development', 'E-commerce capability', 'Parts marketing investment', 'Pricing competitiveness'],
+        downstreamImpacts: ['Parts department total revenue', 'Parts department profitability', 'Revenue diversification', 'Parts Inventory Turn']
+      }
+    },
+    de: {
+      title: 'Interner vs. externer Mix %',
+      definition: 'Prozentuale Aufteilung zwischen intern verbrauchten und extern verkauften Teilen.',
+      whyItMatters: 'Ausgewogener Mix reduziert Anfälligkeit für Servicevolumen-Schwankungen.',
+      benchmark: '60/40 intern/extern'
+    }
+  },
+  partsDaysOnHand: {
+    en: {
+      title: 'Parts Days on Hand',
+      definition: 'The average number of days of parts supply on hand based on current sales velocity.',
+      executiveSummary: 'Parts Days on Hand measures inventory efficiency in terms of how many days the current stock would last at current sales rates. Best-practice dealers maintain 45-60 days of supply, balancing availability with capital efficiency.',
+      whyItMatters: 'Too many days on hand means excess capital tied up; too few means frequent stockouts. Optimal days on hand balances fill rate requirements with inventory investment.',
+      formula: 'Parts Days on Hand = (Current Parts Inventory Value / Average Daily Parts Cost of Sales)',
+      inclusions: ['All parts inventory at cost', 'All daily parts sales at cost'],
+      exclusions: ['Consignment inventory', 'Special-order parts pending customer pickup'],
+      unitOfMeasure: 'Days',
+      benchmark: '45-60 days',
+      department: 'parts-inventory',
+      rootCauseDiagnostics: {
+        people: 'Parts manager over-ordering for comfort, poor demand sensing, failure to adjust for seasonal patterns',
+        process: 'No systematic inventory review, manual reorder processes, no seasonal adjustment in ordering',
+        tools: 'No demand forecasting tools, manual calculations, poor visibility into aging inventory',
+        structure: 'No financial constraints on parts ordering, purchasing not connected to budget targets',
+        incentives: 'Parts manager rewarded for fill rate, not inventory efficiency, no capital cost accountability'
+      },
+      improvementLevers: [
+        'Implement automated reorder point calculations based on demand velocity',
+        'Review days on hand by parts category monthly',
+        'Create seasonal ordering adjustments for known demand pattern changes',
+        'Set days-on-hand targets by category with accountability',
+        'Implement just-in-time ordering for fast-moving predictable parts',
+        'Track and reduce carrying cost as percentage of parts revenue'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Ordering frequency and accuracy', 'Demand forecasting', 'Supplier lead times', 'Return program utilization'],
+        downstreamImpacts: ['Parts Inventory Turn', 'Fill Rate %', 'Carrying cost', 'Cash flow', 'Parts Obsolescence %']
+      }
+    },
+    de: {
+      title: 'Teile-Tagesreichweite',
+      definition: 'Durchschnittliche Anzahl der Tage des Teilevorrats basierend auf der aktuellen Verkaufsgeschwindigkeit.',
+      whyItMatters: 'Balance zwischen Verfügbarkeit und Kapitaleffizienz.',
+      benchmark: '45-60 Tage'
+    }
+  },
+
+  // =====================================================
+  // CUSTOMER SATISFACTION KPIs (61-66)
+  // =====================================================
+  overallCSI: {
+    en: {
+      title: 'Overall CSI',
+      definition: 'The composite Customer Satisfaction Index score across all dealership touchpoints (sales, service, parts, F&I), typically measured through manufacturer-administered surveys.',
+      executiveSummary: 'Overall CSI is the master customer experience metric. It directly influences OEM incentive payments, franchise awards, allocation priority, and long-term brand reputation. Top-performing dealers treat CSI as a strategic business driver, not just a survey score.',
+      whyItMatters: 'Impacts OEM incentive eligibility (often 1-3% of revenue), vehicle allocation priority, franchise standing, and customer retention.',
+      formula: 'Overall CSI = Weighted Average of Department CSI Scores (per OEM methodology)',
+      inclusions: ['All OEM-surveyed customer interactions', 'Sales, service, and delivery experiences'],
+      exclusions: ['Third-party review scores (tracked separately)', 'Internal surveys not part of OEM program'],
+      unitOfMeasure: 'Score (varies by OEM)',
+      benchmark: 'Top Quartile (OEM-specific)',
+      department: 'customer-satisfaction',
+      rootCauseDiagnostics: {
+        people: 'Inconsistent customer experience across departments, individual poor performers dragging down scores, lack of customer-first culture',
+        process: 'No standardized customer experience process, inconsistent follow-up, surprise charges or delays, poor interdepartmental handoffs',
+        tools: 'No real-time CSI tracking, delayed survey results (weeks/months), no early warning system for dissatisfied customers',
+        structure: 'No dedicated customer experience manager, no cross-departmental CX standards, siloed department operations',
+        incentives: 'CSI not weighted enough in compensation, no immediate consequence for poor scores, department competition over collaboration'
+      },
+      improvementLevers: [
+        'Create unified customer experience standards across all departments',
+        'Implement real-time survey feedback system for immediate intervention',
+        'Establish CSI as significant component of all staff compensation (10-20%)',
+        'Create cross-departmental customer journey mapping and optimization',
+        'Implement detractor recovery program with immediate management follow-up',
+        'Conduct monthly CSI review meetings with all department heads',
+        'Train all customer-facing staff on OEM survey methodology and customer expectations'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Sales CSI', 'Service CSI', 'F&I experience', 'Delivery experience', 'Facility quality'],
+        downstreamImpacts: ['OEM incentive payments', 'Vehicle allocation', 'Franchise standing', 'Customer retention', 'Online reputation', 'Referral volume']
+      }
+    },
+    de: {
+      title: 'Gesamt-CSI',
+      definition: 'Zusammengesetzter Kundenzufriedenheitsindex über alle Autohaus-Touchpoints.',
+      whyItMatters: 'Beeinflusst OEM-Incentives, Fahrzeugzuteilung und Franchise-Standing.',
+      benchmark: 'Oberstes Quartil (OEM-spezifisch)'
+    }
+  },
+  salesCSI: {
+    en: {
+      title: 'Sales CSI',
+      definition: 'Customer Satisfaction Index score specifically for the vehicle purchase and delivery experience.',
+      executiveSummary: 'Sales CSI reflects how well the dealership handles the buying journey from first contact through delivery. Key drivers include salesperson professionalism, negotiation transparency, delivery experience quality, and follow-up consistency.',
+      whyItMatters: 'Directly impacts repeat purchase probability, referral generation, and OEM sales incentive eligibility.',
+      formula: 'Sales CSI = Average of Post-Purchase Survey Scores (per OEM methodology)',
+      inclusions: ['All new and used vehicle purchase surveys', 'Delivery experience ratings'],
+      exclusions: ['Service-related surveys', 'Lease return experiences'],
+      unitOfMeasure: 'Score (varies by OEM)',
+      benchmark: 'Top Quartile (OEM-specific)',
+      department: 'customer-satisfaction',
+      rootCauseDiagnostics: {
+        people: 'Pushy sales tactics, poor product knowledge, lack of follow-up after sale, F&I pressure tactics',
+        process: 'Lengthy and opaque negotiation, poor delivery preparation, no structured post-sale follow-up',
+        tools: 'Slow document processing, no digital retailing options, poor customer communication during waiting periods',
+        structure: 'Excessive handoffs between departments during purchase, customer feeling "processed" rather than valued',
+        incentives: 'Volume-focused compensation encouraging pressure tactics, no CSI component in sales compensation'
+      },
+      improvementLevers: [
+        'Implement transparent, no-pressure sales process',
+        'Create exceptional delivery experience (vehicle presentation, feature tutorial)',
+        'Establish structured post-sale follow-up program (day 1, 3, 7, 30)',
+        'Streamline purchase process to reduce time-to-delivery',
+        'Train sales team on consultative selling approach',
+        'Add CSI component to sales compensation (10-15% of total)'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Sales process quality', 'Salesperson skill and professionalism', 'F&I experience', 'Vehicle delivery preparation'],
+        downstreamImpacts: ['Overall CSI', 'Repeat Purchase Rate', 'Referral volume', 'Online review scores', 'OEM sales incentives']
+      }
+    },
+    de: {
+      title: 'Verkaufs-CSI',
+      definition: 'Kundenzufriedenheitsindex speziell für das Kauf- und Auslieferungserlebnis.',
+      whyItMatters: 'Beeinflusst direkt die Wiederkaufwahrscheinlichkeit und Empfehlungsgenerierung.',
+      benchmark: 'Oberstes Quartil (OEM-spezifisch)'
+    }
+  },
+  serviceCsiDetailed: {
+    en: {
+      title: 'Service CSI (Detailed)',
+      definition: 'Customer Satisfaction Index score specifically for the after-sales service experience, capturing appointment booking, advisor interaction, repair quality, communication, and vehicle return.',
+      executiveSummary: 'Service CSI is the most critical customer experience metric for long-term dealership profitability because service visits are far more frequent than purchases. Key drivers include communication quality, repair timeliness, first-time fix rate, and price transparency.',
+      whyItMatters: 'Drives service retention, OEM service incentives, and long-term customer loyalty. Service CSI often has a stronger impact on overall CSI than sales CSI.',
+      formula: 'Service CSI = Average of Post-Service Survey Scores (per OEM methodology)',
+      inclusions: ['All OEM-surveyed service visits', 'Scheduled maintenance and repair visits'],
+      exclusions: ['Body shop-only visits', 'Warranty-only visits with no customer interaction'],
+      unitOfMeasure: 'Score (varies by OEM)',
+      benchmark: 'Top Quartile (OEM-specific)',
+      department: 'customer-satisfaction',
+      rootCauseDiagnostics: {
+        people: 'Service advisors too busy for proper customer consultation, poor communication skills, lack of empathy, technician quality issues',
+        process: 'No proactive status updates, unclear completion time estimates, surprise charges, slow vehicle return process, poor follow-up',
+        tools: 'No automated status notifications, poor online scheduling, no digital inspection reports for transparency',
+        structure: 'Advisors handling too many customers, insufficient express service options, poor waiting area experience',
+        incentives: 'No CSI component in service staff compensation, productivity focus overwhelming customer experience focus'
+      },
+      improvementLevers: [
+        'Implement multi-touchpoint proactive communication (received, diagnosed, progressing, ready)',
+        'Create transparent pricing with written estimates before work begins',
+        'Establish comfortable waiting area with amenities and Wi-Fi',
+        'Train advisors on customer communication excellence',
+        'Set CSI targets with compensation linkage for advisors',
+        'Implement same-day service completion for routine maintenance',
+        'Create automated feedback collection immediately after vehicle return'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['First-Time Fix Rate', 'Comeback Rate', 'Appointment Lead Time', 'Communication quality', 'Price transparency'],
+        downstreamImpacts: ['Overall CSI', 'Service Retention Rate', 'NPS', 'OEM service incentives', 'Online reviews']
+      }
+    },
+    de: {
+      title: 'Service-CSI (Detailliert)',
+      definition: 'Kundenzufriedenheitsindex speziell für das Aftersales-Serviceerlebnis.',
+      whyItMatters: 'Treibt Servicebindung, OEM-Incentives und langfristige Kundentreue.',
+      benchmark: 'Oberstes Quartil (OEM-spezifisch)'
+    }
+  },
+  onlineReviewScore: {
+    en: {
+      title: 'Online Review Score',
+      definition: 'The average star rating across all major online review platforms (Google, Facebook, manufacturer sites, automotive portals).',
+      executiveSummary: 'Online reviews are the modern word-of-mouth. 88% of consumers trust online reviews as much as personal recommendations. A 0.5-star improvement can increase revenue by 5-9%. Best-practice dealers maintain 4.5+ stars with 50+ reviews per month.',
+      whyItMatters: 'Directly impacts customer acquisition. Prospective buyers check reviews before visiting the dealership. Low scores reduce showroom traffic.',
+      formula: 'Online Review Score = Average Star Rating across All Platforms (weighted by platform importance)',
+      inclusions: ['Google Business Reviews', 'Facebook ratings', 'OEM review platforms', 'Automotive portals'],
+      exclusions: ['Internal survey scores', 'Anonymous/unverifiable reviews'],
+      unitOfMeasure: 'Stars (1-5)',
+      benchmark: '4.5+ stars',
+      department: 'customer-satisfaction',
+      rootCauseDiagnostics: {
+        people: 'Staff not asking for reviews, poor customer experiences generating negative reviews, no response to negative reviews',
+        process: 'No systematic review solicitation, no negative review response protocol, no internal escalation for complaints',
+        tools: 'No review management platform, no automated review request system, poor monitoring across platforms',
+        structure: 'No one responsible for online reputation management, reactive approach to reviews, no integration with CX strategy',
+        incentives: 'No recognition for review generation, no accountability for negative reviews, no team targets for online reputation'
+      },
+      improvementLevers: [
+        'Implement automated review solicitation within 24 hours of purchase/service',
+        'Create review response protocol: respond to ALL reviews within 24 hours',
+        'Train all staff to request reviews at point of experience completion',
+        'Establish escalation process for negative reviews with management follow-up',
+        'Monitor all platforms daily using reputation management tools',
+        'Create internal program recognizing staff mentioned positively in reviews'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Overall customer experience quality', 'Review solicitation effort', 'Response management quality', 'Complaint resolution speed'],
+        downstreamImpacts: ['Website traffic and leads', 'Showroom traffic', 'Customer acquisition cost', 'Brand reputation', 'SEO ranking']
+      }
+    },
+    de: {
+      title: 'Online-Bewertungsscore',
+      definition: 'Durchschnittliche Sternebewertung auf allen wichtigen Online-Bewertungsplattformen.',
+      whyItMatters: 'Beeinflusst direkt die Kundenakquise. Interessenten prüfen Bewertungen vor dem Besuch.',
+      benchmark: '4,5+ Sterne'
+    }
+  },
+  complaintResolutionTime: {
+    en: {
+      title: 'Complaint Resolution Time',
+      definition: 'The average time from customer complaint registration to satisfactory resolution.',
+      executiveSummary: 'Speed of complaint resolution directly predicts whether a dissatisfied customer becomes a detractor or a recovered promoter. Research shows complaints resolved within 24 hours retain 70%+ of at-risk customers, while delays beyond 72 hours lose most permanently.',
+      whyItMatters: 'Fast resolution preserves customer relationships, prevents negative reviews, and demonstrates organizational responsiveness.',
+      formula: 'Complaint Resolution Time = Σ(Resolution Date − Complaint Date) / Number of Complaints Resolved',
+      inclusions: ['All formal customer complaints across departments', 'Phone, email, in-person, and online complaints'],
+      exclusions: ['Informal feedback not escalated to complaint status', 'Warranty claims processed through normal channels'],
+      unitOfMeasure: 'Hours',
+      benchmark: '<24 hours',
+      department: 'customer-satisfaction',
+      rootCauseDiagnostics: {
+        people: 'Frontline staff lacking authority to resolve complaints, poor empathy skills, avoidance behavior on difficult conversations',
+        process: 'No complaint tracking system, unclear escalation procedures, resolution requiring multiple approvals, no follow-up verification',
+        tools: 'No CRM complaint tracking module, manual complaint logs, no automated alerts for aging complaints',
+        structure: 'No dedicated customer relations role, complaints bounced between departments, no single point of accountability',
+        incentives: 'No targets for resolution speed, no consequence for unresolved complaints, no recognition for effective complaint handling'
+      },
+      improvementLevers: [
+        'Empower frontline staff with resolution authority (up to defined value)',
+        'Implement complaint tracking system with automatic escalation timers',
+        'Create 24-hour resolution target with management alert at 12 hours',
+        'Establish complaint resolution playbook with pre-approved remedies',
+        'Follow up after resolution to verify customer satisfaction',
+        'Track complaint patterns to identify and fix root causes'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Staff empowerment level', 'Complaint tracking process', 'Management availability', 'Resolution authority structure'],
+        downstreamImpacts: ['CSI scores', 'Online Review Score', 'Customer retention', 'NPS', 'Legal/regulatory risk']
+      }
+    },
+    de: {
+      title: 'Beschwerderlösungszeit',
+      definition: 'Durchschnittliche Zeit von der Beschwerderegistrierung bis zur zufriedenstellenden Lösung.',
+      whyItMatters: 'Schnelle Lösung bewahrt Kundenbeziehungen und verhindert negative Bewertungen.',
+      benchmark: '<24 Stunden'
+    }
+  },
+  repeatPurchaseRate: {
+    en: {
+      title: 'Repeat Purchase Rate',
+      definition: 'The percentage of vehicle purchases made by customers who have previously purchased from the same dealership.',
+      executiveSummary: 'Repeat purchases represent the highest-value transactions: no acquisition cost, higher gross potential, and customers who already trust the dealership. Best-practice dealers achieve 35-50% repeat purchase rates through systematic CRM, exceptional service experiences, and proactive engagement.',
+      whyItMatters: 'Repeat customers cost nothing to acquire, have higher closing rates, accept higher gross, and generate referrals. Improving repeat rate is the most profitable growth strategy.',
+      formula: 'Repeat Purchase Rate = (Vehicle Sales to Previous Customers / Total Vehicle Sales) × 100',
+      inclusions: ['All new and used vehicle purchases by customers with prior purchase history'],
+      exclusions: ['First-time purchases', 'Fleet/commercial repeat orders', 'Household members without own prior purchase'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '35-50%',
+      department: 'customer-satisfaction',
+      rootCauseDiagnostics: {
+        people: 'No ongoing customer relationship management, salespeople leave and take relationships, poor post-purchase engagement',
+        process: 'No equity mining or lifecycle marketing, no proactive outreach at replacement timing, no ownership experience program',
+        tools: 'Poor CRM data quality, no equity analysis tools, limited customer communication capabilities',
+        structure: 'Sales team turnover breaking customer relationships, no customer retention program ownership, no loyalty program',
+        incentives: 'No additional bonus for repeat business, sales compensation not differentiated for returning customers, no retention accountability'
+      },
+      improvementLevers: [
+        'Implement equity mining program identifying customers in positive equity position',
+        'Create loyalty program with tangible benefits for returning customers',
+        'Develop lifecycle marketing automation (anniversary, service milestones, replacement timing)',
+        'Assign permanent relationship owner for each customer (beyond individual salesperson)',
+        'Create premium exchange/upgrade program for existing customers',
+        'Track repeat purchase rate by salesperson and original purchase year cohort'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Sales CSI', 'Service Retention Rate', 'Ongoing customer engagement', 'Customer equity position', 'Salesperson relationship quality'],
+        downstreamImpacts: ['Customer acquisition cost', 'Total dealership sales volume', 'Average gross per vehicle', 'Referral generation', 'Lifetime customer value']
+      }
+    },
+    de: {
+      title: 'Wiederkaufrate',
+      definition: 'Prozentsatz der Fahrzeugkäufe durch Kunden, die zuvor beim selben Autohaus gekauft haben.',
+      whyItMatters: 'Stammkunden kosten nichts in der Akquise und haben höhere Abschlussraten.',
+      benchmark: '35-50%'
+    }
+  },
+
+  // =====================================================
+  // MARKETING & DIGITAL KPIs (67-73)
+  // =====================================================
+  costPerLead: {
+    en: {
+      title: 'Cost per Lead',
+      definition: 'The total marketing and advertising expenditure divided by the number of qualified leads generated across all channels.',
+      executiveSummary: 'Cost per Lead (CPL) is the primary efficiency metric for marketing spend. It reveals which channels deliver the best return on marketing investment. Best-practice dealers achieve €30-€80 CPL depending on market and brand positioning.',
+      whyItMatters: 'Directly determines marketing efficiency and customer acquisition cost. Optimizing CPL enables more leads from the same budget or same leads for less spend.',
+      formula: 'Cost per Lead = Total Marketing & Advertising Spend / Total Qualified Leads Generated',
+      inclusions: ['All marketing spend (digital, print, broadcast, event, sponsorship)', 'All qualified leads generated'],
+      exclusions: ['Organic/referral leads (zero acquisition cost)', 'Co-op/manufacturer-funded marketing'],
+      unitOfMeasure: 'Currency (€)',
+      benchmark: '€30-€80',
+      department: 'marketing-digital',
+      rootCauseDiagnostics: {
+        people: 'Marketing team lacking digital skills, agency dependency without performance accountability, poor lead qualification criteria',
+        process: 'No channel attribution tracking, budget allocation based on tradition not performance, no A/B testing discipline',
+        tools: 'No marketing analytics platform, poor conversion tracking, limited CRM-to-marketing integration',
+        structure: 'Marketing budget set annually without flexibility, no rapid reallocation capability, disconnected from sales outcomes',
+        incentives: 'Marketing measured on spend or reach, not lead generation; no cost-per-lead targets by channel'
+      },
+      improvementLevers: [
+        'Implement full-funnel attribution tracking across all marketing channels',
+        'Shift budget to highest-performing channels based on CPL data',
+        'Establish channel-specific CPL targets with monthly review',
+        'Develop in-house digital marketing capabilities to reduce agency fees',
+        'Create lead qualification criteria to focus on qualified leads, not just contacts',
+        'Test and optimize campaigns continuously (A/B testing, audience targeting)',
+        'Leverage manufacturer co-op programs to reduce net CPL'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Marketing budget allocation', 'Channel mix strategy', 'Creative quality', 'Audience targeting accuracy'],
+        downstreamImpacts: ['Lead volume', 'Cost per Sale', 'Marketing ROI', 'Total customer acquisition cost', 'Sales volume']
+      }
+    },
+    de: {
+      title: 'Kosten pro Lead',
+      definition: 'Gesamte Marketing-/Werbeausgaben geteilt durch die Anzahl qualifizierter Leads.',
+      whyItMatters: 'Bestimmt direkt die Marketingeffizienz und Kundenakquisitionskosten.',
+      benchmark: '€30-€80'
+    }
+  },
+  costPerSale: {
+    en: {
+      title: 'Cost per Sale',
+      definition: 'The total marketing and advertising expenditure divided by the number of vehicles sold, representing the marketing cost to generate each sale.',
+      executiveSummary: 'Cost per Sale (CPS) is the ultimate marketing effectiveness metric, combining lead generation efficiency with sales conversion effectiveness. Best-practice dealers achieve €300-€600 CPS through optimized marketing spend and strong conversion rates.',
+      whyItMatters: 'Reveals true cost of customer acquisition. When CPS exceeds gross profit per vehicle, the dealership is spending more to acquire customers than they earn.',
+      formula: 'Cost per Sale = Total Marketing & Advertising Spend / Total Vehicles Sold',
+      inclusions: ['All marketing spend', 'All new and used vehicle sales'],
+      exclusions: ['Manufacturer-funded advertising (track separately)', 'F&I product sales'],
+      unitOfMeasure: 'Currency (€)',
+      benchmark: '€300-€600',
+      department: 'marketing-digital',
+      rootCauseDiagnostics: {
+        people: 'Marketing team not aligned with sales outcomes, poor communication between marketing and sales, agency not accountable for sales',
+        process: 'No closed-loop reporting (marketing to sale), budget not tied to sales targets, no channel effectiveness analysis',
+        tools: 'No CRM-marketing integration for attribution, inability to track lead-to-sale journey by channel, poor reporting',
+        structure: 'Marketing and sales operating in silos, no shared KPIs, marketing budget not flexible based on performance',
+        incentives: 'Marketing team measured on impressions/clicks not sales, no shared accountability for cost per sale'
+      },
+      improvementLevers: [
+        'Implement closed-loop CRM reporting tracking every lead from source to sale',
+        'Calculate CPS by channel to identify most efficient acquisition paths',
+        'Set CPS targets and reallocate budget from high-CPS to low-CPS channels',
+        'Improve sales conversion rate to reduce CPS without cutting marketing spend',
+        'Leverage organic/referral channels to bring down blended CPS',
+        'Negotiate performance-based contracts with marketing agencies'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Cost per Lead', 'Lead Conversion Rate', 'Marketing budget level', 'Channel mix effectiveness'],
+        downstreamImpacts: ['Dealership profitability per vehicle', 'Marketing ROI', 'Budget allocation decisions', 'Growth investment capacity']
+      }
+    },
+    de: {
+      title: 'Kosten pro Verkauf',
+      definition: 'Gesamte Marketing-/Werbeausgaben geteilt durch die Anzahl verkaufter Fahrzeuge.',
+      whyItMatters: 'Zeigt die tatsächlichen Kosten der Kundenakquise.',
+      benchmark: '€300-€600'
+    }
+  },
+  websiteConversionRate: {
+    en: {
+      title: 'Website Conversion Rate',
+      definition: 'The percentage of website visitors who complete a desired action (lead form submission, phone call, chat initiation, appointment booking, or trade-in valuation).',
+      executiveSummary: 'Website conversion rate measures how effectively the dealership website turns browsers into leads. Best-practice automotive websites convert 2-5% of visitors. A 1% improvement on 10,000 monthly visitors generates 100 additional leads per month.',
+      whyItMatters: 'Maximizes ROI on all digital marketing driving website traffic. Higher conversion means more leads from the same traffic, reducing cost per lead.',
+      formula: 'Website Conversion Rate = (Website Lead Actions / Total Website Visitors) × 100',
+      inclusions: ['Form submissions, phone calls, chat leads, online appointments, trade-in valuations'],
+      exclusions: ['Service scheduling (separate funnel)', 'Parts ordering', 'Job applications'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '2-5%',
+      department: 'marketing-digital',
+      rootCauseDiagnostics: {
+        people: 'Marketing team lacking UX/conversion optimization skills, poor understanding of customer digital journey',
+        process: 'No A/B testing program, no conversion rate optimization strategy, website redesigns without data basis',
+        tools: 'No heatmap/user behavior analytics, poor website speed, non-mobile-optimized experience, limited conversion opportunities',
+        structure: 'Website managed by external agency with slow update cycles, no in-house ability to make rapid changes',
+        incentives: 'Website performance not tracked or tied to marketing team goals, no conversion targets'
+      },
+      improvementLevers: [
+        'Implement conversion rate optimization program with regular A/B testing',
+        'Add multiple low-friction conversion points (chat, text, quick-quote, trade-in tool)',
+        'Optimize website speed (sub-3-second load time)',
+        'Ensure fully mobile-responsive design with mobile-specific CTAs',
+        'Create vehicle-specific landing pages for paid advertising campaigns',
+        'Use heatmap and session recording tools to identify user behavior patterns',
+        'Implement exit-intent offers to capture leaving visitors'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Website traffic quality', 'Website UX and design', 'Inventory merchandising quality', 'Page load speed', 'Mobile optimization'],
+        downstreamImpacts: ['Cost per Lead', 'Total lead volume', 'Marketing ROI', 'Digital Appointment Ratio', 'Overall sales volume']
+      }
+    },
+    de: {
+      title: 'Website-Konversionsrate',
+      definition: 'Prozentsatz der Website-Besucher, die eine gewünschte Aktion abschließen.',
+      whyItMatters: 'Maximiert den ROI aller digitalen Marketingaktivitäten.',
+      benchmark: '2-5%'
+    }
+  },
+  digitalAppointmentRatio: {
+    en: {
+      title: 'Digital Appointment Ratio',
+      definition: 'The percentage of total sales and service appointments that are booked through digital channels (website, app, email, social media) versus traditional channels (phone, walk-in).',
+      executiveSummary: 'Digital appointment booking reduces operational costs, provides 24/7 availability, and captures data for better customer engagement. Best-practice dealers achieve 40-60% digital appointment booking rates.',
+      whyItMatters: 'Digital bookings are lower cost, available 24/7, reduce phone staff requirements, and provide better data for preparation and follow-up.',
+      formula: 'Digital Appointment Ratio = (Appointments Booked Digitally / Total Appointments Booked) × 100',
+      inclusions: ['Online scheduling tools, app bookings, email appointment requests, social media bookings'],
+      exclusions: ['Phone appointments', 'Walk-in appointments', 'Internal/fleet appointments'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '40-60%',
+      department: 'marketing-digital',
+      rootCauseDiagnostics: {
+        people: 'Staff directing customers to phone instead of online tools, poor promotion of digital booking options',
+        process: 'No online booking system, digital booking not integrated with dealership scheduling, complicated online forms',
+        tools: 'No user-friendly online scheduling tool, poor mobile experience, no integration with DMS calendar',
+        structure: 'Digital booking implemented but not promoted, phone booking still the default path',
+        incentives: 'No targets for digital booking adoption, staff not incentivized to promote digital channels'
+      },
+      improvementLevers: [
+        'Implement user-friendly online scheduling with real-time availability',
+        'Promote digital booking across all customer touchpoints (email, SMS, website, in-store)',
+        'Offer incentives for customers who book digitally (priority scheduling, discount)',
+        'Ensure mobile-optimized booking experience',
+        'Integrate digital booking with DMS for seamless scheduling',
+        'Track digital booking ratio with monthly improvement targets'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Online scheduling tool quality', 'Digital promotion efforts', 'Customer digital literacy', 'Mobile experience quality'],
+        downstreamImpacts: ['Appointment volume', 'BDC/phone staff requirements', 'Customer data quality', 'Service department capacity utilization']
+      }
+    },
+    de: {
+      title: 'Digitale Terminquote',
+      definition: 'Prozentsatz der Termine, die über digitale Kanäle gebucht werden.',
+      whyItMatters: 'Digitale Buchungen sind kostengünstiger und rund um die Uhr verfügbar.',
+      benchmark: '40-60%'
+    }
+  },
+  socialMediaEngagementToLead: {
+    en: {
+      title: 'Social Media Engagement to Lead',
+      definition: 'The conversion rate of social media engagements (likes, comments, shares, clicks) into qualified dealership leads.',
+      executiveSummary: 'Social media is increasingly important for dealership marketing, but engagement without conversion is vanity metrics. Best-practice dealers convert 1-3% of social engagements into qualified leads through targeted content and clear CTAs.',
+      whyItMatters: 'Measures the business value of social media investment. Without lead conversion tracking, social media spend cannot be justified against other channels.',
+      formula: 'Social Engagement to Lead = (Leads from Social Media / Total Social Media Engagements) × 100',
+      inclusions: ['All social platforms (Facebook, Instagram, TikTok, LinkedIn, YouTube)', 'Both organic and paid social'],
+      exclusions: ['Bot engagements', 'Employee engagements', 'Unqualified contacts'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '1-3%',
+      department: 'marketing-digital',
+      rootCauseDiagnostics: {
+        people: 'Social media managed by untrained staff, content not aligned with buying intent, poor response to social inquiries',
+        process: 'No content strategy, posting without purpose, no lead capture process from social interactions, no response SLA',
+        tools: 'No social media management platform, poor analytics, limited advertising targeting capabilities',
+        structure: 'Social media as afterthought, no dedicated resource, not integrated with BDC/sales process',
+        incentives: 'Social media success measured by follower count, not lead generation; no conversion targets'
+      },
+      improvementLevers: [
+        'Develop content strategy aligned with customer purchase journey stages',
+        'Include clear CTAs in every social post (link to inventory, booking, trade-in tool)',
+        'Implement social media lead capture and routing to BDC',
+        'Respond to all social inquiries within 30 minutes',
+        'Use targeted social advertising to reach in-market audiences',
+        'Track lead generation by platform and content type to optimize strategy'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Content quality and relevance', 'Social ad targeting', 'Community management quality', 'Platform algorithm understanding'],
+        downstreamImpacts: ['Cost per Lead (social channel)', 'Brand awareness', 'Website traffic', 'Customer acquisition cost', 'Online reputation']
+      }
+    },
+    de: {
+      title: 'Social-Media-Engagement zu Lead',
+      definition: 'Konversionsrate von Social-Media-Interaktionen in qualifizierte Leads.',
+      whyItMatters: 'Misst den Geschäftswert der Social-Media-Investition.',
+      benchmark: '1-3%'
+    }
+  },
+  marketingROI: {
+    en: {
+      title: 'Marketing ROI',
+      definition: 'The return on investment for total marketing and advertising spend, calculated as the revenue or gross profit generated per euro invested in marketing.',
+      executiveSummary: 'Marketing ROI is the ultimate accountability metric for marketing effectiveness. Best-practice dealers achieve 5:1 to 10:1 marketing ROI (€5-€10 gross profit for every €1 spent on marketing).',
+      whyItMatters: 'Determines whether marketing spend is generating positive returns and how to allocate budget for maximum impact.',
+      formula: 'Marketing ROI = (Gross Profit Attributed to Marketing − Marketing Cost) / Marketing Cost × 100',
+      inclusions: ['All marketing and advertising expenditure', 'Revenue/gross profit attributed to marketing-generated leads'],
+      exclusions: ['Organic/walk-in revenue (not marketing-generated)', 'Manufacturer co-op reimbursement (net out)'],
+      unitOfMeasure: 'Ratio or Percentage',
+      benchmark: '5:1 to 10:1',
+      department: 'marketing-digital',
+      rootCauseDiagnostics: {
+        people: 'Marketing team not connected to revenue outcomes, poor analytical skills, agency not held to ROI standards',
+        process: 'No attribution model, unable to connect marketing spend to sales outcomes, budget set without performance basis',
+        tools: 'No marketing analytics platform, poor CRM integration, limited ability to track customer journey from ad to sale',
+        structure: 'Marketing operates independently from sales, no feedback loop on lead quality, no shared metrics',
+        incentives: 'Marketing measured on activity (campaigns run, impressions) rather than outcomes (leads, sales, ROI)'
+      },
+      improvementLevers: [
+        'Implement multi-touch attribution model connecting marketing channels to sales',
+        'Calculate ROI by channel and reallocate budget to highest-performing channels',
+        'Set minimum ROI thresholds for continued spending on each channel',
+        'Create shared marketing-sales dashboard with closed-loop reporting',
+        'Test new channels with limited budgets before committing large spend',
+        'Negotiate performance-based contracts with marketing vendors and agencies'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Cost per Lead', 'Lead Conversion Rate', 'Channel mix effectiveness', 'Attribution model accuracy'],
+        downstreamImpacts: ['Marketing budget allocation', 'Overall dealership profitability', 'Customer acquisition strategy', 'Growth investment capacity']
+      }
+    },
+    de: {
+      title: 'Marketing-ROI',
+      definition: 'Return on Investment für Marketing- und Werbeausgaben.',
+      whyItMatters: 'Bestimmt, ob Marketingausgaben positive Renditen generieren.',
+      benchmark: '5:1 bis 10:1'
+    }
+  },
+  paidVsOrganicLeadMix: {
+    en: {
+      title: 'Paid vs Organic Lead Mix',
+      definition: 'The ratio of leads generated through paid advertising channels versus organic (non-paid) channels such as SEO, referrals, walk-ins, and direct traffic.',
+      executiveSummary: 'A healthy lead mix balances paid acquisition (scalable but costly) with organic sources (free but harder to grow). Best-practice dealers maintain 40-50% organic leads, reducing dependency on paid channels and improving overall customer acquisition cost.',
+      whyItMatters: 'Over-reliance on paid leads creates margin pressure and vulnerability to advertising cost increases. Building organic lead sources creates sustainable competitive advantage.',
+      formula: 'Paid Lead % = (Paid Channel Leads / Total Leads) × 100; Organic Lead % = 100 − Paid Lead %',
+      inclusions: ['All lead sources categorized as paid (PPC, display, social ads, third-party) or organic (SEO, referral, walk-in, direct)'],
+      exclusions: ['Internal leads (lease maturities, equity mining)', 'Manufacturer-provided leads'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '50/50 to 40/60 paid/organic',
+      department: 'marketing-digital',
+      rootCauseDiagnostics: {
+        people: 'Marketing team over-reliant on paid advertising, insufficient SEO/content skills, no referral program management',
+        process: 'No organic growth strategy, poor SEO implementation, no referral program, no content marketing plan',
+        tools: 'Poor website SEO foundation, no content management system, limited social media organic reach capabilities',
+        structure: 'All marketing budget allocated to paid channels, no investment in organic growth, no resource for content creation',
+        incentives: 'Marketing team rewarded for lead volume (easy to buy with paid) rather than lead cost (incentivizes organic growth)'
+      },
+      improvementLevers: [
+        'Invest in SEO optimization to grow organic search traffic',
+        'Develop content marketing strategy (blog, video, social) to attract organic leads',
+        'Create structured referral program with incentives for customers and staff',
+        'Build Google Business Profile with regular posts, photos, and review management',
+        'Develop email marketing nurture programs for database leads',
+        'Track lead source attribution to measure organic vs. paid trends over time'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['SEO investment and quality', 'Content marketing effort', 'Referral program effectiveness', 'Brand reputation and awareness'],
+        downstreamImpacts: ['Cost per Lead (blended)', 'Marketing ROI', 'Customer acquisition cost sustainability', 'Marketing budget flexibility']
+      }
+    },
+    de: {
+      title: 'Bezahlter vs. organischer Lead-Mix',
+      definition: 'Verhältnis der Leads aus bezahlten vs. organischen Kanälen.',
+      whyItMatters: 'Überabhängigkeit von bezahlten Leads schafft Margendruck.',
+      benchmark: '50/50 bis 40/60 bezahlt/organisch'
+    }
+  },
+
+  // =====================================================
+  // WORKFORCE & HR KPIs (74-80)
+  // =====================================================
+  employeeTurnoverRate: {
+    en: {
+      title: 'Employee Turnover Rate',
+      definition: 'The percentage of total employees who voluntarily or involuntarily leave the organization within a 12-month period.',
+      executiveSummary: 'Employee turnover is one of the most costly operational challenges in automotive retail. Each departing employee costs 50-200% of their annual salary in recruitment, training, and lost productivity. Best-practice dealers maintain below 30% annual turnover through competitive compensation, career development, and positive culture.',
+      whyItMatters: 'High turnover disrupts customer relationships, increases training costs, reduces institutional knowledge, and lowers team morale.',
+      formula: 'Employee Turnover Rate = (Number of Departures in 12 Months / Average Total Headcount) × 100',
+      inclusions: ['All voluntary and involuntary terminations', 'All departments and positions'],
+      exclusions: ['Internal transfers between departments', 'Seasonal/temporary workers', 'Retirements (track separately)'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '<30%',
+      department: 'workforce-hr',
+      rootCauseDiagnostics: {
+        people: 'Poor management practices, toxic culture, lack of recognition, insufficient development opportunities',
+        process: 'No structured onboarding, weak performance review process, no career pathing, poor work-life balance policies',
+        tools: 'No employee engagement survey tools, limited HR analytics, poor communication platforms',
+        structure: 'Flat organization with no advancement path, geographic/commute challenges, excessive hours expectations',
+        incentives: 'Below-market compensation, unpredictable income, poor benefits, no retention bonuses for tenure'
+      },
+      improvementLevers: [
+        'Conduct annual compensation benchmarking and adjust to market',
+        'Implement structured career development plans for all positions',
+        'Create employee engagement survey program with action on results',
+        'Develop mentoring and buddy programs for new hires',
+        'Establish recognition programs for tenure and performance',
+        'Improve work-life balance through scheduling flexibility and reasonable hours',
+        'Conduct exit interviews to identify and address root causes of departure'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Compensation competitiveness', 'Management quality', 'Culture and work environment', 'Career development opportunities'],
+        downstreamImpacts: ['Customer relationship continuity', 'Training costs', 'Institutional knowledge retention', 'Team productivity', 'CSI scores']
+      }
+    },
+    de: {
+      title: 'Mitarbeiter-Fluktuationsrate',
+      definition: 'Prozentsatz der Gesamtbelegschaft, die innerhalb von 12 Monaten das Unternehmen verlässt.',
+      whyItMatters: 'Hohe Fluktuation unterbricht Kundenbeziehungen und erhöht Schulungskosten.',
+      benchmark: '<30%'
+    }
+  },
+  salesStaffTurnover: {
+    en: {
+      title: 'Sales Staff Turnover',
+      definition: 'The annual turnover rate specifically for sales department personnel, including sales executives, BDC staff, and sales managers.',
+      executiveSummary: 'Sales staff turnover is particularly destructive because customers develop relationships with individual salespeople. Industry average is 67% annually — meaning the average sales team replaces two-thirds of its members every year. Top dealers retain 80%+ of sales staff.',
+      whyItMatters: 'Each departing salesperson takes customer relationships, product knowledge, and pipeline with them. New salespeople take 6-12 months to reach full productivity.',
+      formula: 'Sales Staff Turnover = (Number of Sales Staff Departures in 12 Months / Average Sales Headcount) × 100',
+      inclusions: ['All sales department departures (voluntary and involuntary)'],
+      exclusions: ['Transfers to other departments', 'Promotions within sales hierarchy'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '<25%',
+      department: 'workforce-hr',
+      rootCauseDiagnostics: {
+        people: 'Poor sales management, inadequate training for new hires, unrealistic expectations, lack of coaching and mentoring',
+        process: 'No structured onboarding program, "sink or swim" training approach, unclear performance expectations',
+        tools: 'No sales enablement tools, poor CRM adoption, insufficient lead distribution systems',
+        structure: 'Commission-only compensation creating financial instability, excessive hours, no career advancement path',
+        incentives: 'Income unpredictability, unfair lead distribution, poor base salary, no loyalty incentives'
+      },
+      improvementLevers: [
+        'Provide guaranteed base salary plus commission structure for income stability',
+        'Create 90-day structured onboarding program with mentor assignment',
+        'Implement fair and transparent lead distribution system',
+        'Develop sales career path (junior → senior → management)',
+        'Provide ongoing training and professional development opportunities',
+        'Establish retention bonuses at 1-year, 3-year, and 5-year milestones',
+        'Conduct quarterly stay interviews to identify and address concerns early'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Compensation structure', 'Management quality', 'Training program effectiveness', 'Work environment and hours'],
+        downstreamImpacts: ['Lead Conversion Rate', 'Repeat Purchase Rate', 'Customer relationship continuity', 'Training investment waste', 'Team morale']
+      }
+    },
+    de: {
+      title: 'Vertriebspersonal-Fluktuation',
+      definition: 'Jährliche Fluktuationsrate speziell für Vertriebsmitarbeiter.',
+      whyItMatters: 'Jeder abgehende Verkäufer nimmt Kundenbeziehungen und Pipeline mit.',
+      benchmark: '<25%'
+    }
+  },
+  technicianRetentionRate: {
+    en: {
+      title: 'Technician Retention Rate',
+      definition: 'The percentage of certified technicians retained over a 12-month period.',
+      executiveSummary: 'The automotive industry faces a severe technician shortage. Losing a skilled technician costs €30,000-€50,000 in recruitment, training, and lost productivity. Best-practice dealers retain 85%+ of technicians through competitive pay, modern facilities, and career development.',
+      whyItMatters: 'Technician shortage is the #1 operational challenge for service departments. Retention is far cheaper than recruitment in a tight labor market.',
+      formula: 'Technician Retention Rate = ((Technicians at Year Start − Departures) / Technicians at Year Start) × 100',
+      inclusions: ['All certified and apprentice technicians'],
+      exclusions: ['Retirements (track separately)', 'Temporary/seasonal workers'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '85%+',
+      department: 'workforce-hr',
+      rootCauseDiagnostics: {
+        people: 'Poor service manager leadership, lack of recognition, limited career advancement, physical work conditions',
+        process: 'No career development plan, insufficient training investment, outdated equipment frustrating technicians',
+        tools: 'Outdated diagnostic and repair equipment, poor workshop conditions, inadequate personal tools program',
+        structure: 'No clear advancement path from apprentice to master, limited specialization opportunities',
+        incentives: 'Below-market pay, flat-rate system disadvantaging during slow periods, poor benefits, no tool allowance'
+      },
+      improvementLevers: [
+        'Benchmark and adjust technician compensation annually to remain competitive',
+        'Invest in modern diagnostic equipment and workshop conditions',
+        'Create clear technician career path (apprentice → journeyman → master → specialist)',
+        'Provide tool allowance or tool purchase program',
+        'Offer sign-on bonuses and retention bonuses at tenure milestones',
+        'Develop apprenticeship pipeline with local technical schools',
+        'Conduct regular engagement surveys specific to technician satisfaction'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Compensation competitiveness', 'Equipment and facility quality', 'Management quality', 'Career development opportunities', 'Work-life balance'],
+        downstreamImpacts: ['Service department capacity', 'Technician Productivity', 'Repair quality', 'Customer wait times', 'Recruitment costs']
+      }
+    },
+    de: {
+      title: 'Techniker-Bindungsrate',
+      definition: 'Prozentsatz der zertifizierten Techniker, die über einen 12-Monats-Zeitraum gehalten werden.',
+      whyItMatters: 'Technikermangel ist die größte operative Herausforderung für Serviceabteilungen.',
+      benchmark: '85%+'
+    }
+  },
+  absenteeismRate: {
+    en: {
+      title: 'Absenteeism Rate',
+      definition: 'The percentage of scheduled work days lost to unplanned absences (sick days, personal days, no-shows) across the dealership workforce.',
+      executiveSummary: 'Unplanned absenteeism disrupts operations, overloads remaining staff, and reduces customer service quality. Best-practice dealers maintain absenteeism below 3% through positive work culture, reasonable scheduling, and attendance management programs.',
+      whyItMatters: 'Each absent employee creates coverage gaps, overtime costs, and potential customer service failures. Chronic absenteeism is often a symptom of deeper engagement issues.',
+      formula: 'Absenteeism Rate = (Unplanned Absent Days / Total Scheduled Work Days) × 100',
+      inclusions: ['Unplanned sick days, personal days, no-shows, early departures'],
+      exclusions: ['Approved vacation/PTO', 'Training days', 'Jury duty/bereavement leave'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '<3%',
+      department: 'workforce-hr',
+      rootCauseDiagnostics: {
+        people: 'Low morale and engagement, burnout from excessive hours, personal issues, management relationship problems',
+        process: 'No absence tracking system, inconsistent attendance policies, no return-to-work process, no wellness program',
+        tools: 'Manual attendance tracking, no automated alerts for patterns, poor scheduling software',
+        structure: 'Excessive shift length, weekend/holiday requirements without adequate rotation, no flexibility options',
+        incentives: 'No attendance bonus, no consequence for chronic absenteeism, sick day policy encouraging misuse'
+      },
+      improvementLevers: [
+        'Implement attendance tracking system with pattern analysis',
+        'Create attendance incentive program (perfect attendance bonus)',
+        'Address root causes through employee engagement and wellness programs',
+        'Establish clear attendance policy with progressive discipline',
+        'Offer flexible scheduling where possible to improve work-life balance',
+        'Train managers on having supportive conversations with frequently absent employees'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Employee engagement and morale', 'Work-life balance', 'Management quality', 'Workplace culture', 'Compensation satisfaction'],
+        downstreamImpacts: ['Service capacity', 'Customer wait times', 'Overtime costs', 'Team morale (overloaded colleagues)', 'Overall productivity']
+      }
+    },
+    de: {
+      title: 'Abwesenheitsrate',
+      definition: 'Prozentsatz der geplanten Arbeitstage, die durch ungeplante Abwesenheiten verloren gehen.',
+      whyItMatters: 'Ungeplante Abwesenheit stört den Betrieb und überlastet verbleibende Mitarbeiter.',
+      benchmark: '<3%'
+    }
+  },
+  trainingHoursPerEmployee: {
+    en: {
+      title: 'Training Hours per Employee',
+      definition: 'The average number of formal training hours invested per employee per year, including both internal and external training programs.',
+      executiveSummary: 'Training investment directly correlates with employee performance, retention, and customer satisfaction. Best-practice dealers invest 40-60 hours per employee per year in structured training. Under-investment leads to skill gaps, lower productivity, and higher turnover.',
+      whyItMatters: 'Continuous skill development drives performance improvement across all departments. OEM certification requirements also mandate minimum training levels.',
+      formula: 'Training Hours per Employee = Total Training Hours Delivered / Total Number of Employees',
+      inclusions: ['All formal training: classroom, online, workshops, OEM programs, certifications'],
+      exclusions: ['Informal on-the-job learning', 'Self-directed reading', 'Meeting attendance without training content'],
+      unitOfMeasure: 'Hours/Year',
+      benchmark: '40-60 hours/year',
+      department: 'workforce-hr',
+      rootCauseDiagnostics: {
+        people: 'Employees resistant to training, managers not releasing staff for training, no training champion/coordinator',
+        process: 'No annual training plan, reactive training only, no skills gap analysis driving training priorities',
+        tools: 'No learning management system, limited online training access, poor tracking of completed training',
+        structure: 'No training budget, no dedicated training facility/room, production demands preventing training time',
+        incentives: 'No recognition for completing training, no link between certifications and pay, no training requirements for advancement'
+      },
+      improvementLevers: [
+        'Create annual training plan based on skills gap analysis and department needs',
+        'Implement learning management system for tracking and delivery',
+        'Allocate dedicated training budget (minimum 1-2% of payroll)',
+        'Schedule regular training blocks that are protected from operational demands',
+        'Link training completion and certifications to career advancement and pay',
+        'Leverage OEM-provided training programs and online platforms',
+        'Create peer learning and mentoring programs to supplement formal training'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Training budget allocation', 'Management commitment to development', 'Available training resources', 'Employee willingness to learn'],
+        downstreamImpacts: ['Employee performance metrics', 'Customer satisfaction', 'Employee retention', 'OEM certification compliance', 'Service quality']
+      }
+    },
+    de: {
+      title: 'Schulungsstunden pro Mitarbeiter',
+      definition: 'Durchschnittliche Anzahl formaler Schulungsstunden pro Mitarbeiter pro Jahr.',
+      whyItMatters: 'Kontinuierliche Kompetenzentwicklung treibt Leistungsverbesserung in allen Abteilungen.',
+      benchmark: '40-60 Stunden/Jahr'
+    }
+  },
+  revenuePerEmployee: {
+    en: {
+      title: 'Revenue per Employee',
+      definition: 'Total dealership revenue divided by the total number of full-time equivalent employees.',
+      executiveSummary: 'Revenue per employee is the primary workforce productivity metric, measuring how effectively human capital is deployed to generate revenue. Best-practice dealers generate €300,000-€500,000 per employee per year.',
+      whyItMatters: 'Indicates overall organizational efficiency and staffing optimization. Low revenue per employee suggests overstaffing or underperformance.',
+      formula: 'Revenue per Employee = Total Dealership Revenue / Number of Full-Time Equivalent Employees',
+      inclusions: ['All revenue sources (vehicle sales, service, parts, F&I)', 'All FTE employees (including part-time converted to FTE)'],
+      exclusions: ['Outsourced/contracted workers', 'Temporary staff'],
+      unitOfMeasure: 'Currency (€/year)',
+      benchmark: '€300,000-€500,000/year',
+      department: 'workforce-hr',
+      rootCauseDiagnostics: {
+        people: 'Underperforming employees, skill gaps limiting productivity, excess management layers',
+        process: 'Inefficient workflows requiring more staff, manual processes that could be automated, poor resource allocation',
+        tools: 'Insufficient automation, outdated systems requiring manual workarounds, poor technology adoption',
+        structure: 'Overstaffed departments, duplicate roles across functions, inefficient organizational design',
+        incentives: 'No productivity targets at individual or team level, no consequence for underperformance'
+      },
+      improvementLevers: [
+        'Benchmark staffing ratios against industry standards and peer dealerships',
+        'Identify and automate manual processes to reduce headcount needs',
+        'Implement productivity targets by department and role',
+        'Cross-train employees to handle multiple functions during low-demand periods',
+        'Review organizational structure for redundancies and inefficiencies',
+        'Set revenue-per-employee targets with quarterly tracking'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Total dealership revenue', 'Headcount optimization', 'Process efficiency', 'Technology adoption', 'Employee productivity'],
+        downstreamImpacts: ['Dealership profitability', 'Compensation capacity', 'Competitive positioning', 'Investment capacity']
+      }
+    },
+    de: {
+      title: 'Umsatz pro Mitarbeiter',
+      definition: 'Gesamtumsatz des Autohauses geteilt durch die Anzahl der Vollzeitäquivalente.',
+      whyItMatters: 'Zeigt die organisatorische Gesamteffizienz und Personaloptimierung an.',
+      benchmark: '€300.000-€500.000/Jahr'
+    }
+  },
+  salesPerHeadcount: {
+    en: {
+      title: 'Sales per Headcount',
+      definition: 'The total number of vehicles sold divided by the total dealership headcount, measuring how efficiently the entire organization supports vehicle sales.',
+      executiveSummary: 'Sales per headcount reveals organizational efficiency in converting human capital into sales output. Best-practice dealers achieve 15-25 units per total employee per year, reflecting lean operations and effective support structures.',
+      whyItMatters: 'Holistic efficiency metric revealing whether the organization is right-sized for its sales volume. Lower ratios suggest operational bloat.',
+      formula: 'Sales per Headcount = Total Vehicles Sold / Total Number of Employees (FTE)',
+      inclusions: ['All new and used vehicle retail sales', 'All FTE employees across all departments'],
+      exclusions: ['Wholesale units', 'Fleet deliveries not requiring full sales process'],
+      unitOfMeasure: 'Units/Employee/Year',
+      benchmark: '15-25 units/employee/year',
+      department: 'workforce-hr',
+      rootCauseDiagnostics: {
+        people: 'Underperforming sales team, excessive support staff, poor cross-departmental collaboration',
+        process: 'Inefficient sales process requiring excess support, manual processes in F&I and delivery, poor lead management',
+        tools: 'Limited automation in documentation, manual data entry consuming staff time, poor CRM efficiency',
+        structure: 'Too many organizational layers, support functions overstaffed relative to volume, poor span of control',
+        incentives: 'No organizational-level efficiency targets, department budgets not tied to sales volume'
+      },
+      improvementLevers: [
+        'Streamline sales process to reduce support staffing requirements',
+        'Implement technology solutions to automate administrative tasks',
+        'Cross-train employees for multi-role capability',
+        'Benchmark total headcount against peer dealerships at similar volume',
+        'Align departmental staffing budgets to sales volume targets',
+        'Track units-per-employee quarterly with improvement targets'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Total sales volume', 'Organizational efficiency', 'Process automation level', 'Staffing optimization'],
+        downstreamImpacts: ['Per-employee compensation capacity', 'Dealership profitability', 'Competitive cost structure', 'Operational scalability']
+      }
+    },
+    de: {
+      title: 'Verkäufe pro Mitarbeiterzahl',
+      definition: 'Gesamtanzahl verkaufter Fahrzeuge geteilt durch die Gesamtbelegschaft.',
+      whyItMatters: 'Zeigt, ob die Organisation für ihr Verkaufsvolumen richtig dimensioniert ist.',
+      benchmark: '15-25 Einheiten/Mitarbeiter/Jahr'
+    }
+  },
+
+  // =====================================================
   // LEGACY / SHALLOW KPIs (existing entries below)
   // =====================================================
   usedInventoryTurnover: {
