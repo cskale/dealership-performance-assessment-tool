@@ -10,80 +10,55 @@
  * - Default: NONE for questions without clear signal match
  * 
  * Coverage: All 50 questions must appear here.
+ * 
+ * rootCauseDimension: Identifies which of the 5 root cause dimensions
+ * (people, process, tools, structure, incentives) is most relevant,
+ * enabling KPI-specific action template selection.
  */
 
 import { SignalMapping, SignalCode } from './signalTypes';
+
+export type RootCauseDimension = 'people' | 'process' | 'tools' | 'structure' | 'incentives';
+
+export interface EnrichedSignalMapping extends SignalMapping {
+  rootCauseDimension?: RootCauseDimension;
+}
 
 /**
  * Category-to-signal mapping rules
  */
 const CATEGORY_SIGNAL_MAP: Record<string, SignalCode> = {
-  // Volume and conversion metrics
   volume: 'CAPACITY_MISALIGNED',
   conversion: 'PROCESS_NOT_EXECUTED',
-  
-  // Customer satisfaction
   satisfaction: 'KPI_NOT_REVIEWED',
-  
-  // Profitability metrics
   profitability: 'KPI_NOT_REVIEWED',
-  
-  // Efficiency and process
   efficiency: 'PROCESS_NOT_EXECUTED',
-  
-  // Digital and technology
   digital: 'TOOL_UNDERUTILISED',
   technology: 'TOOL_UNDERUTILISED',
-  
-  // Training and development
   training: 'ROLE_OWNERSHIP_MISSING',
   certification: 'ROLE_OWNERSHIP_MISSING',
-  
-  // Inventory management
   inventory: 'PROCESS_NOT_STANDARDISED',
   turnover: 'PROCESS_NOT_STANDARDISED',
   obsolete: 'GOVERNANCE_WEAK',
-  
-  // Financial operations
   financial: 'KPI_NOT_REVIEWED',
   cashflow: 'KPI_NOT_REVIEWED',
   floorplan: 'GOVERNANCE_WEAK',
   costs: 'GOVERNANCE_WEAK',
-  
-  // Pricing and market
   pricing: 'PROCESS_NOT_STANDARDISED',
-  
-  // Quality and accuracy
   quality: 'PROCESS_NOT_EXECUTED',
   accuracy: 'PROCESS_NOT_STANDARDISED',
-  
-  // Availability and capacity
   availability: 'CAPACITY_MISALIGNED',
-  
-  // Warranty and compliance
   warranty: 'PROCESS_NOT_EXECUTED',
-  
-  // Retention and customer relationships
   retention: 'KPI_NOT_REVIEWED',
-  
-  // Parts and supply chain
   parts: 'CAPACITY_MISALIGNED',
   emergency: 'CAPACITY_MISALIGNED',
   vendor: 'GOVERNANCE_WEAK',
   wholesale: 'PROCESS_NOT_STANDARDISED',
   returns: 'PROCESS_NOT_EXECUTED',
   counter: 'PROCESS_NOT_EXECUTED',
-  
-  // Productivity
   productivity: 'CAPACITY_MISALIGNED',
-  
-  // Express/quick service
   express: 'PROCESS_NOT_EXECUTED',
-  
-  // Facility management
   facility: 'CAPACITY_MISALIGNED',
-  
-  // Data management
   data: 'TOOL_UNDERUTILISED'
 };
 
@@ -97,8 +72,9 @@ function deriveSignalFromCategory(category: string): SignalCode {
 
 /**
  * Complete question-to-signal mappings for all 50 questions
+ * Now enriched with rootCauseDimension for KPI-specific action selection
  */
-export const SIGNAL_MAPPINGS: SignalMapping[] = [
+export const SIGNAL_MAPPINGS: EnrichedSignalMapping[] = [
   // =====================================================
   // NEW VEHICLE SALES PERFORMANCE (nvs-1 to nvs-10)
   // =====================================================
@@ -108,6 +84,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'CAPACITY_MISALIGNED',
     secondarySignalCode: 'KPI_NOT_REVIEWED',
     severityRule: 'weighted',
+    rootCauseDimension: 'structure',
     notes: 'Volume metric - capacity alignment issue if low'
   },
   {
@@ -116,6 +93,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'PROCESS_NOT_EXECUTED',
     secondarySignalCode: 'KPI_NOT_REVIEWED',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Conversion metric - sales process execution'
   },
   {
@@ -123,6 +101,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'new-vehicle-sales',
     primarySignalCode: 'KPI_NOT_REVIEWED',
     severityRule: 'standard',
+    rootCauseDimension: 'process',
     notes: 'Customer satisfaction - KPI tracking issue'
   },
   {
@@ -131,6 +110,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'KPI_NOT_REVIEWED',
     secondarySignalCode: 'PROCESS_NOT_STANDARDISED',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Profitability metric - pricing strategy'
   },
   {
@@ -138,6 +118,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'new-vehicle-sales',
     primarySignalCode: 'PROCESS_NOT_EXECUTED',
     severityRule: 'standard',
+    rootCauseDimension: 'process',
     notes: 'Efficiency metric - delivery process'
   },
   {
@@ -146,6 +127,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'TOOL_UNDERUTILISED',
     secondarySignalCode: 'PROCESS_NOT_EXECUTED',
     severityRule: 'weighted',
+    rootCauseDimension: 'tools',
     notes: 'Digital metric - online lead conversion'
   },
   {
@@ -153,6 +135,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'new-vehicle-sales',
     primarySignalCode: 'ROLE_OWNERSHIP_MISSING',
     severityRule: 'standard',
+    rootCauseDimension: 'people',
     notes: 'Training metric - staff development'
   },
   {
@@ -161,6 +144,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'PROCESS_NOT_STANDARDISED',
     secondarySignalCode: 'GOVERNANCE_WEAK',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Inventory turnover - stock management'
   },
   {
@@ -169,6 +153,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'KPI_NOT_REVIEWED',
     secondarySignalCode: 'PROCESS_NOT_EXECUTED',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Financial metric - F&I penetration'
   },
   {
@@ -176,6 +161,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'new-vehicle-sales',
     primarySignalCode: 'TOOL_UNDERUTILISED',
     severityRule: 'standard',
+    rootCauseDimension: 'tools',
     notes: 'Technology metric - CRM utilization'
   },
 
@@ -188,6 +174,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'PROCESS_NOT_STANDARDISED',
     secondarySignalCode: 'GOVERNANCE_WEAK',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Turnover metric - inventory management'
   },
   {
@@ -196,6 +183,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'KPI_NOT_REVIEWED',
     secondarySignalCode: 'PROCESS_NOT_STANDARDISED',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Profitability metric - pricing strategy'
   },
   {
@@ -203,6 +191,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'used-vehicle-sales',
     primarySignalCode: 'PROCESS_NOT_STANDARDISED',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Accuracy metric - appraisal process'
   },
   {
@@ -211,6 +200,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'GOVERNANCE_WEAK',
     secondarySignalCode: 'PROCESS_NOT_EXECUTED',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Cost metric - reconditioning efficiency'
   },
   {
@@ -218,6 +208,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'used-vehicle-sales',
     primarySignalCode: 'TOOL_UNDERUTILISED',
     severityRule: 'standard',
+    rootCauseDimension: 'tools',
     notes: 'Digital metric - pricing tools'
   },
   {
@@ -225,6 +216,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'used-vehicle-sales',
     primarySignalCode: 'CAPACITY_MISALIGNED',
     severityRule: 'weighted',
+    rootCauseDimension: 'structure',
     notes: 'Inventory balance - trade-in vs acquisition'
   },
   {
@@ -232,6 +224,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'used-vehicle-sales',
     primarySignalCode: 'KPI_NOT_REVIEWED',
     severityRule: 'standard',
+    rootCauseDimension: 'process',
     notes: 'Customer satisfaction - used car experience'
   },
   {
@@ -240,6 +233,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'TOOL_UNDERUTILISED',
     secondarySignalCode: 'PROCESS_NOT_EXECUTED',
     severityRule: 'weighted',
+    rootCauseDimension: 'tools',
     notes: 'Digital metric - online presence'
   },
   {
@@ -247,6 +241,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'used-vehicle-sales',
     primarySignalCode: 'PROCESS_NOT_STANDARDISED',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Pricing metric - market positioning'
   },
   {
@@ -255,6 +250,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'GOVERNANCE_WEAK',
     secondarySignalCode: 'PROCESS_NOT_STANDARDISED',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Inventory metric - aged stock management'
   },
 
@@ -267,6 +263,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'CAPACITY_MISALIGNED',
     secondarySignalCode: 'PROCESS_NOT_EXECUTED',
     severityRule: 'weighted',
+    rootCauseDimension: 'structure',
     notes: 'Efficiency metric - labor utilization'
   },
   {
@@ -275,6 +272,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'PROCESS_NOT_STANDARDISED',
     secondarySignalCode: 'KPI_NOT_REVIEWED',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Pricing metric - labor rate realization'
   },
   {
@@ -282,6 +280,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'service-performance',
     primarySignalCode: 'CAPACITY_MISALIGNED',
     severityRule: 'weighted',
+    rootCauseDimension: 'structure',
     notes: 'Availability metric - appointment capacity'
   },
   {
@@ -290,6 +289,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'PROCESS_NOT_EXECUTED',
     secondarySignalCode: 'ROLE_OWNERSHIP_MISSING',
     severityRule: 'weighted',
+    rootCauseDimension: 'people',
     notes: 'Quality metric - first-time fix rate'
   },
   {
@@ -297,6 +297,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'service-performance',
     primarySignalCode: 'KPI_NOT_REVIEWED',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Satisfaction metric - service experience'
   },
   {
@@ -304,6 +305,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'service-performance',
     primarySignalCode: 'PROCESS_NOT_EXECUTED',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Warranty metric - claim processing'
   },
   {
@@ -311,6 +313,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'service-performance',
     primarySignalCode: 'ROLE_OWNERSHIP_MISSING',
     severityRule: 'standard',
+    rootCauseDimension: 'people',
     notes: 'Certification metric - technician skills'
   },
   {
@@ -319,6 +322,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'KPI_NOT_REVIEWED',
     secondarySignalCode: 'GOVERNANCE_WEAK',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Retention metric - customer loyalty'
   },
   {
@@ -326,6 +330,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'service-performance',
     primarySignalCode: 'CAPACITY_MISALIGNED',
     severityRule: 'weighted',
+    rootCauseDimension: 'structure',
     notes: 'Parts metric - service parts availability'
   },
   {
@@ -333,6 +338,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'service-performance',
     primarySignalCode: 'TOOL_UNDERUTILISED',
     severityRule: 'standard',
+    rootCauseDimension: 'tools',
     notes: 'Digital metric - customer communication tools'
   },
   {
@@ -341,6 +347,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'CAPACITY_MISALIGNED',
     secondarySignalCode: 'PROCESS_NOT_EXECUTED',
     severityRule: 'weighted',
+    rootCauseDimension: 'structure',
     notes: 'Productivity metric - advisor throughput'
   },
   {
@@ -348,6 +355,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'service-performance',
     primarySignalCode: 'PROCESS_NOT_EXECUTED',
     severityRule: 'standard',
+    rootCauseDimension: 'process',
     notes: 'Express metric - quick service efficiency'
   },
 
@@ -360,6 +368,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'PROCESS_NOT_STANDARDISED',
     secondarySignalCode: 'GOVERNANCE_WEAK',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Turnover metric - inventory management'
   },
   {
@@ -367,6 +376,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'parts-inventory',
     primarySignalCode: 'CAPACITY_MISALIGNED',
     severityRule: 'weighted',
+    rootCauseDimension: 'structure',
     notes: 'Availability metric - parts fill rate'
   },
   {
@@ -375,6 +385,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'KPI_NOT_REVIEWED',
     secondarySignalCode: 'PROCESS_NOT_STANDARDISED',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Profitability metric - parts margin'
   },
   {
@@ -382,6 +393,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'parts-inventory',
     primarySignalCode: 'GOVERNANCE_WEAK',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Obsolete metric - dead stock management'
   },
   {
@@ -389,6 +401,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'parts-inventory',
     primarySignalCode: 'PROCESS_NOT_STANDARDISED',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Accuracy metric - order accuracy'
   },
   {
@@ -396,6 +409,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'parts-inventory',
     primarySignalCode: 'PROCESS_NOT_STANDARDISED',
     severityRule: 'standard',
+    rootCauseDimension: 'process',
     notes: 'Wholesale metric - external sales'
   },
   {
@@ -403,6 +417,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'parts-inventory',
     primarySignalCode: 'PROCESS_NOT_EXECUTED',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Returns metric - error rate'
   },
   {
@@ -410,6 +425,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'parts-inventory',
     primarySignalCode: 'CAPACITY_MISALIGNED',
     severityRule: 'standard',
+    rootCauseDimension: 'structure',
     notes: 'Emergency metric - urgent sourcing'
   },
   {
@@ -417,6 +433,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'parts-inventory',
     primarySignalCode: 'PROCESS_NOT_EXECUTED',
     severityRule: 'standard',
+    rootCauseDimension: 'process',
     notes: 'Counter metric - service speed'
   },
   {
@@ -424,6 +441,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'parts-inventory',
     primarySignalCode: 'GOVERNANCE_WEAK',
     severityRule: 'standard',
+    rootCauseDimension: 'incentives',
     notes: 'Vendor metric - supplier relationships'
   },
 
@@ -436,6 +454,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'KPI_NOT_REVIEWED',
     secondarySignalCode: 'GOVERNANCE_WEAK',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Profitability metric - overall trend'
   },
   {
@@ -444,6 +463,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'KPI_NOT_REVIEWED',
     secondarySignalCode: 'GOVERNANCE_WEAK',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Cashflow metric - financial stability'
   },
   {
@@ -451,6 +471,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'financial-operations',
     primarySignalCode: 'GOVERNANCE_WEAK',
     severityRule: 'weighted',
+    rootCauseDimension: 'structure',
     notes: 'Floorplan metric - financing management'
   },
   {
@@ -459,6 +480,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     primarySignalCode: 'GOVERNANCE_WEAK',
     secondarySignalCode: 'PROCESS_NOT_STANDARDISED',
     severityRule: 'weighted',
+    rootCauseDimension: 'process',
     notes: 'Costs metric - expense control'
   },
   {
@@ -466,6 +488,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'financial-operations',
     primarySignalCode: 'CAPACITY_MISALIGNED',
     severityRule: 'weighted',
+    rootCauseDimension: 'structure',
     notes: 'Productivity metric - revenue per employee'
   },
   {
@@ -473,6 +496,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'financial-operations',
     primarySignalCode: 'TOOL_UNDERUTILISED',
     severityRule: 'weighted',
+    rootCauseDimension: 'tools',
     notes: 'Technology metric - ROI on investments'
   },
   {
@@ -480,6 +504,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'financial-operations',
     primarySignalCode: 'CAPACITY_MISALIGNED',
     severityRule: 'weighted',
+    rootCauseDimension: 'structure',
     notes: 'Facility metric - space utilization'
   },
   {
@@ -487,6 +512,7 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
     moduleKey: 'financial-operations',
     primarySignalCode: 'TOOL_UNDERUTILISED',
     severityRule: 'standard',
+    rootCauseDimension: 'tools',
     notes: 'Data metric - customer database management'
   }
 ];
@@ -494,14 +520,14 @@ export const SIGNAL_MAPPINGS: SignalMapping[] = [
 /**
  * Get mapping for a specific question
  */
-export function getSignalMapping(questionId: string): SignalMapping | undefined {
+export function getSignalMapping(questionId: string): EnrichedSignalMapping | undefined {
   return SIGNAL_MAPPINGS.find(m => m.questionId === questionId);
 }
 
 /**
  * Get all mappings for a module
  */
-export function getMappingsForModule(moduleKey: string): SignalMapping[] {
+export function getMappingsForModule(moduleKey: string): EnrichedSignalMapping[] {
   return SIGNAL_MAPPINGS.filter(m => m.moduleKey === moduleKey);
 }
 

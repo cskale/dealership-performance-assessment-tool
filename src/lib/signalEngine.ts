@@ -5,14 +5,16 @@
  * 1. Evaluates assessment answers against signal mappings
  * 2. Generates signals based on low scores
  * 3. Escalates severity when multiple questions trigger same signal
+ * 4. Selects KPI-specific action templates when linkedKPIs are available
  * 
  * NO AI/ML. NO randomness. Same answers → same signals → same actions.
  */
 
 import { Signal, SignalCode, Severity } from '@/data/signalTypes';
 import { SIGNAL_MAPPINGS, getSignalMapping } from '@/data/signalMappings';
-import { ACTION_TEMPLATES, getTemplatesForSignal } from '@/data/actionTemplates';
-import { getTemplateIdsForSignal, getMaxActionsForSignal } from '@/data/signalToActionMap';
+import { ACTION_TEMPLATES, getTemplatesForSignal, ActionTemplate } from '@/data/actionTemplates';
+import { getTemplateIdsForSignal, getMaxActionsForSignal, getKPISpecificTemplateIds } from '@/data/signalToActionMap';
+import { KPI_DEFINITIONS } from '@/lib/kpiDefinitions';
 
 export interface SignalEngineConfig {
   enableAutoActions: boolean;
@@ -22,6 +24,8 @@ export interface SignalEngineConfig {
 
 export interface GeneratedSignal extends Signal {
   sourceQuestionScores: Record<string, number>;
+  /** KPI keys linked to the triggering questions */
+  linkedKPIs?: string[];
 }
 
 export interface InstantiatedAction {
@@ -36,6 +40,8 @@ export interface InstantiatedAction {
   implementationSteps: string[];
   triggeringQuestionIds: string[];
   rationale: string;
+  /** KPI keys this action is designed to improve */
+  linkedKPIs?: string[];
 }
 
 const DEFAULT_CONFIG: SignalEngineConfig = {
@@ -52,19 +58,15 @@ function determineSeverity(
   weight: number, 
   config: SignalEngineConfig
 ): Severity {
-  // Critical: score ≤ 2 and weight ≥ 1.3
   if (score <= config.criticalScoreThreshold && weight >= 1.3) {
     return 'HIGH';
   }
-  // High: score ≤ 2 and weight ≥ 1.0
   if (score <= config.criticalScoreThreshold && weight >= 1.0) {
     return 'MEDIUM';
   }
-  // Medium: score = 3
   if (score === config.weakScoreThreshold) {
     return 'LOW';
   }
-  // Default to LOW for borderline cases
   return 'LOW';
 }
 
@@ -73,7 +75,6 @@ function determineSeverity(
  */
 function escalateSeverity(baseSeverity: Severity, triggerCount: number): Severity {
   if (triggerCount >= 3) {
-    // Multiple triggers → escalate one level
     if (baseSeverity === 'LOW') return 'MEDIUM';
     if (baseSeverity === 'MEDIUM') return 'HIGH';
   }
@@ -104,39 +105,61 @@ const MODULE_TO_DEPARTMENT: Record<string, string> = {
 };
 
 /**
+ * Build KPI interdependency rationale when linkedKPIs are available
+ */
+function buildKPIRationale(linkedKPIs: string[], moduleKey: string): string {
+  const kpiNames: string[] = [];
+  const downstreamImpacts: string[] = [];
+
+  for (const kpiKey of linkedKPIs) {
+    const def = KPI_DEFINITIONS[kpiKey]?.en;
+    if (def) {
+      kpiNames.push(def.title);
+      if (def.interdependencies?.downstreamImpacts) {
+        downstreamImpacts.push(...def.interdependencies.downstreamImpacts.slice(0, 2));
+      }
+    }
+  }
+
+  const dept = MODULE_TO_DEPARTMENT[moduleKey] || moduleKey;
+  let rationale = `Detected in ${dept}`;
+  if (kpiNames.length > 0) {
+    rationale += `. Impacts: ${kpiNames.join(', ')}`;
+  }
+  if (downstreamImpacts.length > 0) {
+    const uniqueImpacts = [...new Set(downstreamImpacts)].slice(0, 3);
+    rationale += `. Downstream effects: ${uniqueImpacts.join('; ')}`;
+  }
+  return rationale;
+}
+
+/**
  * Main signal generation function
- * 
- * @param answers - Map of questionId → score (1-5)
- * @param questionWeights - Map of questionId → weight
- * @param config - Engine configuration
- * @returns Array of generated signals
  */
 export function generateSignals(
   answers: Record<string, number>,
   questionWeights: Record<string, number>,
-  config: SignalEngineConfig = DEFAULT_CONFIG
+  config: SignalEngineConfig = DEFAULT_CONFIG,
+  questionLinkedKPIs?: Record<string, string[]>
 ): GeneratedSignal[] {
   if (!config.enableAutoActions) {
     return [];
   }
 
-  // Group weak answers by signal code and module
   const signalGroups: Map<string, {
     signalCode: Exclude<SignalCode, 'NONE'>;
     moduleKey: string;
     questionIds: string[];
     scores: Record<string, number>;
     maxSeverity: Severity;
+    linkedKPIs: Set<string>;
   }> = new Map();
 
-  // Process each answer
   for (const [questionId, score] of Object.entries(answers)) {
-    // Skip if score is good (above threshold)
     if (score > config.weakScoreThreshold) {
       continue;
     }
 
-    // Get mapping for this question
     const mapping = getSignalMapping(questionId);
     if (!mapping || mapping.primarySignalCode === 'NONE') {
       continue;
@@ -145,7 +168,6 @@ export function generateSignals(
     const weight = questionWeights[questionId] || 1.0;
     const severity = determineSeverity(score, weight, config);
 
-    // Create unique key for grouping: signalCode + moduleKey
     const groupKey = `${mapping.primarySignalCode}::${mapping.moduleKey}`;
 
     if (!signalGroups.has(groupKey)) {
@@ -154,7 +176,8 @@ export function generateSignals(
         moduleKey: mapping.moduleKey,
         questionIds: [],
         scores: {},
-        maxSeverity: severity
+        maxSeverity: severity,
+        linkedKPIs: new Set()
       });
     }
 
@@ -162,30 +185,38 @@ export function generateSignals(
     group.questionIds.push(questionId);
     group.scores[questionId] = score;
     
-    // Track max severity
     if (severity === 'HIGH' || (severity === 'MEDIUM' && group.maxSeverity === 'LOW')) {
       group.maxSeverity = severity;
     }
+
+    // Collect linked KPIs from question metadata
+    const kpis = questionLinkedKPIs?.[questionId];
+    if (kpis) {
+      kpis.forEach(k => group.linkedKPIs.add(k));
+    }
   }
 
-  // Convert groups to signals with escalation
   const signals: GeneratedSignal[] = [];
 
   for (const group of signalGroups.values()) {
-    // Escalate severity based on number of triggering questions
     const finalSeverity = escalateSeverity(group.maxSeverity, group.questionIds.length);
+    const kpiArray = Array.from(group.linkedKPIs);
+
+    const rationale = kpiArray.length > 0
+      ? buildKPIRationale(kpiArray, group.moduleKey)
+      : `Detected in ${group.questionIds.length} question(s) in ${MODULE_TO_DEPARTMENT[group.moduleKey] || group.moduleKey}`;
 
     signals.push({
       signalCode: group.signalCode,
       severity: finalSeverity,
       moduleKey: group.moduleKey,
       triggeringQuestionIds: group.questionIds,
-      rationale: `Detected in ${group.questionIds.length} question(s) in ${MODULE_TO_DEPARTMENT[group.moduleKey] || group.moduleKey}`,
-      sourceQuestionScores: group.scores
+      rationale,
+      sourceQuestionScores: group.scores,
+      linkedKPIs: kpiArray.length > 0 ? kpiArray : undefined
     });
   }
 
-  // Sort by severity (HIGH first) then by number of triggers
   signals.sort((a, b) => {
     const severityOrder: Record<Severity, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
     const severityDiff = severityOrder[a.severity] - severityOrder[b.severity];
@@ -197,11 +228,67 @@ export function generateSignals(
 }
 
 /**
- * Instantiate actions from signals
- * 
- * @param signals - Generated signals
- * @param maxActions - Maximum number of actions to generate
- * @returns Array of instantiated actions
+ * Find the best matching template for a signal, preferring KPI-specific over generic
+ */
+function selectTemplates(
+  signal: GeneratedSignal,
+  usedTemplateIds: Set<string>,
+  maxForSignal: number
+): ActionTemplate[] {
+  const selected: ActionTemplate[] = [];
+  
+  // 1. Try KPI-specific templates first if linkedKPIs exist
+  if (signal.linkedKPIs && signal.linkedKPIs.length > 0) {
+    const kpiSpecificIds = getKPISpecificTemplateIds(signal.signalCode);
+    for (const templateId of kpiSpecificIds) {
+      if (selected.length >= maxForSignal) break;
+      if (usedTemplateIds.has(templateId)) continue;
+      
+      const template = ACTION_TEMPLATES.find(t => t.templateId === templateId);
+      if (!template) continue;
+      
+      // Check if this template's linkedKPIs overlap with signal's linkedKPIs
+      if (template.linkedKPIs) {
+        const hasOverlap = template.linkedKPIs.some(k => signal.linkedKPIs!.includes(k));
+        if (hasOverlap) {
+          selected.push(template);
+          usedTemplateIds.add(templateId);
+        }
+      }
+    }
+  }
+
+  // 2. Fall back to generic templates if not enough KPI-specific ones found
+  if (selected.length < maxForSignal) {
+    const genericTemplates = getTemplatesForSignal(signal.signalCode)
+      .filter(t => !t.linkedKPIs); // Only truly generic templates
+    
+    for (const template of genericTemplates) {
+      if (selected.length >= maxForSignal) break;
+      if (usedTemplateIds.has(template.templateId)) continue;
+      
+      selected.push(template);
+      usedTemplateIds.add(template.templateId);
+    }
+  }
+
+  // 3. If still not enough, use any remaining templates for this signal
+  if (selected.length < maxForSignal) {
+    const allTemplates = getTemplatesForSignal(signal.signalCode);
+    for (const template of allTemplates) {
+      if (selected.length >= maxForSignal) break;
+      if (usedTemplateIds.has(template.templateId)) continue;
+      
+      selected.push(template);
+      usedTemplateIds.add(template.templateId);
+    }
+  }
+
+  return selected;
+}
+
+/**
+ * Instantiate actions from signals with KPI-aware template selection
  */
 export function instantiateActions(
   signals: GeneratedSignal[],
@@ -214,20 +301,13 @@ export function instantiateActions(
     if (actions.length >= maxActions) break;
     if (signal.signalCode === 'NONE') continue;
 
-    // Get templates for this signal
-    const templates = getTemplatesForSignal(signal.signalCode);
-    if (templates.length === 0) continue;
-
-    // Get max actions allowed for this signal
     const maxForSignal = getMaxActionsForSignal(signal.signalCode);
-    let actionsForSignal = 0;
+    const remaining = maxActions - actions.length;
+    const limit = Math.min(maxForSignal, remaining);
+
+    const templates = selectTemplates(signal, usedTemplateIds, limit);
 
     for (const template of templates) {
-      if (actions.length >= maxActions) break;
-      if (actionsForSignal >= maxForSignal) break;
-      if (usedTemplateIds.has(template.templateId)) continue;
-
-      // Determine priority based on signal severity
       const priority = severityToPriority(signal.severity);
 
       actions.push({
@@ -236,16 +316,14 @@ export function instantiateActions(
         title: template.title,
         description: template.description,
         department: MODULE_TO_DEPARTMENT[signal.moduleKey] || signal.moduleKey,
-        priority: priority,
+        priority,
         defaultOwnerRole: template.defaultOwnerRole,
         defaultTimeframeDays: template.defaultTimeframeDays,
         implementationSteps: template.implementationSteps,
         triggeringQuestionIds: signal.triggeringQuestionIds,
-        rationale: signal.rationale
+        rationale: signal.rationale,
+        linkedKPIs: template.linkedKPIs || signal.linkedKPIs
       });
-
-      usedTemplateIds.add(template.templateId);
-      actionsForSignal++;
     }
   }
 
@@ -254,18 +332,14 @@ export function instantiateActions(
 
 /**
  * Main entry point: Generate actions from assessment answers
- * 
- * @param answers - Map of questionId → score (1-5)
- * @param questionWeights - Map of questionId → weight
- * @param config - Engine configuration
- * @returns Array of instantiated actions ready for database insertion
  */
 export function generateActionsFromAssessment(
   answers: Record<string, number>,
   questionWeights: Record<string, number>,
-  config: SignalEngineConfig = DEFAULT_CONFIG
+  config: SignalEngineConfig = DEFAULT_CONFIG,
+  questionLinkedKPIs?: Record<string, string[]>
 ): InstantiatedAction[] {
-  const signals = generateSignals(answers, questionWeights, config);
+  const signals = generateSignals(answers, questionWeights, config, questionLinkedKPIs);
   return instantiateActions(signals);
 }
 
@@ -279,13 +353,10 @@ export function formatActionsForDatabaseInsert(
   organizationId: string
 ): any[] {
   return actions.map(action => {
-    // B2/B3: Clean title - strip "Assess:", "Address:" prefixes
     const cleanTitle = action.title
       .replace(/^(Assess|Address|Evaluate):\s*/i, '')
       .trim();
 
-    // Build human-readable description (no system language)
-    // Keep signal code as metadata at end for rationale extraction, but don't lead with it
     const descriptionParts = [
       action.description.replace(/^Triggered because:.*?\.\s*/i, '').trim(),
       '',
@@ -304,7 +375,7 @@ export function formatActionsForDatabaseInsert(
       responsible_person: action.defaultOwnerRole,
       target_completion_date: calculateTargetDate(action.defaultTimeframeDays),
       support_required_from: [],
-      kpis_linked_to: []
+      kpis_linked_to: action.linkedKPIs || []
     };
   });
 }
