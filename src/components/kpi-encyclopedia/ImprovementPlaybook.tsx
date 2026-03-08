@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 
 interface ImprovementPlaybookProps {
   levers: string[];
@@ -7,11 +6,11 @@ interface ImprovementPlaybookProps {
   className?: string;
 }
 
-function getTag(index: number, total: number): { en: string; de: string; variant: 'default' | 'secondary' | 'outline' } | null {
+function getTag(index: number, total: number): { en: string; de: string } | null {
   if (total <= 3) return null;
-  if (index < 2) return { en: 'Quick win', de: 'Quick Win', variant: 'secondary' };
-  if (index >= total - 1) return { en: 'Capability', de: 'Kompetenz', variant: 'outline' };
-  return { en: 'Structural', de: 'Strukturell', variant: 'outline' };
+  if (index < 2) return { en: 'Quick win', de: 'Quick Win' };
+  if (index >= total - 1) return { en: 'Capability', de: 'Kompetenz' };
+  return { en: 'Structural', de: 'Strukturell' };
 }
 
 export function ImprovementPlaybook({ levers, language, className }: ImprovementPlaybookProps) {
@@ -19,33 +18,31 @@ export function ImprovementPlaybook({ levers, language, className }: Improvement
 
   return (
     <div className={cn("", className)}>
-      <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+      <h2 className="text-[15px] font-semibold text-foreground mb-1.5">
         {language === 'de' ? 'Vorgeschlagene Verbesserungsideen' : 'Suggested Improvement Ideas'}
       </h2>
-      <p className="text-sm text-muted-foreground/60 mb-6">
+      <p className="text-sm text-muted-foreground/70 mb-8 leading-relaxed">
         {language === 'de'
-          ? 'Konsolidierte Maßnahmen zur Verbesserung der KPI-Leistung.'
-          : 'Consolidated actions to improve KPI performance, prioritized by typical impact.'}
+          ? 'Praktische Maßnahmen, die üblicherweise zur Verbesserung dieses KPI eingesetzt werden.'
+          : 'Practical actions commonly used to improve this KPI, ordered by typical impact.'}
       </p>
 
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {displayLevers.map((lever, i) => {
           const tag = getTag(i, displayLevers.length);
           return (
             <div
               key={i}
-              className="flex items-start gap-4 rounded-2xl border border-border/50 bg-card px-5 py-4 transition-all duration-200 hover:border-border/80 hover:shadow-sm"
+              className="flex items-start gap-4 rounded-xl px-5 py-4 bg-muted/20 hover:bg-muted/35 transition-colors duration-150"
             >
-              <span className="flex items-center justify-center h-7 w-7 rounded-lg bg-muted text-muted-foreground text-xs font-bold shrink-0 mt-0.5">
+              <span className="flex items-center justify-center h-6 w-6 rounded-md bg-muted text-muted-foreground text-xs font-semibold shrink-0 mt-0.5">
                 {i + 1}
               </span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-foreground leading-relaxed">{lever}</p>
-              </div>
+              <p className="flex-1 text-sm text-foreground/80 leading-relaxed min-w-0">{lever}</p>
               {tag && (
-                <Badge variant={tag.variant} className="text-[10px] font-normal px-2 py-0.5 h-auto shrink-0 hidden sm:inline-flex">
+                <span className="text-[9px] font-medium text-muted-foreground/50 uppercase tracking-wider shrink-0 mt-1 hidden sm:block">
                   {language === 'de' ? tag.de : tag.en}
-                </Badge>
+                </span>
               )}
             </div>
           );
