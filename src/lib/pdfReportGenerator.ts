@@ -1,7 +1,16 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { generateRealisticData, industryBenchmarks, formatEuro, formatNumber } from '@/utils/euroFormatter';
-import { calculateWeightedScore, CATEGORY_WEIGHTS, DEPARTMENT_TO_CATEGORY } from '@/lib/scoringEngine';
+import {
+  calculateWeightedScore,
+  CATEGORY_WEIGHTS,
+  DEPARTMENT_TO_CATEGORY,
+  calculateSubCategoryScores,
+  calculateAllConfidenceMetrics,
+  detectSystemicPatterns,
+  calculateEnhancedMaturity,
+} from '@/lib/scoringEngine';
+import { questionnaire } from '@/data/questionnaire';
 
 // ── i18n labels ──
 const LABELS: Record<string, Record<string, string>> = {
