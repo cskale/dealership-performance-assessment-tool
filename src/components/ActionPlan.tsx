@@ -167,15 +167,15 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
 
       // B1: If replacing, delete ONLY auto-generated actions (preserve manual ones)
       if (replaceExisting && targetAssessmentId) {
-        const autoActions = actions.filter(a => 
+        const existingAutoActions = actions.filter(a => 
           a.assessment_id === targetAssessmentId && 
           a.action_description?.includes('Triggered because:')
         );
-        if (autoActions.length > 0) {
+        if (existingAutoActions.length > 0) {
           const { error: deleteError } = await supabase
             .from('improvement_actions')
             .delete()
-            .in('id', autoActions.map(a => a.id));
+            .in('id', existingAutoActions.map(a => a.id));
           if (deleteError) console.error('Error deleting old auto-actions:', deleteError);
         }
       }
@@ -201,12 +201,12 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
       }
 
       // Use canonical signal engine for action generation
-      const actions = generateActionsFromAssessment(
+      const generatedActions = generateActionsFromAssessment(
         assessment.answers as Record<string, number>,
         questionWeights
       );
 
-      if (actions.length === 0) {
+      if (generatedActions.length === 0) {
         toast.success('No critical improvement areas found.');
         setGenerating(false);
         return;
@@ -214,7 +214,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
 
       // Format for database insertion
       const actionsWithOrg = formatActionsForDatabaseInsert(
-        actions,
+        generatedActions,
         user.id,
         targetAssessmentId!,
         currentOrganization?.id || ''
