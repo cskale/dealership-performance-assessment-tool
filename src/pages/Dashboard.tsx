@@ -18,7 +18,8 @@ import {
   Settings,
   User,
   Target,
-  Sparkles
+  Sparkles,
+  Info
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -195,11 +196,11 @@ const Dashboard = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" disabled>
                 <Download className="h-4 w-4 mr-2" />
                 {t('dashboard.exportPDF')}
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" disabled>
                 <Download className="h-4 w-4 mr-2" />
                 {t('dashboard.exportExcel')}
               </Button>
@@ -209,6 +210,25 @@ const Dashboard = () => {
 
         {/* Dashboard Content */}
         <main className="p-8 space-y-8">
+          {/* Preview Disclaimer Banner */}
+          <Card className="border-2 border-amber-300 bg-amber-50 dark:bg-amber-950/20">
+            <CardContent className="py-4">
+              <div className="flex items-start gap-3">
+                <Info className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                    {language === 'de' ? 'Dashboard-Vorschau' : 'Dashboard Preview'}
+                  </p>
+                  <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                    {language === 'de'
+                      ? 'Die dargestellten Daten sind statische Beispielwerte. Verbinden Sie echte Geschäftsdaten, um Live-Analysen zu aktivieren.'
+                      : 'Data shown uses static sample values. Connect real dealership data to activate live analytics.'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Page Header */}
           <div>
             <h1 className="text-4xl font-bold text-foreground mb-2">{t('dashboard.title')}</h1>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Bot, Lightbulb, HelpCircle, TrendingUp, BarChart } from 'lucide-react';
+import { HelpCircle, Lightbulb, TrendingUp, BarChart } from 'lucide-react';
 import { Question, Section } from '@/data/questionnaire';
 
 interface SmartAssistantProps {
@@ -36,7 +36,6 @@ export const SmartAssistant: React.FC<SmartAssistantProps> = ({
     let newGuidance = '';
     let newTips: string[] = [];
 
-    // Generate guidance based on question type and content
     if (currentQuestion.type === 'multiple_choice' || currentQuestion.type === 'rating') {
       newGuidance = "Select the option that best reflects your current situation. Be honest in your assessment for accurate results.";
       
@@ -68,7 +67,6 @@ export const SmartAssistant: React.FC<SmartAssistantProps> = ({
       ];
     }
 
-    // General tips based on question content
     if (currentQuestion.text.toLowerCase().includes('sales')) {
       if (!newTips.length) {
         newTips = [
@@ -117,24 +115,24 @@ export const SmartAssistant: React.FC<SmartAssistantProps> = ({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Bot className="h-5 w-5 text-primary animate-pulse" />
-            Smart Assistant
+            <HelpCircle className="h-5 w-5 text-primary" />
+            Assessment Guide
           </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
           {/* Current Scores */}
           {Object.keys(scores).length > 0 && (
-            <div className="bg-blue-50 p-3 rounded-lg">
+            <div className="bg-muted/50 p-3 rounded-lg border">
               <div className="flex items-center gap-2 mb-2">
-                <BarChart className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-800">Current Scores</span>
+                <BarChart className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">Current Scores</span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 {Object.entries(scores).map(([section, score]) => (
                   <div key={section} className="flex justify-between">
-                    <span className="text-blue-700 capitalize">{section.replace('_', ' ')}:</span>
-                    <span className="font-medium text-blue-800">{score}%</span>
+                    <span className="text-muted-foreground capitalize">{section.replace('_', ' ')}:</span>
+                    <span className="font-medium">{score}%</span>
                   </div>
                 ))}
               </div>
@@ -152,7 +150,7 @@ export const SmartAssistant: React.FC<SmartAssistantProps> = ({
           {/* Contextual Guidance */}
           {guidance && (
             <div className="flex items-start gap-2">
-              <HelpCircle className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+              <HelpCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
               <p className="text-sm">{guidance}</p>
             </div>
           )}
@@ -161,7 +159,7 @@ export const SmartAssistant: React.FC<SmartAssistantProps> = ({
           {tips.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Lightbulb className="h-4 w-4 text-yellow-500" />
+                <Lightbulb className="h-4 w-4 text-amber-500" />
                 <span className="text-sm font-medium">Tips:</span>
               </div>
               <ul className="space-y-1 ml-6">
@@ -176,9 +174,9 @@ export const SmartAssistant: React.FC<SmartAssistantProps> = ({
 
           {/* Current Answer Feedback */}
           {currentAnswer !== undefined && (
-            <div className="bg-green-50 dark:bg-green-950/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
-              <p className="text-xs text-green-700 dark:text-green-300">
-                ✓ Answer recorded. This helps build your dealership profile for accurate recommendations.
+            <div className="bg-emerald-50 dark:bg-emerald-950/20 p-3 rounded-lg border border-emerald-200 dark:border-emerald-800">
+              <p className="text-xs text-emerald-700 dark:text-emerald-300">
+                Answer recorded. This helps build your dealership profile for accurate recommendations.
               </p>
             </div>
           )}

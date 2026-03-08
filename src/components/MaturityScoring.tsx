@@ -2,10 +2,13 @@ import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, Zap } from "lucide-react";
+import { CheckCircle, Zap, Info, AlertCircle, TrendingUp, Award } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Legend } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { getDepartmentName } from "@/lib/departmentNames";
+import { CATEGORY_WEIGHTS, DEPARTMENT_TO_CATEGORY } from "@/lib/scoringEngine";
 
 interface MaturityScoringProps {
   scores: Record<string, number>;
@@ -15,7 +18,7 @@ interface MaturityScoringProps {
 interface MaturityLevel {
   level: 1 | 2 | 3 | 4;
   name: string;
-  emoji: string;
+  icon: React.ReactNode;
   color: string;
   description: string;
   characteristics: string[];
@@ -28,7 +31,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
     {
       level: 1,
       name: language === 'de' ? 'Basis' : 'Basic',
-      emoji: '🔴',
+      icon: <AlertCircle className="h-5 w-5 text-red-600" />,
       color: 'bg-red-50 text-red-800 border-red-200',
       description: language === 'de' ? 'Grundlegende Prozesse vorhanden' : 'Basic processes in place',
       characteristics: [
@@ -41,7 +44,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
     {
       level: 2,
       name: language === 'de' ? 'Entwickelnd' : 'Developing',
-      emoji: '🟡',
+      icon: <TrendingUp className="h-5 w-5 text-orange-600" />,
       color: 'bg-orange-50 text-orange-800 border-orange-200',
       description: language === 'de' ? 'Prozesse werden standardisiert' : 'Processes being standardized',
       characteristics: [
@@ -54,7 +57,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
     {
       level: 3,
       name: language === 'de' ? 'Ausgereift' : 'Mature',
-      emoji: '🟦',
+      icon: <CheckCircle className="h-5 w-5 text-blue-600" />,
       color: 'bg-blue-50 text-blue-800 border-blue-200',
       description: language === 'de' ? 'Optimierte Prozesse' : 'Optimized processes',
       characteristics: [
@@ -67,7 +70,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
     {
       level: 4,
       name: language === 'de' ? 'Fortgeschritten' : 'Advanced',
-      emoji: '🟢',
+      icon: <Award className="h-5 w-5 text-emerald-600" />,
       color: 'bg-green-50 text-green-800 border-green-200',
       description: language === 'de' ? 'Branchenführend' : 'Industry leading',
       characteristics: [
@@ -80,73 +83,60 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
   ], [language]);
 
   const getMaturityLevel = (score: number): MaturityLevel => {
-    if (score >= 85) return maturityLevels[3]; // Advanced
-    if (score >= 70) return maturityLevels[2]; // Mature
-    if (score >= 50) return maturityLevels[1]; // Developing
-    return maturityLevels[0]; // Basic
+    if (score >= 85) return maturityLevels[3];
+    if (score >= 70) return maturityLevels[2];
+    if (score >= 50) return maturityLevels[1];
+    return maturityLevels[0];
   };
 
-  // Exact 5 assessment sections for radar chart
   const radarData = useMemo(() => {
-    const sectionNames = {
-      'new-vehicle-sales': language === 'de' ? 'Neuwagenverkauf' : 'New Vehicle Sales',
-      'used-vehicle-sales': language === 'de' ? 'Gebrauchtwagenverkauf' : 'Used Vehicle Sales',
-      'service-performance': language === 'de' ? 'Serviceleistung' : 'Service Performance',
-      'parts-inventory': language === 'de' ? 'Teile & Lager' : 'Parts & Inventory',
-      'financial-operations': language === 'de' ? 'Finanzoperationen' : 'Financial Operations'
-    };
-
-    return Object.entries(sectionNames).map(([key, name]) => ({
-      subject: name,
-      score: scores[key] || 0,
-      benchmark: 75, // Industry average benchmark
+    return Object.entries(scores).map(([key, score]) => ({
+      subject: getDepartmentName(key, language),
+      score: score || 0,
+      benchmark: 75,
       fullMark: 100
     }));
   }, [scores, language]);
 
-  // Gap Analysis Data
   const gapAnalysisData = useMemo(() => {
     const INDUSTRY_AVG = 75;
-    const sectionNames: Record<string, Record<string, string>> = {
-      'new-vehicle-sales': { en: 'New Vehicle Sales', de: 'Neuwagenverkauf' },
-      'used-vehicle-sales': { en: 'Used Vehicle Sales', de: 'Gebrauchtwagenverkauf' },
-      'service-performance': { en: 'Service Performance', de: 'Serviceleistung' },
-      'parts-inventory': { en: 'Parts & Inventory', de: 'Teile & Lager' },
-      'financial-operations': { en: 'Financial Operations', de: 'Finanzoperationen' }
-    };
-
     return Object.entries(scores)
       .map(([dept, score]) => {
         const gap = score - INDUSTRY_AVG;
         let priority: 'critical' | 'medium' | 'low';
         let priorityLabel: string;
         let priorityColor: string;
+        let priorityIcon: React.ReactNode;
         
         if (gap <= -30) {
           priority = 'critical';
           priorityLabel = language === 'de' ? 'Kritisch' : 'Critical';
           priorityColor = 'bg-red-100 text-red-800';
+          priorityIcon = <AlertCircle className="h-3 w-3 text-red-600 inline mr-1" />;
         } else if (gap <= -10) {
           priority = 'medium';
           priorityLabel = language === 'de' ? 'Mittel' : 'Medium';
           priorityColor = 'bg-yellow-100 text-yellow-800';
+          priorityIcon = <TrendingUp className="h-3 w-3 text-yellow-600 inline mr-1" />;
         } else {
           priority = 'low';
           priorityLabel = language === 'de' ? 'Niedrig' : 'Low';
           priorityColor = 'bg-green-100 text-green-800';
+          priorityIcon = <CheckCircle className="h-3 w-3 text-green-600 inline mr-1" />;
         }
 
         return {
-          category: sectionNames[dept]?.[language] || dept,
+          category: getDepartmentName(dept, language),
           yourScore: score,
           industryAvg: INDUSTRY_AVG,
           gap,
           priority,
           priorityLabel,
-          priorityColor
+          priorityColor,
+          priorityIcon
         };
       })
-      .sort((a, b) => a.gap - b.gap); // Sort by gap (most critical first)
+      .sort((a, b) => a.gap - b.gap);
   }, [scores, language]);
 
   const overallMaturity = useMemo(() => {
@@ -155,22 +145,20 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
   }, [scores, maturityLevels]);
 
   const departmentMaturityData = useMemo(() => {
-    return Object.entries(scores).map(([dept, score]) => {
-      const deptNames: Record<string, Record<string, string>> = {
-        'new-vehicle-sales': { en: 'New Vehicle Sales', de: 'Neuwagenverkauf' },
-        'used-vehicle-sales': { en: 'Used Vehicle Sales', de: 'Gebrauchtwagenverkauf' },
-        'service-performance': { en: 'Service Performance', de: 'Serviceleistung' },
-        'parts-inventory': { en: 'Parts & Inventory', de: 'Teile & Lager' },
-        'financial-operations': { en: 'Financial Operations', de: 'Finanzoperationen' }
-      };
-      
-      return {
-        department: deptNames[dept]?.[language] || dept,
-        score,
-        level: getMaturityLevel(score),
-      };
-    });
+    return Object.entries(scores).map(([dept, score]) => ({
+      department: getDepartmentName(dept, language),
+      score,
+      level: getMaturityLevel(score),
+    }));
   }, [scores, language, maturityLevels]);
+
+  // 4C: Build weight tooltip content
+  const weightTooltipLines = useMemo(() => {
+    return Object.entries(DEPARTMENT_TO_CATEGORY).map(([dept, cat]) => {
+      const weight = CATEGORY_WEIGHTS[cat];
+      return `${getDepartmentName(dept, language)}: ${Math.round(weight * 100)}%`;
+    });
+  }, [language]);
 
   return (
     <div className="space-y-6">
@@ -178,7 +166,27 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            📊 {language === 'de' ? 'Leistungsradar' : 'Performance Radar'}
+            {language === 'de' ? 'Leistungsradar' : 'Performance Radar'}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type="button" className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-muted hover:bg-muted/80 transition-colors" aria-label="Calculation info">
+                  <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs p-3">
+                <p className="font-medium mb-2">{language === 'de' ? 'Gewichtete Berechnung' : 'Weighted Calculation'}</p>
+                <p className="text-xs text-muted-foreground mb-2">
+                  {language === 'de' 
+                    ? 'Gesamtpunktzahl wird gewichtet berechnet:'
+                    : 'Overall score is calculated with weights:'}
+                </p>
+                <ul className="text-xs space-y-1">
+                  {weightTooltipLines.map((line, i) => (
+                    <li key={i}>- {line}</li>
+                  ))}
+                </ul>
+              </TooltipContent>
+            </Tooltip>
           </CardTitle>
           <p className="text-sm text-muted-foreground">
             {language === 'de' 
@@ -225,11 +233,11 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
         </CardContent>
       </Card>
 
-      {/* Gap Analysis Table - NEW */}
+      {/* Gap Analysis Table */}
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            📈 {language === 'de' ? 'Lückenanalyse' : 'Performance Gap Analysis'}
+            {language === 'de' ? 'Lückenanalyse' : 'Performance Gap Analysis'}
           </CardTitle>
           <p className="text-sm text-muted-foreground">
             {language === 'de' 
@@ -259,7 +267,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
                   </TableCell>
                   <TableCell className="text-center">
                     <Badge className={row.priorityColor}>
-                      {row.priority === 'critical' ? '🔴' : row.priority === 'medium' ? '🟡' : '🟢'} {row.priorityLabel}
+                      {row.priorityIcon} {row.priorityLabel}
                     </Badge>
                   </TableCell>
                 </TableRow>
@@ -273,7 +281,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
       <Card className={`border-2 shadow-lg ${overallMaturity.color}`}>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <span className="text-3xl">{overallMaturity.emoji}</span>
+            <span className="text-3xl">{overallMaturity.icon}</span>
             <div>
               <CardTitle className="text-xl font-bold">
                 {language === 'de' ? 'Reifestufe' : 'Maturity Level'}: {overallMaturity.name}
@@ -303,7 +311,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
                   const percentage = (count / departmentMaturityData.length) * 100;
                   return (
                     <div key={level.level} className="flex items-center gap-2 text-sm whitespace-nowrap">
-                      <span className="flex-shrink-0">{level.emoji}</span>
+                      <span className="flex-shrink-0">{level.icon}</span>
                       <span className="flex-shrink-0 w-20">{level.name}</span>
                       <Progress value={percentage} className="flex-1 h-2 min-w-[60px]" />
                       <span className="flex-shrink-0 text-xs w-16 text-right">{count} {language === 'de' ? 'Bereiche' : 'areas'}</span>
@@ -329,7 +337,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
             {maturityLevels.map((level, index) => (
               <div key={level.level} className="flex items-center gap-2">
                 <div className={`w-16 h-16 rounded-full border-2 flex flex-col items-center justify-center font-bold ${level.color} ${overallMaturity.level === level.level ? 'ring-2 ring-primary ring-offset-2' : ''}`}>
-                  <span className="text-2xl">{level.emoji}</span>
+                  {level.icon}
                 </div>
                 <div className="text-sm">
                   <div className="font-bold">{level.name}</div>
