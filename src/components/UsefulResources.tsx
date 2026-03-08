@@ -89,22 +89,6 @@ const DEPARTMENT_MAP: Record<string, { en: string; de: string }> = {
   'sales-process': { en: 'Sales Process & Pipeline', de: 'Vertriebsprozess & Pipeline' }
 };
 
-const ROOT_CAUSE_ICONS: Record<string, typeof UserCheck> = {
-  people: UserCheck,
-  process: Settings,
-  tools: Wrench,
-  structure: Building2,
-  incentives: Coins
-};
-
-const ROOT_CAUSE_LABELS: Record<string, { en: string; de: string }> = {
-  people: { en: 'People', de: 'Personal' },
-  process: { en: 'Process', de: 'Prozess' },
-  tools: { en: 'Tools', de: 'Werkzeuge' },
-  structure: { en: 'Structure', de: 'Struktur' },
-  incentives: { en: 'Incentives', de: 'Anreize' }
-};
-
 function KPIDetailCard({ kpiKey, kpi, language }: { kpiKey: string; kpi: KPIDefinition; language: string }) {
   const [showDetails, setShowDetails] = useState(false);
   const isEnriched = !!kpi.rootCauseDiagnostics;
