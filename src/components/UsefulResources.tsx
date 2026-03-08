@@ -89,193 +89,10 @@ const DEPARTMENT_MAP: Record<string, { en: string; de: string }> = {
   'sales-process': { en: 'Sales Process & Pipeline', de: 'Vertriebsprozess & Pipeline' }
 };
 
-function KPIDetailCard({ kpiKey, kpi, language }: { kpiKey: string; kpi: KPIDefinition; language: string }) {
-  const [showDetails, setShowDetails] = useState(false);
-  const isEnriched = !!kpi.rootCauseDiagnostics;
-
-  return (
-    <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-      <div className="flex items-start justify-between gap-2">
-        <h4 className="font-semibold text-primary">{kpi.title}</h4>
-        <div className="flex items-center gap-2 shrink-0">
-          {kpi.benchmark && (
-            <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
-              {kpi.benchmark}
-            </Badge>
-          )}
-          {isEnriched && (
-            <Badge variant="secondary" className="text-xs">
-              {language === 'de' ? 'Vertiefte Analyse' : 'Deep Dive'}
-            </Badge>
-          )}
-        </div>
-      </div>
-
-      <p className="text-sm text-muted-foreground">{kpi.definition}</p>
-
-      {kpi.executiveSummary && (
-        <p className="text-xs text-muted-foreground italic">{kpi.executiveSummary}</p>
-      )}
-
-      {/* Formula, Unit, Benchmark row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-        {kpi.formula && (
-          <div className="bg-background p-2 rounded">
-            <span className="text-muted-foreground">{language === 'de' ? 'Formel:' : 'Formula:'}</span>
-            <p className="font-mono mt-1 text-[11px]">{kpi.formula}</p>
-          </div>
-        )}
-        {kpi.unitOfMeasure && (
-          <div className="bg-background p-2 rounded">
-            <span className="text-muted-foreground">{language === 'de' ? 'Einheit:' : 'Unit:'}</span>
-            <p className="font-semibold mt-1">{kpi.unitOfMeasure}</p>
-          </div>
-        )}
-        <div className="bg-background p-2 rounded">
-          <span className="text-muted-foreground">{language === 'de' ? 'Warum wichtig:' : 'Why it matters:'}</span>
-          <p className="mt-1">{kpi.whyItMatters}</p>
-        </div>
-      </div>
-
-      {/* Inclusions/Exclusions */}
-      {(kpi.inclusions || kpi.exclusions) && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-          {kpi.inclusions && kpi.inclusions.length > 0 && (
-            <div className="bg-background p-2 rounded">
-              <span className="text-muted-foreground font-medium">{language === 'de' ? 'Einschlüsse:' : 'Includes:'}</span>
-              <ul className="mt-1 space-y-0.5">
-                {kpi.inclusions.map((item, i) => (
-                  <li key={i} className="flex items-start gap-1">
-                    <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {kpi.exclusions && kpi.exclusions.length > 0 && (
-            <div className="bg-background p-2 rounded">
-              <span className="text-muted-foreground font-medium">{language === 'de' ? 'Ausschlüsse:' : 'Excludes:'}</span>
-              <ul className="mt-1 space-y-0.5">
-                {kpi.exclusions.map((item, i) => (
-                  <li key={i} className="text-muted-foreground">• {item}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Enriched content toggle */}
-      {isEnriched && (
-        <>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full h-8 text-xs gap-1"
-            onClick={() => setShowDetails(!showDetails)}
-          >
-            <ChevronRight className={cn("h-3 w-3 transition-transform", showDetails && "rotate-90")} />
-            {showDetails
-              ? (language === 'de' ? 'Details ausblenden' : 'Hide details')
-              : (language === 'de' ? 'Ursachendiagnostik & Verbesserungshebel anzeigen' : 'Show root cause diagnostics & improvement levers')
-            }
-          </Button>
-
-          {showDetails && (
-            <div className="space-y-3 pt-2 border-t border-border/50">
-              {/* Root Cause Diagnostics */}
-              {kpi.rootCauseDiagnostics && (
-                <div>
-                  <h5 className="text-xs font-semibold mb-2">
-                    🔍 {language === 'de' ? 'Ursachendiagnostik' : 'Root Cause Diagnostics'}
-                  </h5>
-                  <div className="grid grid-cols-1 gap-1.5">
-                    {Object.entries(kpi.rootCauseDiagnostics).map(([dimension, text]) => {
-                      const Icon = ROOT_CAUSE_ICONS[dimension] || Settings;
-                      const label = ROOT_CAUSE_LABELS[dimension]?.[language as 'en' | 'de'] || dimension;
-                      return (
-                        <div key={dimension} className="flex items-start gap-2 bg-background p-2 rounded text-xs">
-                          <div className="p-1 rounded bg-muted shrink-0">
-                            <Icon className="h-3 w-3 text-muted-foreground" />
-                          </div>
-                          <div>
-                            <span className="font-medium">{label}:</span>{' '}
-                            <span className="text-muted-foreground">{text}</span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Improvement Levers */}
-              {kpi.improvementLevers && kpi.improvementLevers.length > 0 && (
-                <div>
-                  <h5 className="text-xs font-semibold mb-2">
-                    🎯 {language === 'de' ? 'Verbesserungshebel' : 'Improvement Levers'}
-                  </h5>
-                  <ul className="space-y-1">
-                    {kpi.improvementLevers.map((lever, i) => (
-                      <li key={i} className="flex items-start gap-2 text-xs">
-                        <CheckCircle className="h-3 w-3 text-primary mt-0.5 shrink-0" />
-                        <span>{lever}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Interdependencies */}
-              {kpi.interdependencies && (
-                <div>
-                  <h5 className="text-xs font-semibold mb-2">
-                    🔗 {language === 'de' ? 'KPI-Abhängigkeiten' : 'KPI Interdependencies'}
-                  </h5>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {kpi.interdependencies.upstreamDrivers.length > 0 && (
-                      <div className="bg-background p-2 rounded text-xs">
-                        <div className="flex items-center gap-1 font-medium mb-1">
-                          <ArrowUpRight className="h-3 w-3 text-blue-500" />
-                          {language === 'de' ? 'Vorgelagerte Treiber' : 'Upstream Drivers'}
-                        </div>
-                        <ul className="space-y-0.5">
-                          {kpi.interdependencies.upstreamDrivers.map((d, i) => (
-                            <li key={i} className="text-muted-foreground">• {d}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {kpi.interdependencies.downstreamImpacts.length > 0 && (
-                      <div className="bg-background p-2 rounded text-xs">
-                        <div className="flex items-center gap-1 font-medium mb-1">
-                          <ArrowDownRight className="h-3 w-3 text-orange-500" />
-                          {language === 'de' ? 'Nachgelagerte Auswirkungen' : 'Downstream Impacts'}
-                        </div>
-                        <ul className="space-y-0.5">
-                          {kpi.interdependencies.downstreamImpacts.map((d, i) => (
-                            <li key={i} className="text-muted-foreground">• {d}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  );
-}
-
 export function UsefulResources({ scores }: UsefulResourcesProps) {
   const { t, language } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState<string>('all');
-  const [encyclopediaSearch, setEncycediaSearch] = useState('');
 
   // Get improvement areas (departments with score < 70)
   const improvementAreas = useMemo(() => {
@@ -293,43 +110,6 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
       return true;
     });
   }, [language, searchTerm, departmentFilter]);
-
-  // Build encyclopedia data from KPI_DEFINITIONS grouped by department
-  const encyclopediaData = useMemo(() => {
-    const deptGroups: Record<string, { key: string; kpi: KPIDefinition }[]> = {};
-    
-    for (const [key, value] of Object.entries(KPI_DEFINITIONS)) {
-      const enDef = value.en;
-      const dept = enDef.department || 'other';
-      const localizedDef = value[language as 'en' | 'de'] || value.en;
-      
-      if (!deptGroups[dept]) deptGroups[dept] = [];
-      deptGroups[dept].push({ key, kpi: localizedDef });
-    }
-
-    // Filter by search
-    if (encyclopediaSearch) {
-      const search = encyclopediaSearch.toLowerCase();
-      for (const dept of Object.keys(deptGroups)) {
-        deptGroups[dept] = deptGroups[dept].filter(item =>
-          item.kpi.title.toLowerCase().includes(search) ||
-          item.kpi.definition.toLowerCase().includes(search)
-        );
-        if (deptGroups[dept].length === 0) delete deptGroups[dept];
-      }
-    }
-
-    // Order departments
-    const orderedDepts = ['new-vehicle-sales', 'used-vehicle-sales', 'service-performance', 'parts-inventory', 'financial-operations', 'customer-satisfaction', 'marketing-digital', 'workforce-hr', 'ev-readiness', 'sales-process', 'other'];
-    return orderedDepts
-      .filter(d => deptGroups[d] && deptGroups[d].length > 0)
-      .map(d => ({
-        departmentKey: d,
-        departmentName: DEPARTMENT_MAP[d]?.[language as 'en' | 'de'] || DEPARTMENT_MAP[d]?.en || (language === 'de' ? 'Sonstige' : 'Other'),
-        kpis: deptGroups[d],
-        enrichedCount: deptGroups[d].filter(k => k.kpi.rootCauseDiagnostics).length
-      }));
-  }, [language, encyclopediaSearch]);
 
   const materials = supportMaterials[language as 'en' | 'de'] || supportMaterials.en;
 
@@ -400,7 +180,7 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">
-                📚 {language === 'de' ? 'Kuratierte Lernressourcen für Ihre Verbesserungsbereiche' : 'Curated Learning Resources for Your Improvement Areas'}
+                {language === 'de' ? 'Kuratierte Lernressourcen für Ihre Verbesserungsbereiche' : 'Curated Learning Resources for Your Improvement Areas'}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
                 {language === 'de' 
@@ -455,7 +235,7 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
                         <CardContent className="p-4 space-y-3">
                           <div className="flex items-start justify-between gap-2">
                             <div className={cn("p-2 rounded-lg", getTypeColor(resource.type))}>
-                              <Icon className="h-4 w-4 text-white" />
+                              <Icon className="h-4 w-4 text-primary-foreground" />
                             </div>
                             {isPrioritized && (
                               <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
@@ -484,66 +264,9 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
           </Card>
         </TabsContent>
 
-        {/* KPI Encyclopedia Tab — Now sourced from kpiDefinitions.ts */}
-        <TabsContent value="encyclopedia" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">
-                📊 {language === 'de' ? 'KPI-Enzyklopädie' : 'KPI Encyclopedia'}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {language === 'de' 
-                  ? 'Umfassende Referenzbibliothek mit Ursachendiagnostik, Verbesserungshebeln und KPI-Abhängigkeiten'
-                  : 'Comprehensive reference library with root cause diagnostics, improvement levers, and KPI interdependencies'}
-              </p>
-              <div className="pt-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    placeholder={language === 'de' ? 'KPIs durchsuchen...' : 'Search KPIs...'}
-                    value={encyclopediaSearch}
-                    onChange={(e) => setEncycediaSearch(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Accordion type="single" collapsible className="w-full space-y-2">
-                {encyclopediaData.map((dept, index) => (
-                  <AccordionItem 
-                    key={dept.departmentKey} 
-                    value={`dept-${dept.departmentKey}`}
-                    className="border rounded-lg px-4"
-                  >
-                    <AccordionTrigger className="hover:no-underline py-4">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold">{dept.departmentName}</span>
-                        <Badge variant="secondary" className="text-xs">{dept.kpis.length} KPIs</Badge>
-                        {dept.enrichedCount > 0 && (
-                          <Badge variant="outline" className="text-xs bg-primary/5 text-primary border-primary/20">
-                            {dept.enrichedCount} {language === 'de' ? 'mit Deep Dive' : 'with Deep Dive'}
-                          </Badge>
-                        )}
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pb-4">
-                      <div className="space-y-4">
-                        {dept.kpis.map((item) => (
-                          <KPIDetailCard 
-                            key={item.key} 
-                            kpiKey={item.key} 
-                            kpi={item.kpi} 
-                            language={language} 
-                          />
-                        ))}
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </CardContent>
-          </Card>
+        {/* KPI Encyclopedia Tab — New Intelligence Library */}
+        <TabsContent value="encyclopedia" className="space-y-0">
+          <KPIIntelligenceLibrary scores={scores} />
         </TabsContent>
 
         {/* Support Materials Tab */}
@@ -551,7 +274,7 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">
-                🛠️ {language === 'de' ? 'Unterstützungsmaterialien' : 'Support Materials'}
+                {language === 'de' ? 'Unterstützungsmaterialien' : 'Support Materials'}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
                 {language === 'de' 
