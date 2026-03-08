@@ -8,11 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   BookOpen, Video, FileText, Globe, TrendingUp, CheckCircle, 
   Search, Download, ExternalLink, Clock, Filter, GraduationCap,
-  FileSpreadsheet, Presentation, Users
+  FileSpreadsheet, Presentation, Users, ArrowUpRight, ArrowDownRight,
+  UserCheck, Settings, Wrench, Building2, Coins, ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
+import { KPI_DEFINITIONS, KPIDefinition } from "@/lib/kpiDefinitions";
 
 interface UsefulResourcesProps {
   scores: Record<string, number>;
@@ -56,48 +58,6 @@ const resourceCatalog = {
   ]
 };
 
-// KPI Encyclopedia data
-const kpiEncyclopedia = {
-  en: [
-    { department: 'New Vehicle Sales', kpis: [
-      { name: 'Monthly Revenue', definition: 'Total revenue generated from new vehicle sales per month', formula: 'Sum of all new vehicle sale prices', benchmark: '€420,000+', why: 'Primary indicator of sales department health' },
-      { name: 'Lead Conversion Rate', definition: 'Percentage of leads that convert to sales', formula: '(Closed Sales / Total Leads) × 100', benchmark: '23%+', why: 'Measures sales team effectiveness' },
-      { name: 'Average Transaction Value', definition: 'Average revenue per vehicle sold including F&I', formula: 'Total Revenue / Units Sold', benchmark: '€42,000+', why: 'Indicates upselling success and product mix' },
-      { name: 'Customer Satisfaction Score', definition: 'Average rating from post-purchase surveys', formula: 'Sum of ratings / Number of responses', benchmark: '84%+', why: 'Predicts repeat business and referrals' },
-      { name: 'Gross Profit Margin', definition: 'Profit percentage after cost of goods sold', formula: '(Revenue - COGS) / Revenue × 100', benchmark: '9.2%+', why: 'Measures pricing and negotiation effectiveness' }
-    ]},
-    { department: 'Used Vehicle Sales', kpis: [
-      { name: 'Days in Inventory', definition: 'Average days a vehicle remains in stock', formula: 'Sum of all vehicle days / Units Sold', benchmark: '<45 days', why: 'Lower is better - reduces depreciation' },
-      { name: 'Inventory Turnover', definition: 'How many times inventory sells per year', formula: 'Annual Units Sold / Average Inventory', benchmark: '8x+', why: 'Higher turnover improves cash flow' },
-      { name: 'Gross Profit Per Unit', definition: 'Average profit per used vehicle sold', formula: 'Total Gross Profit / Units Sold', benchmark: '€2,500+', why: 'Primary profitability metric' }
-    ]},
-    { department: 'Service Performance', kpis: [
-      { name: 'Labor Efficiency', definition: 'Billable hours vs available hours', formula: '(Billable Hours / Available Hours) × 100', benchmark: '85%+', why: 'Measures technician productivity' },
-      { name: 'Workshop Utilization', definition: 'Percentage of capacity being used', formula: '(Actual Jobs / Capacity) × 100', benchmark: '90%+', why: 'Indicates operational efficiency' },
-      { name: 'Service Retention', definition: 'Customers returning within 12 months', formula: '(Return Customers / Total) × 100', benchmark: '65%+', why: 'Loyalty and predictable revenue' }
-    ]},
-    { department: 'Parts & Inventory', kpis: [
-      { name: 'Fill Rate', definition: 'Orders fulfilled from stock', formula: '(Fulfilled from Stock / Total Orders) × 100', benchmark: '92%+', why: 'Customer satisfaction and efficiency' },
-      { name: 'Obsolete Stock %', definition: 'Inventory with no movement 12+ months', formula: '(Obsolete Value / Total Value) × 100', benchmark: '<5%', why: 'Lower is better - frees up capital' },
-      { name: 'Parts Margin', definition: 'Profit margin on parts sales', formula: '(Revenue - Cost) / Revenue × 100', benchmark: '35%+', why: 'Key profit contributor' }
-    ]},
-    { department: 'Financial Operations', kpis: [
-      { name: 'Profit Margin', definition: 'Net profit as percentage of revenue', formula: 'Net Profit / Total Revenue × 100', benchmark: '3%+', why: 'Overall business profitability' },
-      { name: 'Cash Flow', definition: 'Net cash movement per month', formula: 'Cash Inflows - Cash Outflows', benchmark: 'Positive', why: 'Critical for operations' },
-      { name: 'Expense Ratio', definition: 'Operating expenses vs revenue', formula: 'Operating Expenses / Revenue × 100', benchmark: '<88%', why: 'Lower is better - indicates efficiency' }
-    ]}
-  ],
-  de: [
-    { department: 'Neuwagenverkauf', kpis: [
-      { name: 'Monatsumsatz', definition: 'Gesamtumsatz aus Neuwagenverkäufen pro Monat', formula: 'Summe aller Neuwagenverkaufspreise', benchmark: '€420.000+', why: 'Primärer Indikator für Verkaufsabteilungsgesundheit' },
-      { name: 'Lead-Konvertierungsrate', definition: 'Prozentsatz der Leads, die zu Verkäufen führen', formula: '(Abgeschlossene Verkäufe / Gesamt-Leads) × 100', benchmark: '23%+', why: 'Misst die Effektivität des Verkaufsteams' }
-    ]},
-    { department: 'Gebrauchtwagenverkauf', kpis: [
-      { name: 'Lagertage', definition: 'Durchschnittliche Tage, die ein Fahrzeug auf Lager bleibt', formula: 'Summe aller Fahrzeugtage / Verkaufte Einheiten', benchmark: '<45 Tage', why: 'Niedriger ist besser - reduziert Wertverlust' }
-    ]}
-  ]
-};
-
 // Support materials
 const supportMaterials = {
   en: [
@@ -118,10 +78,217 @@ const supportMaterials = {
   ]
 };
 
+const DEPARTMENT_MAP: Record<string, { en: string; de: string }> = {
+  'new-vehicle-sales': { en: 'New Vehicle Sales', de: 'Neuwagenverkauf' },
+  'used-vehicle-sales': { en: 'Used Vehicle Sales', de: 'Gebrauchtwagenverkauf' },
+  'service-performance': { en: 'Service Performance', de: 'Serviceleistung' },
+  'parts-inventory': { en: 'Parts & Inventory', de: 'Teile & Lager' },
+  'financial-operations': { en: 'Financial Operations', de: 'Finanzoperationen' }
+};
+
+const ROOT_CAUSE_ICONS: Record<string, typeof UserCheck> = {
+  people: UserCheck,
+  process: Settings,
+  tools: Wrench,
+  structure: Building2,
+  incentives: Coins
+};
+
+const ROOT_CAUSE_LABELS: Record<string, { en: string; de: string }> = {
+  people: { en: 'People', de: 'Personal' },
+  process: { en: 'Process', de: 'Prozess' },
+  tools: { en: 'Tools', de: 'Werkzeuge' },
+  structure: { en: 'Structure', de: 'Struktur' },
+  incentives: { en: 'Incentives', de: 'Anreize' }
+};
+
+function KPIDetailCard({ kpiKey, kpi, language }: { kpiKey: string; kpi: KPIDefinition; language: string }) {
+  const [showDetails, setShowDetails] = useState(false);
+  const isEnriched = !!kpi.rootCauseDiagnostics;
+
+  return (
+    <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+      <div className="flex items-start justify-between gap-2">
+        <h4 className="font-semibold text-primary">{kpi.title}</h4>
+        <div className="flex items-center gap-2 shrink-0">
+          {kpi.benchmark && (
+            <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
+              {kpi.benchmark}
+            </Badge>
+          )}
+          {isEnriched && (
+            <Badge variant="secondary" className="text-xs">
+              {language === 'de' ? 'Vertiefte Analyse' : 'Deep Dive'}
+            </Badge>
+          )}
+        </div>
+      </div>
+
+      <p className="text-sm text-muted-foreground">{kpi.definition}</p>
+
+      {kpi.executiveSummary && (
+        <p className="text-xs text-muted-foreground italic">{kpi.executiveSummary}</p>
+      )}
+
+      {/* Formula, Unit, Benchmark row */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+        {kpi.formula && (
+          <div className="bg-background p-2 rounded">
+            <span className="text-muted-foreground">{language === 'de' ? 'Formel:' : 'Formula:'}</span>
+            <p className="font-mono mt-1 text-[11px]">{kpi.formula}</p>
+          </div>
+        )}
+        {kpi.unitOfMeasure && (
+          <div className="bg-background p-2 rounded">
+            <span className="text-muted-foreground">{language === 'de' ? 'Einheit:' : 'Unit:'}</span>
+            <p className="font-semibold mt-1">{kpi.unitOfMeasure}</p>
+          </div>
+        )}
+        <div className="bg-background p-2 rounded">
+          <span className="text-muted-foreground">{language === 'de' ? 'Warum wichtig:' : 'Why it matters:'}</span>
+          <p className="mt-1">{kpi.whyItMatters}</p>
+        </div>
+      </div>
+
+      {/* Inclusions/Exclusions */}
+      {(kpi.inclusions || kpi.exclusions) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          {kpi.inclusions && kpi.inclusions.length > 0 && (
+            <div className="bg-background p-2 rounded">
+              <span className="text-muted-foreground font-medium">{language === 'de' ? 'Einschlüsse:' : 'Includes:'}</span>
+              <ul className="mt-1 space-y-0.5">
+                {kpi.inclusions.map((item, i) => (
+                  <li key={i} className="flex items-start gap-1">
+                    <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {kpi.exclusions && kpi.exclusions.length > 0 && (
+            <div className="bg-background p-2 rounded">
+              <span className="text-muted-foreground font-medium">{language === 'de' ? 'Ausschlüsse:' : 'Excludes:'}</span>
+              <ul className="mt-1 space-y-0.5">
+                {kpi.exclusions.map((item, i) => (
+                  <li key={i} className="text-muted-foreground">• {item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Enriched content toggle */}
+      {isEnriched && (
+        <>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full h-8 text-xs gap-1"
+            onClick={() => setShowDetails(!showDetails)}
+          >
+            <ChevronRight className={cn("h-3 w-3 transition-transform", showDetails && "rotate-90")} />
+            {showDetails
+              ? (language === 'de' ? 'Details ausblenden' : 'Hide details')
+              : (language === 'de' ? 'Ursachendiagnostik & Verbesserungshebel anzeigen' : 'Show root cause diagnostics & improvement levers')
+            }
+          </Button>
+
+          {showDetails && (
+            <div className="space-y-3 pt-2 border-t border-border/50">
+              {/* Root Cause Diagnostics */}
+              {kpi.rootCauseDiagnostics && (
+                <div>
+                  <h5 className="text-xs font-semibold mb-2">
+                    🔍 {language === 'de' ? 'Ursachendiagnostik' : 'Root Cause Diagnostics'}
+                  </h5>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {Object.entries(kpi.rootCauseDiagnostics).map(([dimension, text]) => {
+                      const Icon = ROOT_CAUSE_ICONS[dimension] || Settings;
+                      const label = ROOT_CAUSE_LABELS[dimension]?.[language as 'en' | 'de'] || dimension;
+                      return (
+                        <div key={dimension} className="flex items-start gap-2 bg-background p-2 rounded text-xs">
+                          <div className="p-1 rounded bg-muted shrink-0">
+                            <Icon className="h-3 w-3 text-muted-foreground" />
+                          </div>
+                          <div>
+                            <span className="font-medium">{label}:</span>{' '}
+                            <span className="text-muted-foreground">{text}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Improvement Levers */}
+              {kpi.improvementLevers && kpi.improvementLevers.length > 0 && (
+                <div>
+                  <h5 className="text-xs font-semibold mb-2">
+                    🎯 {language === 'de' ? 'Verbesserungshebel' : 'Improvement Levers'}
+                  </h5>
+                  <ul className="space-y-1">
+                    {kpi.improvementLevers.map((lever, i) => (
+                      <li key={i} className="flex items-start gap-2 text-xs">
+                        <CheckCircle className="h-3 w-3 text-primary mt-0.5 shrink-0" />
+                        <span>{lever}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Interdependencies */}
+              {kpi.interdependencies && (
+                <div>
+                  <h5 className="text-xs font-semibold mb-2">
+                    🔗 {language === 'de' ? 'KPI-Abhängigkeiten' : 'KPI Interdependencies'}
+                  </h5>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {kpi.interdependencies.upstreamDrivers.length > 0 && (
+                      <div className="bg-background p-2 rounded text-xs">
+                        <div className="flex items-center gap-1 font-medium mb-1">
+                          <ArrowUpRight className="h-3 w-3 text-blue-500" />
+                          {language === 'de' ? 'Vorgelagerte Treiber' : 'Upstream Drivers'}
+                        </div>
+                        <ul className="space-y-0.5">
+                          {kpi.interdependencies.upstreamDrivers.map((d, i) => (
+                            <li key={i} className="text-muted-foreground">• {d}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {kpi.interdependencies.downstreamImpacts.length > 0 && (
+                      <div className="bg-background p-2 rounded text-xs">
+                        <div className="flex items-center gap-1 font-medium mb-1">
+                          <ArrowDownRight className="h-3 w-3 text-orange-500" />
+                          {language === 'de' ? 'Nachgelagerte Auswirkungen' : 'Downstream Impacts'}
+                        </div>
+                        <ul className="space-y-0.5">
+                          {kpi.interdependencies.downstreamImpacts.map((d, i) => (
+                            <li key={i} className="text-muted-foreground">• {d}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 export function UsefulResources({ scores }: UsefulResourcesProps) {
   const { t, language } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState<string>('all');
+  const [encyclopediaSearch, setEncycediaSearch] = useState('');
 
   // Get improvement areas (departments with score < 70)
   const improvementAreas = useMemo(() => {
@@ -133,29 +300,50 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
   // Filter resources based on improvement areas and search
   const filteredResources = useMemo(() => {
     const catalog = resourceCatalog[language as 'en' | 'de'] || resourceCatalog.en;
-    
     return catalog.filter(resource => {
-      // Department filter
-      if (departmentFilter !== 'all' && resource.department !== departmentFilter) {
-        return false;
-      }
-      
-      // Search filter
-      if (searchTerm && !resource.title.toLowerCase().includes(searchTerm.toLowerCase())) {
-        return false;
-      }
-      
+      if (departmentFilter !== 'all' && resource.department !== departmentFilter) return false;
+      if (searchTerm && !resource.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
       return true;
     });
   }, [language, searchTerm, departmentFilter]);
 
-  // Prioritized resources for improvement areas
-  const prioritizedResources = useMemo(() => {
-    const catalog = resourceCatalog[language as 'en' | 'de'] || resourceCatalog.en;
-    return catalog.filter(resource => improvementAreas.includes(resource.department));
-  }, [language, improvementAreas]);
+  // Build encyclopedia data from KPI_DEFINITIONS grouped by department
+  const encyclopediaData = useMemo(() => {
+    const deptGroups: Record<string, { key: string; kpi: KPIDefinition }[]> = {};
+    
+    for (const [key, value] of Object.entries(KPI_DEFINITIONS)) {
+      const enDef = value.en;
+      const dept = enDef.department || 'other';
+      const localizedDef = value[language as 'en' | 'de'] || value.en;
+      
+      if (!deptGroups[dept]) deptGroups[dept] = [];
+      deptGroups[dept].push({ key, kpi: localizedDef });
+    }
 
-  const encyclopedia = kpiEncyclopedia[language as 'en' | 'de'] || kpiEncyclopedia.en;
+    // Filter by search
+    if (encyclopediaSearch) {
+      const search = encyclopediaSearch.toLowerCase();
+      for (const dept of Object.keys(deptGroups)) {
+        deptGroups[dept] = deptGroups[dept].filter(item =>
+          item.kpi.title.toLowerCase().includes(search) ||
+          item.kpi.definition.toLowerCase().includes(search)
+        );
+        if (deptGroups[dept].length === 0) delete deptGroups[dept];
+      }
+    }
+
+    // Order departments
+    const orderedDepts = ['new-vehicle-sales', 'used-vehicle-sales', 'service-performance', 'parts-inventory', 'financial-operations', 'other'];
+    return orderedDepts
+      .filter(d => deptGroups[d] && deptGroups[d].length > 0)
+      .map(d => ({
+        departmentKey: d,
+        departmentName: DEPARTMENT_MAP[d]?.[language as 'en' | 'de'] || DEPARTMENT_MAP[d]?.en || (language === 'de' ? 'Sonstige' : 'Other'),
+        kpis: deptGroups[d],
+        enrichedCount: deptGroups[d].filter(k => k.kpi.rootCauseDiagnostics).length
+      }));
+  }, [language, encyclopediaSearch]);
+
   const materials = supportMaterials[language as 'en' | 'de'] || supportMaterials.en;
 
   const getTypeIcon = (type: string) => {
@@ -176,14 +364,6 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
       'Webinar': 'bg-orange-500'
     };
     return colorMap[type] || 'bg-gray-500';
-  };
-
-  const departmentNames: Record<string, Record<string, string>> = {
-    'new-vehicle-sales': { en: 'New Vehicle Sales', de: 'Neuwagenverkauf' },
-    'used-vehicle-sales': { en: 'Used Vehicle Sales', de: 'Gebrauchtwagenverkauf' },
-    'service-performance': { en: 'Service Performance', de: 'Serviceleistung' },
-    'parts-inventory': { en: 'Parts & Inventory', de: 'Teile & Lager' },
-    'financial-operations': { en: 'Financial Operations', de: 'Finanzoperationen' }
   };
 
   return (
@@ -259,8 +439,8 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
                   className="px-3 py-2 border rounded-md bg-background"
                 >
                   <option value="all">{language === 'de' ? 'Alle Abteilungen' : 'All Departments'}</option>
-                  {Object.entries(departmentNames).map(([key, names]) => (
-                    <option key={key} value={key}>{names[language] || names.en}</option>
+                  {Object.entries(DEPARTMENT_MAP).map(([key, names]) => (
+                    <option key={key} value={key}>{names[language as 'en' | 'de'] || names.en}</option>
                   ))}
                 </select>
               </div>
@@ -317,7 +497,7 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
           </Card>
         </TabsContent>
 
-        {/* KPI Encyclopedia Tab */}
+        {/* KPI Encyclopedia Tab — Now sourced from kpiDefinitions.ts */}
         <TabsContent value="encyclopedia" className="space-y-6">
           <Card>
             <CardHeader>
@@ -326,43 +506,49 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
               </CardTitle>
               <p className="text-sm text-muted-foreground">
                 {language === 'de' 
-                  ? 'Referenzbibliothek für alle Leistungskennzahlen'
-                  : 'Reference library for all performance metrics'}
+                  ? 'Umfassende Referenzbibliothek mit Ursachendiagnostik, Verbesserungshebeln und KPI-Abhängigkeiten'
+                  : 'Comprehensive reference library with root cause diagnostics, improvement levers, and KPI interdependencies'}
               </p>
+              <div className="pt-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    placeholder={language === 'de' ? 'KPIs durchsuchen...' : 'Search KPIs...'}
+                    value={encyclopediaSearch}
+                    onChange={(e) => setEncycediaSearch(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <Accordion type="single" collapsible className="w-full space-y-2">
-                {encyclopedia.map((dept, index) => (
+                {encyclopediaData.map((dept, index) => (
                   <AccordionItem 
-                    key={index} 
-                    value={`dept-${index}`}
+                    key={dept.departmentKey} 
+                    value={`dept-${dept.departmentKey}`}
                     className="border rounded-lg px-4"
                   >
                     <AccordionTrigger className="hover:no-underline py-4">
-                      <span className="font-semibold">{dept.department}</span>
-                      <Badge variant="secondary" className="ml-2">{dept.kpis.length} KPIs</Badge>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">{dept.departmentName}</span>
+                        <Badge variant="secondary" className="text-xs">{dept.kpis.length} KPIs</Badge>
+                        {dept.enrichedCount > 0 && (
+                          <Badge variant="outline" className="text-xs bg-primary/5 text-primary border-primary/20">
+                            {dept.enrichedCount} {language === 'de' ? 'mit Deep Dive' : 'with Deep Dive'}
+                          </Badge>
+                        )}
+                      </div>
                     </AccordionTrigger>
                     <AccordionContent className="pb-4">
                       <div className="space-y-4">
-                        {dept.kpis.map((kpi, kpiIndex) => (
-                          <div key={kpiIndex} className="p-4 bg-muted/50 rounded-lg space-y-2">
-                            <h4 className="font-semibold text-primary">{kpi.name}</h4>
-                            <p className="text-sm text-muted-foreground">{kpi.definition}</p>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                              <div className="bg-background p-2 rounded">
-                                <span className="text-muted-foreground">{language === 'de' ? 'Formel:' : 'Formula:'}</span>
-                                <p className="font-mono mt-1">{kpi.formula}</p>
-                              </div>
-                              <div className="bg-background p-2 rounded">
-                                <span className="text-muted-foreground">{language === 'de' ? 'Benchmark:' : 'Benchmark:'}</span>
-                                <p className="font-semibold text-primary mt-1">{kpi.benchmark}</p>
-                              </div>
-                              <div className="bg-background p-2 rounded">
-                                <span className="text-muted-foreground">{language === 'de' ? 'Warum wichtig:' : 'Why it matters:'}</span>
-                                <p className="mt-1">{kpi.why}</p>
-                              </div>
-                            </div>
-                          </div>
+                        {dept.kpis.map((item) => (
+                          <KPIDetailCard 
+                            key={item.key} 
+                            kpiKey={item.key} 
+                            kpi={item.kpi} 
+                            language={language} 
+                          />
                         ))}
                       </div>
                     </AccordionContent>
