@@ -26,10 +26,10 @@ import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { toast } from 'sonner';
 import { questionnaire } from '@/data/questionnaire';
 import { 
-  analyzeAssessmentAnswers, 
-  generateActionsFromContext, 
-  formatActionsForDatabase 
-} from '@/utils/actionGenerator';
+  generateActionsFromAssessment, 
+  formatActionsForDatabaseInsert 
+} from '@/lib/signalEngine';
+import { questionnaire } from '@/data/questionnaire';
 import { getHumanRationale, cleanActionTitle, cleanActionDescription, priorityDisplay, statusDisplay, resetPatternUsage } from '@/lib/actionRationaleMap';
 import { ActionSheet } from './ActionSheet';
 
