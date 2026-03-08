@@ -60,36 +60,6 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
     return totalPotential;
   }, [scores]);
 
-  const getKPILabel = (key: string): string => {
-    const labels: Record<string, Record<string, string>> = {
-      monthlyRevenue: { en: 'Monthly Revenue', de: 'Monatsumsatz' },
-      averageMargin: { en: 'Average Margin', de: 'Durchschnittliche Marge' },
-      customerSatisfaction: { en: 'Customer Satisfaction', de: 'Kundenzufriedenheit' },
-      leadConversion: { en: 'Lead Conversion', de: 'Lead-Konvertierung' },
-      averageTransactionValue: { en: 'Avg Transaction Value', de: 'Durchschn. Transaktionswert' },
-      salesVolume: { en: 'Sales Volume', de: 'Verkaufsvolumen' },
-      stockTurnover: { en: 'Stock Turnover', de: 'Lagerumschlag' },
-      grossMargin: { en: 'Gross Margin', de: 'Bruttomarge' },
-      daysInInventory: { en: 'Days in Inventory', de: 'Lagertage' },
-      costPerSale: { en: 'Cost per Sale', de: 'Kosten pro Verkauf' },
-      serviceRetention: { en: 'Service Retention', de: 'Servicebindung' },
-      workshopUtilization: { en: 'Workshop Utilization', de: 'Werkstattauslastung' },
-      laborEfficiency: { en: 'Labor Efficiency', de: 'Arbeitseffizienz' },
-      partsAttachment: { en: 'Parts Attachment', de: 'Teileanbindung' },
-      averageRO: { en: 'Average RO', de: 'Durchschnittlicher RO' },
-      partsMargin: { en: 'Parts Margin', de: 'Teilemarge' },
-      fillRate: { en: 'Fill Rate', de: 'Erfüllungsrate' },
-      turnoverRate: { en: 'Turnover Rate', de: 'Umschlagsrate' },
-      obsoleteStock: { en: 'Obsolete Stock', de: 'Veralteter Bestand' },
-      counterSales: { en: 'Counter Sales', de: 'Thekenverkäufe' },
-      cashFlow: { en: 'Cash Flow', de: 'Cashflow' },
-      workingCapital: { en: 'Working Capital', de: 'Betriebskapital' },
-      profitMargin: { en: 'Profit Margin', de: 'Gewinnmarge' },
-      expenseRatio: { en: 'Expense Ratio', de: 'Kostenquote' },
-      returnOnAssets: { en: 'Return on Assets', de: 'Kapitalrendite' }
-    };
-    return labels[key]?.[language] || key.replace(/([A-Z])/g, ' $1').toLowerCase().replace(/^\w/, c => c.toUpperCase());
-  };
 
   const formatValue = (key: string, value: number) => {
     if (key.includes('Revenue') || key.includes('Value') || key.includes('RO') || key.includes('costPerSale') || key.includes('cashFlow') || key.includes('workingCapital') || key.includes('counterSales')) {
