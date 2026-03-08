@@ -20,33 +20,40 @@ interface RootCauseIntelligenceBoardProps {
 export function RootCauseIntelligenceBoard({ diagnostics, language, className }: RootCauseIntelligenceBoardProps) {
   return (
     <div className={cn("", className)}>
-      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-        {language === 'de' ? 'Ursachendiagnostik' : 'Root Cause Intelligence'}
+      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+        {language === 'de' ? 'Zentrale Diagnosethemen' : 'Key Diagnostic Themes'}
       </h3>
+      <p className="text-[11px] text-muted-foreground/60 mb-5">
+        {language === 'de'
+          ? 'Fünf Dimensionen, die die KPI-Leistung typischerweise beeinflussen.'
+          : 'Five dimensions that typically shape this KPI\'s performance.'}
+      </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         {ROOT_CAUSE_DIMENSIONS.map((dim) => {
           const text = diagnostics[dim.key];
           if (!text) return null;
           const Icon = DIMENSION_ICONS[dim.key];
           const label = dim.label[language as 'en' | 'de'] || dim.label.en;
 
+          // Truncate to first sentence or ~120 chars for consistency
+          const shortText = text.length > 120
+            ? text.slice(0, text.indexOf(',', 60) > 0 ? text.indexOf(',', 60) : 120) + '…'
+            : text;
+
           return (
             <div
               key={dim.key}
-              className={cn(
-                "rounded-2xl border border-border/40 p-5 transition-all duration-200 hover:shadow-sm",
-                dim.bgClass
-              )}
+              className="rounded-xl border border-border/40 bg-card p-4 transition-all duration-200 hover:shadow-sm"
             >
-              <div className="flex items-center gap-3 mb-3">
-                <div className={cn("h-9 w-9 rounded-xl flex items-center justify-center", dim.iconBgClass)}>
-                  <Icon className={cn("h-4 w-4", dim.textClass)} />
+              <div className="flex items-center gap-2 mb-2.5">
+                <div className={cn("h-7 w-7 rounded-lg flex items-center justify-center", dim.iconBgClass)}>
+                  <Icon className={cn("h-3.5 w-3.5", dim.textClass)} />
                 </div>
-                <span className={cn("text-sm font-semibold", dim.textClass)}>{label}</span>
+                <span className={cn("text-xs font-semibold", dim.textClass)}>{label}</span>
               </div>
-              <p className="text-xs text-foreground/70 leading-relaxed">
-                {text}
+              <p className="text-[11px] text-foreground/70 leading-relaxed">
+                {shortText}
               </p>
             </div>
           );

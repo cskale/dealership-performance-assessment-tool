@@ -11,74 +11,86 @@ interface KPIBenchmarkStudioProps {
 export function KPIBenchmarkStudio({ benchmark, unit, isLowerBetter, language, className }: KPIBenchmarkStudioProps) {
   if (!benchmark) return null;
 
-  // Determine marker position based on benchmark context
-  const markerPosition = isLowerBetter ? 25 : 75;
-
   const zones = isLowerBetter
     ? [
-        { label: language === 'de' ? 'Top' : 'Top', color: 'bg-emerald-100', width: '25%' },
-        { label: language === 'de' ? 'Gut' : 'Good', color: 'bg-emerald-50', width: '25%' },
-        { label: language === 'de' ? 'Durchschnitt' : 'Average', color: 'bg-amber-50', width: '25%' },
-        { label: language === 'de' ? 'Schlecht' : 'Poor', color: 'bg-red-50', width: '25%' },
+        { label: language === 'de' ? 'Führend' : 'Leading', color: 'bg-primary/12' },
+        { label: language === 'de' ? 'Stark' : 'Strong', color: 'bg-primary/8' },
+        { label: language === 'de' ? 'Unter Referenz' : 'Below Reference', color: 'bg-muted/60' },
+        { label: language === 'de' ? 'Entwicklung' : 'Developing', color: 'bg-muted/30' },
       ]
     : [
-        { label: language === 'de' ? 'Schlecht' : 'Poor', color: 'bg-red-50', width: '25%' },
-        { label: language === 'de' ? 'Durchschnitt' : 'Average', color: 'bg-amber-50', width: '25%' },
-        { label: language === 'de' ? 'Gut' : 'Good', color: 'bg-emerald-50', width: '25%' },
-        { label: language === 'de' ? 'Top' : 'Top', color: 'bg-emerald-100', width: '25%' },
+        { label: language === 'de' ? 'Entwicklung' : 'Developing', color: 'bg-muted/30' },
+        { label: language === 'de' ? 'Unter Referenz' : 'Below Reference', color: 'bg-muted/60' },
+        { label: language === 'de' ? 'Stark' : 'Strong', color: 'bg-primary/8' },
+        { label: language === 'de' ? 'Führend' : 'Leading', color: 'bg-primary/12' },
       ];
 
+  // Reference corridor position (the "strong performance" zone)
+  const corridorLeft = isLowerBetter ? '0%' : '50%';
+  const corridorWidth = '37.5%';
+
   return (
-    <div className={cn("rounded-xl border border-border/60 bg-muted/20 p-5", className)}>
-      <div className="flex items-center justify-between mb-4">
+    <div className={cn("rounded-xl border border-border/40 bg-card p-5", className)}>
+      <div className="flex items-center justify-between mb-3">
         <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-          Benchmark
-        </span>
-        <span className="text-xs text-muted-foreground italic">
-          {isLowerBetter
-            ? (language === 'de' ? 'Niedriger ist besser' : 'Lower is better')
-            : (language === 'de' ? 'Höher ist besser' : 'Higher is better')}
+          {language === 'de' ? 'Referenz-Benchmarkbereich' : 'Reference Benchmark Range'}
         </span>
       </div>
 
-      {/* Benchmark value */}
-      <div className="text-center mb-4">
-        <span className="text-2xl font-bold text-foreground">{benchmark}</span>
+      {/* Indicative range value */}
+      <div className="mb-4">
+        <span className="text-xl font-bold text-foreground">{benchmark}</span>
         {unit && <span className="text-xs text-muted-foreground ml-1.5">{unit}</span>}
+        <span className="text-[10px] text-muted-foreground ml-2 italic">
+          {language === 'de' ? 'Indikative Spanne' : 'Indicative range'}
+        </span>
       </div>
 
-      {/* Horizontal benchmark rail */}
-      <div className="relative mb-2">
-        {/* Zone bands */}
-        <div className="flex rounded-lg overflow-hidden h-3">
+      {/* Spectrum band */}
+      <div className="relative mb-1.5">
+        <div className="flex rounded-md overflow-hidden h-2.5 gap-px">
           {zones.map((zone, i) => (
             <div
               key={i}
-              className={cn("h-full", zone.color)}
-              style={{ width: zone.width }}
+              className={cn("h-full flex-1 rounded-sm", zone.color)}
             />
           ))}
         </div>
 
-        {/* Benchmark marker */}
+        {/* Reference corridor overlay */}
         <div
-          className="absolute top-0 h-3 w-0.5 bg-foreground rounded-full"
-          style={{ left: `${markerPosition}%`, transform: 'translateX(-50%)' }}
-        />
-        <div
-          className="absolute -top-1 w-2 h-2 rounded-full bg-foreground border-2 border-card"
-          style={{ left: `${markerPosition}%`, transform: 'translateX(-50%)' }}
+          className="absolute top-0 h-2.5 border-y-2 border-primary/25 rounded-sm pointer-events-none"
+          style={{ left: corridorLeft, width: corridorWidth }}
         />
       </div>
 
       {/* Zone labels */}
-      <div className="flex">
+      <div className="flex mb-3">
         {zones.map((zone, i) => (
-          <div key={i} className="text-center" style={{ width: zone.width }}>
-            <span className="text-[9px] text-muted-foreground/70">{zone.label}</span>
+          <div key={i} className="flex-1 text-center">
+            <span className="text-[8px] text-muted-foreground/60 leading-none">{zone.label}</span>
           </div>
         ))}
       </div>
+
+      {/* Direction + corridor note */}
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] text-muted-foreground/60 italic">
+          {isLowerBetter
+            ? (language === 'de' ? '← Niedrigere Werte sind besser' : '← Lower is better')
+            : (language === 'de' ? 'Höhere Werte sind besser →' : 'Higher is better →')}
+        </span>
+        <span className="text-[10px] text-primary/50 font-medium">
+          {language === 'de' ? 'Referenzkorridor' : 'Reference corridor'}
+        </span>
+      </div>
+
+      {/* Credibility note */}
+      <p className="text-[9px] text-muted-foreground/50 mt-3 leading-relaxed">
+        {language === 'de'
+          ? 'Referenzbereiche variieren je nach OEM, Marktreife, Kanalmix und Geschäftsmodell.'
+          : 'Reference ranges vary by OEM, market maturity, channel mix, and operating model.'}
+      </p>
     </div>
   );
 }

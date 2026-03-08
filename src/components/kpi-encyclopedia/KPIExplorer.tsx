@@ -2,12 +2,19 @@ import { useMemo, useState, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Search, BookOpen, ArrowRight, ChevronRight } from "lucide-react";
+import { Search, BookOpen, ArrowRight, ChevronDown } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { KPI_DEFINITIONS, KPIDefinition } from "@/lib/kpiDefinitions";
 import { ORDERED_DEPARTMENTS, getDepartmentConfig } from "./departmentConfig";
 import { KPIStudio } from "./KPIStudio";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 interface KPIExplorerProps {
   scores: Record<string, number>;
@@ -31,6 +38,9 @@ function highlightMatch(text: string, search: string) {
     </>
   );
 }
+
+// Primary visible chips (max 6) + overflow into dropdown
+const PRIMARY_CHIP_COUNT = 6;
 
 export function KPIExplorer({ scores }: KPIExplorerProps) {
   const { language } = useLanguage();
@@ -88,6 +98,9 @@ export function KPIExplorer({ scores }: KPIExplorerProps) {
     }));
   }, [allItems]);
 
+  const primaryChips = departmentChips.slice(0, PRIMARY_CHIP_COUNT);
+  const overflowChips = departmentChips.slice(PRIMARY_CHIP_COUNT);
+
   // Selected KPI data
   const selectedItem = useMemo(() => {
     if (!selectedKpiKey) return null;
@@ -102,7 +115,6 @@ export function KPIExplorer({ scores }: KPIExplorerProps) {
     setSelectedKpiKey(null);
   }, []);
 
-  // Navigate to related KPI by name
   const handleNavigateToKpi = useCallback((name: string) => {
     const found = allItems.find(
       (i) => i.kpi.title.toLowerCase() === name.toLowerCase()
@@ -126,46 +138,52 @@ export function KPIExplorer({ scores }: KPIExplorerProps) {
     );
   }
 
+  // Check if active department is in overflow
+  const activeInOverflow = overflowChips.some(c => c.key === activeDepartment);
+  const activeOverflowLabel = activeInOverflow
+    ? (getDepartmentConfig(activeDepartment).label[language as 'en' | 'de'] || getDepartmentConfig(activeDepartment).label.en)
+    : null;
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Hero Band */}
-      <div className="relative">
-        <div className="max-w-4xl">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <BookOpen className="h-5 w-5 text-primary" />
+      <div>
+        <div className="max-w-3xl">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+              <BookOpen className="h-4.5 w-4.5 text-primary" />
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
               {language === 'de' ? 'KPI-Enzyklopädie' : 'KPI Encyclopedia'}
             </h2>
           </div>
-          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl">
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
             {language === 'de'
-              ? 'Erkunden Sie Autohaus-KPIs, Benchmark-Logik, Ursachen, kommerzielle Auswirkungen und Verbesserungshebel über alle Geschäftsfunktionen hinweg.'
-              : 'Explore dealership KPIs, benchmark logic, root causes, commercial impact, and improvement levers across all business functions.'}
+              ? 'Erkunden Sie Autohaus-KPIs, Benchmark-Logik, Ursachendiagnostik und Verbesserungshebel über alle Geschäftsfunktionen hinweg.'
+              : 'Explore dealership KPIs, benchmark logic, root cause diagnostics, and improvement levers across all business functions.'}
           </p>
         </div>
 
         {/* Search */}
-        <div className="mt-5 max-w-md">
+        <div className="mt-4 max-w-md">
           <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={language === 'de' ? 'KPIs durchsuchen...' : 'Search KPIs by name, formula, or keyword...'}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-11 rounded-xl border-border/60 bg-background shadow-sm"
+              className="pl-9 h-10 rounded-lg border-border/60 bg-background"
             />
           </div>
         </div>
       </div>
 
-      {/* Department chips */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide -mt-2">
+      {/* Category navigation — wrapping chips + "More" dropdown */}
+      <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={() => setActiveDepartment("all")}
           className={cn(
-            "shrink-0 rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 border",
+            "rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-200 border",
             activeDepartment === "all"
               ? "bg-primary text-primary-foreground border-primary shadow-sm"
               : "bg-background text-muted-foreground border-border hover:bg-muted/60"
@@ -173,31 +191,65 @@ export function KPIExplorer({ scores }: KPIExplorerProps) {
         >
           {language === 'de' ? 'Alle' : 'All'} ({allItems.length})
         </button>
-        {departmentChips.map((chip) => {
+        {primaryChips.map((chip) => {
           const isActive = activeDepartment === chip.key;
           const label = chip.config.label[language as 'en' | 'de'] || chip.config.label.en;
-          const ChipIcon = chip.config.icon;
           return (
             <button
               key={chip.key}
               onClick={() => setActiveDepartment(chip.key)}
               className={cn(
-                "shrink-0 rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 border flex items-center gap-1.5",
+                "rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-200 border",
                 isActive
                   ? cn(chip.config.bgClass, chip.config.textClass, chip.config.borderClass, "shadow-sm")
                   : "bg-background text-muted-foreground border-border hover:bg-muted/60"
               )}
             >
-              <ChipIcon className="h-3 w-3" />
-              {label} ({chip.count})
+              {label}
             </button>
           );
         })}
+
+        {/* Overflow dropdown */}
+        {overflowChips.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant={activeInOverflow ? "secondary" : "outline"}
+                size="sm"
+                className={cn(
+                  "rounded-full h-auto px-3.5 py-1.5 text-xs font-medium gap-1",
+                  activeInOverflow && "bg-muted text-foreground"
+                )}
+              >
+                {activeOverflowLabel || (language === 'de' ? 'Mehr Filter' : 'More filters')}
+                <ChevronDown className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="min-w-[180px]">
+              {overflowChips.map((chip) => {
+                const label = chip.config.label[language as 'en' | 'de'] || chip.config.label.en;
+                return (
+                  <DropdownMenuItem
+                    key={chip.key}
+                    onClick={() => setActiveDepartment(chip.key)}
+                    className={cn(
+                      "text-xs",
+                      activeDepartment === chip.key && "font-semibold"
+                    )}
+                  >
+                    {label} ({chip.count})
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       {/* Result count */}
       {(searchTerm.length >= 2 || activeDepartment !== "all") && (
-        <p className="text-xs text-muted-foreground -mt-4">
+        <p className="text-xs text-muted-foreground -mt-2">
           {resultCount} {language === 'de' ? 'KPIs gefunden' : 'KPIs found'}
         </p>
       )}
@@ -205,8 +257,8 @@ export function KPIExplorer({ scores }: KPIExplorerProps) {
       {/* KPI Grid */}
       {filteredItems.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center mb-4">
-            <Search className="h-6 w-6 text-muted-foreground/50" />
+          <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center mb-3">
+            <Search className="h-5 w-5 text-muted-foreground/50" />
           </div>
           <p className="text-sm text-muted-foreground max-w-xs">
             {language === 'de'
@@ -220,15 +272,14 @@ export function KPIExplorer({ scores }: KPIExplorerProps) {
             const config = getDepartmentConfig(item.departmentKey);
             const DeptIcon = config.icon;
             const deptLabel = config.label[language as 'en' | 'de'] || config.label.en;
-            const hasDeepDive = !!item.kpi.rootCauseDiagnostics;
 
             return (
               <button
                 key={item.key}
                 onClick={() => handleSelect(item.key)}
-                className="group text-left rounded-2xl border border-border/60 bg-card p-5 transition-all duration-200 hover:border-border hover:shadow-md hover:shadow-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="group text-left rounded-xl border border-border/40 bg-card p-5 transition-all duration-200 hover:border-border hover:shadow-md hover:shadow-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                {/* Department + badges row */}
+                {/* Department badge */}
                 <div className="flex items-center gap-2 mb-3">
                   <Badge
                     variant="outline"
@@ -240,16 +291,6 @@ export function KPIExplorer({ scores }: KPIExplorerProps) {
                     <DeptIcon className="h-2.5 w-2.5 mr-1" />
                     {deptLabel}
                   </Badge>
-                  {item.kpi.benchmark && (
-                    <Badge variant="outline" className="text-[10px] font-normal border-border/60 text-muted-foreground">
-                      {item.kpi.benchmark}
-                    </Badge>
-                  )}
-                  {hasDeepDive && (
-                    <Badge variant="secondary" className="text-[10px] font-normal bg-primary/5 text-primary border-0 ml-auto">
-                      Studio
-                    </Badge>
-                  )}
                 </div>
 
                 {/* Title */}
@@ -257,16 +298,16 @@ export function KPIExplorer({ scores }: KPIExplorerProps) {
                   {highlightMatch(item.kpi.title, searchTerm)}
                 </h3>
 
-                {/* Summary */}
+                {/* Summary — concise */}
                 <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed mb-3">
                   {item.kpi.executiveSummary
-                    ? highlightMatch(item.kpi.executiveSummary.slice(0, 120) + '...', searchTerm)
-                    : highlightMatch(item.kpi.definition.slice(0, 120) + '...', searchTerm)}
+                    ? highlightMatch(item.kpi.executiveSummary.slice(0, 100) + '…', searchTerm)
+                    : highlightMatch(item.kpi.definition.slice(0, 100) + '…', searchTerm)}
                 </p>
 
                 {/* Open affordance */}
-                <div className="flex items-center text-xs text-muted-foreground/60 group-hover:text-primary/70 transition-colors duration-200">
-                  <span className="mr-1">{language === 'de' ? 'Öffnen' : 'Open'}</span>
+                <div className="flex items-center text-xs text-muted-foreground/50 group-hover:text-primary/70 transition-colors duration-200">
+                  <span className="mr-1">{language === 'de' ? 'Details' : 'Explore'}</span>
                   <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
                 </div>
               </button>
