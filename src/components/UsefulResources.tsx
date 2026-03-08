@@ -12,7 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
-import { KPIIntelligenceLibrary } from "@/components/kpi-encyclopedia/KPIIntelligenceLibrary";
+import { KPIExplorer } from "@/components/kpi-encyclopedia/KPIExplorer";
 
 interface UsefulResourcesProps {
   scores: Record<string, number>;
@@ -264,9 +264,9 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
           </Card>
         </TabsContent>
 
-        {/* KPI Encyclopedia Tab — New Intelligence Library */}
+        {/* KPI Encyclopedia Tab — Explorer + Studio */}
         <TabsContent value="encyclopedia" className="space-y-0">
-          <KPIIntelligenceLibrary scores={scores} />
+          <KPIExplorer scores={scores} />
         </TabsContent>
 
         {/* Support Materials Tab */}
