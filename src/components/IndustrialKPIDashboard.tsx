@@ -93,7 +93,7 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-medium text-muted-foreground">
-                    {getKPILabel(key)}
+                    {getKPILabel(key, language as 'en' | 'de')}
                   </h4>
                   <div className="flex items-center gap-1">
                     {isGood ? (
