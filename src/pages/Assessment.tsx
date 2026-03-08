@@ -73,7 +73,7 @@ export default function Assessment() {
     // Auto-save to local storage (in-progress, non-blocking)
     try {
       const overallScore = Object.values(newScores).length > 0 
-        ? Math.round(Object.values(newScores).reduce((sum, score) => sum + score, 0) / Object.values(newScores).length)
+        ? calculateWeightedScore(newScores)
         : 0;
         
       await saveAssessment({
