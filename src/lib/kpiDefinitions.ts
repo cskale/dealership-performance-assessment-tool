@@ -1053,51 +1053,129 @@ export const KPI_DEFINITIONS: Record<string, { en: KPIDefinition; de: KPIDefinit
   },
 
   // =====================================================
-  // LEGACY KPIs (preserved for backward compatibility)
+  // ENRICHED LEGACY KPIs — New Vehicle Sales
   // =====================================================
   monthlyRevenue: {
     en: {
       title: 'Monthly Revenue',
-      definition: 'Total revenue generated from new vehicle sales per month',
-      whyItMatters: 'Primary indicator of business health and growth trajectory. Higher revenue enables investment in staff, facilities, and customer experience.',
-      benchmark: '€420,000 monthly',
-      department: 'new-vehicle-sales'
+      definition: 'Total gross revenue generated from new vehicle sales in a calendar month, including the vehicle transaction price plus any factory-to-dealer incentives recognised at point of sale. This metric captures top-line sales momentum before deductions for cost of goods, floor-plan interest, or variable selling expenses.',
+      executiveSummary: 'Monthly revenue is the single most visible measure of a new vehicle department\'s commercial health. Strong dealerships in European markets typically generate €350,000–€550,000 per month from new vehicle sales alone, depending on brand tier and market size. Consistently missing revenue targets erodes manufacturer confidence, limits bonus attainment, and restricts cash available for working-capital investment. A rising revenue trend — paired with stable margins — signals effective demand generation, competitive pricing, and sales-team execution.',
+      whyItMatters: 'Revenue is the starting point for every profitability calculation. It funds floor-plan costs, variable compensation, and facility investment. A dealer that cannot sustain target revenue will see fixed-cost absorption rise, per-unit profitability fall, and manufacturer allocation shrink — creating a downward spiral that is difficult to reverse.',
+      formula: '= Sum of all new vehicle invoice values (including OEM-to-dealer incentives recognised at sale) in the calendar month',
+      inclusions: ['Retail new vehicle sales at invoice price', 'Factory-to-dealer holdback and volume bonuses recognised at sale', 'Demonstrator and management vehicle sales', 'Fleet and corporate sales invoiced in-month'],
+      exclusions: ['Used vehicle revenue', 'F&I product income', 'Service or parts revenue', 'Manufacturer stocking credits not tied to a specific sale', 'Internal transfers between group dealerships'],
+      unitOfMeasure: '€ per month',
+      benchmark: '€350,000–€550,000 monthly (volume brand, mid-size European market)',
+      department: 'new-vehicle-sales',
+      rootCauseDiagnostics: {
+        people: 'Under-staffed sales floor during peak hours; weak prospecting habits; insufficient product knowledge on new model launches; high turnover in sales team reducing pipeline continuity.',
+        process: 'No structured daily/weekly sales cadence; inconsistent lead follow-up sequences; lack of formal pipeline review meetings; poor handoff between BDC and showroom.',
+        tools: 'DMS not tracking gross revenue in real time; CRM lead sources not mapped to revenue outcomes; no dynamic pricing tool to respond to competitive offers; website configurator not feeding live quotes to sales team.',
+        structure: 'Insufficient showroom capacity relative to traffic; no dedicated fleet/corporate sales role; territory assignments overlapping or leaving coverage gaps.',
+        incentives: 'Pay plan rewards unit volume but not revenue quality; no spiff for higher-trim or higher-revenue models; manufacturer volume targets disconnected from internal sales goals.'
+      },
+      improvementLevers: [
+        'Implement weekly revenue forecasting meetings with pipeline-to-close conversion analysis',
+        'Introduce model-mix incentives that reward higher-revenue trim levels and optional equipment attachment',
+        'Launch a structured conquest campaign targeting competitor owners within a 30 km radius',
+        'Create a dedicated fleet and corporate sales function with separate lead flow and pricing authority',
+        'Align OEM allocation requests with local demand data to ensure high-demand models are in stock',
+        'Extend showroom hours or add Saturday delivery slots to capture weekend-ready buyers',
+        'Implement a real-time revenue dashboard visible to all sales staff to drive daily urgency',
+        'Train BDC on qualification scripts that prioritise high-revenue opportunities'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Lead Volume', 'Lead Conversion Rate', 'Average Transaction Value', 'Showroom Traffic', 'Website Lead Generation'],
+        downstreamImpacts: ['Total Dealership Net Profit', 'Gross Profit per Department', 'Fixed Cost Absorption', 'Manufacturer Volume Bonus Attainment', 'Floor-Plan Interest Exposure']
+      }
     },
     de: {
       title: 'Monatsumsatz',
-      definition: 'Gesamtumsatz aus Neuwagenverkäufen pro Monat',
-      whyItMatters: 'Primärer Indikator für Geschäftsgesundheit und Wachstumskurs.',
-      benchmark: '€420.000 monatlich'
+      definition: 'Gesamter Bruttoumsatz aus Neuwagenverkäufen in einem Kalendermonat, einschließlich Fahrzeugtransaktionspreis plus ab Werk anerkannter Händlerprämien.',
+      whyItMatters: 'Umsatz ist der Ausgangspunkt jeder Rentabilitätsberechnung. Ein Händler, der Zielumsätze dauerhaft verfehlt, sieht steigende Fixkostenbelastung und sinkende Herstellerzuweisungen.',
+      benchmark: '€350.000–€550.000 monatlich'
     }
   },
   avgMargin: {
     en: {
       title: 'Average Margin',
-      definition: 'Average profit margin percentage per vehicle sale after all costs',
-      whyItMatters: 'Directly impacts profitability. Higher margins mean more retained profit per sale.',
-      benchmark: '9.2%',
-      department: 'new-vehicle-sales'
+      definition: 'The average front-end gross profit margin expressed as a percentage of the vehicle selling price, calculated across all new vehicle retail transactions in the period. It reflects the dealership\'s ability to retain value between the manufacturer invoice cost (less holdback and incentives) and the price actually collected from the customer.',
+      executiveSummary: 'Average margin is the clearest indicator of pricing discipline and deal-structure quality in new vehicle sales. Top-quartile European dealers maintain front-end margins of 8–12%, while bottom-quartile performers often fall below 5%, especially when discounting to chase volume. Margin compression typically signals competitive pricing pressure, weak negotiation skills, or over-reliance on fleet sales. Protecting margin requires a combination of transparent cost control, structured negotiation processes, and smart incentive utilisation.',
+      whyItMatters: 'Margin determines how much of each euro of revenue actually flows to the bottom line. A 1-percentage-point improvement in average margin on 50 units per month at €40,000 average transaction value adds €240,000 in annual gross profit — often more impactful than selling additional units. Dealers with consistently thin margins become dependent on manufacturer bonuses and back-end products to survive.',
+      formula: '= (Total New Vehicle Gross Profit / Total New Vehicle Revenue) × 100',
+      inclusions: ['Front-end gross profit on retail deals', 'Factory-to-dealer holdback allocated per unit', 'Model-specific OEM incentives passed through to gross', 'Pack deductions if applied before margin calculation'],
+      exclusions: ['F&I back-end profit', 'Trade-in gross (counted in used vehicles)', 'Accessory or protection-product margin (often tracked separately)', 'Fleet rebates returned to customer'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '8–12% (volume brands); 6–9% (premium brands with higher ASPs)',
+      department: 'new-vehicle-sales',
+      rootCauseDiagnostics: {
+        people: 'Sales consultants lacking negotiation training; managers approving discounts too quickly without structured desk process; no differentiation between junior and senior pricing authority.',
+        process: 'No formal desking workflow; inconsistent use of trade-in appraisal tools; lack of deal-jacket review before final approval; no post-deal margin analysis.',
+        tools: 'No real-time margin visibility in DMS during deal negotiation; missing competitive pricing intelligence tool; CRM not tracking discount reasons or lost-deal pricing feedback.',
+        structure: 'Sales manager span of control too wide to review every deal; no pricing committee for fleet or large-discount requests; F&I and sales departments not collaborating on total deal profitability.',
+        incentives: 'Pay plan rewards unit count with no margin floor; no clawback for below-threshold deals; manufacturer bonus structure encourages volume over margin quality.'
+      },
+      improvementLevers: [
+        'Implement a structured desking process with defined discount authority levels for each role',
+        'Introduce a minimum-margin policy — no deal approved below a defined gross floor without GM sign-off',
+        'Train sales consultants on value-selling techniques that justify price rather than conceding discount',
+        'Use real-time DMS margin dashboards during negotiation to keep deal profitability visible',
+        'Optimise OEM incentive stacking to maximise factory-funded support before dealership discounting',
+        'Review model-mix strategy monthly to prioritise higher-margin trims and configurations',
+        'Implement post-deal margin audits to identify patterns of unnecessary discounting',
+        'Separate fleet pricing governance from retail to prevent fleet-level discounts leaking into showroom deals'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Lead Conversion Rate', 'Average Transaction Value', 'Model Mix', 'OEM Incentive Programmes', 'Competitive Market Pricing'],
+        downstreamImpacts: ['Monthly Revenue (margin-adjusted)', 'Gross Profit per New Vehicle Retailed', 'Total Dealership Net Profit', 'Sales Consultant Compensation', 'Manufacturer Margin Compliance']
+      }
     },
     de: {
       title: 'Durchschnittsmarge',
-      definition: 'Durchschnittliche Gewinnmarge in Prozent pro Fahrzeugverkauf nach allen Kosten',
-      whyItMatters: 'Beeinflusst direkt die Rentabilität.',
-      benchmark: '9,2%'
+      definition: 'Durchschnittliche Front-End-Bruttogewinnmarge in Prozent des Fahrzeugverkaufspreises über alle Neuwagenverkäufe im Zeitraum.',
+      whyItMatters: 'Die Marge bestimmt, wie viel von jedem Euro Umsatz tatsächlich zum Ergebnis beiträgt. Eine Verbesserung um 1 Prozentpunkt kann jährlich €240.000 zusätzlichen Bruttogewinn bedeuten.',
+      benchmark: '8–12% (Volumenmarken); 6–9% (Premiummarken)'
     }
   },
   customerSatisfaction: {
     en: {
       title: 'Customer Satisfaction',
-      definition: 'Average customer rating from post-purchase surveys (typically 1-100 scale)',
-      whyItMatters: 'Drives repeat business, referrals, and online reviews. Satisfied customers are 3x more likely to recommend your dealership.',
-      benchmark: '84%',
-      department: 'new-vehicle-sales'
+      definition: 'The composite satisfaction score derived from post-purchase customer surveys, typically measured on a 0–100 scale or converted to a percentage. It captures the buyer\'s overall perception of the sales experience — from initial contact and needs analysis through negotiation, delivery, and post-sale follow-up.',
+      executiveSummary: 'Customer satisfaction in new vehicle sales is a leading indicator of future revenue, referral volume, and brand reputation. Dealerships scoring above 85% consistently outperform peers in repeat-purchase rates and organic lead generation. A 5-point CSI improvement typically correlates with a 10–15% increase in referral traffic and measurable gains in online review ratings. OEMs increasingly tie bonus payments and allocation priority to CSI performance, making it both a customer-experience metric and a financial lever.',
+      whyItMatters: 'Satisfied customers are 3× more likely to recommend the dealership to friends and family, 2× more likely to return for their next purchase, and significantly more likely to use the service department — extending lifetime value. In an era of transparent online reviews, CSI directly shapes the dealership\'s digital reputation and influences new-customer acquisition cost.',
+      formula: '= (Sum of all post-purchase survey scores / Number of completed surveys) × Scale adjustment to 100',
+      inclusions: ['Post-delivery surveys administered by OEM or dealership', 'Scores covering sales process, delivery experience, and initial ownership satisfaction', 'Online review aggregation scores where formally tracked'],
+      exclusions: ['Service department CSI (tracked separately)', 'Unsolicited social media sentiment not captured in structured surveys', 'Surveys returned more than 90 days after delivery', 'Internal mystery-shop scores'],
+      unitOfMeasure: 'Score (0–100 scale or equivalent percentage)',
+      benchmark: '82–90% (top-quartile European dealers score 88%+)',
+      department: 'new-vehicle-sales',
+      rootCauseDiagnostics: {
+        people: 'Sales consultants rushing the delivery process; poor communication during wait times for factory orders; lack of empathy training; insufficient staffing causing long customer wait times.',
+        process: 'No structured delivery experience checklist; missing post-sale follow-up calls within 48 hours; complaint escalation process unclear; no service-department warm handoff at delivery.',
+        tools: 'Survey results not shared with individual sales consultants in real time; CRM not triggering automated satisfaction check-ins; no digital delivery experience (video walkthroughs, personalised welcome content).',
+        structure: 'No dedicated delivery coordinator role; customer handoff between BDC, sales, and F&I is fragmented; no customer-experience manager with cross-department authority.',
+        incentives: 'CSI not weighted in sales consultant pay plan; no recognition programme for top-CSI performers; manufacturer CSI bonuses not cascaded to individual staff level.'
+      },
+      improvementLevers: [
+        'Implement a structured vehicle delivery experience with a personalised checklist and technology walkthrough',
+        'Introduce a 48-hour post-delivery follow-up call from the selling consultant to address any concerns',
+        'Create a real-time CSI alert system that flags scores below 80 for immediate manager intervention',
+        'Train all customer-facing staff on empathy-based communication and expectation management',
+        'Appoint a delivery coordinator to manage the handoff from sales to service and ensure first-service booking',
+        'Include CSI performance as a weighted component (15–20%) in sales consultant compensation plans',
+        'Launch a monthly CSI review meeting to identify systemic issues and track improvement actions',
+        'Implement a digital post-purchase welcome journey with personalised content and service reminders'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Sales Process Compliance', 'Lead Response Time', 'Delivery Experience Quality', 'Staff Training Investment', 'CRM Data Completeness'],
+        downstreamImpacts: ['Repeat Purchase Rate', 'Referral Rate', 'Online Review Ratings', 'Service Retention Rate', 'Manufacturer CSI Bonus Attainment']
+      }
     },
     de: {
       title: 'Kundenzufriedenheit',
-      definition: 'Durchschnittliche Kundenbewertung aus Nachkauf-Umfragen',
-      whyItMatters: 'Fördert Folgegeschäft, Empfehlungen und Online-Bewertungen.',
-      benchmark: '84%'
+      definition: 'Zusammengesetzter Zufriedenheitswert aus Nachkauf-Kundenumfragen, typischerweise auf einer Skala von 0–100 gemessen.',
+      whyItMatters: 'Zufriedene Kunden empfehlen den Händler 3× häufiger weiter, kehren 2× häufiger für den nächsten Kauf zurück und nutzen deutlich häufiger die Serviceabteilung.',
+      benchmark: '82–90%'
     }
   },
   // =====================================================
