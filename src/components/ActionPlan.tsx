@@ -29,7 +29,6 @@ import {
   generateActionsFromAssessment, 
   formatActionsForDatabaseInsert 
 } from '@/lib/signalEngine';
-import { questionnaire } from '@/data/questionnaire';
 import { getHumanRationale, cleanActionTitle, cleanActionDescription, priorityDisplay, statusDisplay, resetPatternUsage } from '@/lib/actionRationaleMap';
 import { ActionSheet } from './ActionSheet';
 
