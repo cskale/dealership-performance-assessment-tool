@@ -1053,51 +1053,129 @@ export const KPI_DEFINITIONS: Record<string, { en: KPIDefinition; de: KPIDefinit
   },
 
   // =====================================================
-  // LEGACY KPIs (preserved for backward compatibility)
+  // ENRICHED LEGACY KPIs — New Vehicle Sales
   // =====================================================
   monthlyRevenue: {
     en: {
       title: 'Monthly Revenue',
-      definition: 'Total revenue generated from new vehicle sales per month',
-      whyItMatters: 'Primary indicator of business health and growth trajectory. Higher revenue enables investment in staff, facilities, and customer experience.',
-      benchmark: '€420,000 monthly',
-      department: 'new-vehicle-sales'
+      definition: 'Total gross revenue generated from new vehicle sales in a calendar month, including the vehicle transaction price plus any factory-to-dealer incentives recognised at point of sale. This metric captures top-line sales momentum before deductions for cost of goods, floor-plan interest, or variable selling expenses.',
+      executiveSummary: 'Monthly revenue is the single most visible measure of a new vehicle department\'s commercial health. Strong dealerships in European markets typically generate €350,000–€550,000 per month from new vehicle sales alone, depending on brand tier and market size. Consistently missing revenue targets erodes manufacturer confidence, limits bonus attainment, and restricts cash available for working-capital investment. A rising revenue trend — paired with stable margins — signals effective demand generation, competitive pricing, and sales-team execution.',
+      whyItMatters: 'Revenue is the starting point for every profitability calculation. It funds floor-plan costs, variable compensation, and facility investment. A dealer that cannot sustain target revenue will see fixed-cost absorption rise, per-unit profitability fall, and manufacturer allocation shrink — creating a downward spiral that is difficult to reverse.',
+      formula: '= Sum of all new vehicle invoice values (including OEM-to-dealer incentives recognised at sale) in the calendar month',
+      inclusions: ['Retail new vehicle sales at invoice price', 'Factory-to-dealer holdback and volume bonuses recognised at sale', 'Demonstrator and management vehicle sales', 'Fleet and corporate sales invoiced in-month'],
+      exclusions: ['Used vehicle revenue', 'F&I product income', 'Service or parts revenue', 'Manufacturer stocking credits not tied to a specific sale', 'Internal transfers between group dealerships'],
+      unitOfMeasure: '€ per month',
+      benchmark: '€350,000–€550,000 monthly (volume brand, mid-size European market)',
+      department: 'new-vehicle-sales',
+      rootCauseDiagnostics: {
+        people: 'Under-staffed sales floor during peak hours; weak prospecting habits; insufficient product knowledge on new model launches; high turnover in sales team reducing pipeline continuity.',
+        process: 'No structured daily/weekly sales cadence; inconsistent lead follow-up sequences; lack of formal pipeline review meetings; poor handoff between BDC and showroom.',
+        tools: 'DMS not tracking gross revenue in real time; CRM lead sources not mapped to revenue outcomes; no dynamic pricing tool to respond to competitive offers; website configurator not feeding live quotes to sales team.',
+        structure: 'Insufficient showroom capacity relative to traffic; no dedicated fleet/corporate sales role; territory assignments overlapping or leaving coverage gaps.',
+        incentives: 'Pay plan rewards unit volume but not revenue quality; no spiff for higher-trim or higher-revenue models; manufacturer volume targets disconnected from internal sales goals.'
+      },
+      improvementLevers: [
+        'Implement weekly revenue forecasting meetings with pipeline-to-close conversion analysis',
+        'Introduce model-mix incentives that reward higher-revenue trim levels and optional equipment attachment',
+        'Launch a structured conquest campaign targeting competitor owners within a 30 km radius',
+        'Create a dedicated fleet and corporate sales function with separate lead flow and pricing authority',
+        'Align OEM allocation requests with local demand data to ensure high-demand models are in stock',
+        'Extend showroom hours or add Saturday delivery slots to capture weekend-ready buyers',
+        'Implement a real-time revenue dashboard visible to all sales staff to drive daily urgency',
+        'Train BDC on qualification scripts that prioritise high-revenue opportunities'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Lead Volume', 'Lead Conversion Rate', 'Average Transaction Value', 'Showroom Traffic', 'Website Lead Generation'],
+        downstreamImpacts: ['Total Dealership Net Profit', 'Gross Profit per Department', 'Fixed Cost Absorption', 'Manufacturer Volume Bonus Attainment', 'Floor-Plan Interest Exposure']
+      }
     },
     de: {
       title: 'Monatsumsatz',
-      definition: 'Gesamtumsatz aus Neuwagenverkäufen pro Monat',
-      whyItMatters: 'Primärer Indikator für Geschäftsgesundheit und Wachstumskurs.',
-      benchmark: '€420.000 monatlich'
+      definition: 'Gesamter Bruttoumsatz aus Neuwagenverkäufen in einem Kalendermonat, einschließlich Fahrzeugtransaktionspreis plus ab Werk anerkannter Händlerprämien.',
+      whyItMatters: 'Umsatz ist der Ausgangspunkt jeder Rentabilitätsberechnung. Ein Händler, der Zielumsätze dauerhaft verfehlt, sieht steigende Fixkostenbelastung und sinkende Herstellerzuweisungen.',
+      benchmark: '€350.000–€550.000 monatlich'
     }
   },
   avgMargin: {
     en: {
       title: 'Average Margin',
-      definition: 'Average profit margin percentage per vehicle sale after all costs',
-      whyItMatters: 'Directly impacts profitability. Higher margins mean more retained profit per sale.',
-      benchmark: '9.2%',
-      department: 'new-vehicle-sales'
+      definition: 'The average front-end gross profit margin expressed as a percentage of the vehicle selling price, calculated across all new vehicle retail transactions in the period. It reflects the dealership\'s ability to retain value between the manufacturer invoice cost (less holdback and incentives) and the price actually collected from the customer.',
+      executiveSummary: 'Average margin is the clearest indicator of pricing discipline and deal-structure quality in new vehicle sales. Top-quartile European dealers maintain front-end margins of 8–12%, while bottom-quartile performers often fall below 5%, especially when discounting to chase volume. Margin compression typically signals competitive pricing pressure, weak negotiation skills, or over-reliance on fleet sales. Protecting margin requires a combination of transparent cost control, structured negotiation processes, and smart incentive utilisation.',
+      whyItMatters: 'Margin determines how much of each euro of revenue actually flows to the bottom line. A 1-percentage-point improvement in average margin on 50 units per month at €40,000 average transaction value adds €240,000 in annual gross profit — often more impactful than selling additional units. Dealers with consistently thin margins become dependent on manufacturer bonuses and back-end products to survive.',
+      formula: '= (Total New Vehicle Gross Profit / Total New Vehicle Revenue) × 100',
+      inclusions: ['Front-end gross profit on retail deals', 'Factory-to-dealer holdback allocated per unit', 'Model-specific OEM incentives passed through to gross', 'Pack deductions if applied before margin calculation'],
+      exclusions: ['F&I back-end profit', 'Trade-in gross (counted in used vehicles)', 'Accessory or protection-product margin (often tracked separately)', 'Fleet rebates returned to customer'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '8–12% (volume brands); 6–9% (premium brands with higher ASPs)',
+      department: 'new-vehicle-sales',
+      rootCauseDiagnostics: {
+        people: 'Sales consultants lacking negotiation training; managers approving discounts too quickly without structured desk process; no differentiation between junior and senior pricing authority.',
+        process: 'No formal desking workflow; inconsistent use of trade-in appraisal tools; lack of deal-jacket review before final approval; no post-deal margin analysis.',
+        tools: 'No real-time margin visibility in DMS during deal negotiation; missing competitive pricing intelligence tool; CRM not tracking discount reasons or lost-deal pricing feedback.',
+        structure: 'Sales manager span of control too wide to review every deal; no pricing committee for fleet or large-discount requests; F&I and sales departments not collaborating on total deal profitability.',
+        incentives: 'Pay plan rewards unit count with no margin floor; no clawback for below-threshold deals; manufacturer bonus structure encourages volume over margin quality.'
+      },
+      improvementLevers: [
+        'Implement a structured desking process with defined discount authority levels for each role',
+        'Introduce a minimum-margin policy — no deal approved below a defined gross floor without GM sign-off',
+        'Train sales consultants on value-selling techniques that justify price rather than conceding discount',
+        'Use real-time DMS margin dashboards during negotiation to keep deal profitability visible',
+        'Optimise OEM incentive stacking to maximise factory-funded support before dealership discounting',
+        'Review model-mix strategy monthly to prioritise higher-margin trims and configurations',
+        'Implement post-deal margin audits to identify patterns of unnecessary discounting',
+        'Separate fleet pricing governance from retail to prevent fleet-level discounts leaking into showroom deals'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Lead Conversion Rate', 'Average Transaction Value', 'Model Mix', 'OEM Incentive Programmes', 'Competitive Market Pricing'],
+        downstreamImpacts: ['Monthly Revenue (margin-adjusted)', 'Gross Profit per New Vehicle Retailed', 'Total Dealership Net Profit', 'Sales Consultant Compensation', 'Manufacturer Margin Compliance']
+      }
     },
     de: {
       title: 'Durchschnittsmarge',
-      definition: 'Durchschnittliche Gewinnmarge in Prozent pro Fahrzeugverkauf nach allen Kosten',
-      whyItMatters: 'Beeinflusst direkt die Rentabilität.',
-      benchmark: '9,2%'
+      definition: 'Durchschnittliche Front-End-Bruttogewinnmarge in Prozent des Fahrzeugverkaufspreises über alle Neuwagenverkäufe im Zeitraum.',
+      whyItMatters: 'Die Marge bestimmt, wie viel von jedem Euro Umsatz tatsächlich zum Ergebnis beiträgt. Eine Verbesserung um 1 Prozentpunkt kann jährlich €240.000 zusätzlichen Bruttogewinn bedeuten.',
+      benchmark: '8–12% (Volumenmarken); 6–9% (Premiummarken)'
     }
   },
   customerSatisfaction: {
     en: {
       title: 'Customer Satisfaction',
-      definition: 'Average customer rating from post-purchase surveys (typically 1-100 scale)',
-      whyItMatters: 'Drives repeat business, referrals, and online reviews. Satisfied customers are 3x more likely to recommend your dealership.',
-      benchmark: '84%',
-      department: 'new-vehicle-sales'
+      definition: 'The composite satisfaction score derived from post-purchase customer surveys, typically measured on a 0–100 scale or converted to a percentage. It captures the buyer\'s overall perception of the sales experience — from initial contact and needs analysis through negotiation, delivery, and post-sale follow-up.',
+      executiveSummary: 'Customer satisfaction in new vehicle sales is a leading indicator of future revenue, referral volume, and brand reputation. Dealerships scoring above 85% consistently outperform peers in repeat-purchase rates and organic lead generation. A 5-point CSI improvement typically correlates with a 10–15% increase in referral traffic and measurable gains in online review ratings. OEMs increasingly tie bonus payments and allocation priority to CSI performance, making it both a customer-experience metric and a financial lever.',
+      whyItMatters: 'Satisfied customers are 3× more likely to recommend the dealership to friends and family, 2× more likely to return for their next purchase, and significantly more likely to use the service department — extending lifetime value. In an era of transparent online reviews, CSI directly shapes the dealership\'s digital reputation and influences new-customer acquisition cost.',
+      formula: '= (Sum of all post-purchase survey scores / Number of completed surveys) × Scale adjustment to 100',
+      inclusions: ['Post-delivery surveys administered by OEM or dealership', 'Scores covering sales process, delivery experience, and initial ownership satisfaction', 'Online review aggregation scores where formally tracked'],
+      exclusions: ['Service department CSI (tracked separately)', 'Unsolicited social media sentiment not captured in structured surveys', 'Surveys returned more than 90 days after delivery', 'Internal mystery-shop scores'],
+      unitOfMeasure: 'Score (0–100 scale or equivalent percentage)',
+      benchmark: '82–90% (top-quartile European dealers score 88%+)',
+      department: 'new-vehicle-sales',
+      rootCauseDiagnostics: {
+        people: 'Sales consultants rushing the delivery process; poor communication during wait times for factory orders; lack of empathy training; insufficient staffing causing long customer wait times.',
+        process: 'No structured delivery experience checklist; missing post-sale follow-up calls within 48 hours; complaint escalation process unclear; no service-department warm handoff at delivery.',
+        tools: 'Survey results not shared with individual sales consultants in real time; CRM not triggering automated satisfaction check-ins; no digital delivery experience (video walkthroughs, personalised welcome content).',
+        structure: 'No dedicated delivery coordinator role; customer handoff between BDC, sales, and F&I is fragmented; no customer-experience manager with cross-department authority.',
+        incentives: 'CSI not weighted in sales consultant pay plan; no recognition programme for top-CSI performers; manufacturer CSI bonuses not cascaded to individual staff level.'
+      },
+      improvementLevers: [
+        'Implement a structured vehicle delivery experience with a personalised checklist and technology walkthrough',
+        'Introduce a 48-hour post-delivery follow-up call from the selling consultant to address any concerns',
+        'Create a real-time CSI alert system that flags scores below 80 for immediate manager intervention',
+        'Train all customer-facing staff on empathy-based communication and expectation management',
+        'Appoint a delivery coordinator to manage the handoff from sales to service and ensure first-service booking',
+        'Include CSI performance as a weighted component (15–20%) in sales consultant compensation plans',
+        'Launch a monthly CSI review meeting to identify systemic issues and track improvement actions',
+        'Implement a digital post-purchase welcome journey with personalised content and service reminders'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Sales Process Compliance', 'Lead Response Time', 'Delivery Experience Quality', 'Staff Training Investment', 'CRM Data Completeness'],
+        downstreamImpacts: ['Repeat Purchase Rate', 'Referral Rate', 'Online Review Ratings', 'Service Retention Rate', 'Manufacturer CSI Bonus Attainment']
+      }
     },
     de: {
       title: 'Kundenzufriedenheit',
-      definition: 'Durchschnittliche Kundenbewertung aus Nachkauf-Umfragen',
-      whyItMatters: 'Fördert Folgegeschäft, Empfehlungen und Online-Bewertungen.',
-      benchmark: '84%'
+      definition: 'Zusammengesetzter Zufriedenheitswert aus Nachkauf-Kundenumfragen, typischerweise auf einer Skala von 0–100 gemessen.',
+      whyItMatters: 'Zufriedene Kunden empfehlen den Händler 3× häufiger weiter, kehren 2× häufiger für den nächsten Kauf zurück und nutzen deutlich häufiger die Serviceabteilung.',
+      benchmark: '82–90%'
     }
   },
   // =====================================================
@@ -4090,126 +4168,351 @@ export const KPI_DEFINITIONS: Record<string, { en: KPIDefinition; de: KPIDefinit
   },
 
   // =====================================================
-  // LEGACY / SHALLOW KPIs (existing entries below)
+  // ENRICHED LEGACY KPIs — Used Vehicle Sales
   // =====================================================
   usedInventoryTurnover: {
     en: {
       title: 'Used Inventory Turnover',
-      definition: 'Number of times used vehicle inventory is sold and replaced per year',
-      whyItMatters: 'Faster turnover means less capital tied up in inventory and reduced depreciation risk.',
-      benchmark: '12x per year',
-      department: 'used-vehicle-sales'
+      definition: 'The number of times used vehicle inventory is completely sold and replaced within a 12-month period. It is calculated by dividing the total number of used retail units sold in the year by the average number of units in stock at any given time. A higher turnover rate indicates faster-moving inventory, lower holding costs, and more efficient capital deployment.',
+      executiveSummary: 'Inventory turnover is the heartbeat of used vehicle profitability. Top-performing European dealers achieve 10–14 turns per year, meaning the average vehicle spends less than 30–35 days in stock. Each additional turn generates incremental gross profit on the same capital base, while low turnover traps cash in depreciating assets. Dealerships that master turnover discipline — through smart acquisition, aggressive pricing of aged stock, and rapid reconditioning — consistently outperform peers on both gross profit and return on investment.',
+      whyItMatters: 'Every day a used vehicle sits unsold costs the dealership €30–€50 in depreciation, floor-plan interest, and opportunity cost. Faster turnover reduces these carrying costs, frees capital for fresh acquisitions, and ensures the lot always presents a current, desirable selection to buyers. Low turnover is a leading indicator of margin erosion and aged-stock accumulation.',
+      formula: '= Total Used Vehicles Retailed (12 months) / Average Used Vehicle Inventory Count',
+      inclusions: ['All used retail sales (certified pre-owned and non-CPO)', 'Wholesale dispositions counted separately if included in numerator', 'Average inventory based on monthly stock counts'],
+      exclusions: ['New vehicle inventory', 'Demonstrator or service loaner vehicles', 'Consignment or agency units not owned by the dealership', 'Parts or accessory inventory'],
+      unitOfMeasure: 'Turns per year (×)',
+      benchmark: '10–14× per year (top quartile 12×+)',
+      department: 'used-vehicle-sales',
+      rootCauseDiagnostics: {
+        people: 'Buyers acquiring vehicles based on personal preference rather than market demand data; sales team not trained to prioritise aged units; appraisers over-valuing trade-ins leading to overpriced stock.',
+        process: 'No structured 30/60/90-day pricing waterfall; reconditioning cycle exceeding 5 days; no weekly aged-stock review meeting; acquisition strategy not informed by real-time market data.',
+        tools: 'No market-pricing tool (e.g. AutoScout24 analytics, DAT valuation) integrated into appraisal workflow; DMS aged-stock reports not reviewed or actioned; no automated price-reduction triggers.',
+        structure: 'Used vehicle manager also covering new vehicles, splitting focus; no dedicated reconditioning bay or coordinator; insufficient lot capacity leading to hidden or inaccessible stock.',
+        incentives: 'Buyer incentivised on acquisition volume rather than turn rate; sales consultants not rewarded for selling aged units; no penalty for stock ageing beyond 60 days.'
+      },
+      improvementLevers: [
+        'Implement a strict 45-day maximum stocking policy with automatic wholesale escalation at day 60',
+        'Introduce a weekly pricing waterfall: reduce asking price by 3–5% at day 30 and again at day 45',
+        'Use market-pricing tools to set day-one asking prices within 5% of market average',
+        'Reduce reconditioning cycle time to under 4 working days with a dedicated recon coordinator',
+        'Hold a weekly aged-stock meeting reviewing every unit over 30 days with action commitments',
+        'Align buyer acquisition criteria with a demand-based stocking guide updated monthly',
+        'Incentivise sales consultants with aged-stock spiffs (bonus for selling units over 45 days)',
+        'Photograph and list every vehicle online within 24 hours of acquisition'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Trade-In Volume', 'Reconditioning Cycle Time', 'Appraisal Accuracy', 'Aged Stock Percentage', 'Days in Inventory'],
+        downstreamImpacts: ['Used Vehicle Gross Profit per Unit', 'Floor-Plan Interest Cost', 'Return on Used Vehicle Investment', 'Lot Appeal and Customer Traffic', 'Cash Flow Days']
+      }
     },
     de: {
       title: 'Gebrauchtwagenumschlag',
-      definition: 'Anzahl der Male, die das GW-Bestand pro Jahr verkauft und ersetzt wird',
-      whyItMatters: 'Schnellerer Umschlag bedeutet weniger gebundenes Kapital.',
-      benchmark: '12x pro Jahr'
+      definition: 'Anzahl der Male, die das GW-Bestand innerhalb von 12 Monaten vollständig verkauft und ersetzt wird. Berechnet als Gesamtzahl der verkauften GW-Einheiten geteilt durch den durchschnittlichen Bestand.',
+      whyItMatters: 'Jeder Tag, den ein Gebrauchtwagen unverkauft bleibt, kostet den Händler €30–€50 an Wertminderung und Zinskosten. Schnellerer Umschlag setzt Kapital frei und hält das Angebot frisch.',
+      benchmark: '10–14× pro Jahr'
     }
   },
+
+  // =====================================================
+  // ENRICHED LEGACY KPIs — Service Performance
+  // =====================================================
   laborEfficiency: {
     en: {
       title: 'Labor Efficiency Rate',
-      definition: 'Percentage of billable hours vs total available technician hours',
-      whyItMatters: 'Higher efficiency means more revenue from the same labor capacity. Target is 85%+.',
-      benchmark: '85%',
-      department: 'service-performance'
+      definition: 'The ratio of hours billed to customers (or warranty) versus the total clock hours available from the technician workforce in a given period. An efficiency rate above 100% indicates technicians are completing jobs faster than standard time allows (flat-rate gain), while rates below 80% signal significant lost productive capacity.',
+      executiveSummary: 'Labor efficiency is the primary profitability driver in any service department. Best-in-class European dealerships achieve 85–100% efficiency, meaning technicians bill at or above their available hours. Every 5-percentage-point improvement in efficiency on a 10-technician team can generate €50,000–€80,000 in additional annual gross profit without adding headcount. Low efficiency typically stems from poor job dispatching, excessive non-productive time, or inadequate tooling and parts availability.',
+      whyItMatters: 'Technician labour is the service department\'s most expensive and constrained resource. Efficiency determines how much revenue the department extracts from its fixed labour cost. A department running at 75% efficiency is effectively leaving 25% of its revenue capacity on the table every day — the equivalent of losing one technician in four.',
+      formula: '= (Total Hours Billed to Customers and Warranty / Total Available Technician Clock Hours) × 100',
+      inclusions: ['Customer-pay labour hours billed', 'Warranty labour hours billed at OEM flat-rate', 'Internal labour hours billed (e.g. reconditioning, PDI)', 'Total clock hours based on shift schedules minus planned absences'],
+      exclusions: ['Apprentice or trainee hours (tracked separately)', 'Management or service advisor hours', 'Hours spent on rework or comebacks (should be tracked as a separate KPI)', 'Overtime hours beyond standard schedule unless formally billed'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '85–100% (top-quartile European service departments achieve 95%+)',
+      department: 'service-performance',
+      rootCauseDiagnostics: {
+        people: 'Technicians lacking skills for complex repairs, causing slower completion; uneven skill distribution across shifts; excessive breaks or non-productive habits; high absenteeism reducing available hours.',
+        process: 'Inefficient job dispatching — wrong jobs assigned to wrong skill levels; no structured morning dispatch meeting; poor appointment scheduling creating peaks and valleys; ROs not pre-loaded with parts before technician starts.',
+        tools: 'Outdated diagnostic equipment slowing fault-finding; DMS not tracking real-time technician status; no electronic job board or dispatch system; workshop layout requiring excessive walking between bays and parts counter.',
+        structure: 'Too few service bays relative to technician count; no dedicated express-service lane for quick jobs; lack of a team-leader structure to manage workflow on the shop floor; reconditioning work displacing customer-pay jobs.',
+        incentives: 'Flat hourly pay with no efficiency bonus; no penalty for excessive come-backs; technician pay not differentiated by skill certification level; no team-based efficiency targets.'
+      },
+      improvementLevers: [
+        'Implement a structured morning dispatch meeting assigning jobs by skill level and estimated time',
+        'Pre-stage parts and special tools at the bay before the technician begins each job',
+        'Introduce an electronic dispatch board showing real-time technician status and job queue',
+        'Create an express-service lane for jobs under 1 hour to prevent quick work from blocking main bays',
+        'Invest in modern diagnostic equipment and factory-level scan tools to reduce fault-finding time',
+        'Implement an efficiency-based bonus: pay a premium rate for hours billed above 90% efficiency',
+        'Reduce non-productive time by centralising parts delivery to bays rather than requiring technician walks',
+        'Track and address come-back rates separately — rework destroys efficiency and customer trust',
+        'Balance appointment scheduling to maintain consistent daily workload rather than Monday/Friday peaks'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Service Appointment Booking Rate', 'Parts Fill Rate', 'Technician Skill Certification Level', 'Workshop Capacity Utilisation', 'Reconditioning Volume'],
+        downstreamImpacts: ['Service Department Gross Profit', 'Technician Productivity', 'Customer Wait Time', 'Service Retention Rate', 'Total Dealership Net Profit']
+      }
     },
     de: {
       title: 'Arbeitseffizienzrate',
-      definition: 'Prozentsatz der abrechenbaren Stunden vs. verfügbare Technikerstunden',
-      whyItMatters: 'Höhere Effizienz bedeutet mehr Umsatz aus derselben Arbeitskapazität.',
-      benchmark: '85%'
+      definition: 'Verhältnis der an Kunden (oder Garantie) abgerechneten Stunden zu den insgesamt verfügbaren Technikerstunden im Zeitraum.',
+      whyItMatters: 'Technikerarbeit ist die teuerste und knappste Ressource der Serviceabteilung. Die Effizienz bestimmt, wie viel Umsatz aus den fixen Arbeitskosten gewonnen wird.',
+      benchmark: '85–100%'
     }
   },
   serviceRetention: {
     en: {
       title: 'Service Retention Rate',
-      definition: 'Percentage of customers returning for service within 12 months',
-      whyItMatters: 'Retained customers have 6x lower acquisition cost and higher lifetime value.',
-      benchmark: '65%',
-      department: 'service-performance'
+      definition: 'The percentage of customers who purchased or last serviced their vehicle at the dealership and return for at least one paid service visit within the following 12 months. It measures the dealership\'s ability to maintain an ongoing relationship beyond the initial sale or service event.',
+      executiveSummary: 'Service retention is the foundation of after-sales profitability and long-term customer lifetime value. Dealerships retaining 65–75% of their service customers generate significantly more stable revenue streams than those below 55%. Each retained customer represents €800–€1,200 in annual service and parts revenue with minimal acquisition cost. Retention also feeds the trade-in pipeline, as loyal service customers are 2–3× more likely to purchase their next vehicle from the same dealer.',
+      whyItMatters: 'Acquiring a new service customer costs 5–7× more than retaining an existing one. Retained customers accept higher average repair orders, purchase more recommended maintenance, and are less price-sensitive than conquest customers. As vehicles age past warranty, retention becomes the critical variable — dealerships that lose customers to independent workshops after year 3 forfeit 60–70% of lifetime service revenue.',
+      formula: '= (Customers who returned for service within 12 months / Total customers eligible for return) × 100',
+      inclusions: ['Customers returning for any paid service (maintenance, repair, tyres, MOT/TÜV)', 'Warranty visits count if the customer also purchased a paid service in the period', 'Customers from both new and used vehicle sales within the retention window'],
+      exclusions: ['Recall-only visits with no additional paid service', 'Customers whose vehicles were written off or sold', 'Goodwill-only visits with no customer-pay component', 'Customers outside the defined geographic catchment area'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '60–75% (top-quartile European dealers achieve 70%+)',
+      department: 'service-performance',
+      rootCauseDiagnostics: {
+        people: 'Service advisors not proactively booking next appointments; delivery team not introducing customer to service department; lack of personalised follow-up from a named contact.',
+        process: 'No automated service reminder system; no structured "next appointment" booking at every visit; missing loyalty programme or service plan offering; no win-back campaign for lapsed customers.',
+        tools: 'DMS not generating retention reports by salesperson or customer cohort; no automated SMS/email reminder sequences; CRM not flagging at-risk customers approaching 12-month lapse; no online booking system.',
+        structure: 'Service department operating hours not matching customer availability; no mobile or pickup/delivery service option; no dedicated retention coordinator or customer-relationship role.',
+        incentives: 'Service advisors not incentivised on retention metrics; no bonus for re-booking at point of service; sales consultants not rewarded for service-department introductions at delivery.'
+      },
+      improvementLevers: [
+        'Book the next service appointment before the customer leaves — target 70%+ next-visit booking rate',
+        'Implement automated service reminders via SMS and email at 30, 14, and 3 days before due date',
+        'Launch a prepaid service plan at point of vehicle sale, locking in 3–5 years of retention',
+        'Create a 90-day lapsed-customer win-back campaign with a compelling offer (e.g. free vehicle health check)',
+        'Introduce convenient service options: pickup/delivery, Saturday hours, express service lane',
+        'Ensure every new vehicle delivery includes a personal introduction to the service advisor and a first-service booking',
+        'Implement an online booking portal allowing 24/7 appointment scheduling',
+        'Track retention rate by selling salesperson to create accountability for post-sale relationship quality',
+        'Offer loyalty pricing for customers who consistently service at the dealership (tiered discount after 3+ visits)'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Customer Satisfaction (Sales CSI)', 'Service Quality / Come-Back Rate', 'Service Plan Penetration', 'Delivery Experience Quality', 'Service Appointment Convenience'],
+        downstreamImpacts: ['Service Department Revenue', 'Parts Revenue', 'Customer Lifetime Value', 'Trade-In Pipeline Volume', 'Repeat Purchase Rate']
+      }
     },
     de: {
       title: 'Servicebindungsrate',
-      definition: 'Prozentsatz der Kunden, die innerhalb von 12 Monaten zum Service zurückkehren',
-      whyItMatters: 'Bindungskunden haben 6x niedrigere Akquisitionskosten.',
-      benchmark: '65%'
+      definition: 'Prozentsatz der Kunden, die innerhalb von 12 Monaten nach ihrem letzten Besuch für mindestens einen bezahlten Servicebesuch zurückkehren.',
+      whyItMatters: 'Die Gewinnung eines neuen Servicekunden kostet 5–7× mehr als die Bindung eines bestehenden. Bindungskunden akzeptieren höhere durchschnittliche Reparaturaufträge und sind weniger preissensibel.',
+      benchmark: '60–75%'
     }
   },
   technicianProductivity: {
     en: {
       title: 'Technician Productivity',
-      definition: 'Average repair orders completed per technician per day',
-      whyItMatters: 'Measures workflow efficiency and technician utilization. Higher productivity increases service capacity.',
-      benchmark: '12 per day',
-      department: 'service-performance'
+      definition: 'The average number of billed labour hours produced per technician per 8-hour working day. Unlike efficiency (which compares billed vs. available hours), productivity measures absolute output — how many hours of billable work each technician actually generates, accounting for attendance, utilisation, and efficiency combined.',
+      executiveSummary: 'Technician productivity is the ultimate measure of workshop output per person. Top-quartile European service departments achieve 7.5–9.5 billed hours per technician per 8-hour day, reflecting high attendance, strong utilisation, and above-average efficiency. Low productivity is rarely a single-cause problem — it typically results from a combination of poor scheduling, parts delays, excessive non-productive time, and skill gaps. Improving productivity by even 0.5 hours per tech per day across a 10-technician team generates €60,000–€90,000 in additional annual labour revenue.',
+      whyItMatters: 'Productivity determines the department\'s revenue ceiling. With labour rates of €90–€130 per hour in most European markets, each additional billed hour per technician per day represents significant revenue. Unlike adding headcount (which requires recruitment, training, and bay space), improving productivity extracts more value from existing resources — making it the highest-ROI lever in service operations.',
+      formula: '= Total Billed Labour Hours / (Number of Technicians × Working Days in Period)',
+      inclusions: ['Customer-pay billed hours', 'Warranty billed hours', 'Internal billed hours (reconditioning, PDI)', 'All technicians on payroll including apprentices at pro-rated capacity'],
+      exclusions: ['Service advisor or parts counter hours', 'Non-billable administrative or training time (tracked separately)', 'Sublet labour performed by external vendors', 'Hours from temporary/agency technicians unless on regular assignment'],
+      unitOfMeasure: 'Billed hours per technician per day',
+      benchmark: '7.5–9.5 billed hours per tech per 8-hour day',
+      department: 'service-performance',
+      rootCauseDiagnostics: {
+        people: 'High absenteeism reducing effective headcount; skill gaps causing slow job completion; technicians spending time on non-value tasks (parts chasing, vehicle movement); uneven workload distribution across team.',
+        process: 'Inefficient dispatch — technicians waiting for next job assignment; ROs not prepared in advance with parts and instructions; no work-in-progress tracking causing jobs to stall; morning start-up routines wasting first 30 minutes.',
+        tools: 'No real-time productivity dashboard per technician; outdated diagnostic equipment; insufficient specialist tooling requiring workarounds; DMS not providing live job-time tracking.',
+        structure: 'Not enough bays for technician count; shared equipment creating bottlenecks; no express lane separating quick jobs from complex repairs; workshop layout requiring excessive movement.',
+        incentives: 'Flat-rate pay not differentiated by productivity level; no daily or weekly productivity targets; no team-based bonus encouraging mutual support; top performers not recognised or rewarded.'
+      },
+      improvementLevers: [
+        'Start each day with a structured 10-minute dispatch meeting assigning the full day\'s work queue',
+        'Pre-stage parts and technical information at the bay before the technician begins each job',
+        'Implement a real-time electronic job board showing each technician\'s active job, queue, and daily hours',
+        'Separate express/quick-service work into a dedicated lane to prevent simple jobs blocking complex bays',
+        'Introduce productivity-based pay tiers: base rate + premium for hours above target threshold',
+        'Reduce vehicle movement time by assigning a dedicated lot porter or vehicle shuttle role',
+        'Track and address absenteeism — even 1 extra absence day per tech per month reduces annual productivity by 4%',
+        'Invest in modern diagnostic and ADAS calibration equipment to reduce fault-finding time on complex jobs',
+        'Implement a technician mentoring programme pairing senior and junior techs to accelerate skill development'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Labor Efficiency Rate', 'Parts Fill Rate', 'Service Appointment Volume', 'Technician Skill Level', 'Workshop Bay Capacity'],
+        downstreamImpacts: ['Service Department Revenue', 'Service Gross Profit', 'Customer Wait Time', 'Service Capacity vs. Demand', 'Total Dealership Net Profit']
+      }
     },
     de: {
       title: 'Technikerproduktivität',
-      definition: 'Durchschnittliche Reparaturaufträge pro Techniker pro Tag',
-      whyItMatters: 'Misst Workflow-Effizienz und Technikerauslastung.',
-      benchmark: '12 pro Tag'
+      definition: 'Durchschnittliche Anzahl abgerechneter Arbeitsstunden pro Techniker pro 8-Stunden-Arbeitstag. Misst die absolute Leistung unter Berücksichtigung von Anwesenheit, Auslastung und Effizienz.',
+      whyItMatters: 'Produktivität bestimmt die Umsatzobergrenze der Abteilung. Jede zusätzliche abgerechnete Stunde pro Techniker pro Tag bedeutet bei €90–€130 Stundensatz erheblichen Mehrumsatz.',
+      benchmark: '7,5–9,5 Stunden pro Tag'
     }
   },
+
+  // =====================================================
+  // ENRICHED LEGACY KPIs — Parts & Inventory
+  // =====================================================
   partsGrossProfit: {
     en: {
-      title: 'Parts Gross Profit',
-      definition: 'Profit margin on parts sales after cost of goods sold',
-      whyItMatters: 'Parts is often the highest-margin department. Optimizing pricing improves overall profitability.',
-      benchmark: '35%',
-      department: 'parts-inventory'
+      title: 'Parts Gross Profit Margin',
+      definition: 'The gross profit earned on parts sales expressed as a percentage of parts revenue. It measures the spread between the cost of parts purchased from OEM or aftermarket suppliers and the price charged to customers, warranty, or internal departments. This is the primary profitability indicator for the parts department.',
+      executiveSummary: 'Parts gross profit margin is the backbone of parts department profitability and a significant contributor to total dealership earnings. Well-managed European parts operations achieve 30–40% gross margins, with top performers reaching 38%+ by combining disciplined pricing matrices, strategic aftermarket sourcing, and active management of obsolescence. A 2-percentage-point margin improvement on €1.2M annual parts revenue adds €24,000 directly to the bottom line. Margin erosion typically signals over-discounting to trade accounts, poor matrix pricing, or excessive obsolete stock write-downs.',
+      whyItMatters: 'The parts department is often the most consistent profit contributor in a dealership, generating margin on every service job, body-shop repair, and counter sale. Unlike vehicle sales, parts margins are less subject to competitive discounting pressure. Protecting and growing parts margin requires proactive pricing management, supplier negotiation, and tight obsolescence control.',
+      formula: '= ((Parts Revenue − Parts Cost of Goods Sold) / Parts Revenue) × 100',
+      inclusions: ['OEM parts sold over counter, to workshop, and to wholesale/trade accounts', 'Aftermarket and accessory sales', 'Lubricants, chemicals, and shop supplies sold to customers', 'Warranty parts reimbursement at OEM-defined margins'],
+      exclusions: ['Labour revenue (counted in service)', 'Sublet parts procured and passed through at cost', 'Internal transfers at cost between group dealerships', 'Freight and handling charges unless included in parts selling price'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '30–40% gross margin (top quartile 36%+)',
+      department: 'parts-inventory',
+      rootCauseDiagnostics: {
+        people: 'Parts counter staff applying excessive discounts without authority framework; buyers not negotiating supplier terms aggressively; lack of pricing analysis skills in parts management.',
+        process: 'No structured pricing matrix differentiating customer-pay, warranty, trade, and internal pricing; annual price updates not applied promptly; no regular gross-profit-by-category review; obsolete stock not written down or returned on schedule.',
+        tools: 'DMS pricing matrix not configured or maintained; no competitive pricing intelligence for fast-moving parts; inventory management system not flagging low-margin lines; no automated supplier-cost-change import.',
+        structure: 'Parts manager also responsible for service scheduling, splitting focus; no dedicated wholesale/trade sales role; insufficient storage requiring emergency orders at premium cost.',
+        incentives: 'Parts staff paid flat salary with no margin-based bonus; no accountability for gross profit at individual or category level; supplier rebates not tracked or allocated to margin performance.'
+      },
+      improvementLevers: [
+        'Implement a multi-tier pricing matrix: retail, trade, warranty, and internal — each with defined margin targets',
+        'Review and update parts pricing within 30 days of every OEM price-list change',
+        'Negotiate improved cost terms with OEM and aftermarket suppliers — target 1–2% annual cost improvement',
+        'Actively manage obsolete inventory: monthly review, return-to-supplier programmes, and targeted promotions',
+        'Introduce a minimum-margin policy for trade accounts with escalation for below-threshold quotes',
+        'Track gross profit by parts category (mechanical, body, accessories, lubricants) and set category-level targets',
+        'Develop aftermarket and accessory sales programmes with higher-margin product lines',
+        'Implement supplier rebate tracking and ensure rebates are captured as margin improvement'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Parts Fill Rate', 'Supplier Cost Terms', 'Pricing Matrix Discipline', 'Obsolescence Rate', 'Parts Volume from Service Department'],
+        downstreamImpacts: ['Total Dealership Net Profit', 'Gross Profit per Department', 'Parts Department Contribution Margin', 'Service Job Profitability', 'Accessory Attachment Revenue']
+      }
     },
     de: {
-      title: 'Teile-Bruttogewinn',
-      definition: 'Gewinnmarge bei Teileverkäufen nach Warenkosten',
-      whyItMatters: 'Teile ist oft die Abteilung mit der höchsten Marge.',
-      benchmark: '35%'
+      title: 'Teile-Bruttogewinnmarge',
+      definition: 'Der Bruttogewinn aus Teileverkäufen als Prozentsatz des Teileumsatzes — misst die Spanne zwischen Einkaufs- und Verkaufspreis.',
+      whyItMatters: 'Die Teileabteilung ist oft der konstanteste Gewinnbringer im Autohaus. Margenschutz erfordert aktives Preismanagement und strenge Obsoleszenzkontrolle.',
+      benchmark: '30–40%'
     }
   },
   fillRate: {
     en: {
       title: 'Parts Fill Rate',
-      definition: 'Percentage of parts orders fulfilled from existing inventory',
-      whyItMatters: 'Higher fill rates mean faster service completion and happier customers.',
-      benchmark: '95%',
-      department: 'parts-inventory'
+      definition: 'The percentage of parts line items requested by the service department, body shop, or counter customers that are immediately available from on-site inventory at the time of request. A fill rate of 95% means that 95 out of every 100 parts lines are fulfilled without requiring a special order or emergency shipment.',
+      executiveSummary: 'Parts fill rate directly controls service department throughput and customer satisfaction. Best-in-class European dealerships maintain fill rates of 92–97%, ensuring technicians rarely wait for parts. Every 1% drop in fill rate can delay 3–5 repair orders per week, reducing labour efficiency by 2–3 percentage points and risking customer defection. Achieving high fill rates requires a balance between inventory investment, demand forecasting accuracy, and disciplined stock management — overstocking is as costly as understocking.',
+      whyItMatters: 'When a technician needs a part and it is not in stock, the repair order stalls — the vehicle occupies a bay, the technician is idle or reassigned, and the customer waits longer. Fill rate is therefore a multiplier of service efficiency, customer satisfaction, and bay utilisation. It also drives wholesale and trade customer loyalty, as body shops and independent workshops depend on reliable same-day parts availability.',
+      formula: '= (Parts Lines Filled from On-Site Stock / Total Parts Lines Requested) × 100',
+      inclusions: ['All parts lines requested for customer-pay, warranty, and internal jobs', 'Counter sales and trade/wholesale orders', 'Same-day fulfilment from on-site stock (including bin stock and bulk items)'],
+      exclusions: ['Special-order parts expected to be ordered (e.g. customer-specific accessories)', 'Back-ordered lines where the customer agreed to wait', 'Parts fulfilled from a group dealership via inter-branch transfer', 'Non-genuine or aftermarket parts sourced from third-party suppliers on demand'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '92–97% (top quartile 95%+)',
+      department: 'parts-inventory',
+      rootCauseDiagnostics: {
+        people: 'Parts manager relying on intuition rather than data for stocking decisions; technicians not pre-ordering parts when appointments are booked; counter staff not recording lost sales or stockout events.',
+        process: 'No daily stock-order review aligned with next-day appointments; annual stocking review rather than monthly demand analysis; no lost-sales tracking process; returns and credits not processed promptly, creating phantom stock.',
+        tools: 'DMS demand-forecasting module not configured or used; no automated reorder triggers for fast-moving parts; inventory counts inaccurate due to lack of cycle counting; no integration between service appointment system and parts pre-picking.',
+        structure: 'Insufficient warehouse space forcing low stock depth on fast-movers; no dedicated stock controller role; parts received but not binned promptly creating "in transit" delays; split storage locations causing picking errors.',
+        incentives: 'Parts manager measured only on gross profit, not fill rate; no target for lost-sales reduction; no accountability for stockout impact on service department revenue.'
+      },
+      improvementLevers: [
+        'Implement automated DMS reorder points based on 90-day rolling demand and lead-time analysis',
+        'Introduce a daily pre-pick process: pull parts for next-day appointments the evening before',
+        'Track and report lost sales weekly — every unfilled line should be recorded and reviewed',
+        'Conduct monthly demand-pattern analysis and adjust stock depth for top-200 fast-moving part numbers',
+        'Implement cycle counting (10% of bins per week) to maintain perpetual inventory accuracy above 98%',
+        'Negotiate with OEM for next-day or same-day emergency delivery for critical fast-moving lines',
+        'Set a formal fill-rate target (e.g. 95%) and include it in parts manager KPIs and bonus calculation',
+        'Create a visual management board showing daily fill rate, lost sales count, and emergency order count'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Inventory Accuracy', 'Demand Forecasting Quality', 'Supplier Delivery Reliability', 'Service Appointment Pre-Planning', 'Warehouse Space and Organisation'],
+        downstreamImpacts: ['Labor Efficiency Rate', 'Technician Productivity', 'Service Customer Satisfaction', 'Service Retention Rate', 'Parts Obsolescence Rate']
+      }
     },
     de: {
       title: 'Teile-Erfüllungsrate',
-      definition: 'Prozentsatz der Teilebestellungen aus vorhandenem Bestand',
-      whyItMatters: 'Höhere Erfüllungsraten bedeuten schnellere Serviceabwicklung.',
-      benchmark: '95%'
+      definition: 'Prozentsatz der Teilebestellpositionen, die sofort aus dem Vor-Ort-Bestand erfüllt werden können zum Zeitpunkt der Anfrage.',
+      whyItMatters: 'Wenn ein Techniker ein Teil benötigt und es nicht vorrätig ist, stoppt der Reparaturauftrag — das Fahrzeug blockiert eine Hebebühne, der Techniker steht still, und der Kunde wartet länger.',
+      benchmark: '92–97%'
     }
   },
+
+  // =====================================================
+  // ENRICHED LEGACY KPIs — Financial Operations
+  // =====================================================
   cashFlowDays: {
     en: {
-      title: 'Cash Flow Days',
-      definition: 'Average days between transaction and cash receipt',
-      whyItMatters: 'Faster cash collection improves liquidity and reduces financing costs.',
-      benchmark: '7 days',
-      department: 'financial-operations'
+      title: 'Cash Flow Days (Days Sales Outstanding)',
+      definition: 'The average number of calendar days between completing a transaction (vehicle sale, service invoice, or parts sale) and receiving the corresponding cash payment. It measures the speed of the dealership\'s cash collection cycle and directly impacts working-capital requirements and liquidity.',
+      executiveSummary: 'Cash flow days determine how quickly revenue converts into usable cash. Top-performing European dealerships collect cash within 5–10 days of invoicing, while poorly managed operations can stretch to 20–30+ days — tying up hundreds of thousands of euros in receivables. Every additional day of cash outstanding increases floor-plan interest, delays supplier payments, and raises the risk of bad debts. Disciplined cash management is especially critical in automotive retail where transaction values are high and margins are thin.',
+      whyItMatters: 'Cash is oxygen for a dealership. Long collection cycles force reliance on expensive credit facilities, delay the ability to acquire new inventory, and create vulnerability to unexpected expenses. In a business with 3–5% net margins, the interest cost of carrying receivables for an extra 10 days can represent 10–15% of net profit. Shortening cash flow days also improves the dealership\'s creditworthiness and negotiating position with lenders.',
+      formula: '= (Average Accounts Receivable / Total Revenue) × Number of Days in Period',
+      inclusions: ['Vehicle sale receivables (including finance company funding delays)', 'Service and parts invoice receivables', 'Warranty claim reimbursement receivables from OEM', 'Fleet and corporate account receivables'],
+      exclusions: ['Cash and card transactions settled on the same day', 'Deposits received in advance of delivery', 'Intercompany receivables within a dealer group', 'Floor-plan financing (tracked separately as a liability)'],
+      unitOfMeasure: 'Days',
+      benchmark: '5–10 days (top quartile under 7 days)',
+      department: 'financial-operations',
+      rootCauseDiagnostics: {
+        people: 'No dedicated credit controller or accounts-receivable clerk; finance team not following up on overdue invoices promptly; sales staff promising extended payment terms without authority.',
+        process: 'No structured collections process with escalation timelines; invoices not issued on the same day as delivery; warranty claims submitted in batches rather than daily; no credit policy for trade and fleet accounts.',
+        tools: 'DMS accounts-receivable ageing report not reviewed daily; no automated payment reminders or dunning letters; online payment options not offered to customers; bank reconciliation performed monthly rather than daily.',
+        structure: 'Finance function understaffed relative to transaction volume; no separation between credit approval and sales function; warranty claims team sits in service rather than finance, delaying submission.',
+        incentives: 'No cash-collection targets for finance team; sales commission paid at invoice rather than at cash receipt, removing urgency; no penalty for overdue receivables.'
+      },
+      improvementLevers: [
+        'Issue invoices on the same day as vehicle delivery or service completion — no exceptions',
+        'Implement a structured collections cadence: reminder at day 3, call at day 7, escalation at day 14',
+        'Require finance company pre-approval and funding commitment before vehicle delivery',
+        'Submit warranty claims daily rather than in weekly or monthly batches',
+        'Offer convenient payment options: online payment portal, direct debit, contactless in-store',
+        'Establish credit limits and payment terms for all trade and fleet accounts with formal credit approval',
+        'Review accounts-receivable ageing report daily and escalate all items over 10 days',
+        'Link sales commission payment to cash receipt rather than invoice date to align incentives'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Invoice Timeliness', 'Finance Company Funding Speed', 'Warranty Claim Submission Speed', 'Customer Payment Method Mix', 'Credit Policy Discipline'],
+        downstreamImpacts: ['Working Capital Requirements', 'Floor-Plan Interest Cost', 'Supplier Payment Timeliness', 'Total Dealership Net Profit', 'Liquidity and Credit Rating']
+      }
     },
     de: {
-      title: 'Cashflow-Tage',
-      definition: 'Durchschnittliche Tage zwischen Transaktion und Bargeldeingang',
-      whyItMatters: 'Schnellere Bargeldsammlung verbessert Liquidität.',
-      benchmark: '7 Tage'
+      title: 'Cashflow-Tage (Forderungslaufzeit)',
+      definition: 'Durchschnittliche Anzahl Kalendertage zwischen Transaktionsabschluss und Zahlungseingang. Misst die Geschwindigkeit des Inkassozyklus und beeinflusst direkt den Betriebsmittelbedarf.',
+      whyItMatters: 'Cash ist der Sauerstoff eines Autohauses. Lange Inkassozyklen erzwingen teure Kreditlinien und verzögern Bestandsinvestitionen. Bei 3–5% Nettomarge können die Zinskosten für 10 zusätzliche Forderungstage 10–15% des Nettogewinns ausmachen.',
+      benchmark: '5–10 Tage'
     }
   },
   expenseRatio: {
     en: {
-      title: 'Expense Ratio',
-      definition: 'Operating expenses as a percentage of gross profit',
-      whyItMatters: 'Lower ratios mean more profit retained. Industry benchmark is under 75%.',
-      benchmark: '75%',
-      department: 'financial-operations'
+      title: 'Expense Ratio (Overhead Absorption)',
+      definition: 'Total operating expenses (fixed and semi-variable) expressed as a percentage of total dealership gross profit. It measures how much of the gross profit earned across all departments is consumed by overhead costs before reaching net profit. A lower ratio means more gross profit is retained as net profit.',
+      executiveSummary: 'The expense ratio is the single most important metric for understanding dealership cost efficiency. Best-in-class European dealerships operate at 70–78% expense-to-gross, meaning they retain 22–30 cents of every gross-profit euro as net profit. Dealerships above 85% are in a danger zone where even modest revenue declines can push the business into loss. Controlling the expense ratio requires disciplined cost management across personnel, facilities, marketing, and technology — without starving growth-critical investments.',
+      whyItMatters: 'Gross profit is meaningless if overhead consumes it entirely. The expense ratio reveals whether a dealership is structurally profitable or merely generating activity. A 5-percentage-point reduction in expense ratio on €1.5M gross profit adds €75,000 directly to net profit. It is also a critical stress-test metric: dealerships with high expense ratios have no buffer against revenue downturns, market disruptions, or unexpected cost increases.',
+      formula: '= (Total Operating Expenses / Total Gross Profit) × 100',
+      inclusions: ['All personnel costs (salaries, commissions, benefits, training)', 'Facility costs (rent, utilities, maintenance, insurance)', 'Marketing and advertising spend', 'Technology costs (DMS, CRM, IT infrastructure)', 'Administrative costs (legal, accounting, office supplies)', 'Depreciation and amortisation of fixed assets'],
+      exclusions: ['Cost of goods sold (already deducted to arrive at gross profit)', 'Floor-plan interest (often reported below gross profit line)', 'Income tax and extraordinary items', 'Owner compensation above market-rate salary (in owner-operated dealerships)', 'Capital expenditure (reported on balance sheet)'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '70–80% (top quartile under 75%)',
+      department: 'financial-operations',
+      rootCauseDiagnostics: {
+        people: 'Headcount growth outpacing revenue growth; high overtime costs due to poor scheduling; excessive management layers; underperforming staff retained rather than managed out.',
+        process: 'No structured annual budget process with monthly variance review; procurement not centralised — departments buying independently at higher cost; marketing spend not tracked against ROI; no formal headcount planning linked to revenue projections.',
+        tools: 'No real-time expense dashboard for department managers; DMS financial reporting delayed or inaccurate; no automated expense-approval workflow; no benchmarking against industry composites.',
+        structure: 'Facility oversized relative to current throughput; multiple underutilised locations in a group; support functions (HR, IT, finance) not shared across group dealerships; excessive outsourcing of functions that could be performed in-house.',
+        incentives: 'Department managers not accountable for controllable expenses; no bonus component tied to expense-ratio improvement; marketing budget treated as entitlement rather than investment requiring ROI justification.'
+      },
+      improvementLevers: [
+        'Implement a formal annual budget with monthly variance review and department-manager accountability',
+        'Benchmark personnel cost per unit retailed against industry composites and address outliers',
+        'Centralise procurement for common items (office supplies, marketing materials, IT licenses) to leverage group buying power',
+        'Review all vendor contracts annually and renegotiate or retender the top-10 cost lines',
+        'Right-size facility costs: sublease unused space, renegotiate rent, or consolidate locations',
+        'Implement marketing ROI tracking — cut or redirect spend that does not generate measurable leads',
+        'Introduce a headcount-to-revenue ratio target and require GM approval for all new hires',
+        'Share support functions (HR, IT, accounting) across group dealerships to reduce per-store overhead',
+        'Set a controllable-expense target for each department manager and include it in bonus calculation',
+        'Review technology subscriptions quarterly and eliminate unused or redundant systems'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Total Gross Profit', 'Headcount and Personnel Costs', 'Facility Costs', 'Marketing Spend Efficiency', 'Technology and IT Costs'],
+        downstreamImpacts: ['Total Dealership Net Profit', 'Operating Margin %', 'EBITDA Margin', 'Break-Even Volume', 'Return on Investment']
+      }
     },
     de: {
-      title: 'Kostenquote',
-      definition: 'Betriebskosten als Prozentsatz des Bruttogewinns',
-      whyItMatters: 'Niedrigere Quoten bedeuten mehr einbehaltenen Gewinn.',
-      benchmark: '75%'
+      title: 'Kostenquote (Gemeinkostenabsorption)',
+      definition: 'Gesamte Betriebskosten als Prozentsatz des Gesamtbruttogewinns. Misst, wie viel des erarbeiteten Bruttogewinns durch Gemeinkosten aufgezehrt wird, bevor Nettogewinn entsteht.',
+      whyItMatters: 'Bruttogewinn ist bedeutungslos, wenn Gemeinkosten ihn vollständig auffressen. Eine Senkung der Kostenquote um 5 Prozentpunkte bei €1,5M Bruttogewinn bringt €75.000 zusätzlichen Nettogewinn.',
+      benchmark: '70–80%'
     }
   }
 };
