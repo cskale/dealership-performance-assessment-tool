@@ -3289,6 +3289,807 @@ export const KPI_DEFINITIONS: Record<string, { en: KPIDefinition; de: KPIDefinit
   },
 
   // =====================================================
+  // EV READINESS KPIs (81-85)
+  // =====================================================
+  evSalesPenetration: {
+    en: {
+      title: 'EV Sales Penetration',
+      definition: 'The percentage of total new vehicle sales that are battery electric vehicles (BEV) or plug-in hybrid electric vehicles (PHEV).',
+      executiveSummary: 'EV penetration is the most critical forward-looking metric for dealership viability. With OEMs committing to electrification, dealers with low EV penetration risk losing allocation, incentives, and relevance. Market leaders achieve penetration rates 20-50% above market average.',
+      whyItMatters: 'Reflects dealership readiness for the electric transition. Low penetration signals staff capability gaps, infrastructure shortcomings, or customer engagement failures.',
+      formula: 'EV Sales Penetration = (BEV + PHEV Units Sold / Total New Vehicle Units Sold) × 100',
+      inclusions: ['All BEV and PHEV retail sales', 'Both customer orders and stock sales'],
+      exclusions: ['Mild hybrid (MHEV) vehicles', 'Fleet/commercial EV deliveries (track separately)'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: 'Market average +20% (varies by region)',
+      department: 'ev-readiness',
+      rootCauseDiagnostics: {
+        people: 'Sales staff uncomfortable with EV technology, inability to address range anxiety objections, preference for selling familiar ICE vehicles',
+        process: 'No EV-specific sales process, inadequate test drive protocol for EVs, poor charging demonstration during delivery',
+        tools: 'Insufficient EV demo fleet, no home charging assessment tools, limited EV configuration/comparison tools',
+        structure: 'No EV specialist role, EV inventory not prominently displayed, charging infrastructure not visible to customers',
+        incentives: 'No additional spiff for EV sales, compensation structure not encouraging EV focus, no EV sales targets'
+      },
+      improvementLevers: [
+        'Create dedicated EV specialist role or certify all sales staff in EV technology',
+        'Develop EV-specific sales process addressing charging, range, TCO, and incentives',
+        'Install visible customer-facing charging infrastructure at dealership',
+        'Offer home charging assessment and installation as part of sales process',
+        'Implement EV test drive events and experiential marketing',
+        'Set EV-specific sales targets with additional compensation incentives',
+        'Create EV comparison tools showing TCO advantage over ICE equivalents'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Staff EV knowledge and confidence', 'EV inventory availability', 'Charging infrastructure', 'Local EV incentives/policy', 'Customer awareness'],
+        downstreamImpacts: ['OEM allocation and incentives', 'EV Gross per Unit', 'EV Service Readiness utilization', 'Future-proofing of dealership business model']
+      }
+    },
+    de: {
+      title: 'EV-Verkaufsdurchdringung',
+      definition: 'Prozentsatz der Neuwagenverkäufe, die Elektro- oder Plug-in-Hybridfahrzeuge sind.',
+      whyItMatters: 'Spiegelt die Bereitschaft des Autohauses für die Elektrowende wider.',
+      benchmark: 'Marktdurchschnitt +20%'
+    }
+  },
+  evServiceReadinessIndex: {
+    en: {
+      title: 'EV Service Readiness Index',
+      definition: 'A composite score measuring the dealership\'s capability to service electric vehicles, including certified technicians, equipment, safety protocols, and parts availability.',
+      executiveSummary: 'As EV fleets grow, service departments must be ready to handle high-voltage systems safely and competently. The EV Service Readiness Index combines multiple capability dimensions into a single score. Best-practice dealers achieve 80%+ readiness.',
+      whyItMatters: 'EV service capability is essential for retaining EV customers, meeting OEM requirements, and capturing the growing EV aftermarket opportunity.',
+      formula: 'EV Service Readiness Index = Weighted Average of: Certified Tech % (30%) + Equipment Score (25%) + Safety Compliance (25%) + Parts Availability (20%)',
+      inclusions: ['All EV-specific capabilities: technician certifications, high-voltage tools, safety equipment, EV parts stock'],
+      exclusions: ['General service capabilities already measured in other KPIs'],
+      unitOfMeasure: 'Score (0-100%)',
+      benchmark: '80%+',
+      department: 'ev-readiness',
+      rootCauseDiagnostics: {
+        people: 'Insufficient EV-certified technicians, technician resistance to high-voltage training, lack of EV diagnostic expertise',
+        process: 'No EV-specific service procedures, missing high-voltage safety protocols, inadequate EV inspection checklist',
+        tools: 'Missing high-voltage PPE, no EV-specific diagnostic tools, insufficient battery testing equipment, no insulated tool sets',
+        structure: 'No dedicated EV service bay with proper ventilation/safety, EV work mixed with ICE creating safety risks',
+        incentives: 'No pay premium for EV certification, no investment budget for EV equipment, no targets for EV readiness improvement'
+      },
+      improvementLevers: [
+        'Enroll technicians in OEM EV certification programs (target 50%+ certified)',
+        'Invest in high-voltage safety equipment and dedicated EV service bay',
+        'Develop EV-specific service procedures and safety protocols',
+        'Stock critical EV parts (charging cables, coolant, brake components)',
+        'Create EV service marketing to attract EV owners from competitor brands',
+        'Implement EV battery health check as standard inspection item',
+        'Provide pay premium for EV-certified technicians to incentivize training'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Training investment', 'Equipment investment', 'OEM EV program participation', 'Management commitment to EV transition'],
+        downstreamImpacts: ['EV customer retention', 'EV service revenue growth', 'Safety compliance', 'OEM franchise requirements', 'Competitive positioning']
+      }
+    },
+    de: {
+      title: 'EV-Service-Bereitschaftsindex',
+      definition: 'Zusammengesetzter Score der EV-Servicefähigkeit des Autohauses.',
+      whyItMatters: 'EV-Servicefähigkeit ist essentiell für die Kundenbindung und OEM-Anforderungen.',
+      benchmark: '80%+'
+    }
+  },
+  chargerUtilizationRate: {
+    en: {
+      title: 'Charger Utilization Rate',
+      definition: 'The percentage of time that dealership-owned EV charging stations are actively in use versus total available hours.',
+      executiveSummary: 'Charging infrastructure represents significant capital investment. Utilization rate measures whether this investment is generating returns through customer service, revenue generation, or brand differentiation. Best-practice dealers achieve 30-50% utilization across customer, inventory, and public charging.',
+      whyItMatters: 'Low utilization means wasted capital investment. High utilization indicates effective integration of charging into the customer experience and operational workflow.',
+      formula: 'Charger Utilization = (Total Charging Hours / Total Available Hours across All Chargers) × 100',
+      inclusions: ['All dealer-owned chargers: customer-facing, inventory charging, staff/fleet charging'],
+      exclusions: ['Third-party operated chargers on dealer property', 'Chargers under maintenance/repair'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '30-50%',
+      department: 'ev-readiness',
+      rootCauseDiagnostics: {
+        people: 'Staff not directing customers to chargers, poor communication about charging availability, no charging protocol for inventory',
+        process: 'No charging scheduling system, inventory vehicles not systematically charged, no public charging program',
+        tools: 'Chargers not networked for monitoring, no utilization tracking, poor signage and wayfinding',
+        structure: 'Chargers located inconveniently, insufficient charger quantity for demand, no revenue model for public charging',
+        incentives: 'No utilization targets, no revenue model for charging, charging seen as cost center not revenue opportunity'
+      },
+      improvementLevers: [
+        'Implement networked charger management system with utilization tracking',
+        'Create customer charging program (free charging during service, paid public charging)',
+        'Establish inventory charging schedule to ensure all EVs are display-ready',
+        'Add prominent signage directing customers and public to available chargers',
+        'Develop revenue model for public/customer charging (subscription or per-kWh)',
+        'Market charging availability to attract EV owners for service and sales'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Number and type of chargers installed', 'EV inventory volume', 'Customer EV adoption', 'Public charging demand'],
+        downstreamImpacts: ['Customer satisfaction (EV owners)', 'EV showroom appeal', 'Revenue from charging services', 'Environmental/sustainability credentials']
+      }
+    },
+    de: {
+      title: 'Ladegerät-Auslastungsrate',
+      definition: 'Prozentsatz der Zeit, in der die EV-Ladestationen des Autohauses aktiv genutzt werden.',
+      whyItMatters: 'Niedrige Auslastung bedeutet verschwendete Kapitalinvestition.',
+      benchmark: '30-50%'
+    }
+  },
+  evGrossPerUnit: {
+    en: {
+      title: 'EV Gross per Unit',
+      definition: 'The average front-end gross profit per electric vehicle (BEV/PHEV) retailed, including vehicle margin, accessories, and any EV-specific add-ons.',
+      executiveSummary: 'EV gross margins face unique pressures from manufacturer agency models, online price transparency, and lower accessory attachment. Best-practice dealers maintain EV gross within 80-100% of ICE gross through value-added services, charging solutions, and EV-specific F&I products.',
+      whyItMatters: 'As EV mix increases, maintaining per-unit gross on EVs is critical for dealership profitability. EV-specific revenue opportunities must be developed to offset margin pressure.',
+      formula: 'EV Gross per Unit = (EV Selling Price + EV Add-ons − EV Cost) / Number of EVs Retailed',
+      inclusions: ['Vehicle margin', 'Charging equipment/installation revenue', 'EV accessories', 'EV-specific protection products'],
+      exclusions: ['Government incentives passed to customer', 'F&I products (tracked separately)', 'Service plan revenue'],
+      unitOfMeasure: 'Currency (€)',
+      benchmark: '80-100% of ICE equivalent gross',
+      department: 'ev-readiness',
+      rootCauseDiagnostics: {
+        people: 'Sales team not selling EV value-adds (home charger, protection), unfamiliarity with EV-specific accessory options',
+        process: 'No EV-specific upselling process, home charging assessment not integrated into sale, missing EV delivery experience',
+        tools: 'No EV TCO comparison tools, limited EV accessory catalog, no home charging solution partnerships',
+        structure: 'EV pricing set by manufacturer (agency model) limiting dealer margin flexibility',
+        incentives: 'No additional compensation for EV value-add sales, no EV-specific gross targets'
+      },
+      improvementLevers: [
+        'Develop EV value-add menu (home charger installation, paint protection, extended battery warranty)',
+        'Partner with home charging installation companies for referral revenue',
+        'Create premium EV delivery experience justifying higher customer satisfaction and referrals',
+        'Train F&I on EV-specific products (battery warranty extension, charging subscription, tire protection)',
+        'Implement EV TCO presentation showing customer total cost advantage',
+        'Set EV-specific gross per unit targets with compensation incentives'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['EV pricing model (dealer vs. agency)', 'EV accessory and value-add availability', 'Sales team EV knowledge', 'Market EV demand vs. supply'],
+        downstreamImpacts: ['Total dealership gross profit', 'EV Sales Penetration profitability', 'F&I per EV unit', 'Dealership viability in EV transition']
+      }
+    },
+    de: {
+      title: 'EV-Bruttogewinn pro Einheit',
+      definition: 'Durchschnittlicher Front-End-Bruttogewinn pro verkauftem Elektrofahrzeug.',
+      whyItMatters: 'Aufrechterhaltung des Pro-Einheit-Bruttogewinns bei EVs ist entscheidend für die Rentabilität.',
+      benchmark: '80-100% des ICE-Äquivalents'
+    }
+  },
+  batteryClaimRate: {
+    en: {
+      title: 'Battery Claim Rate',
+      definition: 'The percentage of EV battery warranty claims processed relative to the total EV units in the service database, measuring both battery reliability and warranty management effectiveness.',
+      executiveSummary: 'Battery claims are the highest-cost warranty event in EV servicing. Effective claim management, proper diagnostics, and proactive battery health monitoring can reduce unnecessary claims while ensuring legitimate issues are resolved quickly. Best-practice target is below 2% annual claim rate.',
+      whyItMatters: 'Battery claims impact manufacturer relationships, customer satisfaction, and service department workload. Proper management reduces costs while maintaining customer trust.',
+      formula: 'Battery Claim Rate = (Number of Battery Warranty Claims / Total EV Units in Service Database) × 100',
+      inclusions: ['All battery-related warranty claims (capacity degradation, cell failure, BMS issues)'],
+      exclusions: ['Charging system claims', 'Non-battery EV component claims', 'Customer-caused damage'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '<2%',
+      department: 'ev-readiness',
+      rootCauseDiagnostics: {
+        people: 'Technicians misdiagnosing battery issues, insufficient training on battery health assessment, poor customer communication on battery expectations',
+        process: 'No proactive battery health monitoring, reactive claim process, insufficient diagnostic documentation for warranty submission',
+        tools: 'Limited battery diagnostic equipment, no battery health trending tools, poor access to manufacturer battery data',
+        structure: 'No dedicated EV warranty specialist, battery claims mixed with general warranty without specialization',
+        incentives: 'No tracking of claim approval rates, no accountability for unnecessary claims, no proactive monitoring incentives'
+      },
+      improvementLevers: [
+        'Implement proactive battery health check during every EV service visit',
+        'Train technicians on proper battery diagnostic procedures and documentation',
+        'Create battery health trending database to identify degradation patterns',
+        'Develop customer education program on battery care best practices',
+        'Establish dedicated EV warranty processing specialist role',
+        'Track claim approval rate and cycle time with manufacturer feedback loop'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['EV Service Readiness Index', 'Technician EV certification', 'Battery diagnostic tools', 'Customer battery care education'],
+        downstreamImpacts: ['Warranty cost to manufacturer', 'Customer satisfaction (EV owners)', 'Service department EV workload', 'Manufacturer relationship quality']
+      }
+    },
+    de: {
+      title: 'Batterie-Anspruchsrate',
+      definition: 'Prozentsatz der EV-Batterie-Garantieansprüche relativ zur gesamten EV-Flotte in der Service-Datenbank.',
+      whyItMatters: 'Batterieansprüche sind das kostspieligste Garantieereignis bei der EV-Wartung.',
+      benchmark: '<2%'
+    }
+  },
+
+  // =====================================================
+  // SALES PROCESS & PIPELINE KPIs (86-90)
+  // =====================================================
+  salesProcessCompliance: {
+    en: {
+      title: 'Sales Process Compliance %',
+      definition: 'The percentage of sales transactions where all defined steps of the dealership\'s standardized sales process were documented and completed.',
+      executiveSummary: 'Process compliance is the foundation of consistent sales performance. Dealerships with 90%+ compliance achieve higher conversion rates, better gross, and more predictable results. Non-compliance indicates training gaps, tool barriers, or cultural resistance.',
+      whyItMatters: 'Consistent process execution drives consistent results. When salespeople skip steps, they miss upselling opportunities, create customer experience gaps, and reduce conversion rates.',
+      formula: 'Sales Process Compliance = (Transactions with All Steps Completed / Total Transactions) × 100',
+      inclusions: ['All documented sales steps: greeting, needs analysis, product presentation, test drive, trade appraisal, proposal, close, delivery'],
+      exclusions: ['Quick cash deals by repeat customers (abbreviated process acceptable)', 'Fleet/commercial sales with different process'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '90%+',
+      department: 'sales-process',
+      rootCauseDiagnostics: {
+        people: 'Sales staff taking shortcuts, experienced sellers believing they don\'t need process, new hires not trained on process steps',
+        process: 'Process too complex or cumbersome, unclear which steps are mandatory, no verification mechanism',
+        tools: 'CRM doesn\'t enforce process steps, no mobile-friendly process tracking, excessive data entry requirements',
+        structure: 'No management coaching on process adherence, no audit mechanism, managers focused on results not process',
+        incentives: 'No reward for process compliance, compensation based solely on outcomes, no consequence for non-compliance'
+      },
+      improvementLevers: [
+        'Simplify sales process to essential high-impact steps',
+        'Implement CRM workflow that guides and tracks each process step',
+        'Conduct regular process audits with coaching feedback',
+        'Create mystery shopping program to verify customer-facing process execution',
+        'Tie portion of compensation to process compliance metrics',
+        'Train managers on coaching process compliance, not just closing deals',
+        'Share compliance data transparently with team leaderboard'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Training effectiveness', 'CRM usability', 'Management coaching', 'Process simplicity'],
+        downstreamImpacts: ['Lead Conversion Rate', 'Gross per Vehicle', 'Customer satisfaction', 'Sales consistency and predictability']
+      }
+    },
+    de: {
+      title: 'Verkaufsprozess-Compliance %',
+      definition: 'Prozentsatz der Transaktionen, bei denen alle definierten Schritte des Verkaufsprozesses dokumentiert wurden.',
+      whyItMatters: 'Konsistente Prozessausführung treibt konsistente Ergebnisse.',
+      benchmark: '90%+'
+    }
+  },
+  crmDataCompleteness: {
+    en: {
+      title: 'CRM Data Completeness Rate',
+      definition: 'The percentage of CRM customer records that have all required fields completed (contact info, lead source, vehicle interest, follow-up notes, outcome).',
+      executiveSummary: 'CRM data quality directly determines the effectiveness of follow-up, marketing, and management reporting. Best-practice dealers achieve 85%+ data completeness through mandatory fields, training, and accountability. Incomplete CRM data means invisible leads and lost opportunities.',
+      whyItMatters: 'Incomplete CRM data makes leads invisible for follow-up, prevents accurate reporting, and undermines marketing campaign targeting.',
+      formula: 'CRM Completeness = (Records with All Required Fields / Total CRM Records) × 100',
+      inclusions: ['All customer/lead records created in CRM', 'Required fields: name, contact info, lead source, vehicle interest, follow-up status'],
+      exclusions: ['Archived/historical records', 'Duplicate records pending merge'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '85%+',
+      department: 'sales-process',
+      rootCauseDiagnostics: {
+        people: 'Sales staff view CRM as administrative burden, poor data entry habits, lack of understanding of data value',
+        process: 'Too many required fields, no data entry standards, no regular data quality audits, no clear CRM workflow',
+        tools: 'CRM system not user-friendly, poor mobile interface, no auto-fill capabilities, slow system performance',
+        structure: 'No CRM administrator role, no data quality ownership, IT support insufficient for CRM issues',
+        incentives: 'No consequence for poor data entry, compensation not tied to CRM usage, no recognition for CRM excellence'
+      },
+      improvementLevers: [
+        'Reduce required fields to essential data only (minimize friction)',
+        'Implement auto-population from lead sources to reduce manual entry',
+        'Create weekly CRM data quality report by salesperson',
+        'Make CRM data completeness a prerequisite for lead distribution',
+        'Train staff on CRM mobile app for real-time data entry',
+        'Establish CRM administrator role for data quality management',
+        'Tie portion of lead allocation to CRM compliance score'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['CRM usability', 'Training on CRM usage', 'Data entry standards', 'Management enforcement'],
+        downstreamImpacts: ['Follow-Up Completion Rate', 'Pipeline Hygiene Score', 'Marketing targeting accuracy', 'Management reporting quality']
+      }
+    },
+    de: {
+      title: 'CRM-Datenvollständigkeit',
+      definition: 'Prozentsatz der CRM-Kundendatensätze mit allen erforderlichen ausgefüllten Feldern.',
+      whyItMatters: 'Unvollständige CRM-Daten machen Leads für Follow-up unsichtbar.',
+      benchmark: '85%+'
+    }
+  },
+  followUpCompletionRate: {
+    en: {
+      title: 'Follow-Up Completion Rate',
+      definition: 'The percentage of scheduled follow-up activities (calls, emails, texts) that are actually completed within the designated timeframe.',
+      executiveSummary: 'Follow-up is where most sales are won or lost. Research shows 80% of sales require 5+ follow-up contacts, yet 44% of salespeople give up after one follow-up. Best-practice dealers achieve 90%+ follow-up completion rates through CRM automation and management accountability.',
+      whyItMatters: 'Incomplete follow-up is the #1 reason for lost sales. Every missed follow-up is a potential sale given to a competitor.',
+      formula: 'Follow-Up Completion Rate = (Follow-Up Tasks Completed on Time / Total Follow-Up Tasks Scheduled) × 100',
+      inclusions: ['All CRM-scheduled follow-up activities across all lead types'],
+      exclusions: ['Customer-initiated contacts (inbound calls/emails)', 'Automated system responses'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '90%+',
+      department: 'sales-process',
+      rootCauseDiagnostics: {
+        people: 'Sales staff prioritizing new leads over follow-up, poor time management, giving up too early on prospects',
+        process: 'No standardized follow-up cadence, too many manual steps, no escalation for overdue follow-ups',
+        tools: 'CRM alerts not configured or ignored, no automated follow-up sequences, poor task management interface',
+        structure: 'BDC and sales floor follow-up responsibilities unclear, no backup system when staff is absent',
+        incentives: 'No measurement of follow-up completion, compensation not tied to pipeline management, no consequence for missed follow-ups'
+      },
+      improvementLevers: [
+        'Implement automated multi-channel follow-up sequences in CRM',
+        'Create standardized follow-up cadence (day 1, 3, 7, 14, 30, 60, 90)',
+        'Set up management alerts for overdue follow-ups',
+        'Track follow-up completion by salesperson with daily visibility',
+        'Implement "hot lead" immediate follow-up protocol',
+        'Create consequence for consistently low follow-up completion (reduced lead allocation)',
+        'Automate routine follow-ups (email/text) to supplement personal outreach'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['CRM Data Completeness', 'CRM automation capabilities', 'Sales staff time management', 'Management oversight'],
+        downstreamImpacts: ['Lead Conversion Rate', 'Sales Cycle Length', 'Pipeline Hygiene Score', 'Customer experience', 'Revenue per sales executive']
+      }
+    },
+    de: {
+      title: 'Follow-Up-Abschlussrate',
+      definition: 'Prozentsatz der geplanten Follow-Up-Aktivitäten, die fristgerecht abgeschlossen werden.',
+      whyItMatters: 'Unvollständiges Follow-Up ist der #1 Grund für verlorene Verkäufe.',
+      benchmark: '90%+'
+    }
+  },
+  pipelineHygieneScore: {
+    en: {
+      title: 'Pipeline Hygiene Score',
+      definition: 'A composite score measuring the quality and accuracy of the sales pipeline, including lead stage accuracy, contact recency, estimated close dates, and deal value accuracy.',
+      executiveSummary: 'A clean pipeline enables accurate forecasting, proper resource allocation, and effective management coaching. Pipelines with 85%+ hygiene scores produce forecasts within 10% accuracy. Dirty pipelines lead to missed targets and wasted effort on dead opportunities.',
+      whyItMatters: 'Pipeline quality determines forecasting accuracy and management decision quality. Stale leads in active pipeline create false confidence and misdirected effort.',
+      formula: 'Pipeline Hygiene Score = Weighted Average of: Lead Stage Accuracy (30%) + Contact Recency (25%) + Close Date Accuracy (25%) + Deal Value Accuracy (20%)',
+      inclusions: ['All active opportunities in sales pipeline', 'All pipeline stage classifications'],
+      exclusions: ['Closed-won deals', 'Closed-lost deals older than 30 days', 'Service leads'],
+      unitOfMeasure: 'Score (0-100%)',
+      benchmark: '85%+',
+      department: 'sales-process',
+      rootCauseDiagnostics: {
+        people: 'Sales staff not updating pipeline stages, leaving dead deals active to appear busy, inaccurate close date predictions',
+        process: 'No regular pipeline review cadence, no criteria for stage advancement, no process for closing dead opportunities',
+        tools: 'CRM not enforcing stage criteria, no pipeline aging alerts, poor pipeline visualization tools',
+        structure: 'No regular pipeline review meetings, management not inspecting pipeline quality, no forecasting discipline',
+        incentives: 'No accountability for pipeline accuracy, compensation based on closed deals not pipeline quality'
+      },
+      improvementLevers: [
+        'Implement weekly pipeline review meetings with stage-by-stage analysis',
+        'Define clear criteria for each pipeline stage advancement',
+        'Create automatic alerts for leads with no activity in 14+ days',
+        'Establish monthly pipeline cleanup process (close dead opportunities)',
+        'Track forecast accuracy by salesperson to identify over/under-estimators',
+        'Implement pipeline aging rules that auto-flag stale opportunities'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['CRM Data Completeness', 'Follow-Up Completion Rate', 'Management pipeline review discipline', 'Stage definition clarity'],
+        downstreamImpacts: ['Forecast accuracy', 'Resource allocation effectiveness', 'Management decision quality', 'Sales team focus and productivity']
+      }
+    },
+    de: {
+      title: 'Pipeline-Hygiene-Score',
+      definition: 'Zusammengesetzter Score für Qualität und Genauigkeit der Verkaufspipeline.',
+      whyItMatters: 'Pipeline-Qualität bestimmt die Prognosegenauigkeit und Managemententscheidungsqualität.',
+      benchmark: '85%+'
+    }
+  },
+  quoteToOrderRatio: {
+    en: {
+      title: 'Quote-to-Order Ratio',
+      definition: 'The percentage of formal vehicle quotations or proposals that convert into confirmed orders or sales.',
+      executiveSummary: 'Quote-to-Order ratio measures the effectiveness of the proposal and closing stages of the sales process. Best-practice dealers convert 40-60% of formal quotes into orders through compelling proposals, timely follow-up, and effective negotiation.',
+      whyItMatters: 'Low conversion of quotes to orders indicates pricing issues, competitive losses, or weak closing skills. Each unconverted quote represents significant wasted sales effort.',
+      formula: 'Quote-to-Order Ratio = (Confirmed Orders / Total Formal Quotes Issued) × 100',
+      inclusions: ['All formal written vehicle proposals and quotations', 'Both new and used vehicle quotes'],
+      exclusions: ['Verbal price discussions without formal quote', 'Online configurator quotes without salesperson involvement'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '40-60%',
+      department: 'sales-process',
+      rootCauseDiagnostics: {
+        people: 'Poor proposal presentation skills, inability to create urgency, weak competitive differentiation, fear of closing',
+        process: 'Slow quote generation, no quote follow-up process, proposals lacking compelling value proposition',
+        tools: 'Poor proposal templates, no digital signing capability, limited ability to customize proposals quickly',
+        structure: 'Quote approval process too slow, limited discounting authority at salesperson level, no competitive pricing tools',
+        incentives: 'No tracking of quote-to-order ratio by salesperson, no accountability for unconverted quotes'
+      },
+      improvementLevers: [
+        'Create professional, visually compelling proposal templates',
+        'Implement immediate quote follow-up protocol (within 2 hours)',
+        'Train on proposal presentation and value-selling techniques',
+        'Add time-limited offer elements to create urgency',
+        'Track quote-to-order by salesperson with coaching on improvement',
+        'Implement competitive pricing tools to ensure proposals are market-competitive',
+        'Enable digital proposal delivery and e-signing for faster conversion'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Proposal quality', 'Pricing competitiveness', 'Sales team closing skills', 'Follow-up speed'],
+        downstreamImpacts: ['Lead Conversion Rate', 'Sales Cycle Length', 'Revenue per Sales Executive', 'Customer acquisition cost']
+      }
+    },
+    de: {
+      title: 'Angebots-Bestell-Verhältnis',
+      definition: 'Prozentsatz der formellen Fahrzeugangebote, die in bestätigte Bestellungen umgewandelt werden.',
+      whyItMatters: 'Jedes nicht umgewandelte Angebot repräsentiert verschwendeten Vertriebsaufwand.',
+      benchmark: '40-60%'
+    }
+  },
+
+  // =====================================================
+  // FINANCIAL OPERATIONS KPIs (91-100)
+  // =====================================================
+  totalDealershipNetProfit: {
+    en: {
+      title: 'Total Dealership Net Profit %',
+      definition: 'The percentage of total dealership revenue retained as net profit after all operating expenses, interest, and taxes.',
+      executiveSummary: 'Net profit percentage is the ultimate measure of dealership financial health. Best-practice dealers achieve 2-4% net profit on revenue. With typical dealership revenues of €20-100M, each 0.5% improvement represents €100-500k in additional profit.',
+      whyItMatters: 'The bottom-line indicator that determines owner return on investment, ability to reinvest in the business, and long-term viability.',
+      formula: 'Net Profit % = (Net Profit After Tax / Total Dealership Revenue) × 100',
+      inclusions: ['All revenue sources', 'All expenses including depreciation, interest, and taxes'],
+      exclusions: ['Extraordinary/one-time items (report separately)', 'Real estate gains/losses unrelated to operations'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '2-4%',
+      department: 'financial-operations',
+      rootCauseDiagnostics: {
+        people: 'Weak financial management skills, lack of P&L understanding across managers, poor expense control awareness',
+        process: 'No monthly financial review with department managers, delayed financial reporting, no variance analysis process',
+        tools: 'Poor financial dashboards, delayed accounting close, limited real-time financial visibility',
+        structure: 'No clear P&L accountability by department, centralized cost allocation obscuring true performance',
+        incentives: 'Department managers not measured on net profit contribution, no profit-sharing program, expense management not rewarded'
+      },
+      improvementLevers: [
+        'Implement monthly P&L review with all department managers',
+        'Create real-time financial dashboard showing key metrics vs. budget',
+        'Establish departmental P&L accountability with clear cost allocation',
+        'Conduct quarterly expense review to identify and eliminate waste',
+        'Implement profit-sharing program aligned with net profit targets',
+        'Benchmark financial performance against NADA 20 Group or peer dealerships',
+        'Create annual budget with monthly targets and variance reporting'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['All department gross profits', 'Overhead Cost Ratio', 'Operating efficiency', 'Revenue growth', 'Expense management'],
+        downstreamImpacts: ['Owner ROI', 'Reinvestment capacity', 'Employee compensation capacity', 'Franchise viability', 'Business valuation']
+      }
+    },
+    de: {
+      title: 'Gesamtes Autohaus-Nettoergebnis %',
+      definition: 'Prozentsatz des Gesamtumsatzes, der als Nettogewinn nach allen Kosten verbleibt.',
+      whyItMatters: 'Der ultimative Indikator für die finanzielle Gesundheit des Autohauses.',
+      benchmark: '2-4%'
+    }
+  },
+  operatingMarginPct: {
+    en: {
+      title: 'Operating Margin %',
+      definition: 'The percentage of revenue remaining after deducting all operating expenses but before interest and taxes (EBIT margin).',
+      executiveSummary: 'Operating margin isolates the core operational profitability from financing and tax effects, providing a cleaner view of management effectiveness. Best-practice dealers achieve 3-5% operating margin.',
+      whyItMatters: 'Measures management effectiveness in controlling costs and generating revenue. Unlike net profit, it excludes financing decisions and tax strategies, showing pure operational performance.',
+      formula: 'Operating Margin = (Operating Income / Total Revenue) × 100',
+      inclusions: ['All revenue and operating expenses', 'Depreciation and amortization'],
+      exclusions: ['Interest expense', 'Income taxes', 'Extraordinary items'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '3-5%',
+      department: 'financial-operations',
+      rootCauseDiagnostics: {
+        people: 'Poor expense awareness, managers not trained on P&L management, excessive discretionary spending',
+        process: 'No purchase approval process, budget overruns not addressed timely, poor vendor negotiation',
+        tools: 'No real-time expense tracking, delayed financial reporting, poor departmental cost visibility',
+        structure: 'Bloated overhead structure, too many management layers, duplicate functions',
+        incentives: 'No operating margin targets, expense control not rewarded, managers judged on revenue not profit'
+      },
+      improvementLevers: [
+        'Implement zero-based budgeting for all operating expenses',
+        'Create purchase approval workflow with authority limits',
+        'Negotiate vendor contracts annually with competitive bidding',
+        'Benchmark staffing ratios against industry standards',
+        'Automate manual processes to reduce labor costs',
+        'Implement energy efficiency programs to reduce utility costs'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Total gross profit across departments', 'Personnel expense ratio', 'Facility costs', 'Technology and equipment costs'],
+        downstreamImpacts: ['Net Profit %', 'EBITDA Margin', 'Business valuation', 'Investor/owner returns']
+      }
+    },
+    de: {
+      title: 'Betriebsmarge %',
+      definition: 'Prozentsatz des Umsatzes nach Abzug aller Betriebskosten vor Zinsen und Steuern.',
+      whyItMatters: 'Misst die Managementeffektivität bei Kostenkontrolle und Umsatzgenerierung.',
+      benchmark: '3-5%'
+    }
+  },
+  ebitdaMargin: {
+    en: {
+      title: 'EBITDA Margin',
+      definition: 'Earnings Before Interest, Taxes, Depreciation, and Amortization as a percentage of total revenue.',
+      executiveSummary: 'EBITDA margin is the primary metric used in dealership valuation and acquisition analysis. It removes the effects of financing, taxes, and accounting policies to show core cash-generating capability. Best-practice dealers achieve 4-7% EBITDA margin.',
+      whyItMatters: 'The standard metric for dealership valuation (typically 4-7x EBITDA). Higher EBITDA margin directly increases business value and attractiveness to investors.',
+      formula: 'EBITDA Margin = (EBITDA / Total Revenue) × 100',
+      inclusions: ['All revenue', 'All operating expenses excluding depreciation, amortization, interest, and taxes'],
+      exclusions: ['Depreciation and amortization', 'Interest expense', 'Income taxes', 'One-time/extraordinary items'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '4-7%',
+      department: 'financial-operations',
+      rootCauseDiagnostics: {
+        people: 'Management not focused on cash generation, poor understanding of EBITDA drivers, excessive owner compensation/perks',
+        process: 'No EBITDA tracking or target, financial management focused on accounting profit not cash flow, poor working capital management',
+        tools: 'No EBITDA dashboard, inability to forecast EBITDA impact of operational decisions, poor financial modeling',
+        structure: 'Excessive fixed costs reducing operating leverage, over-investment in non-productive assets',
+        incentives: 'No EBITDA-linked compensation for management, no clear connection between daily decisions and EBITDA impact'
+      },
+      improvementLevers: [
+        'Track EBITDA monthly with trend analysis and forecasting',
+        'Identify and convert fixed costs to variable where possible',
+        'Optimize working capital (inventory turns, receivables, payables)',
+        'Benchmark EBITDA against peer group for improvement targeting',
+        'Link management bonus to EBITDA improvement targets',
+        'Evaluate all capital expenditures through EBITDA impact lens'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Operating Margin', 'Revenue growth', 'Cost structure optimization', 'Working capital efficiency'],
+        downstreamImpacts: ['Business valuation', 'Acquisition attractiveness', 'Debt capacity', 'Owner wealth creation']
+      }
+    },
+    de: {
+      title: 'EBITDA-Marge',
+      definition: 'Ergebnis vor Zinsen, Steuern und Abschreibungen als Prozentsatz des Gesamtumsatzes.',
+      whyItMatters: 'Die Standardmetrik für Autohaus-Bewertung (typischerweise 4-7x EBITDA).',
+      benchmark: '4-7%'
+    }
+  },
+  grossProfitPerDepartment: {
+    en: {
+      title: 'Gross Profit per Department',
+      definition: 'The total gross profit generated by each major dealership department (New Sales, Used Sales, Service, Parts, F&I) as both absolute value and percentage of departmental revenue.',
+      executiveSummary: 'Departmental gross profit analysis reveals where the dealership makes and loses money. Best-practice dealers generate balanced gross contribution across departments, reducing dependency on any single profit center. Typical healthy split: New 20%, Used 25%, Service 25%, Parts 15%, F&I 15%.',
+      whyItMatters: 'Identifies which departments are performing and which need intervention. Over-reliance on one department creates vulnerability to market shifts.',
+      formula: 'Department Gross Profit = Department Revenue − Department Cost of Sales',
+      inclusions: ['All revenue and COGS by department', 'All product lines within each department'],
+      exclusions: ['Overhead allocation (tracked separately)', 'Inter-departmental transfers at market rate'],
+      unitOfMeasure: 'Currency (€) and Percentage (%)',
+      benchmark: 'Balanced 5-department contribution',
+      department: 'financial-operations',
+      rootCauseDiagnostics: {
+        people: 'Department managers not understanding their P&L, lack of cross-departmental collaboration, weak performers not addressed',
+        process: 'No departmental P&L review process, delayed gross profit reporting, no variance analysis by department',
+        tools: 'DMS not providing real-time departmental gross profit, manual calculations, poor product-line analysis',
+        structure: 'Departments operating as independent silos, no shared goals, imbalanced resource allocation',
+        incentives: 'Department managers compensated on volume not margin, no cross-departmental profit sharing'
+      },
+      improvementLevers: [
+        'Implement daily gross profit tracking by department with real-time dashboards',
+        'Conduct monthly departmental P&L reviews with each manager',
+        'Set gross profit targets by department aligned with industry benchmarks',
+        'Identify underperforming product lines within each department for improvement',
+        'Create cross-departmental collaboration incentives',
+        'Benchmark departmental mix against NADA guidelines and peer groups'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Department-specific revenue and margin metrics', 'Product mix within departments', 'Pricing discipline', 'Volume'],
+        downstreamImpacts: ['Total Gross Margin', 'Operating Margin', 'Net Profit', 'Department investment priorities']
+      }
+    },
+    de: {
+      title: 'Bruttogewinn pro Abteilung',
+      definition: 'Gesamter Bruttogewinn jeder Hauptabteilung des Autohauses.',
+      whyItMatters: 'Zeigt, welche Abteilungen profitabel sind und welche Intervention benötigen.',
+      benchmark: 'Ausgewogener 5-Abteilungs-Beitrag'
+    }
+  },
+  totalGrossMarginPct: {
+    en: {
+      title: 'Total Gross Margin %',
+      definition: 'The overall dealership gross profit as a percentage of total revenue, combining all departments.',
+      executiveSummary: 'Total gross margin reflects the aggregate pricing power and cost management across the entire dealership. Best-practice dealers maintain 15-20% total gross margin through balanced department contributions and disciplined pricing.',
+      whyItMatters: 'The primary indicator of overall pricing effectiveness and cost management. Gross margin must exceed operating expenses for the dealership to be profitable.',
+      formula: 'Total Gross Margin = (Total Gross Profit / Total Revenue) × 100',
+      inclusions: ['All departmental gross profits combined', 'All revenue sources'],
+      exclusions: ['Operating expenses', 'Other income/expense below gross profit line'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '15-20%',
+      department: 'financial-operations',
+      rootCauseDiagnostics: {
+        people: 'Excessive discounting across departments, poor cost negotiation, margin erosion through giveaways',
+        process: 'No pricing governance, inconsistent discount policies, poor cost tracking by product line',
+        tools: 'No margin analysis tools, limited real-time gross profit visibility, poor product profitability reporting',
+        structure: 'Revenue mix heavily weighted to low-margin products, insufficient high-margin revenue streams (F&I, accessories, service)',
+        incentives: 'Volume-based compensation encouraging margin sacrifice, no gross profit floor for deal approval'
+      },
+      improvementLevers: [
+        'Implement minimum gross profit policies by department with escalation for exceptions',
+        'Shift revenue mix toward higher-margin products and services',
+        'Create pricing governance with clear discount authority and limits',
+        'Develop value-added services and products that improve margin per transaction',
+        'Track gross margin daily by department with trend analysis',
+        'Negotiate improved cost of goods through volume commitments and competitive sourcing'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Gross Profit per Department', 'Pricing discipline', 'Revenue mix', 'Cost of goods management'],
+        downstreamImpacts: ['Operating Margin', 'Net Profit', 'Expense absorption capacity', 'Investment and growth potential']
+      }
+    },
+    de: {
+      title: 'Gesamtbruttomarge %',
+      definition: 'Gesamter Bruttogewinn des Autohauses als Prozentsatz des Gesamtumsatzes.',
+      whyItMatters: 'Bruttomarge muss die Betriebskosten übersteigen, damit das Autohaus profitabel ist.',
+      benchmark: '15-20%'
+    }
+  },
+  netProfitPerVehicleRetail: {
+    en: {
+      title: 'Net Profit per Vehicle Retail',
+      definition: 'The total dealership net profit divided by the total number of vehicles retailed (new + used), showing the net profit contribution of each vehicle sale.',
+      executiveSummary: 'Net profit per vehicle retail is the most actionable profitability metric, translating overall dealership performance into a per-unit measure. Best-practice dealers achieve €300-€800 net profit per vehicle retailed.',
+      whyItMatters: 'Makes profitability tangible and actionable at the transaction level. Every decision that improves per-unit economics compounds across total volume.',
+      formula: 'Net Profit per Vehicle = Total Dealership Net Profit / Total Vehicles Retailed (New + Used)',
+      inclusions: ['Total dealership net profit (all departments)', 'All retail vehicle deliveries'],
+      exclusions: ['Wholesale units', 'Fleet deliveries with different profit structure'],
+      unitOfMeasure: 'Currency (€)',
+      benchmark: '€300-€800',
+      department: 'financial-operations',
+      rootCauseDiagnostics: {
+        people: 'Sales team not maximizing per-deal profit opportunities, F&I underperforming, service not capturing aftersales',
+        process: 'Weak F&I process, no accessory presentation, insufficient after-sale service booking, poor deal structuring',
+        tools: 'Limited deal profit analysis tools, no real-time per-unit P&L, poor F&I menu tools',
+        structure: 'Overhead too high for volume level, insufficient contribution from non-sales departments',
+        incentives: 'Pure volume focus without profitability guard rails, discounting culture'
+      },
+      improvementLevers: [
+        'Maximize F&I penetration and per-unit income',
+        'Improve gross profit per vehicle across both new and used departments',
+        'Increase service and parts contribution through customer retention',
+        'Right-size overhead to match current volume levels',
+        'Set per-unit net profit targets with monthly tracking',
+        'Identify and eliminate loss-making transaction types'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Gross per vehicle (new/used)', 'F&I per unit', 'Service retention', 'Overhead cost ratio', 'Total volume'],
+        downstreamImpacts: ['Total dealership net profit', 'Break-even volume', 'Business viability', 'Owner returns']
+      }
+    },
+    de: {
+      title: 'Nettogewinn pro Fahrzeug (Einzelhandel)',
+      definition: 'Gesamter Nettogewinn des Autohauses geteilt durch die Gesamtzahl der verkauften Fahrzeuge.',
+      whyItMatters: 'Macht Profitabilität auf Transaktionsebene greifbar und umsetzbar.',
+      benchmark: '€300-€800'
+    }
+  },
+  grossProfitPerEmployee: {
+    en: {
+      title: 'Gross Profit per Employee',
+      definition: 'Total dealership gross profit divided by the total number of full-time equivalent employees.',
+      executiveSummary: 'Gross profit per employee is the primary measure of human capital productivity. It reveals whether the workforce is generating sufficient value to justify its cost. Best-practice dealers achieve €60,000-€100,000 gross profit per employee per year.',
+      whyItMatters: 'Determines whether staffing levels are appropriate for the gross profit being generated. Lower ratios indicate overstaffing or underperformance.',
+      formula: 'Gross Profit per Employee = Total Gross Profit / Total FTE Employees',
+      inclusions: ['All departmental gross profits', 'All FTE employees'],
+      exclusions: ['Temporary/contract workers', 'Owner/family members not on payroll'],
+      unitOfMeasure: 'Currency (€/year)',
+      benchmark: '€60,000-€100,000/year',
+      department: 'financial-operations',
+      rootCauseDiagnostics: {
+        people: 'Underperforming employees, excess administrative staff, poor productivity in key roles',
+        process: 'Manual processes requiring more staff, inefficient workflows, poor resource allocation',
+        tools: 'Insufficient automation, outdated systems, poor technology adoption reducing productivity',
+        structure: 'Overstaffed departments, too many management layers, support functions oversized for dealership scale',
+        incentives: 'No productivity targets linked to compensation, no consequence for underperformance'
+      },
+      improvementLevers: [
+        'Benchmark staffing against peer dealerships generating similar gross profit',
+        'Identify and automate manual processes to reduce headcount needs',
+        'Cross-train employees for multi-department flexibility',
+        'Implement productivity tracking by role and department',
+        'Set gross-per-employee targets with quarterly tracking',
+        'Rightsize organization through attrition rather than termination where possible'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Total gross profit', 'Headcount optimization', 'Employee productivity', 'Process automation'],
+        downstreamImpacts: ['Compensation capacity', 'Operating profit', 'Competitive cost structure', 'Employee satisfaction (higher gross = higher pay potential)']
+      }
+    },
+    de: {
+      title: 'Bruttogewinn pro Mitarbeiter',
+      definition: 'Gesamter Bruttogewinn des Autohauses geteilt durch die Gesamtzahl der Vollzeitäquivalente.',
+      whyItMatters: 'Bestimmt, ob das Personalaufkommen für den generierten Bruttogewinn angemessen ist.',
+      benchmark: '€60.000-€100.000/Jahr'
+    }
+  },
+  breakEvenVolume: {
+    en: {
+      title: 'Break-even Volume',
+      definition: 'The minimum number of vehicles that must be sold per month for the dealership to cover all fixed and variable operating costs.',
+      executiveSummary: 'Break-even volume is the most critical financial planning metric. Knowing the exact point where revenue covers all costs enables strategic pricing, staffing, and investment decisions. Best-practice dealers maintain break-even at 60-70% of normal volume, providing cushion for market downturns.',
+      whyItMatters: 'Defines the minimum performance threshold for financial viability. Dealers operating near break-even have no margin for error or market disruption.',
+      formula: 'Break-even Volume = Total Fixed Costs / (Average Gross Profit per Vehicle + Average Variable Contribution per Vehicle)',
+      inclusions: ['All fixed costs (rent, salaries, insurance, floor plan minimum)', 'Average per-unit gross and variable contribution'],
+      exclusions: ['Capital expenditures (one-time)', 'Extraordinary expenses'],
+      unitOfMeasure: 'Units/Month',
+      benchmark: '60-70% of normal monthly volume',
+      department: 'financial-operations',
+      rootCauseDiagnostics: {
+        people: 'Management not aware of break-even point, no understanding of cost structure, poor expense management',
+        process: 'No break-even analysis performed, costs not categorized as fixed vs. variable, no scenario planning',
+        tools: 'No financial modeling tools, inability to simulate cost/volume scenarios, poor cost allocation',
+        structure: 'Excessive fixed costs creating high break-even, over-investment in facility or equipment, too many guaranteed salaries',
+        incentives: 'No cost-consciousness in management team, spending decisions not linked to volume forecasts'
+      },
+      improvementLevers: [
+        'Calculate and communicate break-even volume to all managers monthly',
+        'Convert fixed costs to variable where possible (performance-based pay, variable staffing)',
+        'Reduce facility costs through space optimization or renegotiation',
+        'Increase per-unit gross profit to lower the volume required for break-even',
+        'Create contingency plans for operating below break-even during slow periods',
+        'Develop supplementary revenue streams (service, parts, F&I) that lower vehicle-dependent break-even'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Fixed cost structure', 'Average gross profit per vehicle', 'Variable cost per unit', 'Non-vehicle revenue contribution'],
+        downstreamImpacts: ['Financial risk profile', 'Pricing flexibility', 'Investment capacity', 'Resilience to market downturns']
+      }
+    },
+    de: {
+      title: 'Break-even-Volumen',
+      definition: 'Minimale Anzahl der monatlich zu verkaufenden Fahrzeuge zur Deckung aller Kosten.',
+      whyItMatters: 'Definiert die Mindestleistungsschwelle für finanzielle Lebensfähigkeit.',
+      benchmark: '60-70% des normalen Monatsvolumens'
+    }
+  },
+  contributionMarginPerUnit: {
+    en: {
+      title: 'Contribution Margin per Unit',
+      definition: 'The amount each vehicle sale contributes to covering fixed costs and generating profit, calculated as gross profit per unit minus variable costs directly associated with the sale.',
+      executiveSummary: 'Contribution margin per unit reveals the true economic value of each sale after accounting for all variable costs. Best-practice dealers achieve €1,500-€3,000 contribution margin per unit, providing strong coverage for fixed overhead.',
+      whyItMatters: 'Determines how many units are needed to cover fixed costs and how much each additional unit contributes to profit beyond break-even.',
+      formula: 'Contribution Margin = Gross Profit per Unit − Variable Costs per Unit (commission, delivery, documentation)',
+      inclusions: ['Front-end and back-end gross profit', 'All variable costs directly tied to the sale (commission, doc fees, delivery cost)'],
+      exclusions: ['Fixed overhead allocation', 'Facility costs', 'Management salaries'],
+      unitOfMeasure: 'Currency (€)',
+      benchmark: '€1,500-€3,000',
+      department: 'financial-operations',
+      rootCauseDiagnostics: {
+        people: 'Over-discounting eroding gross, high commission structures, excessive per-deal costs',
+        process: 'No per-deal cost tracking, variable costs not managed at transaction level, poor deal structuring',
+        tools: 'No real-time deal profitability analysis, limited ability to model different deal structures',
+        structure: 'Commission structure consuming too much of gross, excessive per-deal administrative costs',
+        incentives: 'Salespeople maximizing their commission at expense of contribution margin, no margin floors'
+      },
+      improvementLevers: [
+        'Track contribution margin by deal type (new/used, cash/finance, trade/no-trade)',
+        'Optimize commission structure to balance motivation with margin retention',
+        'Reduce variable per-deal costs through process automation',
+        'Set minimum contribution margin targets with escalation for exceptions',
+        'Analyze deals below contribution margin threshold to identify patterns',
+        'Improve F&I penetration to increase back-end contribution per unit'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Gross profit per vehicle', 'Commission structure', 'Variable cost per sale', 'F&I income per unit'],
+        downstreamImpacts: ['Break-even Volume', 'Net Profit per Vehicle', 'Total dealership profitability', 'Pricing flexibility']
+      }
+    },
+    de: {
+      title: 'Deckungsbeitrag pro Einheit',
+      definition: 'Betrag, den jeder Fahrzeugverkauf zur Deckung der Fixkosten und Gewinnerzielung beiträgt.',
+      whyItMatters: 'Bestimmt, wie viele Einheiten zur Fixkostendeckung benötigt werden.',
+      benchmark: '€1.500-€3.000'
+    }
+  },
+  overheadCostRatio: {
+    en: {
+      title: 'Overhead Cost Ratio %',
+      definition: 'Total dealership overhead (fixed operating expenses) expressed as a percentage of total gross profit, measuring how much of the gross profit is consumed by running costs.',
+      executiveSummary: 'Overhead absorption is the key lever between gross profit and net profit. Best-practice dealers maintain overhead below 75% of gross profit, leaving 25%+ for net profit. Every 1% reduction in overhead ratio flows directly to the bottom line.',
+      whyItMatters: 'Directly determines how much gross profit converts to net profit. High overhead ratio means the dealership is working hard but keeping little.',
+      formula: 'Overhead Cost Ratio = (Total Operating Expenses / Total Gross Profit) × 100',
+      inclusions: ['All operating expenses: personnel, facility, technology, marketing, administrative, insurance, utilities'],
+      exclusions: ['Cost of goods sold (already in gross profit calculation)', 'Interest expense', 'Income taxes'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '<75%',
+      department: 'financial-operations',
+      rootCauseDiagnostics: {
+        people: 'Excessive staffing levels, management positions not justified by span of control, poor expense awareness',
+        process: 'No regular expense review, spending decisions not centralized, poor vendor management, no budget discipline',
+        tools: 'No real-time expense tracking, delayed financial reporting, poor departmental cost visibility',
+        structure: 'Over-invested in facility, excessive fixed costs, organizational bloat accumulated over time',
+        incentives: 'No expense management targets, no reward for cost savings, spending authority too broadly distributed'
+      },
+      improvementLevers: [
+        'Conduct zero-based budgeting exercise annually (justify every expense)',
+        'Benchmark overhead categories against peer dealerships',
+        'Negotiate all major vendor contracts annually with competitive bids',
+        'Rightsize staffing to match revenue and gross profit generation',
+        'Consolidate duplicate functions and eliminate non-value-adding roles',
+        'Implement energy and utility cost reduction programs',
+        'Create shared services model for back-office functions in multi-location groups',
+        'Set overhead ratio target with monthly tracking and accountability'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Personnel costs', 'Facility costs', 'Technology costs', 'Marketing spend', 'Administrative costs'],
+        downstreamImpacts: ['Net Profit %', 'Break-even Volume', 'Competitive cost structure', 'Investment and growth capacity', 'Owner returns']
+      }
+    },
+    de: {
+      title: 'Gemeinkostenquote %',
+      definition: 'Gesamte Betriebskosten als Prozentsatz des Gesamtbruttogewinns.',
+      whyItMatters: 'Bestimmt direkt, wie viel Bruttogewinn in Nettogewinn umgewandelt wird.',
+      benchmark: '<75%'
+    }
+  },
+
+  // =====================================================
   // LEGACY / SHALLOW KPIs (existing entries below)
   // =====================================================
   usedInventoryTurnover: {
