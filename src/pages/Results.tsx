@@ -23,7 +23,10 @@ import type { PDFExportData } from "@/lib/pdfReportGenerator";
 import { calculateWeightedScore, CATEGORY_WEIGHTS } from "@/lib/scoringEngine";
 
 export default function Results() {
-  const [activeTab, setActiveTab] = useState("executive");
+  const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('tab') || "executive";
+  });
   const [resultsData, setResultsData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [animatedScore, setAnimatedScore] = useState(0);
@@ -40,22 +43,51 @@ export default function Results() {
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
-      
-      // Small delay for loading state visibility
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      const completedResults = localStorage.getItem('completed_assessment_results');
-      if (completedResults) {
-        const data = JSON.parse(completedResults);
-        
-        // Ensure assessmentId exists (for backwards compatibility)
-        if (!data.assessmentId) {
-          data.assessmentId = crypto.randomUUID();
-          localStorage.setItem('completed_assessment_results', JSON.stringify(data));
+      // 3A: DB-first loading — try database, fallback to localStorage
+      let loaded = false;
+      
+      if (user) {
+        try {
+          const { data: dbAssessment } = await supabase
+            .from('assessments')
+            .select('id, answers, scores, overall_score, completed_at, status')
+            .eq('user_id', user.id)
+            .eq('status', 'completed')
+            .order('completed_at', { ascending: false })
+            .limit(1)
+            .single();
+          
+          if (dbAssessment && dbAssessment.answers && Object.keys(dbAssessment.answers as object).length > 0) {
+            const data = {
+              assessmentId: dbAssessment.id,
+              answers: dbAssessment.answers,
+              scores: dbAssessment.scores,
+              completedAt: dbAssessment.completed_at || new Date().toISOString(),
+            };
+            setResultsData(data);
+            loaded = true;
+          }
+        } catch (err) {
+          console.warn('DB assessment load failed, falling back to localStorage:', err);
         }
-        
-        setResultsData(data);
-      } else {
+      }
+
+      if (!loaded) {
+        const completedResults = localStorage.getItem('completed_assessment_results');
+        if (completedResults) {
+          const data = JSON.parse(completedResults);
+          if (!data.assessmentId) {
+            data.assessmentId = crypto.randomUUID();
+            localStorage.setItem('completed_assessment_results', JSON.stringify(data));
+          }
+          setResultsData(data);
+          loaded = true;
+        }
+      }
+
+      if (!loaded) {
         toast({
           title: t('results.noResults'),
           description: t('results.completeFirst'),
@@ -68,7 +100,7 @@ export default function Results() {
     };
     
     loadData();
-  }, [navigate, toast, t]);
+  }, [navigate, toast, t, user]);
 
   // Calculate weighted overall score ONCE - memoized
   const overallScore = useMemo(() => {

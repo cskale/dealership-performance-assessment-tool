@@ -26,10 +26,9 @@ import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { toast } from 'sonner';
 import { questionnaire } from '@/data/questionnaire';
 import { 
-  analyzeAssessmentAnswers, 
-  generateActionsFromContext, 
-  formatActionsForDatabase 
-} from '@/utils/actionGenerator';
+  generateActionsFromAssessment, 
+  formatActionsForDatabaseInsert 
+} from '@/lib/signalEngine';
 import { getHumanRationale, cleanActionTitle, cleanActionDescription, priorityDisplay, statusDisplay, resetPatternUsage } from '@/lib/actionRationaleMap';
 import { ActionSheet } from './ActionSheet';
 
@@ -168,15 +167,15 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
 
       // B1: If replacing, delete ONLY auto-generated actions (preserve manual ones)
       if (replaceExisting && targetAssessmentId) {
-        const autoActions = actions.filter(a => 
+        const existingAutoActions = actions.filter(a => 
           a.assessment_id === targetAssessmentId && 
           a.action_description?.includes('Triggered because:')
         );
-        if (autoActions.length > 0) {
+        if (existingAutoActions.length > 0) {
           const { error: deleteError } = await supabase
             .from('improvement_actions')
             .delete()
-            .in('id', autoActions.map(a => a.id));
+            .in('id', existingAutoActions.map(a => a.id));
           if (deleteError) console.error('Error deleting old auto-actions:', deleteError);
         }
       }
@@ -193,42 +192,33 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
         return;
       }
 
-      const weakPoints = analyzeAssessmentAnswers(
-        questionnaire.sections,
-        assessment.answers as Record<string, number>
+      // Build question weights from questionnaire
+      const questionWeights: Record<string, number> = {};
+      for (const section of questionnaire.sections) {
+        for (const question of section.questions) {
+          questionWeights[question.id] = question.weight;
+        }
+      }
+
+      // Use canonical signal engine for action generation
+      const generatedActions = generateActionsFromAssessment(
+        assessment.answers as Record<string, number>,
+        questionWeights
       );
 
-      if (weakPoints.length === 0) {
+      if (generatedActions.length === 0) {
         toast.success('No critical improvement areas found.');
         setGenerating(false);
         return;
       }
 
-      // P1.5: Dynamic action count based on severity threshold
-      const severePoints = weakPoints.filter(p => p.score <= 2);
-      const maxActions = Math.min(7, Math.max(
-        severePoints.length > 0 ? severePoints.length : 0,
-        Math.min(weakPoints.length, 5)
-      ));
-      
-      if (maxActions === 0) {
-        toast.success('No actions meet the severity threshold.');
-        setGenerating(false);
-        return;
-      }
-
-      const generatedActions = generateActionsFromContext(weakPoints, maxActions);
-      const formattedActions = formatActionsForDatabase(
+      // Format for database insertion
+      const actionsWithOrg = formatActionsForDatabaseInsert(
         generatedActions,
         user.id,
-        targetAssessmentId
+        targetAssessmentId!,
+        currentOrganization?.id || ''
       );
-
-      // Add organization_id
-      const actionsWithOrg = formattedActions.map((a: any) => ({
-        ...a,
-        organization_id: currentOrganization?.id || null,
-      }));
 
       const { data: insertedActions, error: insertError } = await supabase
         .from('improvement_actions')

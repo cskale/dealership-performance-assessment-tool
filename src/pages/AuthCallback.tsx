@@ -1,7 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+
+/**
+ * Validate that a redirect path is safe (internal only).
+ * Prevents open-redirect attacks.
+ */
+function isValidRedirectPath(path: string): boolean {
+  // Must start with / and not contain protocol schemes or double slashes
+  if (!path.startsWith('/')) return false;
+  if (path.startsWith('//')) return false;
+  if (/^\/[a-z]+:/i.test(path)) return false;
+  return true;
+}
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -25,7 +37,6 @@ const AuthCallback = () => {
         }
 
         if (data.session) {
-          // Check user role and redirect accordingly
           const { data: roleData } = await supabase
             .from('user_roles')
             .select('role, dealer_id')
@@ -38,15 +49,19 @@ const AuthCallback = () => {
           });
 
           if (roleData) {
+            let targetPath = '/';
             if (roleData.role === 'dealer' && roleData.dealer_id) {
-              navigate(`/dealer/${roleData.dealer_id}/actions`, { replace: true });
+              targetPath = `/dealer/${roleData.dealer_id}/actions`;
             } else if (roleData.role === 'coach') {
-              navigate('/coach/actions', { replace: true });
+              targetPath = '/coach/actions';
+            }
+
+            if (isValidRedirectPath(targetPath)) {
+              navigate(targetPath, { replace: true });
             } else {
               navigate('/', { replace: true });
             }
           } else {
-            // No role assigned yet, go to home
             navigate('/', { replace: true });
           }
         } else {

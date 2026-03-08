@@ -2,9 +2,12 @@ import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, AlertTriangle, Target } from "lucide-react";
+import { CheckCircle, AlertTriangle, Target, Info } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { TOTAL_QUESTIONS } from "@/lib/constants";
+import { getDepartmentName } from "@/lib/departmentNames";
+import { CATEGORY_WEIGHTS, DEPARTMENT_TO_CATEGORY } from "@/lib/scoringEngine";
 
 interface ExecutiveSummaryProps {
   overallScore: number;
@@ -13,10 +16,38 @@ interface ExecutiveSummaryProps {
   completedAt: string;
 }
 
+function getScoreInterpretation(score: number, language: string): string {
+  if (score >= 85) return language === 'de' ? 'deutlich über dem Branchendurchschnitt' : 'significantly above industry average';
+  if (score >= 75) return language === 'de' ? 'über dem Durchschnitt' : 'above average';
+  if (score >= 60) return language === 'de' ? 'im Durchschnittsbereich' : 'within the average range';
+  if (score >= 45) return language === 'de' ? 'unter dem Durchschnitt' : 'below average';
+  return language === 'de' ? 'deutlich unter dem Zielwert' : 'significantly below target';
+}
+
+function getScoreRecommendation(dept: string, score: number, language: string): string {
+  if (score >= 80) {
+    return language === 'de' 
+      ? 'Aktuelle Best Practices beibehalten und als internes Benchmark nutzen.'
+      : 'Maintain current best practices and use as internal benchmark.';
+  }
+  if (score >= 60) {
+    return language === 'de'
+      ? 'Gezielte Prozessverbesserungen zur Optimierung einleiten.'
+      : 'Initiate targeted process improvements to optimize further.';
+  }
+  const actions: Record<string, Record<string, string>> = {
+    'new-vehicle-sales': { en: 'Prioritize lead management and sales process standardization.', de: 'Lead-Management und Vertriebsprozess-Standardisierung priorisieren.' },
+    'used-vehicle-sales': { en: 'Focus on stock turnover optimization and pricing strategy.', de: 'Fokus auf Lagerumschlagsoptimierung und Preisstrategie.' },
+    'service-performance': { en: 'Address workshop utilization and service retention gaps.', de: 'Werkstattauslastung und Servicebindungslücken angehen.' },
+    'parts-inventory': { en: 'Prioritize inventory management and supplier processes.', de: 'Bestandsmanagement und Lieferantenprozesse priorisieren.' },
+    'financial-operations': { en: 'Review cost structures and cash flow management.', de: 'Kostenstrukturen und Cashflow-Management überprüfen.' },
+  };
+  return actions[dept]?.[language] || (language === 'de' ? 'Sofortige Verbesserungsmaßnahmen empfohlen.' : 'Immediate improvement actions recommended.');
+}
+
 export function ExecutiveSummary({ overallScore, scores, answers, completedAt }: ExecutiveSummaryProps) {
   const { t, language } = useLanguage();
 
-  // Memoize all computed values to prevent recalculation
   const computedData = useMemo(() => {
     const getToneClassification = (score: number) => {
       if (score >= 80) {
@@ -46,72 +77,41 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt }:
       }
     };
 
-    const getStrengths = (): string[] => {
-      const strengths: string[] = [];
-      const sortedScores = Object.entries(scores).sort(([,a], [,b]) => b - a);
-      
-      sortedScores.forEach(([dept, score]) => {
-        if (score >= 60 && strengths.length < 3) {
-          const deptNames: Record<string, Record<string, string>> = {
-            'new-vehicle-sales': { en: 'New Vehicle Sales Performance', de: 'Neuwagenverkaufsleistung' },
-            'used-vehicle-sales': { en: 'Used Vehicle Sales Performance', de: 'Gebrauchtwagenverkaufsleistung' },
-            'service-performance': { en: 'Service Performance', de: 'Serviceleistung' },
-            'parts-inventory': { en: 'Parts and Inventory Performance', de: 'Teile- und Lagerleistung' },
-            'financial-operations': { en: 'Financial Operations Performance', de: 'Finanzoperationsleistung' }
-          };
-          strengths.push(deptNames[dept]?.[language] || dept);
-        }
-      });
-      
-      if (strengths.length === 0) {
-        strengths.push(language === 'de' ? 'Grundlegende Betriebsprozesse' : 'Basic Operational Processes');
-      }
-      
-      return strengths;
+    // 4B: Consulting-style narrative — "Finding -> Evidence -> Recommendation"
+    const sortedByScore = Object.entries(scores).sort(([,a], [,b]) => b - a);
+    const sortedAsc = Object.entries(scores).sort(([,a], [,b]) => a - b);
+
+    const getStrengths = (): { dept: string; score: number; text: string }[] => {
+      return sortedByScore
+        .filter(([, score]) => score >= 60)
+        .slice(0, 3)
+        .map(([dept, score]) => ({
+          dept,
+          score,
+          text: `${getDepartmentName(dept, language)} ${language === 'de' ? 'erzielte' : 'scored'} ${score}/100 — ${getScoreInterpretation(score, language)}. ${getScoreRecommendation(dept, score, language)}`
+        }));
     };
 
-    const getWeaknesses = (): string[] => {
-      const weaknesses: string[] = [];
-      const sortedScores = Object.entries(scores).sort(([,a], [,b]) => a - b);
-      
-      sortedScores.forEach(([dept, score]) => {
-        if (score < 60 && weaknesses.length < 3) {
-          const deptNames: Record<string, Record<string, string>> = {
-            'new-vehicle-sales': { en: 'New Vehicle Sales Performance', de: 'Neuwagenverkaufsleistung' },
-            'used-vehicle-sales': { en: 'Used Vehicle Sales Performance', de: 'Gebrauchtwagenverkaufsleistung' },
-            'service-performance': { en: 'Service Performance', de: 'Serviceleistung' },
-            'parts-inventory': { en: 'Parts and Inventory Performance', de: 'Teile- und Lagerleistung' },
-            'financial-operations': { en: 'Financial Operations Performance', de: 'Finanzoperationsleistung' }
-          };
-          weaknesses.push(deptNames[dept]?.[language] || dept);
-        }
-      });
-      
-      return weaknesses;
+    const getWeaknesses = (): { dept: string; score: number; text: string }[] => {
+      return sortedAsc
+        .filter(([, score]) => score < 60)
+        .slice(0, 3)
+        .map(([dept, score]) => ({
+          dept,
+          score,
+          text: `${getDepartmentName(dept, language)} ${language === 'de' ? 'erzielte' : 'scored'} ${score}/100 — ${getScoreInterpretation(score, language)}. ${getScoreRecommendation(dept, score, language)}`
+        }));
     };
 
-    const getTopActions = (): string[] => {
-      const actions: string[] = [];
-      const sortedScores = Object.entries(scores).sort(([,a], [,b]) => a - b);
-      
-      sortedScores.slice(0, 2).forEach(([dept, score]) => {
-        if (score < 60) {
-          const deptNames: Record<string, Record<string, string>> = {
-            'new-vehicle-sales': { en: 'New Vehicle Sales Performance', de: 'Neuwagenverkaufsleistung' },
-            'used-vehicle-sales': { en: 'Used Vehicle Sales Performance', de: 'Gebrauchtwagenverkaufsleistung' },
-            'service-performance': { en: 'Service Performance', de: 'Serviceleistung' },
-            'parts-inventory': { en: 'Parts and Inventory Performance (Priority Area)', de: 'Teile- und Lagerleistung (Prioritätsbereich)' },
-            'financial-operations': { en: 'Financial Operations Performance', de: 'Finanzoperationsleistung' }
-          };
-          actions.push(deptNames[dept]?.[language] || dept);
-        }
-      });
-      
-      if (actions.length === 0) {
-        actions.push(language === 'de' ? 'Aktuelle Leistung optimieren' : 'Optimize Current Performance');
-      }
-      
-      return actions;
+    const getTopActions = (): { dept: string; score: number; text: string }[] => {
+      return sortedAsc
+        .filter(([, score]) => score < 60)
+        .slice(0, 2)
+        .map(([dept, score]) => ({
+          dept,
+          score,
+          text: `${getDepartmentName(dept, language)} (${score}%) — ${getScoreRecommendation(dept, score, language)}`
+        }));
     };
 
     const getIndustryComparison = (score: number) => {
@@ -128,42 +128,43 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt }:
     };
 
     const generateSummaryParagraph = () => {
-      const avgScore = overallScore;
-      const topDept = Object.entries(scores).reduce((a, b) => a[1] > b[1] ? a : b);
-      const weakestDepts = Object.entries(scores)
-        .sort(([,a], [,b]) => a - b)
+      const topDept = sortedByScore[0];
+      const weakestDepts = sortedAsc
         .slice(0, 2)
-        .map(([dept, score]) => {
-          const deptNames: Record<string, Record<string, string>> = {
-            'new-vehicle-sales': { en: 'New Vehicle Sales', de: 'Neuwagenverkauf' },
-            'used-vehicle-sales': { en: 'Used Vehicle Sales', de: 'Gebrauchtwagenverkauf' },
-            'service-performance': { en: 'Service Performance', de: 'Serviceleistung' },
-            'parts-inventory': { en: 'Parts and Inventory Performance', de: 'Teile- und Lagerleistung' },
-            'financial-operations': { en: 'Financial Operations', de: 'Finanzoperationen' }
-          };
-          return `${deptNames[dept]?.[language] || dept} (${score}%)`;
-        });
+        .map(([dept, score]) => `${getDepartmentName(dept, language)} (${score}%)`);
 
-      const topDeptName: Record<string, Record<string, string>> = {
-        'new-vehicle-sales': { en: 'New Vehicle Sales', de: 'Neuwagenverkauf' },
-        'used-vehicle-sales': { en: 'Used Vehicle Sales', de: 'Gebrauchtwagenverkauf' },
-        'service-performance': { en: 'Service Performance', de: 'Serviceleistung' },
-        'parts-inventory': { en: 'Parts and Inventory', de: 'Teile und Lager' },
-        'financial-operations': { en: 'Financial Operations', de: 'Finanzoperationen' }
-      };
+      const topDeptName = getDepartmentName(topDept[0], language);
 
       if (language === 'de') {
-        return `Das Autohaus steht vor erheblichen betrieblichen Herausforderungen mit einer Leistungsbewertung von ${avgScore}%, was eine dringende strategische Intervention in mehreren Abteilungen erfordert. Die Hauptstärke liegt in ${topDeptName[topDept[0]]?.de || topDept[0]}, was als solide Grundlage für Wachstum dient. Sofortige Aufmerksamkeit ist erforderlich in ${weakestDepts.join(' und ')}, um die Gesamtleistung des Autohauses zu optimieren. Die strategische Umsetzung der empfohlenen Maßnahmen wird signifikante Leistungsverbesserungen und Gewinnsteigerungen erzielen.`;
+        return `Das Autohaus erreicht eine Gesamtleistungsbewertung von ${overallScore}/100. Die Hauptstärke liegt in ${topDeptName}, was als solide Grundlage für Wachstum dient. ${weakestDepts.length > 0 ? `Sofortige Aufmerksamkeit ist erforderlich in ${weakestDepts.join(' und ')}, um die Gesamtleistung zu optimieren.` : 'Alle Bereiche zeigen solide Leistung.'} Die strategische Umsetzung der empfohlenen Maßnahmen wird signifikante Leistungsverbesserungen erzielen.`;
       }
 
-      return `The dealership faces significant operational challenges with a ${avgScore}% performance score, requiring urgent strategic intervention across multiple departments. Key strengths include ${topDeptName[topDept[0]]?.en || topDept[0]}, which serves as a solid foundation for growth. Immediate attention is needed in ${weakestDepts.join(' and ')} to optimize overall dealership performance. Strategic implementation of the recommended action items will drive significant performance improvements and profitability gains.`;
+      return `The dealership achieves an overall performance score of ${overallScore}/100. Key strengths include ${topDeptName}, which serves as a solid foundation for growth. ${weakestDepts.length > 0 ? `Immediate attention is needed in ${weakestDepts.join(' and ')} to optimize overall performance.` : 'All areas demonstrate solid performance.'} Strategic implementation of the recommended action items will drive significant improvements.`;
     };
+
+    const strengths = getStrengths();
+    if (strengths.length === 0) {
+      strengths.push({
+        dept: '',
+        score: 0,
+        text: language === 'de' ? 'Grundlegende Betriebsprozesse sind vorhanden und bieten eine Basis für Verbesserungen.' : 'Basic operational processes are in place and provide a foundation for improvement.'
+      });
+    }
+
+    const actions = getTopActions();
+    if (actions.length === 0) {
+      actions.push({
+        dept: '',
+        score: 0,
+        text: language === 'de' ? 'Aktuelle Leistung optimieren und Best Practices konsolidieren.' : 'Optimize current performance and consolidate best practices.'
+      });
+    }
 
     return {
       tone: getToneClassification(overallScore),
-      strengths: getStrengths(),
+      strengths,
       weaknesses: getWeaknesses(),
-      actions: getTopActions(),
+      actions,
       industryComparison: getIndustryComparison(overallScore),
       maturityLevel: getMaturityLevel(overallScore),
       summaryParagraph: generateSummaryParagraph(),
@@ -173,9 +174,19 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt }:
 
   const { tone, strengths, weaknesses, actions, industryComparison, maturityLevel, summaryParagraph, questionsAnswered } = computedData;
 
+  // 4C: Build weight tooltip text
+  const weightTooltipContent = useMemo(() => {
+    const lines = Object.entries(DEPARTMENT_TO_CATEGORY).map(([dept, cat]) => {
+      const weight = CATEGORY_WEIGHTS[cat];
+      const pct = Math.round(weight * 100);
+      return `${getDepartmentName(dept, language)}: ${pct}%`;
+    });
+    return lines;
+  }, [language]);
+
   return (
     <div className="space-y-6">
-      {/* Clean Summary Paragraph - NO colored background */}
+      {/* Clean Summary Paragraph */}
       <Card className="shadow-lg border">
         <CardContent className="p-6">
           <p className="text-muted-foreground leading-relaxed text-base">
@@ -184,10 +195,10 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt }:
         </CardContent>
       </Card>
 
-      {/* 3-Column Grid: Strengths | Needs Work | Actions - Clean white cards with colored icons only */}
+      {/* 3-Column Grid: Strengths | Needs Work | Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Strengths - White card with green icon */}
-        <Card className="shadow-lg border bg-white">
+        {/* Strengths */}
+        <Card className="shadow-lg border">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg text-foreground">
               <CheckCircle className="h-5 w-5 text-emerald-500" />
@@ -196,18 +207,18 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt }:
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
-              {strengths.map((strength, index) => (
+              {strengths.map((item, index) => (
                 <li key={index} className="flex items-start gap-3 text-muted-foreground">
-                  <span className="text-emerald-500 mt-0.5">✓</span>
-                  <span className="text-sm">{strength}</span>
+                  <CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">{item.text}</span>
                 </li>
               ))}
             </ul>
           </CardContent>
         </Card>
 
-        {/* Needs Work - White card with yellow icon */}
-        <Card className="shadow-lg border bg-white">
+        {/* Needs Work */}
+        <Card className="shadow-lg border">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg text-foreground">
               <AlertTriangle className="h-5 w-5 text-yellow-500" />
@@ -217,10 +228,10 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt }:
           <CardContent>
             {weaknesses.length > 0 ? (
               <ul className="space-y-3">
-                {weaknesses.map((weakness, index) => (
+                {weaknesses.map((item, index) => (
                   <li key={index} className="flex items-start gap-3 text-muted-foreground">
-                    <span className="text-yellow-500 mt-0.5">⚠</span>
-                    <span className="text-sm">{weakness}</span>
+                    <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">{item.text}</span>
                   </li>
                 ))}
               </ul>
@@ -232,8 +243,8 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt }:
           </CardContent>
         </Card>
 
-        {/* Actions Needed - White card with red icon */}
-        <Card className="shadow-lg border bg-white">
+        {/* Actions Needed */}
+        <Card className="shadow-lg border">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg text-foreground">
               <Target className="h-5 w-5 text-red-500" />
@@ -242,10 +253,10 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt }:
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
-              {actions.map((action, index) => (
+              {actions.map((item, index) => (
                 <li key={index} className="flex items-start gap-3 text-muted-foreground">
-                  <span className="text-red-500 mt-0.5">🚨</span>
-                  <span className="text-sm">{action}</span>
+                  <Target className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">{item.text}</span>
                 </li>
               ))}
             </ul>
@@ -257,20 +268,28 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt }:
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            📊 {language === 'de' ? 'Abteilungsübersicht' : 'Department Overview'}
+            {language === 'de' ? 'Abteilungsübersicht' : 'Department Overview'}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type="button" className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-muted hover:bg-muted/80 transition-colors" aria-label="Score calculation info">
+                  <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs p-3">
+                <p className="font-medium mb-2">{language === 'de' ? 'Gewichtete Berechnung' : 'Weighted Calculation'}</p>
+                <ul className="text-xs space-y-1">
+                  {weightTooltipContent.map((line, i) => (
+                    <li key={i}>- {line}</li>
+                  ))}
+                </ul>
+              </TooltipContent>
+            </Tooltip>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {Object.entries(scores).map(([dept, score]) => {
-              const deptNames: Record<string, Record<string, string>> = {
-                'new-vehicle-sales': { en: 'New Vehicle Sales', de: 'Neuwagenverkauf' },
-                'used-vehicle-sales': { en: 'Used Vehicle Sales', de: 'Gebrauchtwagenverkauf' },
-                'service-performance': { en: 'Service', de: 'Service' },
-                'parts-inventory': { en: 'Parts', de: 'Teile' },
-                'financial-operations': { en: 'Financial', de: 'Finanzen' }
-              };
-              const deptName = deptNames[dept]?.[language] || dept.replace(/-/g, ' ');
+              const deptName = getDepartmentName(dept, language);
               const scoreColor = score >= 75 ? 'text-emerald-600' : score >= 60 ? 'text-yellow-600' : 'text-red-600';
               const bgColor = score >= 75 ? 'bg-emerald-50' : score >= 60 ? 'bg-yellow-50' : 'bg-red-50';
               
