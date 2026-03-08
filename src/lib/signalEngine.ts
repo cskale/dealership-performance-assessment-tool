@@ -274,7 +274,7 @@ function selectTemplates(
 
   // 3. If still not enough, use any remaining templates for this signal
   if (selected.length < maxForSignal) {
-    const allTemplates = getTemplatesForSignal(signal.signalCode);
+    const allTemplates = getTemplatesForSignal(signal.signalCode as Exclude<SignalCode, 'NONE'>);
     for (const template of allTemplates) {
       if (selected.length >= maxForSignal) break;
       if (usedTemplateIds.has(template.templateId)) continue;
