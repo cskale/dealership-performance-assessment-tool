@@ -173,7 +173,7 @@ export default function Assessment() {
     try {
       const finalScores = calculateScores(answers);
       const overallScore = Object.values(finalScores).length > 0 
-        ? Math.round(Object.values(finalScores).reduce((sum, score) => sum + score, 0) / Object.values(finalScores).length)
+        ? calculateWeightedScore(finalScores)
         : 0;
         
       // Check if all questions are answered
