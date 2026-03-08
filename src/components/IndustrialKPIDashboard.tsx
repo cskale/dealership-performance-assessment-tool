@@ -1,99 +1,16 @@
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { TrendingUp, TrendingDown, Target, DollarSign, Info } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Info } from "lucide-react";
 import { formatEuro, formatPercentage, formatNumber, generateRealisticData, industryBenchmarks } from "@/utils/euroFormatter";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getKPILabel } from "@/lib/kpiDefinitions";
 
 interface IndustrialKPIDashboardProps {
   scores: Record<string, number>;
   answers: Record<string, number>;
   onNavigateToResources?: () => void;
 }
-
-// KPI definitions with benchmarks and explanations
-const kpiDefinitions: Record<string, {
-  definition: { en: string; de: string };
-  whyMatters: { en: string; de: string };
-  topics: string[];
-}> = {
-  monthlyRevenue: {
-    definition: { en: 'Total revenue generated from sales per month', de: 'Gesamtumsatz aus Verkäufen pro Monat' },
-    whyMatters: { en: 'Primary indicator of business health and growth trajectory', de: 'Primärer Indikator für Unternehmensgesundheit und Wachstumskurs' },
-    topics: ['sales', 'finance']
-  },
-  averageMargin: {
-    definition: { en: 'Average profit margin across all vehicle sales', de: 'Durchschnittliche Gewinnmarge über alle Fahrzeugverkäufe' },
-    whyMatters: { en: 'Impacts profitability and pricing strategy effectiveness', de: 'Beeinflusst Rentabilität und Effektivität der Preisstrategie' },
-    topics: ['sales', 'finance']
-  },
-  customerSatisfaction: {
-    definition: { en: 'Average post-service survey rating from customers', de: 'Durchschnittliche Kundenbewertung nach dem Service' },
-    whyMatters: { en: 'Drives repeat business, referrals, and brand loyalty', de: 'Fördert Folgegeschäft, Empfehlungen und Markentreue' },
-    topics: ['service', 'customer-experience']
-  },
-  leadConversion: {
-    definition: { en: 'Percentage of leads that convert to actual sales', de: 'Prozentsatz der Leads, die zu Verkäufen führen' },
-    whyMatters: { en: 'Measures sales team effectiveness and follow-up quality', de: 'Misst die Effektivität des Verkaufsteams und die Nachverfolgungsqualität' },
-    topics: ['sales', 'efficiency']
-  },
-  laborEfficiency: {
-    definition: { en: 'Percentage of billable hours vs total available hours', de: 'Prozentsatz der abrechenbaren Stunden vs. verfügbare Gesamtstunden' },
-    whyMatters: { en: 'Impacts profitability and capacity utilization', de: 'Beeinflusst Rentabilität und Kapazitätsauslastung' },
-    topics: ['service', 'efficiency']
-  },
-  workshopUtilization: {
-    definition: { en: 'Percentage of workshop capacity being used productively', de: 'Prozentsatz der produktiv genutzten Werkstattkapazität' },
-    whyMatters: { en: 'Indicates operational efficiency and revenue potential', de: 'Zeigt betriebliche Effizienz und Umsatzpotenzial' },
-    topics: ['service', 'efficiency']
-  },
-  serviceRetention: {
-    definition: { en: 'Percentage of customers returning within 12 months', de: 'Prozentsatz der Kunden, die innerhalb von 12 Monaten zurückkehren' },
-    whyMatters: { en: 'Indicates loyalty and predictable revenue stream', de: 'Zeigt Loyalität und vorhersehbare Einnahmequelle' },
-    topics: ['service', 'customer-experience']
-  },
-  partsMargin: {
-    definition: { en: 'Profit margin on parts sales', de: 'Gewinnmarge bei Teileverkäufen' },
-    whyMatters: { en: 'Key contributor to service department profitability', de: 'Wichtiger Beitrag zur Rentabilität der Serviceabteilung' },
-    topics: ['parts', 'finance']
-  },
-  fillRate: {
-    definition: { en: 'Percentage of parts orders fulfilled from stock', de: 'Prozentsatz der aus dem Lager erfüllten Teilebestellungen' },
-    whyMatters: { en: 'Affects service speed and customer satisfaction', de: 'Beeinflusst Servicegeschwindigkeit und Kundenzufriedenheit' },
-    topics: ['parts', 'inventory']
-  },
-  turnoverRate: {
-    definition: { en: 'How many times inventory is sold and replaced per year', de: 'Wie oft der Lagerbestand pro Jahr verkauft und ersetzt wird' },
-    whyMatters: { en: 'Measures inventory management efficiency', de: 'Misst die Effizienz des Bestandsmanagements' },
-    topics: ['parts', 'inventory']
-  },
-  obsoleteStock: {
-    definition: { en: 'Percentage of inventory with no movement over 12 months', de: 'Prozentsatz des Bestands ohne Bewegung über 12 Monate' },
-    whyMatters: { en: 'Ties up capital and reduces profitability', de: 'Bindet Kapital und reduziert Rentabilität' },
-    topics: ['parts', 'inventory']
-  },
-  stockTurnover: {
-    definition: { en: 'Rate at which vehicle stock is sold and replenished', de: 'Rate, mit der Fahrzeugbestand verkauft und aufgefüllt wird' },
-    whyMatters: { en: 'Impacts cash flow and carrying costs', de: 'Beeinflusst Cashflow und Lagerkosten' },
-    topics: ['sales', 'inventory']
-  },
-  daysInInventory: {
-    definition: { en: 'Average days a vehicle stays in stock before sale', de: 'Durchschnittliche Tage, die ein Fahrzeug vor dem Verkauf auf Lager ist' },
-    whyMatters: { en: 'Lower is better - reduces depreciation and holding costs', de: 'Niedriger ist besser - reduziert Wertverlust und Lagerkosten' },
-    topics: ['sales', 'inventory']
-  },
-  profitMargin: {
-    definition: { en: 'Net profit as percentage of total revenue', de: 'Nettogewinn als Prozentsatz des Gesamtumsatzes' },
-    whyMatters: { en: 'Ultimate measure of business profitability', de: 'Ultimatives Maß für die Geschäftsrentabilität' },
-    topics: ['finance']
-  },
-  cashFlow: {
-    definition: { en: 'Net cash moving in and out of business', de: 'Netto-Cashflow des Unternehmens' },
-    whyMatters: { en: 'Critical for operations and growth investments', de: 'Kritisch für Betrieb und Wachstumsinvestitionen' },
-    topics: ['finance']
-  }
-};
 
 export function IndustrialKPIDashboard({ scores }: { scores: Record<string, number> }) {
   const { language } = useLanguage();
