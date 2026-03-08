@@ -238,8 +238,8 @@ function selectTemplates(
   const selected: ActionTemplate[] = [];
   
   // 1. Try KPI-specific templates first if linkedKPIs exist
-  if (signal.linkedKPIs && signal.linkedKPIs.length > 0) {
-    const kpiSpecificIds = getKPISpecificTemplateIds(signal.signalCode);
+  if (signal.linkedKPIs && signal.linkedKPIs.length > 0 && signal.signalCode !== 'NONE') {
+    const kpiSpecificIds = getKPISpecificTemplateIds(signal.signalCode as Exclude<SignalCode, 'NONE'>);
     for (const templateId of kpiSpecificIds) {
       if (selected.length >= maxForSignal) break;
       if (usedTemplateIds.has(templateId)) continue;
