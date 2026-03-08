@@ -83,7 +83,12 @@ const DEPARTMENT_MAP: Record<string, { en: string; de: string }> = {
   'used-vehicle-sales': { en: 'Used Vehicle Sales', de: 'Gebrauchtwagenverkauf' },
   'service-performance': { en: 'Service Performance', de: 'Serviceleistung' },
   'parts-inventory': { en: 'Parts & Inventory', de: 'Teile & Lager' },
-  'financial-operations': { en: 'Financial Operations', de: 'Finanzoperationen' }
+  'financial-operations': { en: 'Financial Operations', de: 'Finanzoperationen' },
+  'customer-satisfaction': { en: 'Customer Satisfaction', de: 'Kundenzufriedenheit' },
+  'marketing-digital': { en: 'Marketing & Digital', de: 'Marketing & Digital' },
+  'workforce-hr': { en: 'Workforce & HR', de: 'Personal & HR' },
+  'ev-readiness': { en: 'EV Readiness', de: 'E-Mobilität Bereitschaft' },
+  'sales-process': { en: 'Sales Process & Pipeline', de: 'Vertriebsprozess & Pipeline' }
 };
 
 const ROOT_CAUSE_ICONS: Record<string, typeof UserCheck> = {
