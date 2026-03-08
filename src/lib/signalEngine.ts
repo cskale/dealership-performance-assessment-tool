@@ -260,7 +260,7 @@ function selectTemplates(
 
   // 2. Fall back to generic templates if not enough KPI-specific ones found
   if (selected.length < maxForSignal) {
-    const genericTemplates = getTemplatesForSignal(signal.signalCode)
+    const genericTemplates = getTemplatesForSignal(signal.signalCode as Exclude<SignalCode, 'NONE'>)
       .filter(t => !t.linkedKPIs); // Only truly generic templates
     
     for (const template of genericTemplates) {
