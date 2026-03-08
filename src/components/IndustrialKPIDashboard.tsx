@@ -1,7 +1,8 @@
 import { useMemo } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, DollarSign, Info } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { TrendingUp, TrendingDown, Target, DollarSign, Info } from "lucide-react";
 import { formatEuro, formatPercentage, formatNumber, generateRealisticData, industryBenchmarks } from "@/utils/euroFormatter";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getKPILabel } from "@/lib/kpiDefinitions";
