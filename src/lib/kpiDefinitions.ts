@@ -4564,3 +4564,54 @@ export function getKPIsByDepartment(department: string, language: 'en' | 'de' = 
   }
   return result;
 }
+
+/**
+ * KPI display labels for dashboard use
+ * Canonical source for all KPI label translations
+ */
+export const KPI_LABELS: Record<string, { en: string; de: string }> = {
+  monthlyRevenue: { en: 'Monthly Revenue', de: 'Monatsumsatz' },
+  averageMargin: { en: 'Average Margin', de: 'Durchschnittliche Marge' },
+  customerSatisfaction: { en: 'Customer Satisfaction', de: 'Kundenzufriedenheit' },
+  leadConversion: { en: 'Lead Conversion', de: 'Lead-Konvertierung' },
+  averageTransactionValue: { en: 'Avg Transaction Value', de: 'Durchschn. Transaktionswert' },
+  salesVolume: { en: 'Sales Volume', de: 'Verkaufsvolumen' },
+  stockTurnover: { en: 'Stock Turnover', de: 'Lagerumschlag' },
+  grossMargin: { en: 'Gross Margin', de: 'Bruttomarge' },
+  daysInInventory: { en: 'Days in Inventory', de: 'Lagertage' },
+  costPerSale: { en: 'Cost per Sale', de: 'Kosten pro Verkauf' },
+  serviceRetention: { en: 'Service Retention', de: 'Servicebindung' },
+  workshopUtilization: { en: 'Workshop Utilization', de: 'Werkstattauslastung' },
+  laborEfficiency: { en: 'Labor Efficiency', de: 'Arbeitseffizienz' },
+  partsAttachment: { en: 'Parts Attachment', de: 'Teileanbindung' },
+  averageRO: { en: 'Average RO', de: 'Durchschnittlicher RO' },
+  partsMargin: { en: 'Parts Margin', de: 'Teilemarge' },
+  fillRate: { en: 'Fill Rate', de: 'Erfüllungsrate' },
+  turnoverRate: { en: 'Turnover Rate', de: 'Umschlagsrate' },
+  obsoleteStock: { en: 'Obsolete Stock', de: 'Veralteter Bestand' },
+  counterSales: { en: 'Counter Sales', de: 'Thekenverkäufe' },
+  cashFlow: { en: 'Cash Flow', de: 'Cashflow' },
+  workingCapital: { en: 'Working Capital', de: 'Betriebskapital' },
+  profitMargin: { en: 'Profit Margin', de: 'Gewinnmarge' },
+  expenseRatio: { en: 'Expense Ratio', de: 'Kostenquote' },
+  returnOnAssets: { en: 'Return on Assets', de: 'Kapitalrendite' },
+  technicianUtilization: { en: 'Technician Utilization', de: 'Technikerauslastung' },
+  customerRetention: { en: 'Customer Retention', de: 'Kundenbindung' },
+  stockoutRate: { en: 'Stockout Rate', de: 'Fehlbestandsrate' },
+  supplierPerformance: { en: 'Supplier Performance', de: 'Lieferantenleistung' },
+  cashFlowDays: { en: 'Cash Flow Days', de: 'Cashflow-Tage' },
+  roiMarketing: { en: 'Marketing ROI', de: 'Marketing-ROI' },
+  operationalEfficiency: { en: 'Operational Efficiency', de: 'Betriebseffizienz' },
+};
+
+/**
+ * Get localized KPI label from canonical source
+ */
+export function getKPILabel(key: string, language: 'en' | 'de' = 'en'): string {
+  const label = KPI_LABELS[key];
+  if (label) {
+    return label[language] || label.en;
+  }
+  // Fallback: convert camelCase to Title Case
+  return key.replace(/([A-Z])/g, ' $1').toLowerCase().replace(/^\w/, c => c.toUpperCase());
+}
