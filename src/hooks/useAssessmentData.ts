@@ -386,113 +386,54 @@ export const useAssessmentData = () => {
     }
   }, []);
 
-  // Generate improvement actions
+  /**
+   * Generate improvement actions using the canonical signal engine.
+   * Replaces the legacy hardcoded switch/case generator.
+   */
   const generateImprovementActions = useCallback(async (assessmentId: string, scores: Record<string, number>) => {
-    if (!user) {
-      throw new Error('User must be authenticated');
-    }
-
-    // Validate that assessmentId is a real DB ID (not empty, not temp)
+    if (!user) throw new Error('User must be authenticated');
     if (!assessmentId || assessmentId === '' || assessmentId.startsWith('temp')) {
       throw new Error('Invalid assessment ID - cannot generate actions without a saved assessment');
     }
 
-    const actions: Record<string, unknown>[] = [];
-    
-    // Get organization ID
+    // Import signal engine dynamically to avoid circular deps
+    const { generateActionsFromAssessment, formatActionsForDatabaseInsert } = await import('@/lib/signalEngine');
+    const { questionnaire } = await import('@/data/questionnaire');
+
     const { data: profile } = await supabase
       .from('profiles')
       .select('active_organization_id')
       .eq('user_id', user.id)
       .single();
-    
-    if (!profile?.active_organization_id) {
-      throw new Error('No organization context');
-    }
-    
-    // Analyze scores and generate targeted actions
-    Object.entries(scores).forEach(([section, score]) => {
-      if (score < 70) {
-        let priority: ImprovementAction['priority'] = 'medium';
-        if (score < 50) priority = 'critical';
-        else if (score < 60) priority = 'high';
 
-        switch (section) {
-          case 'new_vehicle_sales':
-            actions.push({
-              assessment_id: assessmentId,
-              user_id: user.id,
-              organization_id: profile.active_organization_id,
-              department: 'New Vehicle Sales',
-              priority,
-              action_title: 'Enhance Sales Process Training',
-              action_description: 'Implement comprehensive training program focusing on customer engagement, product knowledge, and closing techniques.',
-              expected_impact: 'Improve conversion rates by 15-20%',
-              estimated_effort: '2-3 weeks implementation'
-            });
-            break;
-          case 'used_vehicle_sales':
-            actions.push({
-              assessment_id: assessmentId,
-              user_id: user.id,
-              organization_id: profile.active_organization_id,
-              department: 'Used Vehicle Sales',
-              priority,
-              action_title: 'Optimize Used Vehicle Inventory Management',
-              action_description: 'Implement data-driven inventory management system and improve vehicle reconditioning processes.',
-              expected_impact: 'Reduce inventory days and increase margins by 10%',
-              estimated_effort: '3-4 weeks implementation'
-            });
-            break;
-          case 'service_performance':
-            actions.push({
-              assessment_id: assessmentId,
-              user_id: user.id,
-              organization_id: profile.active_organization_id,
-              department: 'Service',
-              priority,
-              action_title: 'Service Efficiency Improvement Program',
-              action_description: 'Streamline service processes, implement digital check-in, and enhance technician productivity.',
-              expected_impact: 'Increase service bay utilization by 20%',
-              estimated_effort: '4-6 weeks implementation'
-            });
-            break;
-          case 'parts_inventory':
-            actions.push({
-              assessment_id: assessmentId,
-              user_id: user.id,
-              organization_id: profile.active_organization_id,
-              department: 'Parts',
-              priority,
-              action_title: 'Parts Inventory Optimization',
-              action_description: 'Implement predictive inventory management and improve supplier relationships.',
-              expected_impact: 'Reduce parts cost by 8-12%',
-              estimated_effort: '2-3 weeks implementation'
-            });
-            break;
-          case 'financial_operations':
-            actions.push({
-              assessment_id: assessmentId,
-              user_id: user.id,
-              organization_id: profile.active_organization_id,
-              department: 'Finance',
-              priority,
-              action_title: 'Financial Process Automation',
-              action_description: 'Implement automated reporting and improve cash flow management processes.',
-              expected_impact: 'Reduce administrative time by 30%',
-              estimated_effort: '3-5 weeks implementation'
-            });
-            break;
-        }
+    if (!profile?.active_organization_id) throw new Error('No organization context');
+
+    // Build question weight map from questionnaire
+    const questionWeights: Record<string, number> = {};
+    for (const section of questionnaire.sections) {
+      for (const q of section.questions) {
+        questionWeights[q.id] = q.weight || 1.0;
       }
-    });
+    }
+
+    // Load assessment answers from DB
+    const { data: assessmentData } = await supabase
+      .from('assessments')
+      .select('answers')
+      .eq('id', assessmentId)
+      .single();
+
+    const answers = (assessmentData?.answers as Record<string, number>) || {};
+    const actions = generateActionsFromAssessment(answers, questionWeights);
+    const dbActions = formatActionsForDatabaseInsert(actions, user.id, assessmentId, profile.active_organization_id);
+
+    if (dbActions.length === 0) return [];
 
     try {
       const { data, error } = await supabase
         .from('improvement_actions')
-        .insert(actions as any)
+        .insert(dbActions)
         .select();
-
       if (error) throw error;
       return data;
     } catch (err) {

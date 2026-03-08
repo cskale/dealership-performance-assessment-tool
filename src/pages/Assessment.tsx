@@ -10,6 +10,7 @@ import { CategoryAssessment } from "@/components/assessment/CategoryAssessment";
 import { SmartAssistant } from "@/components/SmartAssistant";
 import { questionnaire, getTranslatedSection } from "@/data/questionnaire";
 import { useAssessmentData, OnboardingError } from "@/hooks/useAssessmentData";
+import { calculateAllSectionScores, calculateWeightedScore } from "@/lib/scoringEngine";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAutoActionGeneration } from "@/hooks/useAutoActionGeneration";
 import { useOnboarding } from "@/hooks/useOnboarding";
@@ -56,22 +57,9 @@ export default function Assessment() {
 
   const currentSectionData = translatedSections[currentSection];
 
-  // Calculate real-time scores
+  // Calculate real-time scores using question weights
   const calculateScores = useCallback((currentAnswers: Record<string, number>) => {
-    const sectionScores: Record<string, number> = {};
-    
-    translatedSections.forEach((section) => {
-      const sectionAnswers = section.questions
-        .map(q => currentAnswers[q.id])
-        .filter(answer => answer !== undefined);
-      
-      if (sectionAnswers.length > 0) {
-        const average = sectionAnswers.reduce((sum, answer) => sum + answer, 0) / sectionAnswers.length;
-        sectionScores[section.id] = Math.round((average / 5) * 100);
-      }
-    });
-    
-    return sectionScores;
+    return calculateAllSectionScores(translatedSections, currentAnswers);
   }, [translatedSections]);
 
   const handleAnswer = async (questionId: string, value: number) => {
@@ -85,7 +73,7 @@ export default function Assessment() {
     // Auto-save to local storage (in-progress, non-blocking)
     try {
       const overallScore = Object.values(newScores).length > 0 
-        ? Math.round(Object.values(newScores).reduce((sum, score) => sum + score, 0) / Object.values(newScores).length)
+        ? calculateWeightedScore(newScores)
         : 0;
         
       await saveAssessment({
@@ -185,7 +173,7 @@ export default function Assessment() {
     try {
       const finalScores = calculateScores(answers);
       const overallScore = Object.values(finalScores).length > 0 
-        ? Math.round(Object.values(finalScores).reduce((sum, score) => sum + score, 0) / Object.values(finalScores).length)
+        ? calculateWeightedScore(finalScores)
         : 0;
         
       // Check if all questions are answered
