@@ -12,7 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
-import { KPIIntelligenceLibrary } from "@/components/kpi-encyclopedia/KPIIntelligenceLibrary";
+import { KPIExplorer } from "@/components/kpi-encyclopedia/KPIExplorer";
 
 interface UsefulResourcesProps {
   scores: Record<string, number>;
