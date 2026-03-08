@@ -1100,6 +1100,1042 @@ export const KPI_DEFINITIONS: Record<string, { en: KPIDefinition; de: KPIDefinit
       benchmark: '84%'
     }
   },
+  // =====================================================
+  // USED VEHICLE SALES KPIs (26-37)
+  // =====================================================
+  agedStockPercentage: {
+    en: {
+      title: 'Aged Stock % (>90 Days)',
+      definition: 'The percentage of used vehicle inventory that has been in stock for more than 90 days without being sold.',
+      executiveSummary: 'Aged stock is one of the most destructive forces in used vehicle profitability. Vehicles depreciate daily, and units over 90 days typically sell at a loss. Best-practice dealerships maintain aged stock below 10% through disciplined pricing, proactive remarketing, and strict stocking standards.',
+      whyItMatters: 'Aged inventory ties up capital, depreciates daily, and signals pricing or merchandising failures. Reducing aged stock directly improves gross profit and inventory ROI.',
+      formula: 'Aged Stock % = (Units in Stock >90 Days / Total Used Vehicle Inventory) × 100',
+      inclusions: ['All retail-ready used vehicles', 'Vehicles in reconditioning if past 90 days from acquisition'],
+      exclusions: ['Wholesale units awaiting auction', 'Customer-ordered vehicles', 'Demonstrator vehicles'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '<10%',
+      department: 'used-vehicle-sales',
+      rootCauseDiagnostics: {
+        people: 'Managers emotionally attached to units, reluctance to take losses, poor appraisal discipline leading to overpriced acquisitions',
+        process: 'No systematic aging policy, inconsistent price reduction cadence, weak merchandising rotation, no 60-day warning triggers',
+        tools: 'No real-time market pricing tools (e.g., vAuto, AutoTrader insights), poor inventory management dashboards',
+        structure: 'No dedicated used vehicle merchandising role, inventory decisions centralized with one person creating bottlenecks',
+        incentives: 'No penalties for aged stock, compensation not tied to inventory turn, volume bonuses without profitability guardrails'
+      },
+      improvementLevers: [
+        'Implement strict 60-day pricing policy with automatic reductions at 30/45/60 days',
+        'Use market-based pricing tools to price competitively from day one',
+        'Create "aging meeting" every week reviewing all units >45 days',
+        'Set maximum days-in-stock limits by vehicle segment and price band',
+        'Improve reconditioning speed to get vehicles frontline-ready faster',
+        'Develop wholesale exit strategy for units unlikely to retail profitably',
+        'Tie used car manager compensation to inventory turn, not just gross'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Appraisal Accuracy Rate', 'Reconditioning Cycle Time', 'Trade-In Capture Rate', 'Stocking criteria discipline'],
+        downstreamImpacts: ['Gross per Used Vehicle', 'Used Inventory Turnover', 'Floor plan interest cost', 'Total dealership profitability']
+      }
+    },
+    de: {
+      title: 'Überalterter Bestand % (>90 Tage)',
+      definition: 'Prozentsatz des Gebrauchtwagenbestands, der seit mehr als 90 Tagen nicht verkauft wurde.',
+      whyItMatters: 'Überalterter Bestand bindet Kapital, verliert täglich an Wert und signalisiert Preis- oder Vermarktungsfehler.',
+      benchmark: '<10%'
+    }
+  },
+  stockToSalesRatio: {
+    en: {
+      title: 'Stock-to-Sales Ratio',
+      definition: 'The ratio of total used vehicle inventory units to the number of used vehicles sold per month.',
+      executiveSummary: 'Stock-to-Sales Ratio is the fundamental balance metric for used vehicle operations. Too high means capital is tied up in slow-moving inventory; too low means missed sales opportunities. The ideal ratio of 2:1 to 3:1 ensures sufficient selection without excessive carrying costs.',
+      whyItMatters: 'Balances inventory investment against sales velocity. Optimal ratio ensures customer selection while minimizing depreciation and floor plan costs.',
+      formula: 'Stock-to-Sales Ratio = Total Used Vehicle Inventory / Average Monthly Used Vehicle Sales',
+      inclusions: ['All retail-ready used vehicles on lot and in transit'],
+      exclusions: ['Wholesale-only units', 'Vehicles in reconditioning not yet frontline'],
+      unitOfMeasure: 'Ratio (x:1)',
+      benchmark: '2:1 to 3:1',
+      department: 'used-vehicle-sales',
+      rootCauseDiagnostics: {
+        people: 'Over-acquisition bias from trade-in acceptance, emotional attachment to high-value units, lack of inventory management discipline',
+        process: 'No stocking guide or acquisition criteria, reactive purchasing instead of strategic sourcing, no turn-based ordering',
+        tools: 'Limited market demand data, no predictive analytics for optimal inventory mix, poor reporting on aging by segment',
+        structure: 'Purchasing decisions not aligned with sales capacity, no feedback loop between sales floor and buying center',
+        incentives: 'Buyers rewarded for volume acquired rather than profitability of acquisitions, no accountability for unsold units'
+      },
+      improvementLevers: [
+        'Establish stocking guide based on market demand data and historical sales patterns',
+        'Set acquisition limits tied to current sales pace and aging inventory levels',
+        'Review stock-to-sales ratio weekly with corrective action for deviations',
+        'Implement segment-level analysis (SUVs, sedans, trucks) for targeted stocking',
+        'Create systematic wholesale process for units exceeding optimal levels',
+        'Align purchasing incentives with turn rate and profitability metrics'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Trade-In Capture Rate', 'Auction purchasing strategy', 'Wholesale disposal speed', 'Market demand patterns'],
+        downstreamImpacts: ['Aged Stock %', 'Used Inventory Turnover', 'Floor plan interest expense', 'Gross per Used Vehicle']
+      }
+    },
+    de: {
+      title: 'Bestands-Verkaufs-Verhältnis',
+      definition: 'Verhältnis des gesamten Gebrauchtwagenbestands zur Anzahl der monatlich verkauften Gebrauchtwagen.',
+      whyItMatters: 'Balanciert Bestandsinvestition gegen Verkaufsgeschwindigkeit.',
+      benchmark: '2:1 bis 3:1'
+    }
+  },
+  reconditioningCycleTime: {
+    en: {
+      title: 'Reconditioning Cycle Time',
+      definition: 'The average number of days from vehicle acquisition to frontline-ready status, including all inspection, repair, detailing, and photography steps.',
+      executiveSummary: 'Every day a vehicle spends in reconditioning is a day it cannot be sold. Best-practice dealerships complete reconditioning in 3-5 days. Reducing cycle time by even 2 days across 100 units/month can save €15,000+ in depreciation and floor plan costs annually.',
+      whyItMatters: 'Directly impacts days-in-stock, depreciation exposure, and sales opportunity window. Faster reconditioning means faster revenue.',
+      formula: 'Recon Cycle Time = Σ(Frontline Date − Acquisition Date) / Number of Vehicles Reconditioned',
+      inclusions: ['All steps: inspection, mechanical repair, body work, detail, photos, online listing'],
+      exclusions: ['Customer-ordered vehicles', 'Wholesale units not reconditioned'],
+      unitOfMeasure: 'Days',
+      benchmark: '3-5 days',
+      department: 'used-vehicle-sales',
+      rootCauseDiagnostics: {
+        people: 'Insufficient recon staff, lack of urgency, poor communication between departments (service, detail, photo)',
+        process: 'No standardized workflow, sequential instead of parallel processing, bottlenecks at parts ordering or body shop',
+        tools: 'No recon tracking software, manual handoffs between departments, no visibility into current stage',
+        structure: 'Recon competing with customer pay work for service bay time, no dedicated recon facility',
+        incentives: 'No time-based targets for recon completion, service department prioritizes higher-margin customer pay work'
+      },
+      improvementLevers: [
+        'Implement recon tracking software with stage-based timers and alerts',
+        'Create dedicated recon bays or facility separate from customer service',
+        'Establish maximum 72-hour target with escalation at 48 hours',
+        'Run parallel processes (parts ordering during inspection, photos during final detail)',
+        'Pre-approve recon budgets by vehicle value tier to eliminate approval delays',
+        'Create recon team with dedicated technicians separate from service advisors',
+        'Track and display daily recon throughput dashboard in service area'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Parts availability and ordering speed', 'Service bay capacity', 'Appraisal accuracy (pre-purchase inspection)', 'Staffing levels'],
+        downstreamImpacts: ['Days in Stock', 'Aged Stock %', 'Gross per Used Vehicle', 'Used Inventory Turnover', 'Online merchandising speed']
+      }
+    },
+    de: {
+      title: 'Aufbereitungsdauer',
+      definition: 'Durchschnittliche Tage von Fahrzeugakquisition bis zur Verkaufsbereitschaft.',
+      whyItMatters: 'Jeder Tag in der Aufbereitung ist ein Tag ohne Verkaufsmöglichkeit.',
+      benchmark: '3-5 Tage'
+    }
+  },
+  grossPerUsedVehicle: {
+    en: {
+      title: 'Gross per Used Vehicle',
+      definition: 'The average front-end gross profit per used vehicle retailed, including vehicle margin and any dealer-added accessories.',
+      executiveSummary: 'Gross per Used Vehicle is the core profitability metric for used operations. It reflects the combined effectiveness of acquisition pricing, reconditioning cost control, market-based retail pricing, and sales negotiation. Industry benchmarks range from €1,500-€2,500 for mainstream brands.',
+      whyItMatters: 'Directly determines used department profitability and overall dealership financial health. Higher gross requires discipline across the entire used vehicle lifecycle.',
+      formula: 'Gross per Used Vehicle = (Selling Price − Cost of Vehicle − Reconditioning Cost − Pack) / Number of Used Vehicles Retailed',
+      inclusions: ['Vehicle selling price', 'All reconditioning costs', 'Dealer pack charges', 'Any dealer-added accessories/value-adds'],
+      exclusions: ['F&I income (tracked separately)', 'Trade-in profits on next transaction', 'Wholesale transactions'],
+      unitOfMeasure: 'Currency (€)',
+      benchmark: '€1,500-€2,500',
+      department: 'used-vehicle-sales',
+      rootCauseDiagnostics: {
+        people: 'Over-appraising trade-ins to win deals, weak negotiation skills, inability to sell value over price',
+        process: 'No consistent appraisal methodology, excessive reconditioning spend, pricing not aligned to market data',
+        tools: 'No market comparison tools, limited visibility into true cost-to-market, inadequate deal desking tools',
+        structure: 'Appraisal and pricing decisions separated from P&L accountability, no feedback loop on acquisition outcomes',
+        incentives: 'Volume-based compensation without gross profit floor, discounting authority too broadly distributed'
+      },
+      improvementLevers: [
+        'Implement market-based appraisal and pricing using real-time market data',
+        'Set reconditioning cost limits by vehicle value tier',
+        'Train sales team on value-based selling vs. price negotiation',
+        'Create tiered discounting authority requiring manager approval beyond thresholds',
+        'Track gross per unit by source (trade-in, auction, private purchase) to optimize acquisition channels',
+        'Review "loser reports" weekly to identify patterns in negative-gross deals',
+        'Implement minimum gross policy with escalation process for exceptions'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Appraisal Accuracy Rate', 'Reconditioning Cost per Unit', 'Price to Market Ratio', 'Inventory age'],
+        downstreamImpacts: ['Used department total gross', 'Total dealership net profit', 'Sales staff compensation', 'Inventory investment ROI']
+      }
+    },
+    de: {
+      title: 'Bruttogewinn pro Gebrauchtwagen',
+      definition: 'Durchschnittlicher Front-End-Bruttogewinn pro verkauftem Gebrauchtwagen.',
+      whyItMatters: 'Bestimmt direkt die Rentabilität der Gebrauchtwagensparte.',
+      benchmark: '€1.500-€2.500'
+    }
+  },
+  priceToMarketRatio: {
+    en: {
+      title: 'Price to Market Ratio',
+      definition: 'The ratio of a dealership\'s asking price to the average market price for comparable vehicles.',
+      executiveSummary: 'Price to Market Ratio reveals competitive positioning. A ratio of 95-100% means pricing at or near market, while >105% signals overpricing that leads to aging. Best-practice dealers price at 97-100% of market and adjust systematically based on days in stock.',
+      whyItMatters: 'Determines how competitively vehicles are priced relative to market alternatives. Directly impacts days-in-stock and probability of sale.',
+      formula: 'Price to Market = (Dealer Asking Price / Average Market Price for Comparable Vehicles) × 100',
+      inclusions: ['All retail-listed used vehicles', 'Comparable vehicles within same market area, year, make, model, mileage band'],
+      exclusions: ['Specialty/collector vehicles', 'Wholesale units', 'Vehicles not yet listed'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '97-100%',
+      department: 'used-vehicle-sales',
+      rootCauseDiagnostics: {
+        people: 'Managers overvaluing their own inventory, emotional pricing, reluctance to reduce price on units they acquired',
+        process: 'No systematic pricing review cadence, no market data consultation during pricing, inconsistent pricing methodology',
+        tools: 'No access to real-time market pricing tools, manual competitive analysis, outdated comparable data',
+        structure: 'Pricing authority concentrated with individuals who also make acquisition decisions (conflict of interest)',
+        incentives: 'No accountability for overpriced units, gross-based compensation discouraging competitive pricing'
+      },
+      improvementLevers: [
+        'Subscribe to market pricing tools (vAuto, DealerSocket) for real-time competitive data',
+        'Implement automatic price adjustment schedule based on days in stock',
+        'Separate acquisition and pricing decisions to eliminate bias',
+        'Review price-to-market daily for all frontline units',
+        'Set competitive pricing targets by vehicle segment and price band',
+        'Train managers on data-driven pricing vs. gut-feel pricing'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Market supply and demand dynamics', 'Vehicle condition and reconditioning quality', 'Online merchandising quality', 'Competitive landscape'],
+        downstreamImpacts: ['Days in Stock', 'Aged Stock %', 'Gross per Used Vehicle', 'Online lead generation', 'Inventory turn']
+      }
+    },
+    de: {
+      title: 'Preis-zu-Markt-Verhältnis',
+      definition: 'Verhältnis des Händler-Angebotspreises zum durchschnittlichen Marktpreis vergleichbarer Fahrzeuge.',
+      whyItMatters: 'Bestimmt die Wettbewerbsfähigkeit der Preisgestaltung und beeinflusst direkt die Standtage.',
+      benchmark: '97-100%'
+    }
+  },
+  appraisalAccuracyRate: {
+    en: {
+      title: 'Appraisal Accuracy Rate',
+      definition: 'The percentage of trade-in appraisals where the actual reconditioning cost and final selling price fall within the originally projected range.',
+      executiveSummary: 'Appraisal accuracy is the foundation of used vehicle profitability. Inaccurate appraisals lead to either overpaying for trades (eroding gross) or undervaluing (losing trades to competitors). Top dealers achieve 85%+ accuracy by combining market data with systematic inspection protocols.',
+      whyItMatters: 'Directly impacts acquisition cost accuracy, gross profit predictability, and trade-in capture rate.',
+      formula: 'Appraisal Accuracy = (Appraisals Within ±10% of Actual Outcome / Total Appraisals) × 100',
+      inclusions: ['All trade-in appraisals completed', 'Both accepted and declined appraisals for accuracy tracking'],
+      exclusions: ['Wholesale-only appraisals', 'Sight-unseen digital appraisals (track separately)'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '85%+',
+      department: 'used-vehicle-sales',
+      rootCauseDiagnostics: {
+        people: 'Insufficient inspection training, emotional bias in appraisals, inconsistency between appraisers',
+        process: 'No standardized inspection checklist, missing reconditioning cost estimation step, no post-sale accuracy review',
+        tools: 'No mobile inspection apps, limited market data access during appraisal, no photo documentation requirement',
+        structure: 'Appraisals done by salespeople rather than trained appraisers, no separation of duties between appraisal and deal negotiation',
+        incentives: 'Salespeople incentivized to over-appraise to close deals, no accountability for appraisal accuracy outcomes'
+      },
+      improvementLevers: [
+        'Implement standardized multi-point inspection checklist for all trade-ins',
+        'Use market data tools to validate appraisal values in real-time',
+        'Create dedicated appraiser role or certification program',
+        'Track accuracy by appraiser with monthly scorecard reviews',
+        'Require photo documentation of all trade-in condition issues',
+        'Establish reconditioning cost estimation templates by vehicle category',
+        'Conduct monthly "look-back" analysis comparing appraisal vs actual outcome'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Appraiser training and experience', 'Market data tool access', 'Inspection process rigor', 'Reconditioning cost knowledge'],
+        downstreamImpacts: ['Gross per Used Vehicle', 'Trade-In Capture Rate', 'Reconditioning Cost per Unit', 'Customer satisfaction with trade-in experience']
+      }
+    },
+    de: {
+      title: 'Bewertungsgenauigkeit',
+      definition: 'Prozentsatz der Inzahlungnahme-Bewertungen, bei denen die tatsächlichen Kosten und der Verkaufspreis im projizierten Bereich liegen.',
+      whyItMatters: 'Beeinflusst direkt die Akquisitionskosten-Genauigkeit und Bruttogewinn-Vorhersagbarkeit.',
+      benchmark: '85%+'
+    }
+  },
+  tradeInCaptureRate: {
+    en: {
+      title: 'Trade-In Capture Rate',
+      definition: 'The percentage of new and used vehicle sales transactions where the dealership also acquires the customer\'s trade-in vehicle.',
+      executiveSummary: 'Trade-ins are the lowest-cost acquisition source for used inventory. Capturing more trades reduces auction dependency, improves used vehicle gross margins, and creates a competitive advantage. Best-practice dealers capture 50-60% of eligible trades.',
+      whyItMatters: 'Trade-ins cost less to acquire than auction purchases and carry higher gross potential. Higher capture rate reduces sourcing costs and increases used vehicle supply.',
+      formula: 'Trade-In Capture Rate = (Number of Trade-Ins Acquired / Number of Vehicle Sales to Customers with Trade-In Eligible Vehicles) × 100',
+      inclusions: ['All customer transactions where a trade-in was offered or discussed'],
+      exclusions: ['Cash purchases with no trade discussion', 'Fleet transactions', 'Lease returns'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '50-60%',
+      department: 'used-vehicle-sales',
+      rootCauseDiagnostics: {
+        people: 'Sales staff uncomfortable discussing trade values, poor objection handling on trade offers, desking focused on new deal structure only',
+        process: 'Trade appraisal done too late in process, no systematic trade discussion in every deal, weak competitive save process',
+        tools: 'No instant trade valuation tools for customers, poor trade-in marketing on website, no digital appraisal option',
+        structure: 'Used car department not involved in new car trade discussions, no collaboration between departments on trade acquisition',
+        incentives: 'No bonus for trade capture, salespeople indifferent to whether customer trades or sells privately'
+      },
+      improvementLevers: [
+        'Make trade discussion mandatory in every sales interaction, regardless of customer intent',
+        'Offer online trade-in valuation tool to engage customers before showroom visit',
+        'Train sales team on trade-in value communication and objection handling',
+        'Implement "save the trade" process with escalation to used car manager',
+        'Create competitive trade-in offers using market data to justify values',
+        'Track trade capture rate by salesperson and provide coaching',
+        'Collaborate between new and used departments on trade acquisition strategy'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Appraisal Accuracy Rate', 'Customer trust and relationship', 'Competitive trade-in offers', 'Online trade tools availability'],
+        downstreamImpacts: ['Used vehicle acquisition cost', 'Stock-to-Sales Ratio', 'Gross per Used Vehicle', 'Auction dependency and transport costs']
+      }
+    },
+    de: {
+      title: 'Inzahlungnahme-Quote',
+      definition: 'Prozentsatz der Fahrzeugtransaktionen, bei denen das Autohaus auch das Kundenfahrzeug in Zahlung nimmt.',
+      whyItMatters: 'Inzahlungnahmen sind die kostengünstigste Akquisitionsquelle für Gebrauchtwagenbestand.',
+      benchmark: '50-60%'
+    }
+  },
+  auctionProfitability: {
+    en: {
+      title: 'Auction Profitability %',
+      definition: 'The percentage of vehicles purchased at auction that are subsequently retailed at a profit after all costs (purchase price, auction fees, transport, reconditioning).',
+      executiveSummary: 'Auction purchasing is a necessary but risky acquisition channel. Best-practice dealers achieve 75-85% profitability on auction buys through disciplined bidding limits, accurate condition assessment, and fast reconditioning.',
+      whyItMatters: 'Measures the effectiveness of auction buying strategy and discipline. Unprofitable auction purchases directly erode used department margins.',
+      formula: 'Auction Profitability = (Profitable Auction Purchases / Total Auction Purchases) × 100',
+      inclusions: ['All vehicles purchased at physical and online auctions', 'All associated costs (fees, transport, recon)'],
+      exclusions: ['Direct dealer-to-dealer purchases', 'Trade-in acquisitions', 'Program/lease return acquisitions'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '75-85%',
+      department: 'used-vehicle-sales',
+      rootCauseDiagnostics: {
+        people: 'Auction buyers exceeding bid limits, poor vehicle condition assessment, emotional bidding behavior',
+        process: 'No pre-set maximum bid calculations, insufficient market analysis before auction, no post-purchase profitability tracking',
+        tools: 'No real-time market data at auction, limited access to vehicle history reports during bidding, poor mobile tools',
+        structure: 'Buyer compensation based on volume purchased rather than profitability, no oversight of bidding decisions',
+        incentives: 'Buyer bonuses tied to units acquired, not to retail profitability of those units'
+      },
+      improvementLevers: [
+        'Set maximum bid limits based on market retail price minus target gross and estimated recon',
+        'Require vehicle history report review before every bid',
+        'Track profitability by auction source to identify best-performing channels',
+        'Implement post-purchase review of all auction buys vs. actual outcomes',
+        'Tie buyer compensation to profitability of acquired units, not volume',
+        'Create approved vehicle profile (year, make, model, mileage) to guide purchasing decisions'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Auction market conditions', 'Buyer skill and discipline', 'Market pricing data accuracy', 'Reconditioning cost estimation'],
+        downstreamImpacts: ['Gross per Used Vehicle', 'Aged Stock %', 'Total used department profitability', 'Inventory investment ROI']
+      }
+    },
+    de: {
+      title: 'Auktionsrentabilität %',
+      definition: 'Prozentsatz der bei Auktionen gekauften Fahrzeuge, die anschließend mit Gewinn verkauft werden.',
+      whyItMatters: 'Misst die Effektivität der Auktionseinkaufsstrategie.',
+      benchmark: '75-85%'
+    }
+  },
+  unitsPerUsedCarManager: {
+    en: {
+      title: 'Units Sold per Used Car Manager',
+      definition: 'The average number of used vehicles retailed per month per used car sales manager or team leader.',
+      executiveSummary: 'This productivity metric measures management effectiveness in the used vehicle department. Best-practice managers oversee 40-60 units per month through effective team leadership, inventory management, and deal desking.',
+      whyItMatters: 'Measures management leverage and team effectiveness. Higher ratios indicate efficient leadership and well-structured teams.',
+      formula: 'Units per Manager = Total Used Vehicles Retailed per Month / Number of Used Car Managers',
+      inclusions: ['All retail used vehicle sales', 'Both internet and floor sales'],
+      exclusions: ['Wholesale dispositions', 'Internal transfers between locations'],
+      unitOfMeasure: 'Units/Month',
+      benchmark: '40-60 units/month',
+      department: 'used-vehicle-sales',
+      rootCauseDiagnostics: {
+        people: 'Manager spending too much time on non-sales activities, poor delegation, insufficient coaching of sales staff',
+        process: 'Manager involved in every decision (bottleneck), no structured daily management routine, excessive administrative burden',
+        tools: 'Poor deal desking tools, inadequate CRM workflow, manual reporting taking management time',
+        structure: 'Too many direct reports per manager, unclear role boundaries between sales manager and used car manager',
+        incentives: 'Manager compensation not aligned with team productivity, no accountability for team development'
+      },
+      improvementLevers: [
+        'Implement structured daily management routine (morning meeting, desk time, coaching)',
+        'Delegate administrative tasks to support staff or BDC',
+        'Set clear team productivity targets with weekly reviews',
+        'Provide deal desking tools that reduce time per transaction',
+        'Create tiered decision authority so managers focus on high-value decisions',
+        'Track units per manager monthly with peer benchmarking'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Sales team size and skill level', 'Lead volume', 'Inventory quality and selection', 'Process efficiency'],
+        downstreamImpacts: ['Total used vehicle volume', 'Gross per used vehicle', 'Used department total gross', 'Staff morale and retention']
+      }
+    },
+    de: {
+      title: 'Einheiten pro GW-Manager',
+      definition: 'Durchschnittliche Anzahl monatlich verkaufter Gebrauchtwagen pro GW-Verkaufsleiter.',
+      whyItMatters: 'Misst die Managementeffizienz und Teameffektivität.',
+      benchmark: '40-60 Einheiten/Monat'
+    }
+  },
+  reconditioningCostPerUnit: {
+    en: {
+      title: 'Reconditioning Cost per Unit',
+      definition: 'The average total cost to recondition a used vehicle from acquisition condition to retail-ready status.',
+      executiveSummary: 'Reconditioning cost directly reduces gross profit per unit. Best-practice dealers maintain average recon costs of €800-€1,200 through disciplined inspection, competitive parts sourcing, and standardized repair protocols. Cost overruns often stem from poor appraisal accuracy.',
+      whyItMatters: 'Directly subtracts from gross profit. Controlling reconditioning costs without sacrificing quality is essential for used vehicle profitability.',
+      formula: 'Recon Cost per Unit = Total Reconditioning Costs / Number of Vehicles Reconditioned',
+      inclusions: ['All mechanical repairs, body work, paint, tires, detail, photography costs'],
+      exclusions: ['Goodwill or warranty repairs', 'Dealer-added accessories beyond standard reconditioning'],
+      unitOfMeasure: 'Currency (€)',
+      benchmark: '€800-€1,200',
+      department: 'used-vehicle-sales',
+      rootCauseDiagnostics: {
+        people: 'Technicians over-repairing vehicles, lack of cost awareness, no standardized repair-vs-replace guidelines',
+        process: 'No pre-approval recon budget, scope creep during reconditioning, no cost tracking by category (mechanical, body, detail)',
+        tools: 'No reconditioning cost tracking software, manual cost estimation, poor visibility into cost-per-unit trends',
+        structure: 'Service department treating recon as profit center (marking up parts/labor) rather than cost center',
+        incentives: 'Service advisors incentivized to maximize recon RO revenue, no penalty for exceeding recon budgets'
+      },
+      improvementLevers: [
+        'Set maximum reconditioning budget by vehicle value tier (e.g., max 10% of retail price)',
+        'Implement pre-approval process for repairs exceeding standard budget',
+        'Negotiate internal labor and parts rates for reconditioning work',
+        'Track reconditioning cost by category to identify cost drivers',
+        'Create standardized reconditioning checklists by vehicle type',
+        'Source competitive aftermarket parts where quality is equivalent',
+        'Review high-cost recon units weekly to identify preventable overruns'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Appraisal Accuracy Rate', 'Vehicle acquisition quality', 'Parts pricing and availability', 'Technician efficiency'],
+        downstreamImpacts: ['Gross per Used Vehicle', 'Price to Market Ratio competitiveness', 'Used department profitability', 'Reconditioning Cycle Time']
+      }
+    },
+    de: {
+      title: 'Aufbereitungskosten pro Einheit',
+      definition: 'Durchschnittliche Gesamtkosten für die Aufbereitung eines Gebrauchtwagens bis zur Verkaufsbereitschaft.',
+      whyItMatters: 'Reduziert direkt den Bruttogewinn pro Einheit.',
+      benchmark: '€800-€1.200'
+    }
+  },
+  digitalLeadToSaleConversion: {
+    en: {
+      title: 'Digital Lead to Sale Conversion (Used)',
+      definition: 'The percentage of digital leads specifically for used vehicles that convert to a completed sale.',
+      executiveSummary: 'With 80%+ of used vehicle buyers starting online, digital lead conversion is critical. Best-practice dealers convert 8-12% of used vehicle digital leads through rapid response, transparent pricing, and seamless online-to-showroom transitions.',
+      whyItMatters: 'Measures the effectiveness of digital sales processes for used vehicles. Higher conversion reduces customer acquisition cost and maximizes digital marketing investment.',
+      formula: 'Digital Lead Conversion = (Used Vehicle Sales from Digital Leads / Total Digital Leads for Used Vehicles) × 100',
+      inclusions: ['All digital lead sources (website, third-party, social media)', 'Used vehicle-specific inquiries'],
+      exclusions: ['Walk-in traffic', 'Phone calls not originated from digital source', 'Service inquiries'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '8-12%',
+      department: 'used-vehicle-sales',
+      rootCauseDiagnostics: {
+        people: 'BDC not trained on used vehicle specifics, poor follow-up on used vehicle inquiries, inability to handle price objections digitally',
+        process: 'Slow response to used vehicle leads, no video walkaround process, poor online-to-showroom handoff',
+        tools: 'Inadequate online inventory merchandising, no video capabilities, limited digital retailing tools for used vehicles',
+        structure: 'No dedicated used vehicle internet team, used leads mixed with new vehicle leads without specialization',
+        incentives: 'BDC compensation not differentiated for used vs. new leads, no bonus for digital conversion improvement'
+      },
+      improvementLevers: [
+        'Respond to used vehicle leads within 5 minutes with personalized vehicle information',
+        'Create video walkaround for every used vehicle listing',
+        'Implement transparent "market-based" pricing online to build trust',
+        'Develop dedicated used vehicle BDC specialist role',
+        'Enable digital retailing (online deposit, credit application, trade-in valuation)',
+        'Track conversion by lead source to optimize digital marketing spend',
+        'Create multi-touch follow-up sequence tailored to used vehicle buyers'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Website merchandising quality', 'Lead Response Time', 'Online pricing transparency', 'Digital marketing effectiveness'],
+        downstreamImpacts: ['Used vehicle volume', 'Customer acquisition cost', 'Gross per Used Vehicle', 'Marketing ROI']
+      }
+    },
+    de: {
+      title: 'Digitale Lead-Konversion (GW)',
+      definition: 'Prozentsatz der digitalen Gebrauchtwagen-Leads, die zu einem Verkauf führen.',
+      whyItMatters: 'Misst die Effektivität digitaler Verkaufsprozesse für Gebrauchtwagen.',
+      benchmark: '8-12%'
+    }
+  },
+  wholesaleLeakage: {
+    en: {
+      title: 'Wholesale Leakage %',
+      definition: 'The percentage of acquired used vehicles that are wholesaled rather than retailed, representing lost retail gross profit opportunity.',
+      executiveSummary: 'Every wholesale disposition represents a vehicle that was acquired but could not be profitably retailed. Best-practice dealers keep wholesale leakage below 15% through disciplined acquisition, effective reconditioning, and competitive pricing.',
+      whyItMatters: 'Wholesale transactions typically lose €500-€1,500 per unit vs. potential retail profit. Reducing leakage directly improves used department gross.',
+      formula: 'Wholesale Leakage = (Number of Vehicles Wholesaled / Total Vehicles Acquired) × 100',
+      inclusions: ['All vehicles sold at wholesale (auction, dealer-to-dealer, wholesalers)'],
+      exclusions: ['Vehicles intentionally acquired for wholesale (if tracked separately)', 'Manufacturer buybacks'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '<15%',
+      department: 'used-vehicle-sales',
+      rootCauseDiagnostics: {
+        people: 'Poor appraisal decisions leading to bad acquisitions, reluctance to invest in reconditioning fixable vehicles',
+        process: 'No analysis of why vehicles are wholesaled, no feedback loop to acquisition process, late-stage reconditioning surprises',
+        tools: 'Insufficient vehicle inspection tools during acquisition, no predictive analytics for retail viability',
+        structure: 'Wholesale decision made by used car manager without cross-functional input, no escalation process before wholesale',
+        incentives: 'No penalty for excessive wholesale rates, volume-based acquisition bonuses encouraging poor purchases'
+      },
+      improvementLevers: [
+        'Implement "wholesale review" requiring approval before any unit is wholesaled',
+        'Analyze wholesale patterns monthly to identify preventable causes',
+        'Improve pre-acquisition inspection to avoid acquiring units unlikely to retail',
+        'Create retail save process: repricing, additional marketing, or cross-location transfer before wholesale',
+        'Track wholesale leakage rate by acquisition source to identify problem channels',
+        'Tie acquisition team compensation to retail success rate, not just purchase volume'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Appraisal Accuracy Rate', 'Reconditioning Cost per Unit', 'Market demand alignment', 'Stocking criteria discipline'],
+        downstreamImpacts: ['Gross per Used Vehicle (department average)', 'Total used department profitability', 'Inventory investment efficiency', 'Auction expense ratio']
+      }
+    },
+    de: {
+      title: 'Großhandels-Verlust %',
+      definition: 'Prozentsatz der akquirierten Gebrauchtwagen, die im Großhandel statt im Einzelhandel verkauft werden.',
+      whyItMatters: 'Großhandelstransaktionen verlieren typischerweise €500-€1.500 pro Einheit vs. potenziellem Einzelhandelsgewinn.',
+      benchmark: '<15%'
+    }
+  },
+
+  // =====================================================
+  // SERVICE / AFTERSALES KPIs (38-51)
+  // =====================================================
+  technicianProductivityPct: {
+    en: {
+      title: 'Technician Productivity %',
+      definition: 'The ratio of hours a technician spends on productive work (billable jobs) versus total hours available (clocked in).',
+      executiveSummary: 'Technician productivity is the single most impactful metric for service department profitability. A 5% improvement in productivity across 10 technicians can generate €100,000+ in additional annual revenue. Industry benchmarks: 90-110% for productive shops.',
+      whyItMatters: 'Directly determines service department revenue capacity. Higher productivity means more jobs completed per day, more revenue per technician, and better customer throughput.',
+      formula: 'Technician Productivity % = (Total Hours Produced / Total Hours Available) × 100',
+      inclusions: ['All hours clocked on repair orders (customer pay, warranty, internal)', 'Flat-rate and actual time basis'],
+      exclusions: ['Training hours', 'Unpaid breaks', 'Non-productive waiting time (track separately)'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '90-110%',
+      department: 'service-performance',
+      rootCauseDiagnostics: {
+        people: 'Low technician skill levels, poor work habits, excessive personal time, lack of motivation',
+        process: 'Inefficient work distribution, excessive wait time for parts or authorization, poor dispatching, inadequate bay setup',
+        tools: 'Outdated diagnostic equipment, insufficient specialty tools, poor workshop layout reducing efficiency',
+        structure: 'Too many technicians for available work, poor mix of work types (all complex, no quick jobs), inadequate bay allocation',
+        incentives: 'Flat salary with no productivity bonus, no visibility into individual performance, lack of skill-based pay progression'
+      },
+      improvementLevers: [
+        'Implement real-time productivity tracking visible to technicians and managers',
+        'Optimize work dispatch to match technician skill levels with job complexity',
+        'Reduce parts wait time through better inventory management and pre-ordering',
+        'Create productivity-based pay structure (flat-rate or bonus system)',
+        'Improve bay organization and tool accessibility (5S methodology)',
+        'Schedule mix of quick service and complex jobs to maintain flow',
+        'Provide regular skill development training to increase capability on higher-value work'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Work mix and volume', 'Parts Fill Rate', 'Dispatching efficiency', 'Technician skill level', 'Equipment condition'],
+        downstreamImpacts: ['Revenue per Technician', 'Labor Utilization Rate', 'Customer wait times', 'Service capacity and throughput']
+      }
+    },
+    de: {
+      title: 'Technikerproduktivität %',
+      definition: 'Verhältnis der produktiven Arbeitsstunden eines Technikers zur Gesamtverfügbarkeit.',
+      whyItMatters: 'Bestimmt direkt die Umsatzkapazität der Serviceabteilung.',
+      benchmark: '90-110%'
+    }
+  },
+  technicianEfficiencyPct: {
+    en: {
+      title: 'Technician Efficiency %',
+      definition: 'The ratio of standard (flat-rate) hours earned to actual hours worked on those jobs. Measures how quickly technicians complete work relative to published time standards.',
+      executiveSummary: 'Efficiency above 100% means technicians are completing jobs faster than standard time — a sign of skill mastery and good processes. Top shops achieve 105-120% efficiency, generating additional revenue from the same labor hours.',
+      whyItMatters: 'Higher efficiency means more billable hours produced in the same clock time, directly increasing revenue per technician without additional labor cost.',
+      formula: 'Technician Efficiency % = (Standard Hours Earned / Actual Hours Worked on Jobs) × 100',
+      inclusions: ['All repair orders with flat-rate time standards', 'Customer pay, warranty, and internal work'],
+      exclusions: ['Come-back/rework jobs (track separately)', 'Jobs without published time standards'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '105-120%',
+      department: 'service-performance',
+      rootCauseDiagnostics: {
+        people: 'Insufficient training on specific repair procedures, low skill levels on newer vehicle technology, poor time management habits',
+        process: 'Excessive diagnostic time due to inadequate information, frequent interruptions, poor pre-staging of parts and tools',
+        tools: 'Outdated or insufficient diagnostic equipment, slow scan tools, lack of manufacturer-specific specialty tools',
+        structure: 'Technicians working on unfamiliar vehicle types, no specialization matching, excessive administrative requirements',
+        incentives: 'No efficiency bonus, flat hourly pay regardless of output, no recognition for high-efficiency performers'
+      },
+      improvementLevers: [
+        'Implement skill-based work assignment matching technician expertise to job type',
+        'Pre-stage parts and tools for scheduled appointments to reduce setup time',
+        'Invest in latest diagnostic equipment and training',
+        'Create efficiency-based bonus structure rewarding above-standard performance',
+        'Reduce administrative burden on technicians (digital inspection, voice-to-text)',
+        'Track efficiency by technician and job type to identify training opportunities'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Technician training and skill level', 'Tool and equipment quality', 'Parts availability', 'Job complexity mix'],
+        downstreamImpacts: ['Revenue per Technician', 'Technician Productivity %', 'Labor sales per RO', 'Service department gross profit']
+      }
+    },
+    de: {
+      title: 'Technikereffizienz %',
+      definition: 'Verhältnis der Standardstunden (Flat-Rate) zu den tatsächlich aufgewendeten Stunden.',
+      whyItMatters: 'Höhere Effizienz bedeutet mehr abrechenbare Stunden bei gleicher Arbeitszeit.',
+      benchmark: '105-120%'
+    }
+  },
+  laborUtilizationRate: {
+    en: {
+      title: 'Labor Utilization Rate',
+      definition: 'The percentage of total available technician hours that are sold to customers (billed), reflecting how much of the labor capacity is being monetized.',
+      executiveSummary: 'Labor utilization combines productivity and efficiency into a revenue-generation measure. Best-practice shops achieve 85-95% utilization, meaning nearly all available labor hours are converted to revenue.',
+      whyItMatters: 'Measures overall labor revenue generation effectiveness. Low utilization means paying for technician time that generates no revenue.',
+      formula: 'Labor Utilization Rate = (Total Hours Sold to Customers / Total Available Technician Hours) × 100',
+      inclusions: ['All billed hours (customer pay, warranty, internal at internal rate)'],
+      exclusions: ['Unpaid training time', 'Non-productive time', 'Comebacks/rework hours'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '85-95%',
+      department: 'service-performance',
+      rootCauseDiagnostics: {
+        people: 'Underperforming technicians dragging down average, uneven workload distribution, absenteeism',
+        process: 'Insufficient appointment scheduling, poor work-in-progress management, service advisor not selling full job scope',
+        tools: 'No real-time utilization tracking, poor scheduling software, lack of capacity planning tools',
+        structure: 'Overstaffed relative to demand, no flexible staffing model, poor shift design',
+        incentives: 'No team-level utilization targets, individual focus without collective accountability'
+      },
+      improvementLevers: [
+        'Implement capacity-based appointment scheduling matching available tech hours to booked work',
+        'Train service advisors on comprehensive vehicle inspection and recommendation selling',
+        'Create real-time utilization dashboard visible to service manager',
+        'Right-size technician staff to match demand patterns (seasonal adjustment)',
+        'Develop "next day preparation" process ensuring work is queued for every technician',
+        'Implement flexible scheduling with staggered start times to cover demand peaks'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Appointment volume and scheduling', 'Technician Productivity %', 'Technician Efficiency %', 'Service advisor upselling'],
+        downstreamImpacts: ['Service department revenue', 'Revenue per Technician', 'Fixed absorption ratio', 'Service department profitability']
+      }
+    },
+    de: {
+      title: 'Arbeitsauslastungsrate',
+      definition: 'Prozentsatz der verfügbaren Technikerstunden, die an Kunden verkauft werden.',
+      whyItMatters: 'Misst die gesamte Effektivität der Arbeitsumsatzgenerierung.',
+      benchmark: '85-95%'
+    }
+  },
+  laborSalesPerRO: {
+    en: {
+      title: 'Labor Sales per RO',
+      definition: 'The average labor revenue generated per repair order, indicating the depth of service performed on each visit.',
+      executiveSummary: 'Higher labor sales per RO indicate effective service advisor upselling, thorough vehicle inspection, and comprehensive service recommendations. Best-practice dealers achieve €250-€400 labor per RO through systematic multi-point inspection and menu presentation.',
+      whyItMatters: 'Maximizes revenue from each customer visit without requiring additional traffic. Reflects service advisor effectiveness and inspection thoroughness.',
+      formula: 'Labor Sales per RO = Total Labor Revenue / Total Number of Repair Orders',
+      inclusions: ['All labor charges on customer pay, warranty, and internal repair orders'],
+      exclusions: ['Parts revenue (tracked separately)', 'Sublet charges', 'Quick lube/express service if tracked separately'],
+      unitOfMeasure: 'Currency (€)',
+      benchmark: '€250-€400',
+      department: 'service-performance',
+      rootCauseDiagnostics: {
+        people: 'Service advisors not performing thorough inspections, fear of "overselling," poor presentation skills',
+        process: 'No standardized multi-point inspection, no menu presentation, inconsistent service recommendations',
+        tools: 'No digital inspection tools (tablet-based with photos/video), no automated service recommendation engine',
+        structure: 'Service advisors handling too many customers, insufficient time for thorough consultation',
+        incentives: 'Flat compensation for advisors, no bonus for labor sales improvement, no tracking of inspection completion'
+      },
+      improvementLevers: [
+        'Implement mandatory multi-point digital inspection on every visit',
+        'Train service advisors on consultative service selling with photo/video evidence',
+        'Create service menu packages (Good/Better/Best) for common visits',
+        'Set labor-per-RO targets with daily tracking and coaching',
+        'Use tablet-based inspection tools that generate customer-facing reports with photos',
+        'Implement declined service follow-up process for work customers initially refuse'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Service advisor training and skill', 'Multi-point inspection completion rate', 'Customer trust and relationship', 'Vehicle age and condition'],
+        downstreamImpacts: ['Service department revenue', 'Customer retention (perception of value)', 'Parts sales per RO', 'Gross profit per RO']
+      }
+    },
+    de: {
+      title: 'Arbeitsumsatz pro Auftrag',
+      definition: 'Durchschnittlicher Arbeitsumsatz pro Reparaturauftrag.',
+      whyItMatters: 'Maximiert den Umsatz pro Kundenbesuch.',
+      benchmark: '€250-€400'
+    }
+  },
+  revenuePerTechnician: {
+    en: {
+      title: 'Revenue per Technician',
+      definition: 'Total service department revenue (labor + parts) generated per technician per month.',
+      executiveSummary: 'Revenue per technician is the ultimate productivity measure combining labor efficiency, parts attachment, and work volume. Best-practice shops generate €15,000-€25,000 per technician per month.',
+      whyItMatters: 'Comprehensive measure of individual and team revenue generation. Directly impacts service department profitability and technician compensation potential.',
+      formula: 'Revenue per Technician = Total Service Revenue (Labor + Parts) / Number of Active Technicians',
+      inclusions: ['All labor and parts revenue from customer pay, warranty, and internal work'],
+      exclusions: ['Sublet revenue', 'Body shop revenue (if separate department)', 'Towing/recovery revenue'],
+      unitOfMeasure: 'Currency (€/month)',
+      benchmark: '€15,000-€25,000/month',
+      department: 'service-performance',
+      rootCauseDiagnostics: {
+        people: 'Low skill levels limiting job types, poor efficiency, technician absenteeism reducing available hours',
+        process: 'Insufficient work volume per technician, poor parts attachment rate, inefficient dispatching',
+        tools: 'Outdated equipment slowing down work, insufficient specialty tools, poor diagnostic capabilities',
+        structure: 'Overstaffed relative to demand, poor work mix (too much low-revenue work), inadequate bay allocation',
+        incentives: 'No revenue-per-tech targets, compensation not tied to revenue generation, no team-level goals'
+      },
+      improvementLevers: [
+        'Optimize technician staffing to match demand (right-size team)',
+        'Improve parts-to-labor ratio through better inspection and recommendation processes',
+        'Invest in training to enable technicians to handle higher-complexity, higher-revenue work',
+        'Implement effective dispatching to minimize downtime between jobs',
+        'Set monthly revenue-per-tech targets with visible tracking',
+        'Create career path linking revenue generation to pay progression'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Technician Productivity %', 'Technician Efficiency %', 'Labor Sales per RO', 'Work volume and mix', 'Parts attachment rate'],
+        downstreamImpacts: ['Service department total revenue', 'Fixed absorption ratio', 'Technician compensation satisfaction', 'Service department profitability']
+      }
+    },
+    de: {
+      title: 'Umsatz pro Techniker',
+      definition: 'Gesamter Serviceabteilungsumsatz pro Techniker pro Monat.',
+      whyItMatters: 'Umfassendes Maß für individuelle und Team-Umsatzgenerierung.',
+      benchmark: '€15.000-€25.000/Monat'
+    }
+  },
+  firstTimeFixRate: {
+    en: {
+      title: 'First-Time Fix Rate',
+      definition: 'The percentage of repair orders that are completed correctly on the first visit without the customer needing to return for the same issue.',
+      executiveSummary: 'First-Time Fix Rate is a critical quality and customer satisfaction metric. Each comeback costs €200-€500 in rework, lost bay time, and customer goodwill. Best-practice shops achieve 95%+ first-time fix rates through thorough diagnosis, proper repair procedures, and quality checks.',
+      whyItMatters: 'Comebacks are the most expensive service failure — they consume bay time, erode customer trust, and generate no revenue. Improving first-time fix directly improves profitability and CSI.',
+      formula: 'First-Time Fix Rate = (ROs Completed Without Comeback / Total ROs Completed) × 100',
+      inclusions: ['All repair orders across customer pay, warranty, and internal work'],
+      exclusions: ['Scheduled multi-visit repairs', 'Parts-on-order returns (pre-planned)', 'Customer-requested follow-up for different issues'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '95%+',
+      department: 'service-performance',
+      rootCauseDiagnostics: {
+        people: 'Insufficient diagnostic skills, rushing through repairs, poor attention to detail, technician skill gaps on newer technology',
+        process: 'Inadequate diagnostic procedures, no root cause analysis protocol, missing quality control check before delivery',
+        tools: 'Outdated or missing diagnostic equipment, insufficient access to technical service bulletins, poor repair information systems',
+        structure: 'Technicians working on unfamiliar vehicle types, no specialization, excessive workload pressure sacrificing quality',
+        incentives: 'Flat-rate pay incentivizing speed over quality, no penalty for comebacks, no quality bonus'
+      },
+      improvementLevers: [
+        'Implement mandatory quality control inspection before vehicle release',
+        'Create comeback tracking and root cause analysis process',
+        'Match technicians to repairs matching their skill certification level',
+        'Invest in latest diagnostic tools and repair information subscriptions',
+        'Add quality bonus to technician compensation (reduce pay for comebacks)',
+        'Conduct weekly comeback review meetings to identify systemic issues',
+        'Implement road test protocol for drivability complaints before release'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Technician training and skill level', 'Diagnostic equipment quality', 'Parts quality', 'Work pressure and time constraints'],
+        downstreamImpacts: ['Comeback Rate', 'CSI – Service', 'Service Retention Rate', 'Service department profitability', 'Net Promoter Score']
+      }
+    },
+    de: {
+      title: 'Erstbehebungsquote',
+      definition: 'Prozentsatz der Reparaturaufträge, die beim ersten Besuch korrekt abgeschlossen werden.',
+      whyItMatters: 'Nacharbeiten sind der teuerste Servicefehler — sie verbrauchen Kapazität und erodieren Kundenvertrauen.',
+      benchmark: '95%+'
+    }
+  },
+  comebackRate: {
+    en: {
+      title: 'Comeback Rate',
+      definition: 'The percentage of repair orders where the customer returns within 30 days for the same or related repair issue.',
+      executiveSummary: 'Comeback Rate is the inverse quality metric of First-Time Fix. Each comeback costs the dealership €200-€500 in direct rework costs plus immeasurable customer trust damage. Best-practice target is below 2%.',
+      whyItMatters: 'Direct measure of repair quality failures. High comeback rates indicate systemic quality issues requiring immediate intervention.',
+      formula: 'Comeback Rate = (Number of Comeback ROs within 30 Days / Total ROs Completed) × 100',
+      inclusions: ['All returns for same or related symptoms within 30 days of original repair'],
+      exclusions: ['Scheduled follow-up visits', 'Unrelated new issues', 'Customer-requested rechecks with no actual problem found'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '<2%',
+      department: 'service-performance',
+      rootCauseDiagnostics: {
+        people: 'Technician skill deficiencies, rushing to meet productivity targets, poor diagnostic discipline',
+        process: 'No quality control check before vehicle release, inadequate repair verification, poor communication of repair scope',
+        tools: 'Insufficient diagnostic tools, outdated repair information, lack of manufacturer technical training access',
+        structure: 'Excessive workload preventing thorough repairs, no dedicated quality inspector role',
+        incentives: 'Productivity-focused pay penalizing thoroughness, no financial consequence for comebacks'
+      },
+      improvementLevers: [
+        'Implement mandatory road test and quality check before every vehicle release',
+        'Track comebacks by technician to identify training needs',
+        'Create financial accountability: deduct comeback repair time from technician productivity',
+        'Conduct root cause analysis on every comeback and share learnings',
+        'Establish technician mentoring program pairing junior techs with masters',
+        'Invest in ongoing OEM technical training and certification'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['First-Time Fix Rate', 'Technician training', 'Diagnostic tool quality', 'Quality control processes'],
+        downstreamImpacts: ['CSI – Service', 'Service Retention Rate', 'Net Promoter Score', 'Service department profitability', 'Online review scores']
+      }
+    },
+    de: {
+      title: 'Nacharbeitsquote',
+      definition: 'Prozentsatz der Reparaturaufträge, bei denen der Kunde innerhalb von 30 Tagen für dasselbe Problem zurückkehrt.',
+      whyItMatters: 'Direktes Maß für Reparaturqualitätsfehler.',
+      benchmark: '<2%'
+    }
+  },
+  csiService: {
+    en: {
+      title: 'CSI – Service',
+      definition: 'Customer Satisfaction Index score specifically for the service department, typically measured through post-visit surveys on a scale of 1-100 or 1-10.',
+      executiveSummary: 'Service CSI is the primary customer experience metric tracked by OEMs and directly impacts dealer incentive payments, franchise standing, and customer retention. Top-performing dealers achieve 90+ scores through consistent process execution and proactive communication.',
+      whyItMatters: 'Directly linked to OEM incentive payments, customer retention, and repeat purchase probability. Low CSI can trigger OEM franchise actions.',
+      formula: 'CSI – Service = Average of Post-Service Survey Scores across all surveyed customers',
+      inclusions: ['All OEM-administered service surveys', 'Internal post-visit surveys'],
+      exclusions: ['Body shop-only visits', 'Quick lube visits not triggering OEM surveys', 'Warranty-only visits with no customer contact'],
+      unitOfMeasure: 'Score (1-100)',
+      benchmark: '90+',
+      department: 'service-performance',
+      rootCauseDiagnostics: {
+        people: 'Poor service advisor communication, lack of empathy, failure to set expectations, technician/advisor disconnect',
+        process: 'No proactive status updates, unclear pickup time estimates, surprise charges, slow vehicle return process',
+        tools: 'No automated status notification system, poor digital communication (text/email updates), no online scheduling',
+        structure: 'Service advisors overloaded with too many customers, insufficient staff during peak times, poor waiting area',
+        incentives: 'No CSI component in advisor compensation, volume focus over customer experience, no recognition for top CSI performers'
+      },
+      improvementLevers: [
+        'Implement proactive customer communication at key touchpoints (received, diagnosed, in-progress, ready)',
+        'Train service advisors on empathetic communication and expectation setting',
+        'Create automated status update system via text/email',
+        'Address top 3 complaint drivers identified through survey analysis',
+        'Set CSI targets with compensation tied to performance',
+        'Implement post-visit follow-up call within 24 hours',
+        'Create comfortable waiting area with Wi-Fi, refreshments, and workspace'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['First-Time Fix Rate', 'Communication quality', 'Wait time management', 'Price transparency', 'Facility experience'],
+        downstreamImpacts: ['Service Retention Rate', 'Net Promoter Score', 'OEM incentive payments', 'Online reviews', 'Repeat purchase probability']
+      }
+    },
+    de: {
+      title: 'CSI – Service',
+      definition: 'Kundenzufriedenheitsindex speziell für die Serviceabteilung.',
+      whyItMatters: 'Direkt verknüpft mit OEM-Incentive-Zahlungen und Kundenbindung.',
+      benchmark: '90+'
+    }
+  },
+  npsService: {
+    en: {
+      title: 'Net Promoter Score (Service)',
+      definition: 'The likelihood of a service customer to recommend the dealership to friends and family, measured on a 0-10 scale and calculated as % Promoters (9-10) minus % Detractors (0-6).',
+      executiveSummary: 'NPS is the gold standard for measuring customer loyalty and advocacy. A positive NPS (>0) means more promoters than detractors. Best-practice dealerships achieve NPS of 60-80 through consistently exceeding expectations.',
+      whyItMatters: 'Predicts future customer behavior better than satisfaction scores. Promoters generate referrals and repeat business; detractors damage reputation through negative word-of-mouth.',
+      formula: 'NPS = % Promoters (9-10 score) − % Detractors (0-6 score)',
+      inclusions: ['All service customers surveyed post-visit'],
+      exclusions: ['Internal/employee surveys', 'Non-respondents (track response rate separately)'],
+      unitOfMeasure: 'Score (-100 to +100)',
+      benchmark: '60-80',
+      department: 'service-performance',
+      rootCauseDiagnostics: {
+        people: 'Inconsistent customer experience across advisors, lack of personalization, failure to create memorable positive experiences',
+        process: 'No structured service experience design, inconsistent delivery standards, no recovery process for dissatisfied customers',
+        tools: 'No customer preference tracking, limited CRM integration for personalized service, no feedback loop for detractor recovery',
+        structure: 'No dedicated customer experience role, no service recovery authority at advisor level',
+        incentives: 'No NPS-linked compensation, no program recognizing promoter-generating staff, no accountability for detractor creation'
+      },
+      improvementLevers: [
+        'Implement detractor recovery program: immediate follow-up on any score below 7',
+        'Create "wow moments" in the service experience (personal touches, exceeding expectations)',
+        'Track NPS by service advisor to identify best practices and coaching needs',
+        'Establish NPS targets with team and individual accountability',
+        'Design referral program leveraging promoters for new customer acquisition',
+        'Analyze detractor feedback themes and systematically address top issues'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['CSI – Service', 'First-Time Fix Rate', 'Overall customer experience quality', 'Value perception'],
+        downstreamImpacts: ['Referral volume', 'Online review generation', 'Service Retention Rate', 'Repeat Purchase Rate', 'Revenue growth through advocacy']
+      }
+    },
+    de: {
+      title: 'Net Promoter Score (Service)',
+      definition: 'Wahrscheinlichkeit, dass ein Servicekunde das Autohaus weiterempfiehlt.',
+      whyItMatters: 'Prognostiziert zukünftiges Kundenverhalten besser als Zufriedenheitswerte.',
+      benchmark: '60-80'
+    }
+  },
+  appointmentLeadTime: {
+    en: {
+      title: 'Appointment Lead Time',
+      definition: 'The average number of days between when a customer requests a service appointment and the earliest available slot.',
+      executiveSummary: 'Long appointment lead times signal capacity constraints and drive customers to competitors. Best-practice dealers maintain 1-3 day lead times through effective capacity management, express service lanes, and flexible scheduling.',
+      whyItMatters: 'Excessive wait times for appointments cause customer defection to independent shops. Impacts customer satisfaction and service retention.',
+      formula: 'Appointment Lead Time = Σ(Appointment Date − Request Date) / Number of Appointments Booked',
+      inclusions: ['All customer-initiated appointment requests', 'Both phone and online bookings'],
+      exclusions: ['Customer-requested future dates', 'Recall-specific appointments with parts-on-order delays'],
+      unitOfMeasure: 'Days',
+      benchmark: '1-3 days',
+      department: 'service-performance',
+      rootCauseDiagnostics: {
+        people: 'Scheduler not offering alternative times, advisors blocking capacity for preferred customers, poor capacity awareness',
+        process: 'No express service lane, inefficient scheduling grid, over-promising on appointment duration blocking follow-up slots',
+        tools: 'Manual scheduling without capacity optimization, no online booking option, no waitlist management',
+        structure: 'Insufficient service bay capacity, technician shortage, no staggered shift scheduling to extend hours',
+        incentives: 'No targets for appointment availability, schedulers not measured on customer access metrics'
+      },
+      improvementLevers: [
+        'Implement online scheduling with real-time capacity visibility',
+        'Create express service lane for routine maintenance (no appointment needed)',
+        'Optimize scheduling grid to maximize daily capacity utilization',
+        'Extend service hours (early bird drop-off, Saturday, evening hours)',
+        'Track and manage appointment lead time weekly with corrective actions',
+        'Implement waitlist and cancellation fill process'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Service bay capacity', 'Technician staffing levels', 'Scheduling efficiency', 'Express service availability'],
+        downstreamImpacts: ['Service Retention Rate', 'CSI – Service', 'Revenue per Customer', 'Customer defection to independent shops']
+      }
+    },
+    de: {
+      title: 'Terminvorlaufzeit',
+      definition: 'Durchschnittliche Tage zwischen Terminanfrage und frühestem verfügbarem Slot.',
+      whyItMatters: 'Lange Wartezeiten treiben Kunden zu Wettbewerbern.',
+      benchmark: '1-3 Tage'
+    }
+  },
+  serviceRetentionRateEnriched: {
+    en: {
+      title: 'Service Retention Rate',
+      definition: 'The percentage of customers who return to the dealership for service within a defined period (typically 12 months) after their previous service visit or vehicle purchase.',
+      executiveSummary: 'Service retention is the foundation of aftersales profitability. Retained customers have 6x lower acquisition cost, higher labor per RO, and greater parts attachment. Each 1% improvement in retention can add €20,000-€50,000 in annual service revenue for a mid-size dealership.',
+      whyItMatters: 'Retained customers are the most profitable segment. They spend more per visit, accept more recommendations, and generate referrals.',
+      formula: 'Service Retention Rate = (Customers with Service Visit in Last 12 Months / Total Customers in Database Who Should Have Serviced) × 100',
+      inclusions: ['All customers who purchased vehicles or had service within the defined period'],
+      exclusions: ['Vehicles sold/traded away', 'Customers who moved out of service area', 'Fleet vehicles serviced elsewhere by contract'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '60-75%',
+      department: 'service-performance',
+      rootCauseDiagnostics: {
+        people: 'No proactive outreach to overdue customers, poor follow-up on declined services, service experience driving customers away',
+        process: 'No service reminder system, weak rebooking at checkout, no lost customer recovery program',
+        tools: 'Inadequate CRM for service marketing, no automated reminder system (email/SMS), poor database hygiene',
+        structure: 'No dedicated customer retention role, service department focused on "who walks in" rather than proactive outreach',
+        incentives: 'No retention targets for service team, compensation based on daily throughput not long-term relationships'
+      },
+      improvementLevers: [
+        'Implement automated service reminder program (30/60/90 days before service due)',
+        'Create "next appointment booking" process at every service checkout',
+        'Launch lost customer recovery campaign targeting customers overdue by 6+ months',
+        'Develop loyalty program with service benefits (discounts, priority scheduling)',
+        'Track retention by advisor with accountability for customer return rates',
+        'Send declined service follow-up offers at 30 and 60 days',
+        'Create competitive service pricing and maintenance packages vs. independent shops'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['CSI – Service', 'First-Time Fix Rate', 'Service pricing competitiveness', 'Communication quality', 'Appointment Lead Time'],
+        downstreamImpacts: ['Service department revenue', 'Parts department revenue', 'Fixed absorption ratio', 'Repeat Purchase Rate', 'Lifetime customer value']
+      }
+    },
+    de: {
+      title: 'Servicebindungsrate',
+      definition: 'Prozentsatz der Kunden, die innerhalb von 12 Monaten zum Service zurückkehren.',
+      whyItMatters: 'Gebundene Kunden haben 6x niedrigere Akquisitionskosten und höheren Lebenszeitwert.',
+      benchmark: '60-75%'
+    }
+  },
+  revenuePerCustomer: {
+    en: {
+      title: 'Revenue per Customer (Service)',
+      definition: 'The average total revenue generated per unique service customer per visit, including labor, parts, and any additional services.',
+      executiveSummary: 'Revenue per customer reflects the depth of engagement during each service visit. Higher revenue per customer comes from thorough inspections, effective service menu presentation, and trust-based recommendations. Best-practice dealers achieve €350-€600 per customer visit.',
+      whyItMatters: 'Maximizes revenue from existing customer base without requiring additional traffic. Reflects service advisor effectiveness and customer trust.',
+      formula: 'Revenue per Customer = Total Service Revenue / Number of Unique Customers Served',
+      inclusions: ['All labor, parts, and accessory revenue per customer visit'],
+      exclusions: ['Warranty labor at internal rate (unless customer-facing)', 'Sublet/outsourced work'],
+      unitOfMeasure: 'Currency (€)',
+      benchmark: '€350-€600',
+      department: 'service-performance',
+      rootCauseDiagnostics: {
+        people: 'Service advisors not performing thorough needs assessment, fear of overselling, poor product knowledge',
+        process: 'No standardized inspection or menu presentation, inconsistent upselling approach, no tiered service packages',
+        tools: 'No digital inspection tools, limited ability to show customers evidence of needed repairs, no video inspection',
+        structure: 'Advisors handling too many customers per day reducing quality of consultation, insufficient appointment time allocation',
+        incentives: 'No revenue-per-customer targets, flat advisor compensation, no bonus for increasing average ticket'
+      },
+      improvementLevers: [
+        'Implement comprehensive multi-point digital inspection with photo/video evidence',
+        'Create tiered service packages (Good/Better/Best) for every common service type',
+        'Train advisors on consultative service selling with focus on vehicle safety and value preservation',
+        'Set revenue-per-customer targets with tracking and coaching',
+        'Develop seasonal and mileage-based service recommendations',
+        'Implement digital vehicle health report shared with customer via email/text'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Service advisor training', 'Multi-point inspection completion', 'Customer trust level', 'Vehicle age and mileage', 'Parts availability'],
+        downstreamImpacts: ['Service department total revenue', 'Parts department revenue', 'Service department profitability', 'Customer satisfaction (if value perceived)']
+      }
+    },
+    de: {
+      title: 'Umsatz pro Kunde (Service)',
+      definition: 'Durchschnittlicher Gesamtumsatz pro einzigartigem Servicekunden pro Besuch.',
+      whyItMatters: 'Maximiert den Umsatz aus bestehender Kundenbasis.',
+      benchmark: '€350-€600'
+    }
+  },
+  menuSellingPenetration: {
+    en: {
+      title: 'Menu Selling Penetration',
+      definition: 'The percentage of service customers who are presented with a structured service menu offering tiered options (maintenance packages, protection plans, value-added services).',
+      executiveSummary: 'Menu selling transforms service advising from reactive order-taking to consultative selling. When presented with structured options, customers consistently choose higher-value packages. Best-practice dealers achieve 80%+ menu presentation rate with 40-60% upgrade acceptance.',
+      whyItMatters: 'Structured choice architecture increases average ticket value while maintaining customer satisfaction through perceived control over spending decisions.',
+      formula: 'Menu Selling Penetration = (Service Visits with Menu Presented / Total Service Visits) × 100',
+      inclusions: ['All scheduled maintenance visits', 'Multi-point inspection presentations', 'Tire and brake service consultations'],
+      exclusions: ['Emergency/tow-in repairs', 'Warranty-only visits', 'Quick oil changes with no upsell opportunity'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '80%+ presentation, 40-60% upgrade acceptance',
+      department: 'service-performance',
+      rootCauseDiagnostics: {
+        people: 'Advisors uncomfortable with menu presentation, lack of training on value-based selling, fear of customer pushback',
+        process: 'No standardized menu design, inconsistent presentation across advisors, no tracking of menu presentation rate',
+        tools: 'No digital menu tools, paper-based presentation limiting impact, no integrated pricing in DMS for packages',
+        structure: 'Advisors too busy to present menus properly, insufficient appointment time allocated for consultation',
+        incentives: 'No bonus for menu presentation or upgrade acceptance, compensation not tied to average ticket value'
+      },
+      improvementLevers: [
+        'Design professional service menus with 3 tiers (Essential/Recommended/Complete) for each service type',
+        'Implement digital menu presentation on tablet or screen in service drive',
+        'Train all advisors on menu presentation technique with role-playing',
+        'Track menu presentation rate by advisor with weekly scorecard',
+        'Tie advisor compensation to average ticket value and menu upgrade rates',
+        'Create seasonal and mileage-based menu packages for proactive recommendation'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['Service advisor training', 'Menu design quality', 'Digital tools availability', 'Appointment scheduling (time allowance)'],
+        downstreamImpacts: ['Labor Sales per RO', 'Revenue per Customer', 'Parts sales per RO', 'Service department gross profit', 'Customer perception of value']
+      }
+    },
+    de: {
+      title: 'Menüverkaufs-Durchdringung',
+      definition: 'Prozentsatz der Servicekunden, denen ein strukturiertes Servicemenü präsentiert wird.',
+      whyItMatters: 'Erhöht den durchschnittlichen Auftragswert bei gleichzeitiger Kundenzufriedenheit.',
+      benchmark: '80%+ Präsentation'
+    }
+  },
+  maintenancePlanPenetration: {
+    en: {
+      title: 'Maintenance Plan Penetration',
+      definition: 'The percentage of eligible vehicle sales or service visits where a prepaid maintenance plan is sold to the customer.',
+      executiveSummary: 'Prepaid maintenance plans lock in customer retention for 2-5 years, guarantee service revenue, and dramatically increase the probability of repeat purchase. Best-practice dealers achieve 30-50% penetration on new vehicle sales and 15-25% on used.',
+      whyItMatters: 'Creates predictable recurring revenue, guarantees customer retention through the plan period, and increases the likelihood of vehicle repurchase at the selling dealership.',
+      formula: 'Maintenance Plan Penetration = (Maintenance Plans Sold / Eligible Vehicle Sales or Service Visits) × 100',
+      inclusions: ['All prepaid maintenance plans sold at point of sale or service drive', 'Both OEM and dealer-branded plans'],
+      exclusions: ['OEM-included maintenance (complimentary plans)', 'Extended warranty products (tracked separately in F&I)'],
+      unitOfMeasure: 'Percentage (%)',
+      benchmark: '30-50% (new), 15-25% (used)',
+      department: 'service-performance',
+      rootCauseDiagnostics: {
+        people: 'F&I managers not trained on maintenance plan presentation, service advisors unaware of plan availability, weak value proposition communication',
+        process: 'Maintenance plan not included in standard F&I menu, no service drive presentation process, no renewal program at plan expiration',
+        tools: 'No plan comparison calculator, limited integration between plan provider and DMS, no automated eligibility identification',
+        structure: 'Plan presentation split between F&I (sales) and service (renewals) without coordination, no ownership of retention outcome',
+        incentives: 'Low commission on maintenance plans vs. other F&I products, no service department bonus for plan utilization'
+      },
+      improvementLevers: [
+        'Include maintenance plans in every F&I menu presentation as a standard product',
+        'Train service advisors to offer plans during service visits for vehicles without coverage',
+        'Create compelling value comparison (plan cost vs. individual service cost over same period)',
+        'Implement automated renewal program contacting customers 60/30 days before plan expiration',
+        'Track penetration by F&I manager and service advisor with coaching',
+        'Develop service drive presentation process for "plan-less" vehicles identified during check-in'
+      ],
+      interdependencies: {
+        upstreamDrivers: ['F&I process quality', 'Service advisor awareness and training', 'Plan pricing competitiveness', 'Customer trust'],
+        downstreamImpacts: ['Service Retention Rate', 'Predictable recurring revenue', 'Repeat Purchase Rate', 'Customer lifetime value', 'Fixed absorption ratio']
+      }
+    },
+    de: {
+      title: 'Wartungsplan-Durchdringung',
+      definition: 'Prozentsatz der berechtigten Fahrzeugverkäufe oder Servicebesuche, bei denen ein Wartungsplan verkauft wird.',
+      whyItMatters: 'Schafft vorhersagbare wiederkehrende Einnahmen und garantiert Kundenbindung.',
+      benchmark: '30-50% (Neuwagen)'
+    }
+  },
+
+  // =====================================================
+  // LEGACY / SHALLOW KPIs (existing entries below)
+  // =====================================================
   usedInventoryTurnover: {
     en: {
       title: 'Used Inventory Turnover',
