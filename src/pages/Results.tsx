@@ -23,7 +23,10 @@ import type { PDFExportData } from "@/lib/pdfReportGenerator";
 import { calculateWeightedScore, CATEGORY_WEIGHTS } from "@/lib/scoringEngine";
 
 export default function Results() {
-  const [activeTab, setActiveTab] = useState("executive");
+  const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('tab') || "executive";
+  });
   const [resultsData, setResultsData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [animatedScore, setAnimatedScore] = useState(0);

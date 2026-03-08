@@ -1,3 +1,8 @@
+/**
+ * @deprecated Use src/lib/signalEngine.ts instead.
+ * This legacy generator is kept for reference only.
+ * All action generation should go through the canonical signal engine.
+ */
 import { Question, Section } from '@/data/questionnaire';
 
 /**
