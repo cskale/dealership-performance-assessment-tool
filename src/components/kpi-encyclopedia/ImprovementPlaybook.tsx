@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Plus, Zap, Target, TrendingUp } from "lucide-react";
+import { Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface ImprovementPlaybookProps {
   levers: string[];
@@ -8,80 +9,56 @@ interface ImprovementPlaybookProps {
   className?: string;
 }
 
-function categorizeLevers(levers: string[]) {
-  // Simple heuristic grouping: first 2 = quick wins, middle = core fixes, last = strategic
-  if (levers.length <= 3) {
-    return [{ group: 'actions', levers, icon: Target }];
-  }
-
-  const quickWins = levers.slice(0, 2);
-  const coreFixes = levers.slice(2, Math.max(4, levers.length - 1));
-  const strategic = levers.slice(Math.max(4, levers.length - 1));
-
-  const groups = [];
-  if (quickWins.length > 0) groups.push({ group: 'quick-wins', levers: quickWins, icon: Zap });
-  if (coreFixes.length > 0) groups.push({ group: 'core-fixes', levers: coreFixes, icon: Target });
-  if (strategic.length > 0) groups.push({ group: 'strategic', levers: strategic, icon: TrendingUp });
-  return groups;
+function getTag(index: number, total: number): { en: string; de: string; variant: 'default' | 'secondary' | 'outline' } | null {
+  if (total <= 3) return null;
+  if (index < 2) return { en: 'Quick win', de: 'Quick Win', variant: 'secondary' };
+  if (index >= total - 1) return { en: 'Capability', de: 'Kompetenz', variant: 'outline' };
+  return { en: 'Structural', de: 'Strukturell', variant: 'outline' };
 }
 
-const GROUP_LABELS: Record<string, { en: string; de: string }> = {
-  'quick-wins': { en: 'Quick Wins', de: 'Schnelle Erfolge' },
-  'core-fixes': { en: 'Core Fixes', de: 'Kernmaßnahmen' },
-  'strategic': { en: 'Strategic Enablers', de: 'Strategische Hebel' },
-  'actions': { en: 'Improvement Levers', de: 'Verbesserungshebel' },
-};
-
 export function ImprovementPlaybook({ levers, language, className }: ImprovementPlaybookProps) {
-  const groups = categorizeLevers(levers);
-  let globalIndex = 0;
+  // Show max 7 levers
+  const displayLevers = levers.slice(0, 7);
 
   return (
     <div className={cn("", className)}>
-      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-        {language === 'de' ? 'Verbesserungs-Playbook' : 'Improvement Playbook'}
+      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+        {language === 'de' ? 'Vorgeschlagene Verbesserungsideen' : 'Suggested Improvement Ideas'}
       </h3>
+      <p className="text-[11px] text-muted-foreground/60 mb-5">
+        {language === 'de'
+          ? 'Konsolidierte Maßnahmen zur Verbesserung der KPI-Leistung.'
+          : 'Consolidated actions to improve KPI performance, prioritized by typical impact.'}
+      </p>
 
-      <div className="space-y-6">
-        {groups.map((group) => {
-          const GroupIcon = group.icon;
-          const groupLabel = GROUP_LABELS[group.group]?.[language as 'en' | 'de'] || GROUP_LABELS[group.group]?.en || group.group;
-
+      <div className="space-y-2">
+        {displayLevers.map((lever, i) => {
+          const tag = getTag(i, displayLevers.length);
           return (
-            <div key={group.group}>
-              {groups.length > 1 && (
-                <div className="flex items-center gap-2 mb-3">
-                  <GroupIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    {groupLabel}
-                  </span>
-                </div>
-              )}
-
-              <div className="space-y-2">
-                {group.levers.map((lever) => {
-                  globalIndex++;
-                  const idx = globalIndex;
-                  return (
-                    <div
-                      key={idx}
-                      className="flex items-start gap-4 rounded-xl border border-border/40 bg-card p-4 transition-all duration-200 hover:border-border hover:shadow-sm group"
-                    >
-                      <span className="flex items-center justify-center h-7 w-7 rounded-lg bg-primary/10 text-primary text-xs font-bold shrink-0">
-                        {idx}
-                      </span>
-                      <p className="text-sm text-foreground flex-1 leading-relaxed pt-0.5">{lever}</p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 px-2.5 text-xs text-muted-foreground hover:text-primary shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                      >
-                        <Plus className="h-3 w-3 mr-1" />
-                        {language === 'de' ? 'Aktion' : 'Action'}
-                      </Button>
-                    </div>
-                  );
-                })}
+            <div
+              key={i}
+              className="flex items-start gap-4 rounded-xl border border-border/40 bg-card p-4 transition-all duration-200 hover:border-border hover:shadow-sm group"
+            >
+              <span className="flex items-center justify-center h-6 w-6 rounded-lg bg-muted text-muted-foreground text-[10px] font-bold shrink-0 mt-0.5">
+                {i + 1}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-foreground leading-relaxed">{lever}</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {tag && (
+                  <Badge variant={tag.variant} className="text-[9px] font-normal px-1.5 py-0 h-5 hidden sm:inline-flex">
+                    {language === 'de' ? tag.de : tag.en}
+                  </Badge>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2.5 text-xs text-muted-foreground hover:text-primary shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  {language === 'de' ? 'Aktion' : 'Action'}
+                </Button>
               </div>
             </div>
           );
