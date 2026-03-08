@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ArrowLeft } from "lucide-react";
-import { getDepartmentConfig } from "./departmentConfig";
+import { getDepartmentConfig } from "@/lib/departmentConfig";
 import { KPIBenchmarkStudio } from "./KPIBenchmarkStudio";
 import { RootCauseIntelligenceBoard } from "./RootCauseIntelligenceBoard";
 import { ImprovementPlaybook } from "./ImprovementPlaybook";

@@ -2,7 +2,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { getDepartmentConfig } from "./departmentConfig";
+import { getDepartmentConfig } from "@/lib/departmentConfig";
 import { KPIBenchmarkBar } from "./KPIBenchmarkBar";
 import { KPIRootCauseTiles } from "./KPIRootCauseTiles";
 import { KPIImprovementLevers } from "./KPIImprovementLevers";

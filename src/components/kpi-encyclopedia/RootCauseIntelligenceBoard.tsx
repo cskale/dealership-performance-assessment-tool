@@ -1,6 +1,6 @@
 import { UserCheck, Settings, Wrench, Building2, Coins } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ROOT_CAUSE_DIMENSIONS } from "./departmentConfig";
+import { ROOT_CAUSE_DIMENSIONS } from "@/lib/departmentConfig";
 import type { LucideIcon } from "lucide-react";
 
 const DIMENSION_ICONS: Record<string, LucideIcon> = {

@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { getDepartmentConfig } from "./departmentConfig";
+import { getDepartmentConfig } from "@/lib/departmentConfig";
 import { KPIBenchmarkBar } from "./KPIBenchmarkBar";
 import { KPIRootCauseTiles } from "./KPIRootCauseTiles";
 import { KPIImprovementLevers } from "./KPIImprovementLevers";
