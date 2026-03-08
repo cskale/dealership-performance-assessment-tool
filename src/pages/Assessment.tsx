@@ -57,22 +57,9 @@ export default function Assessment() {
 
   const currentSectionData = translatedSections[currentSection];
 
-  // Calculate real-time scores
+  // Calculate real-time scores using question weights
   const calculateScores = useCallback((currentAnswers: Record<string, number>) => {
-    const sectionScores: Record<string, number> = {};
-    
-    translatedSections.forEach((section) => {
-      const sectionAnswers = section.questions
-        .map(q => currentAnswers[q.id])
-        .filter(answer => answer !== undefined);
-      
-      if (sectionAnswers.length > 0) {
-        const average = sectionAnswers.reduce((sum, answer) => sum + answer, 0) / sectionAnswers.length;
-        sectionScores[section.id] = Math.round((average / 5) * 100);
-      }
-    });
-    
-    return sectionScores;
+    return calculateAllSectionScores(translatedSections, currentAnswers);
   }, [translatedSections]);
 
   const handleAnswer = async (questionId: string, value: number) => {
