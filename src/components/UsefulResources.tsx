@@ -3,18 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  BookOpen, Video, FileText, Globe, TrendingUp, CheckCircle, 
-  Search, Download, ExternalLink, Clock, Filter, GraduationCap,
-  FileSpreadsheet, Presentation, Users, ArrowUpRight, ArrowDownRight,
-  UserCheck, Settings, Wrench, Building2, Coins, ChevronRight
+  BookOpen, Video, FileText, Globe, 
+  Search, Download, ExternalLink, Clock, GraduationCap,
+  FileSpreadsheet, Presentation, Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
-import { KPI_DEFINITIONS, KPIDefinition } from "@/lib/kpiDefinitions";
+import { KPIIntelligenceLibrary } from "@/components/kpi-encyclopedia/KPIIntelligenceLibrary";
 
 interface UsefulResourcesProps {
   scores: Record<string, number>;
