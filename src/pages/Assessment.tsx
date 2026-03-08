@@ -10,6 +10,7 @@ import { CategoryAssessment } from "@/components/assessment/CategoryAssessment";
 import { SmartAssistant } from "@/components/SmartAssistant";
 import { questionnaire, getTranslatedSection } from "@/data/questionnaire";
 import { useAssessmentData, OnboardingError } from "@/hooks/useAssessmentData";
+import { calculateAllSectionScores, calculateWeightedScore } from "@/lib/scoringEngine";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAutoActionGeneration } from "@/hooks/useAutoActionGeneration";
 import { useOnboarding } from "@/hooks/useOnboarding";
