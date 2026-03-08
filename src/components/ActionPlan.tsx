@@ -193,42 +193,33 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
         return;
       }
 
-      const weakPoints = analyzeAssessmentAnswers(
-        questionnaire.sections,
-        assessment.answers as Record<string, number>
+      // Build question weights from questionnaire
+      const questionWeights: Record<string, number> = {};
+      for (const section of questionnaire.sections) {
+        for (const question of section.questions) {
+          questionWeights[question.id] = question.weight;
+        }
+      }
+
+      // Use canonical signal engine for action generation
+      const actions = generateActionsFromAssessment(
+        assessment.answers as Record<string, number>,
+        questionWeights
       );
 
-      if (weakPoints.length === 0) {
+      if (actions.length === 0) {
         toast.success('No critical improvement areas found.');
         setGenerating(false);
         return;
       }
 
-      // P1.5: Dynamic action count based on severity threshold
-      const severePoints = weakPoints.filter(p => p.score <= 2);
-      const maxActions = Math.min(7, Math.max(
-        severePoints.length > 0 ? severePoints.length : 0,
-        Math.min(weakPoints.length, 5)
-      ));
-      
-      if (maxActions === 0) {
-        toast.success('No actions meet the severity threshold.');
-        setGenerating(false);
-        return;
-      }
-
-      const generatedActions = generateActionsFromContext(weakPoints, maxActions);
-      const formattedActions = formatActionsForDatabase(
-        generatedActions,
+      // Format for database insertion
+      const actionsWithOrg = formatActionsForDatabaseInsert(
+        actions,
         user.id,
-        targetAssessmentId
+        targetAssessmentId!,
+        currentOrganization?.id || ''
       );
-
-      // Add organization_id
-      const actionsWithOrg = formattedActions.map((a: any) => ({
-        ...a,
-        organization_id: currentOrganization?.id || null,
-      }));
 
       const { data: insertedActions, error: insertError } = await supabase
         .from('improvement_actions')
