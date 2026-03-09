@@ -171,15 +171,13 @@ describe('Auth Keyboard Navigation', () => {
     const firstInput = screen.getByPlaceholderText('Enter your email');
     const passwordInput = screen.getByPlaceholderText('Enter your password');
 
-    // Tab navigation
     firstInput.focus();
     expect(document.activeElement).toBe(firstInput);
 
-    // Should be able to navigate to next field
+    // jsdom doesn't implement native focus traversal on Tab, so we verify both fields are focusable.
     fireEvent.keyDown(firstInput, { key: 'Tab' });
-    setTimeout(() => {
-      expect(document.activeElement).toBe(passwordInput);
-    }, 0);
+    passwordInput.focus();
+    expect(document.activeElement).toBe(passwordInput);
   });
 });
 
