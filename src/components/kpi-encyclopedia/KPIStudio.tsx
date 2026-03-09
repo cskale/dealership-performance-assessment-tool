@@ -71,7 +71,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
               {kpi.definition}
             </p>
             {kpi.whyItMatters && (
-              <p className="text-[15px] text-foreground/60 leading-relaxed max-w-2xl">
+              <p className="text-sm text-foreground/60 leading-relaxed max-w-2xl">
                 {kpi.whyItMatters}
               </p>
             )}
