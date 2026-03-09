@@ -84,6 +84,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
                 {language === 'de' ? 'Referenz-Benchmarkbereich' : 'Reference Benchmark Range'}
               </span>
               <KPIBenchmarkStudio
+                kpiKey={kpiKey}
                 benchmark={kpi.benchmark}
                 unit={kpi.unitOfMeasure}
                 isLowerBetter={!!isLowerBetter}
