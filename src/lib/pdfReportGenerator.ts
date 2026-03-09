@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { generateRealisticData, industryBenchmarks, formatEuro, formatNumber } from '@/utils/euroFormatter';
+import { formatEuro, formatNumber } from '@/utils/euroFormatter';
 import {
   calculateWeightedScore,
   CATEGORY_WEIGHTS,
@@ -12,6 +12,8 @@ import {
 } from '@/lib/scoringEngine';
 import { questionnaire } from '@/data/questionnaire';
 import { generateBenchmarkDisclaimer } from '@/lib/benchmarkGovernance';
+import { KPI_DEFINITIONS, getKPILabel } from '@/lib/kpiDefinitions';
+import { getMaturityLevel } from '@/lib/constants';
 
 // ── i18n labels ──
 const LABELS: Record<string, Record<string, string>> = {
@@ -24,7 +26,7 @@ const LABELS: Record<string, Record<string, string>> = {
     overallScore: 'Overall Score',
     maturityLevel: 'Maturity Level',
     executiveSummary: 'Executive Summary',
-    kpiAnalytics: 'KPI Analytics',
+    kpiAnalytics: 'KPI Context & Benchmarks',
     actionPlan: 'Action Plan',
     methodology: 'Methodology',
     appendix: 'Appendix',
@@ -32,10 +34,8 @@ const LABELS: Record<string, Record<string, string>> = {
     areasForImprovement: 'Areas for Improvement',
     whatToDoNext: 'What to Do Next',
     kpiName: 'KPI',
-    yourValue: 'Your Value',
-    benchmark: 'Benchmark',
-    gap: 'Gap',
-    interpretation: 'Interpretation',
+    benchmark: 'Industry Benchmark',
+    whyItMatters: 'Why It Matters',
     action: 'Action',
     owner: 'Owner',
     dueDate: 'Due Date',
@@ -59,6 +59,7 @@ const LABELS: Record<string, Record<string, string>> = {
     insightStrongest: 'Strongest Area',
     insightFocus: 'Priority Focus',
     user: 'User',
+    kpiBenchmarkNote: 'Benchmarks are industry standards from automotive dealer networks. Your actual KPI values require connection to your business systems.',
   },
   de: {
     reportTitle: 'Haendler-Leistungsbewertungsbericht',
@@ -69,7 +70,7 @@ const LABELS: Record<string, Record<string, string>> = {
     overallScore: 'Gesamtpunktzahl',
     maturityLevel: 'Reifestufe',
     executiveSummary: 'Zusammenfassung',
-    kpiAnalytics: 'KPI-Analyse',
+    kpiAnalytics: 'KPI-Kontext & Benchmarks',
     actionPlan: 'Massnahmenplan',
     methodology: 'Methodik',
     appendix: 'Anhang',
@@ -77,10 +78,8 @@ const LABELS: Record<string, Record<string, string>> = {
     areasForImprovement: 'Verbesserungsbereiche',
     whatToDoNext: 'Naechste Schritte',
     kpiName: 'KPI',
-    yourValue: 'Ihr Wert',
-    benchmark: 'Benchmark',
-    gap: 'Differenz',
-    interpretation: 'Interpretation',
+    benchmark: 'Branchenbenchmark',
+    whyItMatters: 'Warum es wichtig ist',
     action: 'Massnahme',
     owner: 'Verantwortlich',
     dueDate: 'Zieldatum',
@@ -104,6 +103,7 @@ const LABELS: Record<string, Record<string, string>> = {
     insightStrongest: 'Staerkster Bereich',
     insightFocus: 'Schwerpunkt',
     user: 'Benutzer',
+    kpiBenchmarkNote: 'Benchmarks sind Branchenstandards aus Autohaendlernetzwerken. Ihre tatsaechlichen KPI-Werte erfordern die Anbindung an Ihre Geschaeftssysteme.',
   },
   fr: {
     reportTitle: "Rapport d'evaluation des performances du concessionnaire",
@@ -114,7 +114,7 @@ const LABELS: Record<string, Record<string, string>> = {
     overallScore: 'Score global',
     maturityLevel: 'Niveau de maturite',
     executiveSummary: 'Resume executif',
-    kpiAnalytics: 'Analyse KPI',
+    kpiAnalytics: 'Contexte KPI & Benchmarks',
     actionPlan: "Plan d'action",
     methodology: 'Methodologie',
     appendix: 'Annexe',
@@ -122,10 +122,8 @@ const LABELS: Record<string, Record<string, string>> = {
     areasForImprovement: "Axes d'amelioration",
     whatToDoNext: 'Prochaines etapes',
     kpiName: 'KPI',
-    yourValue: 'Votre valeur',
-    benchmark: 'Reference',
-    gap: 'Ecart',
-    interpretation: 'Interpretation',
+    benchmark: 'Reference industrielle',
+    whyItMatters: 'Pourquoi c\'est important',
     action: 'Action',
     owner: 'Responsable',
     dueDate: 'Date cible',
@@ -149,6 +147,7 @@ const LABELS: Record<string, Record<string, string>> = {
     insightStrongest: 'Domaine le plus fort',
     insightFocus: 'Priorite',
     user: 'Utilisateur',
+    kpiBenchmarkNote: 'Les benchmarks sont des standards industriels. Vos valeurs KPI reelles necessitent une connexion a vos systemes.',
   },
   es: {
     reportTitle: 'Informe de evaluacion del rendimiento del concesionario',
@@ -159,7 +158,7 @@ const LABELS: Record<string, Record<string, string>> = {
     overallScore: 'Puntuacion general',
     maturityLevel: 'Nivel de madurez',
     executiveSummary: 'Resumen ejecutivo',
-    kpiAnalytics: 'Analisis KPI',
+    kpiAnalytics: 'Contexto KPI & Benchmarks',
     actionPlan: 'Plan de accion',
     methodology: 'Metodologia',
     appendix: 'Apendice',
@@ -167,10 +166,8 @@ const LABELS: Record<string, Record<string, string>> = {
     areasForImprovement: 'Areas de mejora',
     whatToDoNext: 'Proximos pasos',
     kpiName: 'KPI',
-    yourValue: 'Su valor',
-    benchmark: 'Referencia',
-    gap: 'Brecha',
-    interpretation: 'Interpretacion',
+    benchmark: 'Referencia industrial',
+    whyItMatters: 'Por que importa',
     action: 'Accion',
     owner: 'Responsable',
     dueDate: 'Fecha objetivo',
@@ -194,6 +191,7 @@ const LABELS: Record<string, Record<string, string>> = {
     insightStrongest: 'Area mas fuerte',
     insightFocus: 'Enfoque prioritario',
     user: 'Usuario',
+    kpiBenchmarkNote: 'Los benchmarks son estandares de la industria. Sus valores KPI reales requieren conexion a sus sistemas.',
   },
   it: {
     reportTitle: 'Rapporto di valutazione delle prestazioni del concessionario',
@@ -204,7 +202,7 @@ const LABELS: Record<string, Record<string, string>> = {
     overallScore: 'Punteggio complessivo',
     maturityLevel: 'Livello di maturita',
     executiveSummary: 'Riepilogo esecutivo',
-    kpiAnalytics: 'Analisi KPI',
+    kpiAnalytics: 'Contesto KPI & Benchmark',
     actionPlan: "Piano d'azione",
     methodology: 'Metodologia',
     appendix: 'Appendice',
@@ -212,10 +210,8 @@ const LABELS: Record<string, Record<string, string>> = {
     areasForImprovement: 'Aree di miglioramento',
     whatToDoNext: 'Prossimi passi',
     kpiName: 'KPI',
-    yourValue: 'Il tuo valore',
-    benchmark: 'Riferimento',
-    gap: 'Divario',
-    interpretation: 'Interpretazione',
+    benchmark: 'Benchmark industriale',
+    whyItMatters: 'Perche e importante',
     action: 'Azione',
     owner: 'Responsabile',
     dueDate: 'Data obiettivo',
@@ -239,6 +235,7 @@ const LABELS: Record<string, Record<string, string>> = {
     insightStrongest: 'Area piu forte',
     insightFocus: 'Focus prioritario',
     user: 'Utente',
+    kpiBenchmarkNote: 'I benchmark sono standard di settore. I valori KPI reali richiedono la connessione ai sistemi aziendali.',
   },
 };
 
@@ -250,57 +247,14 @@ const DEPT_NAMES: Record<string, Record<string, string>> = {
   'financial-operations': { en: 'Financial Operations', de: 'Finanzoperationen', fr: 'Operations financieres', es: 'Operaciones financieras', it: 'Operazioni finanziarie' },
 };
 
-const KPI_LABELS: Record<string, Record<string, string>> = {
-  monthlyRevenue: { en: 'Monthly Revenue', de: 'Monatsumsatz' },
-  averageMargin: { en: 'Average Margin', de: 'Durchschnittsmarge' },
-  customerSatisfaction: { en: 'Customer Satisfaction', de: 'Kundenzufriedenheit' },
-  leadConversion: { en: 'Lead Conversion', de: 'Lead-Konversion' },
-  averageTransactionValue: { en: 'Avg Transaction Value', de: 'Durchschn. Transaktionswert' },
-  turnoverRate: { en: 'Turnover Rate', de: 'Umschlagsrate' },
-  laborEfficiency: { en: 'Labor Efficiency', de: 'Arbeitseffizienz' },
-  customerRetention: { en: 'Customer Retention', de: 'Kundenbindung' },
-  averageRO: { en: 'Average Repair Order', de: 'Durchschn. Reparaturauftrag' },
-  technicianUtilization: { en: 'Technician Utilization', de: 'Technikerauslastung' },
-  grossMargin: { en: 'Gross Margin', de: 'Bruttomarge' },
-  stockoutRate: { en: 'Stockout Rate', de: 'Fehlbestandsrate' },
-  supplierPerformance: { en: 'Supplier Performance', de: 'Lieferantenleistung' },
-  profitMargin: { en: 'Profit Margin', de: 'Gewinnmarge' },
-  cashFlowDays: { en: 'Cash Flow Days', de: 'Cashflow-Tage' },
-  costPerSale: { en: 'Cost per Sale', de: 'Kosten pro Verkauf' },
-  roiMarketing: { en: 'Marketing ROI', de: 'Marketing-ROI' },
-  operationalEfficiency: { en: 'Operational Efficiency', de: 'Betriebliche Effizienz' },
+// Map departments to their relevant KPIs from canonical definitions
+const DEPT_KPI_MAP: Record<string, string[]> = {
+  'new-vehicle-sales': ['leadResponseTime', 'leadConversion', 'showroomConversion', 'testDriveRatio', 'appointmentShowRate', 'salesCycleLength'],
+  'used-vehicle-sales': ['grossPerUsedRetailed', 'usedVehicleInventoryTurn', 'reconCycleDays', 'daysSupply', 'usedRetailMix'],
+  'service-performance': ['serviceAbsorption', 'labourEfficiency', 'technicianUtilization', 'effectiveLabourRate', 'serviceRetention', 'hoursPerRo'],
+  'parts-inventory': ['partsGrossProfit', 'partsInventoryTurnover', 'partsFillRate', 'partsSalesPerRo', 'partsObsolescence'],
+  'financial-operations': ['netProfitMargin', 'returnOnAssets', 'variableSelling', 'inventoryTurnover'],
 };
-
-// ── KPI unit type classification ──
-type KpiUnit = 'currency' | 'percent' | 'days' | 'rate' | 'number';
-
-const KPI_UNIT_MAP: Record<string, KpiUnit> = {
-  monthlyRevenue: 'currency',
-  averageTransactionValue: 'currency',
-  averageRO: 'currency',
-  costPerSale: 'currency',
-  roiMarketing: 'percent',
-  averageMargin: 'percent',
-  customerSatisfaction: 'percent',
-  leadConversion: 'percent',
-  laborEfficiency: 'percent',
-  customerRetention: 'percent',
-  technicianUtilization: 'percent',
-  grossMargin: 'percent',
-  stockoutRate: 'percent',
-  supplierPerformance: 'percent',
-  profitMargin: 'percent',
-  operationalEfficiency: 'percent',
-  cashFlowDays: 'days',
-  turnoverRate: 'rate',
-};
-
-// KPIs where lower values are better
-const LOWER_IS_BETTER: Set<string> = new Set([
-  'cashFlowDays',
-  'costPerSale',
-  'stockoutRate',
-]);
 
 export interface PDFExportData {
   organization: {
@@ -335,60 +289,6 @@ function l(lang: string, key: string): string {
   return LABELS[lang]?.[key] || LABELS.en[key] || key;
 }
 
-function getMaturityLevel(score: number, lang: string): string {
-  const levels: Record<string, Record<string, string>> = {
-    advanced: { en: 'Advanced', de: 'Fortgeschritten', fr: 'Avance', es: 'Avanzado', it: 'Avanzato' },
-    mature: { en: 'Mature', de: 'Ausgereift', fr: 'Mature', es: 'Maduro', it: 'Maturo' },
-    developing: { en: 'Developing', de: 'Entwickelnd', fr: 'En developpement', es: 'En desarrollo', it: 'In sviluppo' },
-    basic: { en: 'Basic', de: 'Basis', fr: 'Basique', es: 'Basico', it: 'Base' },
-  };
-  const key = score >= 85 ? 'advanced' : score >= 70 ? 'mature' : score >= 50 ? 'developing' : 'basic';
-  return levels[key][lang] || levels[key].en;
-}
-
-// ── Unified KPI value formatter ──
-function formatKpiValue(key: string, value: number, lang: string): string {
-  const unit = KPI_UNIT_MAP[key] || 'number';
-  const daysLabel = lang === 'de' ? 'Tage' : 'days';
-  switch (unit) {
-    case 'currency':
-      return formatEuro(value);
-    case 'percent':
-      return `${value.toFixed(1)}%`;
-    case 'days':
-      return `${Math.round(value)} ${daysLabel}`;
-    case 'rate':
-      return `${value.toFixed(1)}x/yr`;
-    default:
-      return formatNumber(value);
-  }
-}
-
-// ── Gap formatting with explicit +/- and unit ──
-function formatGap(key: string, gap: number, lang: string): string {
-  const sign = gap > 0 ? '+' : gap < 0 ? '-' : '';
-  const absGap = Math.abs(gap);
-  const unit = KPI_UNIT_MAP[key] || 'number';
-  const daysLabel = lang === 'de' ? 'Tage' : 'days';
-  switch (unit) {
-    case 'currency':
-      return `${sign}${formatEuro(absGap)}`;
-    case 'percent':
-      return `${sign}${absGap.toFixed(1)}%`;
-    case 'days':
-      return `${sign}${Math.round(absGap)} ${daysLabel}`;
-    case 'rate':
-      return `${sign}${absGap.toFixed(1)}x`;
-    default:
-      return `${sign}${formatNumber(absGap)}`;
-  }
-}
-
-function gapIsPositive(key: string, gap: number): boolean {
-  if (LOWER_IS_BETTER.has(key)) return gap < 0;
-  return gap > 0;
-}
-
 // ── Normalize role label ──
 function formatRole(role: string): string {
   if (!role) return 'User';
@@ -419,7 +319,6 @@ function normalizePriority(p: string): string {
 // ── Resolve user full name ──
 function resolveFullName(raw: string): string {
   if (!raw || raw.length <= 2) return raw || 'User';
-  // Already looks like a name
   return raw;
 }
 
@@ -446,7 +345,7 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   const contentW = pageW - margin * 2;
   const headerY = 14;
   const footerY = pageH - 10;
-  const contentTop = 26; // below header line
+  const contentTop = 26;
 
   // ── Try loading logo ──
   let logoDataUrl: string | null = null;
@@ -485,12 +384,10 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   };
 
   // ── Footer (all pages) ──
-  // We'll write placeholder footers and fix "Page X of Y" at the end
   const addFooter = (pageNum: number) => {
     pdf.setFontSize(8);
     pdf.setTextColor(130, 130, 130);
     pdf.setFont('helvetica', 'normal');
-    // Placeholder – will be overwritten with correct total at end
     pdf.text(`${l(lang, 'page')} ${pageNum}`, margin, footerY);
   };
 
@@ -508,7 +405,7 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   };
 
   const overallScore = data.assessment.overallScore;
-  const maturity = getMaturityLevel(overallScore, lang);
+  const maturity = getMaturityLevel(overallScore, (lang === 'de' ? 'de' : 'en') as 'en' | 'de');
 
   // ═══════════════════════════════════════════
   // PAGE 1: COVER
@@ -618,7 +515,7 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   pdf.text(summaryLines, margin, y);
   y += summaryLines.length * 5 + 10;
 
-  // Strengths – safe bullet
+  // Strengths
   pdf.setFontSize(12);
   pdf.setFont('helvetica', 'bold');
   pdf.setTextColor(16, 185, 129);
@@ -639,7 +536,7 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   }
   y += 6;
 
-  // Weaknesses – safe bullet
+  // Weaknesses
   pdf.setFontSize(12);
   pdf.setFont('helvetica', 'bold');
   pdf.setTextColor(234, 179, 8);
@@ -661,7 +558,7 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   }
   y += 6;
 
-  // What to do next – safe arrow
+  // What to do next
   pdf.setFontSize(12);
   pdf.setFont('helvetica', 'bold');
   pdf.setTextColor(59, 130, 246);
@@ -685,7 +582,7 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   }
   y += 8;
 
-  // P1-2: Department insight block
+  // Insight block
   pdf.setDrawColor(230, 230, 230);
   pdf.setFillColor(248, 248, 250);
   pdf.roundedRect(margin, y, contentW, 32, 2, 2, 'FD');
@@ -694,14 +591,12 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   pdf.setFont('helvetica', 'bold');
   pdf.setTextColor(24, 24, 27);
 
-  // Overall maturity statement
   const matStmt = lang === 'de'
     ? `${l(lang, 'insightOverall')}: Das Autohaus befindet sich auf der Stufe "${maturity}" mit ${overallScore}/100 Punkten.`
     : `${l(lang, 'insightOverall')}: The dealership is at "${maturity}" level with a score of ${overallScore}/100.`;
   pdf.text(matStmt, margin + 4, y);
   y += 6;
 
-  // Strongest department
   if (sortedDepts.length > 0) {
     const [topDept, topScore] = sortedDepts[0];
     const topName = DEPT_NAMES[topDept]?.[lang] || DEPT_NAMES[topDept]?.en || topDept;
@@ -710,7 +605,6 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
     y += 6;
   }
 
-  // Priority focus
   if (weaknesses.length > 0) {
     const focusNames = weaknesses.map(([d]) => DEPT_NAMES[d]?.[lang] || DEPT_NAMES[d]?.en || d).join(', ');
     pdf.text(`${l(lang, 'insightFocus')}: ${focusNames}`, margin + 4, y);
@@ -726,11 +620,8 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   // PAGE 3: SUB-CATEGORY BREAKDOWN & CONFIDENCE
   // ═══════════════════════════════════════════
   const subCatLabelTitle = lang === 'de' ? 'Capability-Analyse nach Teilbereich' : 'Capability Analysis by Sub-Category';
-  const confidenceLabelTitle = lang === 'de' ? 'Konfidenz' : 'Confidence';
-  const systemicTitle = lang === 'de' ? 'Systemische Muster erkannt' : 'Systemic Patterns Detected';
   const subCatLabel = lang === 'de' ? 'Teilbereich' : 'Sub-Category';
   const maturityLabel = lang === 'de' ? 'Reifegrad' : 'Maturity';
-  const reasonLabel = lang === 'de' ? 'Bewertung' : 'Assessment';
   const consistencyLabel = lang === 'de' ? 'Konsistenz' : 'Consistency';
 
   const subCategoryData = calculateSubCategoryScores(questionnaire.sections, data.assessment.answers as Record<string, number>);
@@ -749,7 +640,6 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   pdf.text(subCatLabelTitle, margin, y);
   y += 10;
 
-  // For each department, render sub-category table + confidence + enhanced maturity
   const deptKeys = Object.keys(subCategoryData);
   for (const dept of deptKeys) {
     const deptData = subCategoryData[dept];
@@ -757,7 +647,6 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
     const enhancedMat = calculateEnhancedMaturity(deptData.overallScore, deptData.subCategories, conf);
     const deptName = DEPT_NAMES[dept]?.[lang] || DEPT_NAMES[dept]?.en || dept;
 
-    // Check if we need a new page (estimate ~50mm per department block)
     if (y > pageH - 70) {
       addFooter(pageNum);
       pdf.addPage();
@@ -767,13 +656,11 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
       y = contentTop;
     }
 
-    // Department header with confidence badge and maturity
     pdf.setFontSize(11);
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(24, 24, 27);
     pdf.text(deptName, margin, y);
 
-    // Confidence indicator text
     const confLabel = conf.confidence === 'high'
       ? (lang === 'de' ? 'Hohe Konfidenz' : 'High Confidence')
       : conf.confidence === 'medium'
@@ -787,7 +674,6 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
     const confX = margin + pdf.getTextWidth(deptName + '  ') + 12;
     pdf.text(`[${confLabel} - ${consistencyLabel}: ${conf.consistencyScore}%]`, confX > pageW - margin - 60 ? margin : confX, y);
 
-    // Maturity level
     y += 5;
     pdf.setFontSize(8);
     pdf.setFont('helvetica', 'italic');
@@ -795,7 +681,6 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
     pdf.text(`${maturityLabel}: ${enhancedMat.level} -- ${enhancedMat.reason.slice(0, 120)}`, margin, y);
     y += 5;
 
-    // Sub-category rows
     if (deptData.subCategories.length > 0) {
       const scRows = deptData.subCategories.map(sc => {
         const bar = sc.score >= 75 ? '+++' : sc.score >= 50 ? '++' : '+';
@@ -824,7 +709,7 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
     }
   }
 
-  // Systemic Patterns section
+  // Systemic Patterns
   const systemicOnly = systemicPatterns.filter(p => p.severity === 'systemic');
   if (systemicOnly.length > 0) {
     if (y > pageH - 50) {
@@ -836,7 +721,7 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
       y = contentTop;
     }
 
-    // Alert box
+    const systemicTitle = lang === 'de' ? 'Systemische Muster erkannt' : 'Systemic Patterns Detected';
     pdf.setFillColor(254, 242, 242);
     pdf.setDrawColor(220, 38, 38);
     const alertH = 10 + systemicOnly.length * 14;
@@ -864,29 +749,39 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   addFooter(pageNum);
 
   // ═══════════════════════════════════════════
-  // KPI ANALYTICS PAGES
+  // KPI CONTEXT PAGES (from canonical definitions)
   // ═══════════════════════════════════════════
-  const deptEntries = Object.entries(data.assessment.scores);
+  pdf.addPage();
+  pageNum++;
+  addHeader();
+  addWatermark();
+  y = contentTop;
 
-  deptEntries.forEach(([sectionId, sectionScore]) => {
-    const kpiData = generateRealisticData(sectionScore, sectionId);
-    const benchmarks = industryBenchmarks[sectionId as keyof typeof industryBenchmarks];
-    if (!kpiData || !benchmarks) return;
+  pdf.setFontSize(18);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(24, 24, 27);
+  pdf.text(l(lang, 'kpiAnalytics'), margin, y);
+  y += 8;
 
-    // Always start each department on a new page for clean presentation
-    pdf.addPage();
-    pageNum++;
-    addHeader();
-    addWatermark();
-    y = contentTop;
+  // Disclaimer about KPI benchmarks
+  pdf.setFontSize(8);
+  pdf.setFont('helvetica', 'italic');
+  pdf.setTextColor(100, 100, 100);
+  const disclaimerLines = pdf.splitTextToSize(l(lang, 'kpiBenchmarkNote'), contentW);
+  pdf.text(disclaimerLines, margin, y);
+  y += disclaimerLines.length * 4 + 8;
 
-    // First department gets section title
-    if (sectionId === deptEntries[0][0]) {
-      pdf.setFontSize(18);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(24, 24, 27);
-      pdf.text(l(lang, 'kpiAnalytics'), margin, y);
-      y += 12;
+  Object.entries(data.assessment.scores).forEach(([sectionId, sectionScore]) => {
+    const kpiKeys = DEPT_KPI_MAP[sectionId] || [];
+    if (kpiKeys.length === 0) return;
+
+    if (y > pageH - 80) {
+      addFooter(pageNum);
+      pdf.addPage();
+      pageNum++;
+      addHeader();
+      addWatermark();
+      y = contentTop;
     }
 
     // Department heading
@@ -897,42 +792,38 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
     pdf.text(`${sectionName} -- ${sectionScore}%`, margin, y);
     y += 6;
 
-    const kpiRows = Object.entries(kpiData).map(([key, value]) => {
-      const benchmark = (benchmarks as any)[key];
-      const numVal = value as number;
-      const gap = benchmark ? numVal - benchmark : 0;
-      const gapStr = benchmark ? formatGap(key, gap, lang) : '--';
-      const isGood = benchmark ? gapIsPositive(key, gap) : true;
-      const interp = !benchmark ? '--'
-        : isGood
-          ? (lang === 'de' ? 'Ueber Benchmark' : 'Above benchmark')
-          : (lang === 'de' ? 'Unter Benchmark' : 'Below benchmark');
+    // KPI rows from canonical definitions
+    const kpiRows = kpiKeys.map(key => {
+      const kpiDef = KPI_DEFINITIONS[key];
+      if (!kpiDef) return null;
+      const localized = kpiDef[lang as 'en' | 'de'] || kpiDef.en;
       return [
-        KPI_LABELS[key]?.[lang] || KPI_LABELS[key]?.en || key,
-        formatKpiValue(key, numVal, lang),
-        benchmark ? formatKpiValue(key, benchmark, lang) : '--',
-        gapStr,
-        interp,
+        localized.title,
+        localized.benchmark || '--',
+        localized.whyItMatters?.slice(0, 80) || '--',
       ];
-    });
+    }).filter(Boolean) as string[][];
 
-    autoTable(pdf, {
-      startY: y,
-      head: [[l(lang, 'kpiName'), l(lang, 'yourValue'), l(lang, 'benchmark'), l(lang, 'gap'), l(lang, 'interpretation')]],
-      body: kpiRows,
-      margin: { left: margin, right: margin },
-      styles: { fontSize: 8, cellPadding: 3, font: 'helvetica' },
-      headStyles: { fillColor: [24, 24, 27], textColor: [255, 255, 255], fontSize: 8 },
-      alternateRowStyles: { fillColor: [250, 250, 250] },
-      columnStyles: {
-        0: { cellWidth: 38 },
-        4: { cellWidth: 28 },
-      },
-    });
-
-    y = (pdf as any).lastAutoTable.finalY + 8;
-    addFooter(pageNum);
+    if (kpiRows.length > 0) {
+      autoTable(pdf, {
+        startY: y,
+        head: [[l(lang, 'kpiName'), l(lang, 'benchmark'), l(lang, 'whyItMatters')]],
+        body: kpiRows as string[][],
+        margin: { left: margin, right: margin },
+        styles: { fontSize: 8, cellPadding: 3, font: 'helvetica' },
+        headStyles: { fillColor: [24, 24, 27], textColor: [255, 255, 255], fontSize: 8 },
+        alternateRowStyles: { fillColor: [250, 250, 250] },
+        columnStyles: {
+          0: { cellWidth: 40 },
+          1: { cellWidth: 30 },
+          2: { cellWidth: contentW - 70 - margin },
+        },
+      });
+      y = (pdf as any).lastAutoTable.finalY + 10;
+    }
   });
+
+  addFooter(pageNum);
 
   // ═══════════════════════════════════════════
   // ACTION PLAN
@@ -967,13 +858,12 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
       headStyles: { fillColor: [24, 24, 27], textColor: [255, 255, 255] },
       alternateRowStyles: { fillColor: [250, 250, 250] },
       columnStyles: { 0: { cellWidth: 55 } },
-      // Keep rows together – avoid orphan splits
       rowPageBreak: 'avoid',
     });
 
     y = (pdf as any).lastAutoTable.finalY + 10;
 
-    // Action descriptions – card-style blocks
+    // Action descriptions
     data.actions.forEach((a, i) => {
       const titleText = `${i + 1}. ${a.action_title}`;
       const cleanDesc = a.action_description
@@ -983,7 +873,6 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
       const descLines = cleanDesc ? pdf.splitTextToSize(cleanDesc, contentW - 12) : [];
       const blockH = 8 + descLines.length * 4;
 
-      // If block won't fit, new page
       if (y + blockH > pageH - 20) {
         addFooter(pageNum);
         pdf.addPage();
@@ -993,7 +882,6 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
         y = contentTop;
       }
 
-      // Light card background
       pdf.setFillColor(248, 248, 250);
       pdf.setDrawColor(230, 230, 230);
       pdf.roundedRect(margin, y - 2, contentW, blockH + 2, 1, 1, 'FD');
@@ -1001,22 +889,22 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
       pdf.setFontSize(9);
       pdf.setFont('helvetica', 'bold');
       pdf.setTextColor(24, 24, 27);
-      pdf.text(titleText.slice(0, 100), margin + 3, y + 4);
+      pdf.text(titleText.slice(0, 90), margin + 3, y + 3);
 
       if (descLines.length > 0) {
         pdf.setFontSize(8);
         pdf.setFont('helvetica', 'normal');
         pdf.setTextColor(80, 80, 80);
-        pdf.text(descLines, margin + 5, y + 10);
+        pdf.text(descLines, margin + 3, y + 9);
       }
-
       y += blockH + 4;
     });
   } else {
     pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'italic');
-    pdf.setTextColor(120, 120, 120);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(100, 100, 100);
     pdf.text(l(lang, 'dataNotAvailable'), margin, y);
+    y += 10;
   }
 
   addFooter(pageNum);
@@ -1036,119 +924,63 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   pdf.text(l(lang, 'methodology'), margin, y);
   y += 12;
 
+  const methTexts = lang === 'de'
+    ? [
+        'Dieser Bericht wurde mit der Autohaus-Bewertungsplattform erstellt.',
+        'Die Bewertungen basieren auf Selbsteinschaetzungen des Teilnehmers in den wichtigsten operativen Bereichen.',
+        'Die gewichtete Gesamtpunktzahl kombiniert die Abteilungsergebnisse nach ihrer strategischen Bedeutung.',
+        'Branchenbenchmarks basieren auf veroeffentlichten Branchenstudien und Best Practices.',
+        'KPI-Benchmarks sind Referenzwerte aus Autohaendlernetzwerken -- tatsaechliche Werte erfordern Systemintegration.',
+        'Die Konfidenzmetrik zeigt die interne Konsistenz der Antworten innerhalb jeder Abteilung.',
+        'Systemische Muster werden identifiziert, wenn mehrere Abteilungen aehnliche niedrige Punktzahlen aufweisen.',
+        'Aktionspunkte werden basierend auf Signalen aus niedrig bewerteten Bereichen generiert.',
+      ]
+    : [
+        'This report was generated using the Dealership Assessment Platform.',
+        'Scores are based on self-assessment responses provided by the participant across key operational areas.',
+        'The weighted overall score combines department results according to their strategic importance.',
+        'Industry benchmarks are based on published industry studies and best practices.',
+        'KPI benchmarks are reference values from automotive dealer networks -- actual values require system integration.',
+        'The confidence metric indicates internal consistency of responses within each department.',
+        'Systemic patterns are identified when multiple departments exhibit similar low scores.',
+        'Action items are generated based on signals from low-scoring areas.',
+      ];
+
   pdf.setFontSize(9);
   pdf.setFont('helvetica', 'normal');
   pdf.setTextColor(60, 60, 60);
-
-  const benchmarkDisclaimer = generateBenchmarkDisclaimer(lang as 'en' | 'de');
-
-  const methodText = lang === 'de'
-    ? [
-        'Die Bewertung basiert auf einem strukturierten Fragebogen, der die wichtigsten Leistungsbereiche eines Autohauses abdeckt.',
-        '',
-        'Bewertete Bereiche und Gewichtung:',
-        '  - Neuwagenverkauf: 25%',
-        '  - Gebrauchtwagenverkauf: 20%',
-        '  - Serviceleistung: 20%',
-        '  - Finanzoperationen: 20%',
-        '  - Teile & Lager: 15%',
-        '',
-        'Jede Frage wird auf einer Skala von 1 bis 5 bewertet. Die Antworten werden auf eine Skala von 0-100 normalisiert. Die Gewichtung spiegelt die relative Bedeutung jedes Bereichs fuer die Gesamtrentabilitaet wider.',
-        '',
-        'Reifestufen:',
-        '  - Fortgeschritten (85-100): Branchenfuehrende Praktiken mit Innovationsfokus',
-        '  - Ausgereift (70-84): Gut etablierte Prozesse mit kontinuierlicher Optimierung',
-        '  - Entwickelnd (50-69): Grundlegende Optimierung und Standardisierung implementiert',
-        '  - Basis (0-49): Grundlegende Prozesse mit erheblichen Luecken',
-        '',
-        'Benchmark-Hinweis:',
-        benchmarkDisclaimer,
-        '',
-        'KPI-Werte: Die im KPI-Analysebereich dargestellten Werte sind bewertungsbasierte Schaetzungen und dienen als Orientierungshilfe. Sie ersetzen keine tatsaechlichen Betriebsdaten.',
-      ].join('\n')
-    : [
-        'Scores are calculated from assessment responses across five key performance areas of dealership operations.',
-        '',
-        'Assessed Areas and Weighting:',
-        '  - New Vehicle Sales: 25%',
-        '  - Used Vehicle Sales: 20%',
-        '  - Service Performance: 20%',
-        '  - Financial Operations: 20%',
-        '  - Parts & Inventory: 15%',
-        '',
-        'Each question is rated on a 1-5 scale. Responses are normalized to a 0-100 score. The weighting reflects each area\'s relative importance to overall dealership profitability.',
-        '',
-        'Maturity Levels:',
-        '  - Advanced (85-100): Industry-leading practices with innovation focus',
-        '  - Mature (70-84): Well-established processes with consistent optimization',
-        '  - Developing (50-69): Some optimization and standardization implemented',
-        '  - Basic (0-49): Foundational processes in place with significant gaps',
-        '',
-        'Benchmark Note:',
-        benchmarkDisclaimer,
-        '',
-        'KPI Values: Values shown in the KPI Analytics section are assessment-based estimates provided for directional guidance. They do not replace actual operational data.',
-      ].join('\n');
-
-  const methodLines = pdf.splitTextToSize(methodText, contentW);
-  pdf.text(methodLines, margin, y);
-
-  addFooter(pageNum);
-
-  // ═══════════════════════════════════════════
-  // APPENDIX
-  // ═══════════════════════════════════════════
-  pdf.addPage();
-  pageNum++;
-  addHeader();
-  addWatermark();
-  y = contentTop;
-
-  pdf.setFontSize(18);
-  pdf.setFont('helvetica', 'bold');
-  pdf.setTextColor(24, 24, 27);
-  pdf.text(l(lang, 'appendix'), margin, y);
-  y += 12;
-
-  const appendixData = [
-    [l(lang, 'organization'), orgName],
-    [l(lang, 'assessmentId'), shortId(data.assessment.id)],
-    [l(lang, 'completionDate'), data.assessment.completedAt.slice(0, 10)],
-    [l(lang, 'generatedDate'), `${dateStr} ${timeStr}`],
-    [l(lang, 'user'), fullName],
-    [l(lang, 'role'), roleLabel],
-    [l(lang, 'overallScore'), `${overallScore}/100`],
-    [l(lang, 'maturityLevel'), maturity],
-  ];
-
-  autoTable(pdf, {
-    startY: y,
-    body: appendixData,
-    margin: { left: margin, right: margin },
-    styles: { fontSize: 9, cellPadding: 4, font: 'helvetica' },
-    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } },
-    alternateRowStyles: { fillColor: [250, 250, 250] },
+  methTexts.forEach(txt => {
+    const lines = pdf.splitTextToSize(`- ${txt}`, contentW - 10);
+    pdf.text(lines, margin + 4, y);
+    y += lines.length * 4 + 2;
   });
 
+  y += 8;
+
+  // Benchmark disclaimer
+  pdf.setFontSize(8);
+  pdf.setFont('helvetica', 'italic');
+  pdf.setTextColor(100, 100, 100);
+  const disclaimer = generateBenchmarkDisclaimer(lang as 'en' | 'de');
+  const discLines = pdf.splitTextToSize(disclaimer, contentW);
+  pdf.text(discLines, margin, y);
+
   addFooter(pageNum);
 
   // ═══════════════════════════════════════════
-  // FIX PAGE NUMBERS: "Page X of Y"
+  // FINALIZE: Update page footers with total
   // ═══════════════════════════════════════════
-  const pageCount = pdf.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
-    pdf.setPage(i);
+  const totalPages = pdf.getNumberOfPages();
+  for (let p = 1; p <= totalPages; p++) {
+    pdf.setPage(p);
     pdf.setFontSize(8);
-    pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(130, 130, 130);
-    // Clear old footer area and rewrite
-    pdf.setFillColor(255, 255, 255);
-    pdf.rect(margin - 2, footerY - 4, 50, 8, 'F');
-    pdf.text(`${l(lang, 'page')} ${i} ${l(lang, 'of')} ${pageCount}`, margin, footerY);
+    pdf.setFont('helvetica', 'normal');
+    const footerText = `${l(lang, 'page')} ${p} ${l(lang, 'of')} ${totalPages}`;
+    pdf.text(footerText, pageW - margin - pdf.getTextWidth(footerText), footerY);
   }
 
-  // ── Save ──
-  const safeOrgName = orgName.replace(/[^a-zA-Z0-9]/g, '_');
-  const fileName = `${safeOrgName}_Assessment_Report_${dateStr}.pdf`;
+  // Save
+  const fileName = `${orgName.replace(/\s+/g, '_')}_Assessment_Report_${dateStr}.pdf`;
   pdf.save(fileName);
 }

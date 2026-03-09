@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { CheckCircle, AlertTriangle, Target, Info, ShieldAlert, BarChart3 } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { TOTAL_QUESTIONS } from "@/lib/constants";
+import { TOTAL_QUESTIONS, getMaturityLevel as getCanonicalMaturityLevel } from "@/lib/constants";
 import { getDepartmentName } from "@/lib/departmentNames";
 import {
   CATEGORY_WEIGHTS,
@@ -139,10 +139,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt }:
     };
 
     const getMaturityLevel = (score: number) => {
-      if (score >= 85) return language === 'de' ? 'Fortgeschritten' : 'Advanced';
-      if (score >= 70) return language === 'de' ? 'Ausgereift' : 'Mature';
-      if (score >= 50) return language === 'de' ? 'Entwickelnd' : 'Developing';
-      return language === 'de' ? 'Basis' : 'Basic';
+      return getCanonicalMaturityLevel(score, language as 'en' | 'de');
     };
 
     const generateSummaryParagraph = () => {
