@@ -371,9 +371,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
                   language={language as 'en' | 'de'}
                   mode="compact"
                   showDeepLink
-                  onNavigateToEncyclopedia={(kpi) => {
-                    navigate(`/methodology?kpi=${kpi}`);
-                  }}
+                  onNavigateToEncyclopedia={onNavigateToEncyclopedia}
                 />
               );
             })}
