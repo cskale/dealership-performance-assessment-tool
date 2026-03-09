@@ -37,7 +37,7 @@ export function KpiRelationshipMap({ interdependencies, kpiTitle, language, onNa
 
   return (
     <div className={cn("", className)}>
-      <h2 className="text-[15px] font-semibold text-foreground mb-1.5">
+      <h2 className="text-sm font-semibold text-foreground mb-1.5">
         {language === 'de' ? 'Performance-Einflussrahmen' : 'Performance Influence Framework'}
       </h2>
       <p className="text-sm text-muted-foreground/70 mb-8 max-w-2xl leading-relaxed">
