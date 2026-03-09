@@ -387,6 +387,10 @@ export default function Results() {
                 scores={resultsData.scores}
                 answers={resultsData.answers}
                 completedAt={resultsData.completedAt}
+                onNavigateToEncyclopedia={(kpiKey) => {
+                  setActiveTab("resources");
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
               />
             </ErrorBoundary>
           </TabsContent>

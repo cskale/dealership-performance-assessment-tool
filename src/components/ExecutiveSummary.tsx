@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -27,6 +27,7 @@ interface ExecutiveSummaryProps {
   scores: Record<string, number>;
   answers: Record<string, any>;
   completedAt: string;
+  onNavigateToEncyclopedia?: (kpiKey: string) => void;
 }
 
 function getScoreInterpretation(score: number, language: string): string {
@@ -80,9 +81,8 @@ function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-export function ExecutiveSummary({ overallScore, scores, answers, completedAt }: ExecutiveSummaryProps) {
+export function ExecutiveSummary({ overallScore, scores, answers, completedAt, onNavigateToEncyclopedia }: ExecutiveSummaryProps) {
   const { t, language } = useLanguage();
-  const navigate = useNavigate();
 
   // Enhanced analytics from the new scoring engine
   const subCategoryData = useMemo(() =>
@@ -371,9 +371,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt }:
                   language={language as 'en' | 'de'}
                   mode="compact"
                   showDeepLink
-                  onNavigateToEncyclopedia={(kpi) => {
-                    navigate(`/methodology?kpi=${kpi}`);
-                  }}
+                  onNavigateToEncyclopedia={onNavigateToEncyclopedia}
                 />
               );
             })}
