@@ -25,8 +25,8 @@ vi.mock('@/integrations/supabase/client', () => ({
       onAuthStateChange: () => mockOnAuthStateChange(),
       getSession: () => mockGetSession(),
     },
-    rpc: (fn: string, params: any) => mockRpc(fn, params),
-    from: (table: string) => mockFrom(table),
+    rpc: mockRpc,
+    from: mockFrom,
   }
 }));
 
