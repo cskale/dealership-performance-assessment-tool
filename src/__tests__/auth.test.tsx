@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render } from '@testing-library/react';
-import { screen, fireEvent, waitFor } from '@testing-library/dom';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Auth from '@/pages/Auth';
 import { AuthProvider } from '@/hooks/useAuth';
 import { Toaster } from '@/components/ui/toaster';
+import { supabase } from '@/integrations/supabase/client';
 
 // Mock Supabase
 vi.mock('@/integrations/supabase/client', () => ({
@@ -44,6 +44,10 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => {
 describe('Auth Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    (supabase.auth.signUp as any).mockResolvedValue({ error: null });
+    (supabase.auth.signInWithPassword as any).mockResolvedValue({ error: null });
+    (supabase.auth.signInWithOtp as any).mockResolvedValue({ error: null });
+    (supabase.auth.signInWithOAuth as any).mockResolvedValue({ error: null });
   });
 
   it('renders auth form with all sign-in methods', () => {
@@ -72,13 +76,18 @@ describe('Auth Component', () => {
     );
 
     // Switch to magic link tab
-    fireEvent.click(screen.getByText('Magic Link'));
-    expect(screen.getByText('Send Magic Link')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('tab', { name: /magic link/i }));
+    await waitFor(() => {
+      // Use role+name to avoid brittle text matching when icons are present
+      expect(screen.getByRole('button', { name: /send magic link/i })).toBeInTheDocument();
+    });
 
     // Switch to sign up tab
-    fireEvent.click(screen.getByText('Sign Up'));
-    expect(screen.getByText('Create Account')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Enter your full name')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('tab', { name: /sign up/i }));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Enter your full name')).toBeInTheDocument();
+    });
   });
 
   it('has proper accessibility attributes', () => {
@@ -90,7 +99,7 @@ describe('Auth Component', () => {
 
     // Check for form labels
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
-    
+
     // Check for required fields
     const emailInput = screen.getByPlaceholderText('Enter your email');
     expect(emailInput).toHaveAttribute('required');
@@ -104,8 +113,8 @@ describe('Auth Component', () => {
       </TestWrapper>
     );
 
-    const signInButton = screen.getByText('Sign In with Email');
-    
+    const signInButton = screen.getByRole('button', { name: /sign in with email/i });
+
     // Fill form
     fireEvent.change(screen.getByPlaceholderText('Enter your email'), {
       target: { value: 'test@example.com' }
@@ -116,7 +125,7 @@ describe('Auth Component', () => {
 
     // Submit form
     fireEvent.click(signInButton);
-    
+
     // Should show loading state briefly
     await waitFor(() => {
       expect(signInButton).toBeDisabled();
@@ -134,11 +143,11 @@ describe('Auth Keyboard Navigation', () => {
 
     const firstInput = screen.getByPlaceholderText('Enter your email');
     const passwordInput = screen.getByPlaceholderText('Enter your password');
-    
+
     // Tab navigation
     firstInput.focus();
     expect(document.activeElement).toBe(firstInput);
-    
+
     // Should be able to navigate to next field
     fireEvent.keyDown(firstInput, { key: 'Tab' });
     setTimeout(() => {
@@ -156,16 +165,16 @@ describe('Auth Validation', () => {
     );
 
     const emailInput = screen.getByPlaceholderText('Enter your email');
-    
+
     // Enter invalid email
     fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
     fireEvent.blur(emailInput);
-    
+
     // HTML5 validation should catch this
     expect(emailInput).toBeInvalid();
   });
 
-  it('enforces password minimum length', () => {
+  it('enforces password minimum length', async () => {
     render(
       <TestWrapper>
         <Auth />
@@ -173,9 +182,9 @@ describe('Auth Validation', () => {
     );
 
     // Switch to sign up
-    fireEvent.click(screen.getByText('Sign Up'));
-    
-    const passwordInput = screen.getByPlaceholderText('Create a password (min. 6 characters)');
+    fireEvent.click(screen.getByRole('tab', { name: /sign up/i }));
+
+    const passwordInput = await screen.findByPlaceholderText('Create a password (min. 6 characters)');
     expect(passwordInput).toHaveAttribute('minLength', '6');
   });
 });
