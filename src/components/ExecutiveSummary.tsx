@@ -82,6 +82,7 @@ function capitalize(s: string): string {
 
 export function ExecutiveSummary({ overallScore, scores, answers, completedAt }: ExecutiveSummaryProps) {
   const { t, language } = useLanguage();
+  const navigate = useNavigate();
 
   // Enhanced analytics from the new scoring engine
   const subCategoryData = useMemo(() =>
