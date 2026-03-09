@@ -1,11 +1,12 @@
 import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, AlertTriangle, Target, Info, ShieldAlert, BarChart3 } from "lucide-react";
+import { CheckCircle, AlertTriangle, Target, Info, ShieldAlert, BarChart3, BookOpen } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { TOTAL_QUESTIONS, getMaturityLevel as getCanonicalMaturityLevel } from "@/lib/constants";
+import { TOTAL_QUESTIONS, getMaturityLevel as getCanonicalMaturityLevel, SCORE_THRESHOLDS } from "@/lib/constants";
 import { getDepartmentName } from "@/lib/departmentNames";
 import {
   CATEGORY_WEIGHTS,
@@ -19,6 +20,7 @@ import {
   type SystemicPattern,
 } from "@/lib/scoringEngine";
 import { questionnaire } from "@/data/questionnaire";
+import { KpiInsightPanel } from "@/components/shared/KpiInsightPanel";
 
 interface ExecutiveSummaryProps {
   overallScore: number;
