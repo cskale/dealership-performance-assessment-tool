@@ -132,7 +132,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
 
       {/* ===== 3. DEFINITION & CONTEXT ===== */}
       <section className="mb-14">
-        <h2 className="text-[15px] font-semibold text-foreground mb-1.5">
+        <h2 className="text-sm font-semibold text-foreground mb-1.5">
           {language === 'de' ? 'Definition & Formel' : 'Definition & Context'}
         </h2>
         <p className="text-sm text-muted-foreground/70 mb-6 leading-relaxed">
