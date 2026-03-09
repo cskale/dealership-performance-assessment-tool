@@ -389,8 +389,8 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'Completed': return <CheckCircle2 className="h-4 w-4 text-green-600" />;
-      case 'In Progress': return <Clock className="h-4 w-4 text-blue-600" />;
+      case 'Completed': return <CheckCircle2 className="h-4 w-4 text-success" />;
+      case 'In Progress': return <Clock className="h-4 w-4 text-info" />;
       default: return <Circle className="h-4 w-4 text-muted-foreground" />;
     }
   };
@@ -693,7 +693,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-yellow-500" />
+              <AlertTriangle className="h-5 w-5 text-warning" />
               Edit Conflict Detected
             </AlertDialogTitle>
             <AlertDialogDescription>

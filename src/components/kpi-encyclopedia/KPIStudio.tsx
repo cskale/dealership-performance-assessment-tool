@@ -71,7 +71,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
               {kpi.definition}
             </p>
             {kpi.whyItMatters && (
-              <p className="text-[15px] text-foreground/60 leading-relaxed max-w-2xl">
+              <p className="text-sm text-foreground/60 leading-relaxed max-w-2xl">
                 {kpi.whyItMatters}
               </p>
             )}
@@ -80,7 +80,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
           {/* Benchmark card */}
           {kpi.benchmark && (
             <div className="lg:w-[300px] shrink-0 rounded-2xl border border-border/40 bg-card p-5">
-              <span className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-widest block mb-3">
+              <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-widest block mb-3">
                 {language === 'de' ? 'Referenz-Benchmarkbereich' : 'Reference Benchmark Range'}
               </span>
               <KPIBenchmarkStudio
@@ -120,10 +120,10 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
       {kpi.executiveSummary && (
         <section className="mb-14 mt-10">
           <div className="rounded-xl bg-primary/[0.03] px-7 py-5">
-            <span className="text-[11px] font-semibold text-primary/50 uppercase tracking-widest block mb-2">
+            <span className="text-[10px] font-semibold text-primary/50 uppercase tracking-widest block mb-2">
               {language === 'de' ? 'Executive Takeaway' : 'Executive Takeaway'}
             </span>
-            <p className="text-[15px] text-foreground/75 leading-relaxed">
+            <p className="text-sm text-foreground/75 leading-relaxed">
               {kpi.executiveSummary}
             </p>
           </div>
@@ -132,7 +132,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
 
       {/* ===== 3. DEFINITION & CONTEXT ===== */}
       <section className="mb-14">
-        <h2 className="text-[15px] font-semibold text-foreground mb-1.5">
+        <h2 className="text-sm font-semibold text-foreground mb-1.5">
           {language === 'de' ? 'Definition & Formel' : 'Definition & Context'}
         </h2>
         <p className="text-sm text-muted-foreground/70 mb-6 leading-relaxed">
@@ -154,7 +154,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-5 pt-5 border-t border-border/20">
               {kpi.inclusions && kpi.inclusions.length > 0 && (
                 <div>
-                  <span className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wider block mb-3">
+                  <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider block mb-3">
                     {language === 'de' ? 'Einschlüsse' : 'Includes'}
                   </span>
                   <ul className="space-y-2">
@@ -169,7 +169,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
               )}
               {kpi.exclusions && kpi.exclusions.length > 0 && (
                 <div>
-                  <span className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wider block mb-3">
+                  <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider block mb-3">
                     {language === 'de' ? 'Ausschlüsse' : 'Excludes'}
                   </span>
                   <ul className="space-y-2">
@@ -190,7 +190,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
       {/* ===== 4. REFERENCE BENCHMARK RANGE (full-width) ===== */}
       {kpi.benchmark && (
         <section className="mb-14">
-          <h2 className="text-[15px] font-semibold text-foreground mb-1.5">
+          <h2 className="text-sm font-semibold text-foreground mb-1.5">
             {language === 'de' ? 'Referenz-Benchmarkbereich' : 'Reference Benchmark Range'}
           </h2>
           <p className="text-sm text-muted-foreground/70 mb-6 leading-relaxed">

@@ -37,7 +37,7 @@ export function KpiRelationshipMap({ interdependencies, kpiTitle, language, onNa
 
   return (
     <div className={cn("", className)}>
-      <h2 className="text-[15px] font-semibold text-foreground mb-1.5">
+      <h2 className="text-sm font-semibold text-foreground mb-1.5">
         {language === 'de' ? 'Performance-Einflussrahmen' : 'Performance Influence Framework'}
       </h2>
       <p className="text-sm text-muted-foreground/70 mb-8 max-w-2xl leading-relaxed">
@@ -50,7 +50,7 @@ export function KpiRelationshipMap({ interdependencies, kpiTitle, language, onNa
         {/* Left: Likely drivers */}
         {hasUpstream && (
           <div className="min-w-0 overflow-hidden">
-            <span className="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-wider block mb-4">
+            <span className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider block mb-4">
               {language === 'de' ? 'Wahrscheinliche Treiber' : 'Likely drivers'}
             </span>
             <div className="space-y-2">
@@ -101,7 +101,7 @@ export function KpiRelationshipMap({ interdependencies, kpiTitle, language, onNa
         {/* Right: Likely consequences */}
         {hasDownstream && (
           <div className="min-w-0 overflow-hidden">
-            <span className="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-wider block mb-4">
+            <span className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider block mb-4">
               {language === 'de' ? 'Wahrscheinliche Auswirkungen' : 'Likely consequences'}
             </span>
             <div className="space-y-2">
@@ -127,7 +127,7 @@ export function KpiRelationshipMap({ interdependencies, kpiTitle, language, onNa
       </div>
 
       {/* Context note */}
-      <p className="text-[11px] text-muted-foreground/40 mt-8 leading-relaxed">
+      <p className="text-[10px] text-muted-foreground/40 mt-8 leading-relaxed">
         {language === 'de'
           ? 'Allgemeine Geschäftsergebnisse dieses KPIs umfassen Umsatzproduktivität, Bruttomarge, Kundenbindung und Kundenzufriedenheit.'
           : 'Common business outcomes linked to this KPI include revenue productivity, gross profit, retention, and customer experience.'}

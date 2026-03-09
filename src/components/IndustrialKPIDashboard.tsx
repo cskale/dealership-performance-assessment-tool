@@ -1,28 +1,74 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, TrendingDown, Target, DollarSign, Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { TrendingUp, TrendingDown, Target, DollarSign, Info, BookOpen, BarChart3 } from "lucide-react";
 import { formatEuro, formatPercentage, formatNumber, generateRealisticData, industryBenchmarks } from "@/utils/euroFormatter";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { getKPILabel } from "@/lib/kpiDefinitions";
+import { getKPILabel, KPI_DEFINITIONS } from "@/lib/kpiDefinitions";
+import { KpiTooltipContent } from "@/components/shared/KpiInsightPanel";
+import { SharedSectionHeader } from "@/components/shared/SharedSectionHeader";
 
 interface IndustrialKPIDashboardProps {
   scores: Record<string, number>;
-  answers: Record<string, number>;
-  onNavigateToResources?: () => void;
+  onNavigateToEncyclopedia?: (kpiKey?: string) => void;
 }
 
-export function IndustrialKPIDashboard({ scores }: { scores: Record<string, number> }) {
+// Map section KPI keys to canonical KPI definition keys
+const kpiKeyMapping: Record<string, Record<string, string>> = {
+  'new-vehicle-sales': {
+    monthlyRevenue: 'frontGross',
+    averageMargin: 'frontGross',
+    customerSatisfaction: 'csiNps',
+    leadConversion: 'leadConversion',
+    averageTransactionValue: 'frontGross'
+  },
+  'used-vehicle-sales': {
+    monthlyRevenue: 'grossPerUsedRetailed',
+    averageMargin: 'grossPerUsedRetailed',
+    turnoverRate: 'usedVehicleInventoryTurn',
+    customerSatisfaction: 'csiNps',
+    averageTransactionValue: 'grossPerUsedRetailed'
+  },
+  'service-performance': {
+    monthlyRevenue: 'serviceAbsorption',
+    laborEfficiency: 'labourEfficiency',
+    customerRetention: 'serviceRetention',
+    averageRO: 'effectiveLabourRate',
+    technicianUtilization: 'technicianUtilization'
+  },
+  'parts-inventory': {
+    monthlyRevenue: 'partsGrossProfit',
+    turnoverRate: 'partsInventoryTurnover',
+    grossMargin: 'partsGrossProfit',
+    stockoutRate: 'partsFillRate',
+    supplierPerformance: 'partsFillRate'
+  },
+  'financial-operations': {
+    profitMargin: 'netProfitMargin',
+    cashFlowDays: 'inventoryTurnover',
+    costPerSale: 'variableSelling',
+    roiMarketing: 'returnOnAssets',
+    operationalEfficiency: 'returnOnAssets'
+  }
+};
+
+export function IndustrialKPIDashboard({ 
+  scores, 
+  onNavigateToEncyclopedia 
+}: IndustrialKPIDashboardProps) {
   const { language } = useLanguage();
 
-  // CRITICAL FIX: Memoize ALL KPI data to prevent recalculation when clicking info button
+  // Memoize ALL KPI data to prevent recalculation
   const memoizedKPIData = useMemo(() => {
-    const allData: Record<string, { key: string; value: number; benchmark: number; performance: number; isGood: boolean }[]> = {};
+    const allData: Record<string, { key: string; value: number; benchmark: number; performance: number; isGood: boolean; canonicalKey?: string }[]> = {};
     
     Object.entries(scores).forEach(([sectionId, sectionScore]) => {
       const data = generateRealisticData(sectionScore, sectionId);
       const benchmarks = industryBenchmarks[sectionId as keyof typeof industryBenchmarks];
+      const sectionMapping = kpiKeyMapping[sectionId] || {};
       
       if (data && benchmarks) {
         allData[sectionId] = Object.entries(data).map(([key, value]) => {
@@ -36,7 +82,8 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
             value: value as number,
             benchmark: benchmark as number,
             performance,
-            isGood: performance >= 0
+            isGood: performance >= 0,
+            canonicalKey: sectionMapping[key]
           };
         });
       }
@@ -59,7 +106,6 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
     });
     return totalPotential;
   }, [scores]);
-
 
   const formatValue = (key: string, value: number) => {
     if (key.includes('Revenue') || key.includes('Value') || key.includes('RO') || key.includes('costPerSale') || key.includes('cashFlow') || key.includes('workingCapital') || key.includes('counterSales')) {
@@ -84,9 +130,10 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        {kpiData.map(({ key, value, benchmark, performance, isGood }) => {
+        {kpiData.map(({ key, value, benchmark, performance, isGood, canonicalKey }) => {
           const pct = Math.min(100, Math.max(0, (value / benchmark) * 100));
           const markerLeft = Math.min(95, Math.max(5, pct));
+          const hasCanonicalDef = canonicalKey && KPI_DEFINITIONS[canonicalKey];
           
           return (
             <Card key={key} className={`border-l-4 kpi-card ${isGood ? 'border-l-success' : 'border-l-destructive'}`}>
@@ -96,6 +143,30 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
                     {getKPILabel(key, language as 'en' | 'de')}
                   </h4>
                   <div className="flex items-center gap-1">
+                    {/* KPI Context Tooltip with link to Encyclopedia */}
+                    {hasCanonicalDef && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onNavigateToEncyclopedia?.(canonicalKey);
+                            }}
+                          >
+                            <BookOpen className="h-3.5 w-3.5" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="left" className="p-3 max-w-xs">
+                          <KpiTooltipContent kpiKey={canonicalKey!} language={language as 'en' | 'de'} />
+                          <p className="text-[10px] text-primary mt-2 pt-2 border-t border-border/30">
+                            {language === 'de' ? 'Klicken für Details' : 'Click for full details'}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
                     {isGood ? (
                       <TrendingUp className="h-4 w-4 text-success" />
                     ) : (
@@ -130,7 +201,9 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
                   </div>
                   
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Current Performance</span>
+                    <span className="text-muted-foreground">
+                      {language === 'de' ? 'Aktuelle Leistung' : 'Current Performance'}
+                    </span>
                     <Badge 
                       variant={isGood ? "default" : "destructive"} 
                       className="text-xs"
@@ -158,17 +231,6 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
     return titles[sectionId]?.[language] || sectionId;
   };
 
-  const getSectionIcon = (sectionId: string) => {
-    const icons: Record<string, string> = {
-      'new-vehicle-sales': '--',
-      'used-vehicle-sales': '--',
-      'service-performance': '--',
-      'parts-inventory': '--',
-      'financial-operations': '--'
-    };
-    return icons[sectionId] || '--';
-  };
-
   const getScoreLabel = (score: number) => {
     if (score >= 80) return language === 'de' ? 'Ausgezeichnet' : 'Excellent';
     if (score >= 60) return language === 'de' ? 'Gut' : 'Good';
@@ -177,7 +239,7 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
 
   return (
     <div className="space-y-8">
-      {/* 1A: Estimated data disclaimer banner */}
+      {/* Estimated data disclaimer banner */}
       <Card className="border-2 border-warning bg-warning/10 shadow-sm">
         <CardContent className="py-4">
           <div className="flex items-start gap-3">
@@ -243,11 +305,25 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
         );
       })()}
 
-      <div className="text-center mb-6">
-        <h2 className="text-3xl font-bold text-foreground mb-2">
-          {language === 'de' ? 'Leistungskennzahlen (KPIs)' : 'Key Performance Indicators'}
-        </h2>
-      </div>
+      <SharedSectionHeader
+        icon={BarChart3}
+        title={language === 'de' ? 'Leistungskennzahlen (KPIs)' : 'Key Performance Indicators'}
+        subtitle={language === 'de' ? 'Abteilungsspezifische Metriken und Benchmarks' : 'Department-specific metrics and benchmarks'}
+        action={
+          onNavigateToEncyclopedia && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onNavigateToEncyclopedia()}
+              className="text-xs"
+            >
+              <BookOpen className="h-3.5 w-3.5 mr-1.5" />
+              {language === 'de' ? 'KPI-Enzyklopädie' : 'KPI Encyclopedia'}
+            </Button>
+          )
+        }
+        size="lg"
+      />
 
       {Object.entries(scores).map(([sectionId, score]) => (
         <div key={sectionId}>
@@ -292,7 +368,7 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
               .slice(0, 3)
               .map(([sectionId, score]) => (
                 <li key={sectionId} className="flex items-start gap-2">
-                  <span className="text-warning-foreground/70 mt-0.5">-</span>
+                  <span className="text-warning-foreground/70 mt-0.5">•</span>
                   <span>
                     {language === 'de' ? 'Fokus auf Verbesserung von' : 'Focus on improving'} <strong>{getSectionTitle(sectionId)}</strong> ({score}%) {language === 'de' ? 'durch gezielte Schulung und Prozessoptimierung' : 'through targeted training and process optimization'}
                   </span>
@@ -301,7 +377,7 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
             }
             {Object.values(scores).every(score => score >= 70) && (
               <li className="flex items-start gap-2">
-                <span className="text-success">-</span>
+                <span className="text-success">•</span>
                 {language === 'de' ? 'Hervorragende Leistung in allen Bereichen! Fokus auf kontinuierliche Verbesserung.' : 'Excellent performance across all areas! Focus on continuous improvement.'}
               </li>
             )}

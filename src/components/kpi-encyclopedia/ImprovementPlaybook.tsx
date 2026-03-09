@@ -18,7 +18,7 @@ export function ImprovementPlaybook({ levers, language, className }: Improvement
 
   return (
     <div className={cn("", className)}>
-      <h2 className="text-[15px] font-semibold text-foreground mb-1.5">
+      <h2 className="text-sm font-semibold text-foreground mb-1.5">
         {language === 'de' ? 'Vorgeschlagene Verbesserungsideen' : 'Suggested Improvement Ideas'}
       </h2>
       <p className="text-sm text-muted-foreground/70 mb-8 leading-relaxed">
