@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
+import { BenchmarkConfidenceIndicator, BenchmarkNoteBadge } from "@/components/shared/BenchmarkConfidenceIndicator";
 
 interface KPIBenchmarkStudioProps {
+  kpiKey?: string;
   benchmark?: string;
   unit?: string;
   isLowerBetter: boolean;
