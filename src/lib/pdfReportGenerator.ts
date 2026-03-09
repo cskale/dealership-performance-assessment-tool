@@ -442,7 +442,7 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   pdf.setFont('helvetica', 'bold');
   pdf.text(l(lang, 'overallScore'), margin, 145);
 
-  const scoreColor = overallScore >= 70 ? [16, 185, 129] : overallScore >= 50 ? [234, 179, 8] : [220, 38, 38];
+  const scoreColor = overallScore >= SCORE_THRESHOLDS.excellent ? [16, 185, 129] : overallScore >= SCORE_THRESHOLDS.good ? [234, 179, 8] : [220, 38, 38];
   pdf.setFontSize(48);
   pdf.setTextColor(scoreColor[0], scoreColor[1], scoreColor[2]);
   pdf.text(`${overallScore}`, margin, 175);
