@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, waitFor, act, cleanup } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Auth from '@/pages/Auth';
@@ -7,7 +7,7 @@ import { AuthProvider } from '@/hooks/useAuth';
 import { Toaster } from '@/components/ui/toaster';
 import { supabase } from '@/integrations/supabase/client';
 
-// Mock Supabase
+// Mock Supabase with synchronous getSession to avoid act() warnings
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     auth: {
@@ -41,13 +41,29 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const activateTab = (name: RegExp) => {
+const activateTab = async (name: RegExp) => {
   const tab = screen.getByRole('tab', { name });
-  // Radix Tabs updates value on mouse down in some environments (click alone can be insufficient in jsdom)
-  fireEvent.mouseDown(tab, { button: 0 });
-  fireEvent.mouseUp(tab, { button: 0 });
-  fireEvent.click(tab);
+  await act(async () => {
+    fireEvent.mouseDown(tab, { button: 0 });
+    fireEvent.mouseUp(tab, { button: 0 });
+    fireEvent.click(tab);
+  });
   return tab;
+};
+
+// Helper to render and wait for auth state to settle
+const renderAuth = async () => {
+  let result: ReturnType<typeof render>;
+  await act(async () => {
+    result = render(
+      <TestWrapper>
+        <Auth />
+      </TestWrapper>
+    );
+    // Allow initial auth state promises to resolve
+    await Promise.resolve();
+  });
+  return result!;
 };
 
 describe('Auth Component', () => {
@@ -57,6 +73,10 @@ describe('Auth Component', () => {
     (supabase.auth.signInWithPassword as any).mockResolvedValue({ error: null });
     (supabase.auth.signInWithOtp as any).mockResolvedValue({ error: null });
     (supabase.auth.signInWithOAuth as any).mockResolvedValue({ error: null });
+  });
+
+  afterEach(() => {
+    cleanup();
   });
 
   it('renders auth form with all sign-in methods', () => {
