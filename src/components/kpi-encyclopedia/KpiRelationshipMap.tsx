@@ -127,7 +127,7 @@ export function KpiRelationshipMap({ interdependencies, kpiTitle, language, onNa
       </div>
 
       {/* Context note */}
-      <p className="text-[11px] text-muted-foreground/40 mt-8 leading-relaxed">
+      <p className="text-[10px] text-muted-foreground/40 mt-8 leading-relaxed">
         {language === 'de'
           ? 'Allgemeine Geschäftsergebnisse dieses KPIs umfassen Umsatzproduktivität, Bruttomarge, Kundenbindung und Kundenzufriedenheit.'
           : 'Common business outcomes linked to this KPI include revenue productivity, gross profit, retention, and customer experience.'}
