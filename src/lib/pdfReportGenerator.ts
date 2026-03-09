@@ -808,7 +808,7 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
       autoTable(pdf, {
         startY: y,
         head: [[l(lang, 'kpiName'), l(lang, 'benchmark'), l(lang, 'whyItMatters')]],
-        body: kpiRows,
+        body: kpiRows as string[][],
         margin: { left: margin, right: margin },
         styles: { fontSize: 8, cellPadding: 3, font: 'helvetica' },
         headStyles: { fillColor: [24, 24, 27], textColor: [255, 255, 255], fontSize: 8 },

@@ -271,7 +271,7 @@ export function IndustrialKPIDashboard({
                 </li>
               ))
             }
-            {Object.values(scores).every(score => score >= SCORE_THRESHOLDS.mature) && (
+            {Object.values(scores).every(score => score >= 70) && ( // All above mature threshold
               <li className="flex items-start gap-2">
                 <span className="text-success">•</span>
                 <span>
