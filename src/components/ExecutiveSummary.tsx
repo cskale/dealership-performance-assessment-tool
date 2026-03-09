@@ -139,10 +139,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt }:
     };
 
     const getMaturityLevel = (score: number) => {
-      if (score >= 85) return language === 'de' ? 'Fortgeschritten' : 'Advanced';
-      if (score >= 70) return language === 'de' ? 'Ausgereift' : 'Mature';
-      if (score >= 50) return language === 'de' ? 'Entwickelnd' : 'Developing';
-      return language === 'de' ? 'Basis' : 'Basic';
+      return getCanonicalMaturityLevel(score, language as 'en' | 'de');
     };
 
     const generateSummaryParagraph = () => {
