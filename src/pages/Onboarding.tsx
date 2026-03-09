@@ -1,8 +1,9 @@
 /**
  * Onboarding Page
  * 
- * Guides users through setting up their organization and dealership
- * before they can access the assessment.
+ * Guides users through setting up their dealership.
+ * Organization is auto-created by DB trigger on signup — never shown to users.
+ * Two paths: Create New Dealership or Join Existing via Invite.
  */
 
 import { useState, useEffect } from 'react';
@@ -13,30 +14,24 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Building2, Car, ArrowRight, Check, Loader2, AlertCircle } from 'lucide-react';
+import { Building2, Car, ArrowRight, Loader2, Mail, Plus } from 'lucide-react';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { useAuth } from '@/hooks/useAuth';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { AUTOMOTIVE_BRANDS, COUNTRIES } from '@/types/dealership';
 import { toast } from 'sonner';
 
-type OnboardingStep = 'organization' | 'dealership' | 'complete';
+type OnboardingPath = 'choose' | 'create' | 'join';
 
 export default function Onboarding() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t } = useLanguage();
-  const { status, context, isLoading, createOrganization, createDealership, setActiveDealership } = useOnboarding();
+  const { status, context, isLoading, createDealership, setActiveDealership } = useOnboarding();
 
-  const [currentStep, setCurrentStep] = useState<OnboardingStep>('organization');
+  const [activePath, setActivePath] = useState<OnboardingPath>('choose');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [existingDealerships, setExistingDealerships] = useState<Array<{ id: string; name: string; brand: string }>>([]);
   
-  // Organization form
-  const [orgName, setOrgName] = useState('');
-  
-  // Dealership form
   const [dealershipForm, setDealershipForm] = useState({
     name: '',
     brand: '',
@@ -44,16 +39,11 @@ export default function Onboarding() {
     location: '',
   });
 
-  // Determine initial step based on onboarding status
   useEffect(() => {
-    if (status === 'needs_organization') {
-      setCurrentStep('organization');
-    } else if (status === 'needs_dealership') {
-      setCurrentStep('dealership');
-      loadExistingDealerships();
-    } else if (status === 'complete') {
-      // Already completed, redirect to assessment
+    if (status === 'complete') {
       navigate('/app/assessment');
+    } else if (status === 'needs_dealership' || status === 'needs_organization') {
+      loadExistingDealerships();
     }
   }, [status, navigate]);
 
@@ -75,33 +65,6 @@ export default function Onboarding() {
     }
   };
 
-  const handleCreateOrganization = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!orgName.trim()) {
-      toast.error('Please enter an organization name');
-      return;
-    }
-
-    setIsSubmitting(true);
-    
-    try {
-      const result = await createOrganization(orgName.trim());
-      
-      if (result.success) {
-        toast.success('Organization created successfully!');
-        setCurrentStep('dealership');
-        loadExistingDealerships();
-      } else {
-        toast.error(result.error || 'Failed to create organization');
-      }
-    } catch (err) {
-      toast.error('An unexpected error occurred');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleCreateDealership = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -110,6 +73,23 @@ export default function Onboarding() {
     if (!name.trim() || !brand || !country || !location.trim()) {
       toast.error('Please fill in all required fields');
       return;
+    }
+
+    // Org-scoped duplicate check
+    if (context.organizationId) {
+      const { data: orgMatch } = await supabase
+        .from('dealerships')
+        .select('id, name')
+        .eq('organization_id', context.organizationId)
+        .ilike('name', name.trim())
+        .limit(1);
+
+      if (orgMatch && orgMatch.length > 0) {
+        toast.error(
+          'A dealership with this name already exists in your organization. Select it from the list instead of creating a duplicate.'
+        );
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -183,199 +163,175 @@ export default function Onboarding() {
       </header>
 
       <main className="container mx-auto px-4 py-12">
-        <div className="max-w-2xl mx-auto">
-          {/* Progress Steps */}
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <div className={`flex items-center gap-2 ${currentStep === 'organization' ? 'text-primary' : 'text-muted-foreground'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                currentStep === 'organization' ? 'bg-primary text-primary-foreground' :
-                currentStep === 'dealership' || currentStep === 'complete' ? 'bg-primary text-primary-foreground' : 'bg-muted'
-              }`}>
-                {currentStep !== 'organization' ? <Check className="h-4 w-4" /> : '1'}
-              </div>
-              <span className="font-medium hidden sm:inline">Organization</span>
-            </div>
-            
-            <div className="w-16 h-0.5 bg-muted">
-              <div className={`h-full bg-primary transition-all ${currentStep !== 'organization' ? 'w-full' : 'w-0'}`} />
-            </div>
-            
-            <div className={`flex items-center gap-2 ${currentStep === 'dealership' ? 'text-primary' : 'text-muted-foreground'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                currentStep === 'dealership' ? 'bg-primary text-primary-foreground' :
-                currentStep === 'complete' ? 'bg-primary text-primary-foreground' : 'bg-muted'
-              }`}>
-                {currentStep === 'complete' ? <Check className="h-4 w-4" /> : '2'}
-              </div>
-              <span className="font-medium hidden sm:inline">Dealership</span>
-            </div>
-          </div>
-
-          {/* Organization Step */}
-          {currentStep === 'organization' && (
-            <Card className="border-2">
-              <CardHeader className="text-center pb-2">
-                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Building2 className="h-8 w-8 text-primary" />
-                </div>
-                <CardTitle className="text-2xl">Create Your Organization</CardTitle>
-                <CardDescription className="max-w-md mx-auto">
-                  Organizations help you manage multiple dealerships and team members. 
-                  Start by giving your organization a name.
+        <div className="max-w-3xl mx-auto">
+          {/* Existing Dealerships in Org */}
+          {existingDealerships.length > 0 && activePath === 'choose' && (
+            <Card className="border-2 mb-6">
+              <CardHeader>
+                <CardTitle className="text-lg">Your Organization's Dealerships</CardTitle>
+                <CardDescription>
+                  Select a dealership to continue.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <form onSubmit={handleCreateOrganization} className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="orgName">Organization Name *</Label>
-                    <Input
-                      id="orgName"
-                      value={orgName}
-                      onChange={(e) => setOrgName(e.target.value)}
-                      placeholder="e.g., Premium Auto Group"
-                      className="text-lg py-6"
-                      disabled={isSubmitting}
-                      required
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      This will be visible to team members you invite.
-                    </p>
-                  </div>
-
-                  <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Creating...
-                      </>
-                    ) : (
-                      <>
-                        Continue
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </>
-                    )}
+              <CardContent className="space-y-2">
+                {existingDealerships.map((dealership) => (
+                  <Button
+                    key={dealership.id}
+                    variant="outline"
+                    className="w-full justify-start h-auto py-3"
+                    onClick={() => handleSelectExistingDealership(dealership.id)}
+                    disabled={isSubmitting}
+                  >
+                    <Car className="mr-3 h-5 w-5 text-primary" />
+                    <div className="text-left">
+                      <div className="font-medium">{dealership.name}</div>
+                      <div className="text-xs text-muted-foreground">{dealership.brand}</div>
+                    </div>
                   </Button>
-                </form>
+                ))}
               </CardContent>
             </Card>
           )}
 
-          {/* Dealership Step */}
-          {currentStep === 'dealership' && (
-            <div className="space-y-6">
-              {/* Existing Dealerships */}
-              {existingDealerships.length > 0 && (
-                <Card className="border-2">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Select Existing Dealership</CardTitle>
+          {/* Two-Path Split Screen */}
+          {activePath === 'choose' && (
+            <>
+              <h2 className="text-2xl font-bold text-center mb-2">Set Up Your Dealership</h2>
+              <p className="text-center text-muted-foreground mb-8">
+                {existingDealerships.length > 0 
+                  ? 'Or choose one of the options below'
+                  : 'Choose how you want to get started'
+                }
+              </p>
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* New Dealership Card */}
+                <Card className="border-2 hover:border-primary/50 transition-colors cursor-pointer group"
+                      onClick={() => setActivePath('create')}>
+                  <CardHeader className="text-center pb-2">
+                    <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                      <Plus className="h-8 w-8 text-primary" />
+                    </div>
+                    <CardTitle className="text-xl">New Dealership</CardTitle>
                     <CardDescription>
-                      Choose a dealership from your organization to assess.
+                      I am setting up this dealership for the first time
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-2">
-                    {existingDealerships.map((dealership) => (
-                      <Button
-                        key={dealership.id}
-                        variant="outline"
-                        className="w-full justify-start h-auto py-3"
-                        onClick={() => handleSelectExistingDealership(dealership.id)}
-                        disabled={isSubmitting}
-                      >
-                        <Car className="mr-3 h-5 w-5 text-primary" />
-                        <div className="text-left">
-                          <div className="font-medium">{dealership.name}</div>
-                          <div className="text-xs text-muted-foreground">{dealership.brand}</div>
-                        </div>
-                      </Button>
-                    ))}
+                  <CardContent className="text-center">
+                    <Button variant="default" className="w-full">
+                      Create Dealership
+                    </Button>
                   </CardContent>
                 </Card>
-              )}
 
-              {/* Create New Dealership */}
-              <Card className="border-2">
-                <CardHeader className="text-center pb-2">
-                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Car className="h-8 w-8 text-primary" />
+                {/* Join Existing Card */}
+                <Card className="border-2 hover:border-primary/50 transition-colors cursor-pointer group"
+                      onClick={() => setActivePath('join')}>
+                  <CardHeader className="text-center pb-2">
+                    <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                      <Mail className="h-8 w-8 text-primary" />
+                    </div>
+                    <CardTitle className="text-xl">Join Existing</CardTitle>
+                    <CardDescription>
+                      I was invited by my dealership admin
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="text-center">
+                    <Button variant="outline" className="w-full">
+                      I Have an Invite Link
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </>
+          )}
+
+          {/* Create Dealership Form */}
+          {activePath === 'create' && (
+            <Card className="border-2">
+              <CardHeader className="text-center pb-2">
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Car className="h-8 w-8 text-primary" />
+                </div>
+                <CardTitle className="text-2xl">Create Your Dealership</CardTitle>
+                <CardDescription className="max-w-md mx-auto">
+                  Enter the details of the dealership you want to assess.
+                </CardDescription>
+                {context.organizationName && (
+                  <Badge variant="secondary" className="mx-auto mt-2">
+                    <Building2 className="h-3 w-3 mr-1" />
+                    {context.organizationName}
+                  </Badge>
+                )}
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleCreateDealership} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="dealershipName">Dealership Name *</Label>
+                    <Input
+                      id="dealershipName"
+                      value={dealershipForm.name}
+                      onChange={(e) => setDealershipForm({ ...dealershipForm, name: e.target.value })}
+                      placeholder="e.g., Downtown BMW"
+                      disabled={isSubmitting}
+                      required
+                    />
                   </div>
-                  <CardTitle className="text-2xl">
-                    {existingDealerships.length > 0 ? 'Or Create New Dealership' : 'Add Your Dealership'}
-                  </CardTitle>
-                  <CardDescription className="max-w-md mx-auto">
-                    Enter the details of the dealership you want to assess.
-                  </CardDescription>
-                  {context.organizationName && (
-                    <Badge variant="secondary" className="mx-auto mt-2">
-                      <Building2 className="h-3 w-3 mr-1" />
-                      {context.organizationName}
-                    </Badge>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleCreateDealership} className="space-y-4">
+
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="dealershipName">Dealership Name *</Label>
-                      <Input
-                        id="dealershipName"
-                        value={dealershipForm.name}
-                        onChange={(e) => setDealershipForm({ ...dealershipForm, name: e.target.value })}
-                        placeholder="e.g., Downtown BMW"
+                      <Label>Brand *</Label>
+                      <Select
+                        value={dealershipForm.brand}
+                        onValueChange={(value) => setDealershipForm({ ...dealershipForm, brand: value })}
                         disabled={isSubmitting}
-                        required
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Brand *</Label>
-                        <Select
-                          value={dealershipForm.brand}
-                          onValueChange={(value) => setDealershipForm({ ...dealershipForm, brand: value })}
-                          disabled={isSubmitting}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select brand" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {AUTOMOTIVE_BRANDS.map((brand) => (
-                              <SelectItem key={brand} value={brand}>{brand}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Country *</Label>
-                        <Select
-                          value={dealershipForm.country}
-                          onValueChange={(value) => setDealershipForm({ ...dealershipForm, country: value })}
-                          disabled={isSubmitting}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select country" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {COUNTRIES.map((country) => (
-                              <SelectItem key={country} value={country}>{country}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select brand" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {AUTOMOTIVE_BRANDS.map((brand) => (
+                            <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="location">Location *</Label>
-                      <Input
-                        id="location"
-                        value={dealershipForm.location}
-                        onChange={(e) => setDealershipForm({ ...dealershipForm, location: e.target.value })}
-                        placeholder="e.g., 123 Main Street, Berlin"
+                      <Label>Country *</Label>
+                      <Select
+                        value={dealershipForm.country}
+                        onValueChange={(value) => setDealershipForm({ ...dealershipForm, country: value })}
                         disabled={isSubmitting}
-                        required
-                      />
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {COUNTRIES.map((country) => (
+                            <SelectItem key={country} value={country}>{country}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
+                  </div>
 
-                    <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Location *</Label>
+                    <Input
+                      id="location"
+                      value={dealershipForm.location}
+                      onChange={(e) => setDealershipForm({ ...dealershipForm, location: e.target.value })}
+                      placeholder="e.g., 123 Main Street, Berlin"
+                      disabled={isSubmitting}
+                      required
+                    />
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button type="button" variant="outline" onClick={() => setActivePath('choose')} disabled={isSubmitting}>
+                      Back
+                    </Button>
+                    <Button type="submit" className="flex-1" size="lg" disabled={isSubmitting}>
                       {isSubmitting ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -388,10 +344,33 @@ export default function Onboarding() {
                         </>
                       )}
                     </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </div>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Join Existing - Static Instructions */}
+          {activePath === 'join' && (
+            <Card className="border-2">
+              <CardHeader className="text-center pb-2">
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Mail className="h-8 w-8 text-primary" />
+                </div>
+                <CardTitle className="text-2xl">Join an Existing Dealership</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center space-y-4">
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  To join an existing dealership, open the invite link your dealership admin sent you. 
+                  If you don't have one, ask your admin to go to{' '}
+                  <span className="font-semibold text-foreground">Settings → Team Members → Invite</span>{' '}
+                  and send you a link.
+                </p>
+                <Button variant="outline" onClick={() => setActivePath('choose')}>
+                  Back
+                </Button>
+              </CardContent>
+            </Card>
           )}
         </div>
       </main>

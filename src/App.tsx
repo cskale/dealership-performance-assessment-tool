@@ -15,6 +15,7 @@ import ResourceHub from "./pages/ResourceHub";
 import Methodology from "./pages/Methodology";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
+import AcceptInvite from "./pages/AcceptInvite";
 import { AuthProvider } from "@/hooks/useAuth";
 import { MultiTenantProvider } from "@/hooks/useMultiTenant";
 import { RoleProvider } from "@/contexts/RoleContext";
@@ -42,6 +43,7 @@ const App = () => (
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
                     <Route path="/methodology" element={<Methodology />} />
+                    <Route path="/invite/:token" element={<AcceptInvite />} />
                     <Route path="/app/*" element={
                       <ProtectedRoute>
                         <Routes>

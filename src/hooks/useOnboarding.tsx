@@ -1,8 +1,8 @@
 /**
  * useOnboarding Hook
  * 
- * Manages onboarding state for organization and dealership setup.
- * Validates that users have proper org/dealership context before assessment access.
+ * Manages onboarding state for dealership setup.
+ * Organization is auto-created by DB trigger — if missing, silently repaired.
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -59,11 +59,18 @@ export function useOnboarding(): UseOnboardingReturn {
       return;
     }
 
+    // Check for pending invite token FIRST
+    const pendingToken = localStorage.getItem('pending_invite_token');
+    if (pendingToken) {
+      localStorage.removeItem('pending_invite_token');
+      window.location.replace(`/invite/${pendingToken}`);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
-      // Fetch profile with organization and dealership info
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('active_organization_id, active_dealership_id')
@@ -78,18 +85,55 @@ export function useOnboarding(): UseOnboardingReturn {
         return;
       }
 
-      // Check if user has an active organization
+      // If no org, silently repair (DB trigger should have created one)
       if (!profile?.active_organization_id) {
         if (import.meta.env.DEV) {
-          console.log('[Onboarding] User needs organization setup');
+          console.warn('[Onboarding] Unexpected: no org found for user, repairing...');
         }
-        setStatus('needs_organization');
-        setContext({
-          organizationId: null,
-          organizationName: null,
-          dealershipId: null,
-          dealershipName: null,
-        });
+        
+        // Attempt silent repair: check if user has any membership
+        const { data: existingMembership } = await supabase
+          .from('memberships')
+          .select('organization_id')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .limit(1)
+          .maybeSingle();
+
+        if (existingMembership) {
+          // Set the existing org as active
+          await supabase
+            .from('profiles')
+            .update({ active_organization_id: existingMembership.organization_id })
+            .eq('user_id', user.id);
+          
+          // Re-run check with updated profile
+          const { data: org } = await supabase
+            .from('organizations')
+            .select('id, name')
+            .eq('id', existingMembership.organization_id)
+            .single();
+
+          setStatus('needs_dealership');
+          setContext({
+            organizationId: existingMembership.organization_id,
+            organizationName: org?.name || null,
+            dealershipId: null,
+            dealershipName: null,
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        // No membership at all — create org silently
+        const result = await createOrganization(user.email?.split('@')[0] + "'s Organization" || 'My Organization');
+        if (result.success) {
+          // Recurse to re-check
+          await checkOnboardingStatus();
+          return;
+        }
+        
+        setStatus('needs_dealership');
         setIsLoading(false);
         return;
       }
@@ -103,9 +147,6 @@ export function useOnboarding(): UseOnboardingReturn {
 
       // Check if user has an active dealership
       if (!profile?.active_dealership_id) {
-        if (import.meta.env.DEV) {
-          console.log('[Onboarding] User needs dealership setup');
-        }
         setStatus('needs_dealership');
         setContext({
           organizationId: profile.active_organization_id,
@@ -125,10 +166,6 @@ export function useOnboarding(): UseOnboardingReturn {
         .single();
 
       if (dealershipError || !dealership) {
-        if (import.meta.env.DEV) {
-          console.log('[Onboarding] Dealership not found, clearing selection');
-        }
-        // Clear invalid dealership selection
         await supabase
           .from('profiles')
           .update({ active_dealership_id: null })
@@ -145,12 +182,7 @@ export function useOnboarding(): UseOnboardingReturn {
         return;
       }
 
-      // Verify dealership belongs to user's organization
       if (dealership.organization_id !== profile.active_organization_id) {
-        if (import.meta.env.DEV) {
-          console.log('[Onboarding] Dealership org mismatch, clearing selection');
-        }
-        // Clear mismatched dealership
         await supabase
           .from('profiles')
           .update({ active_dealership_id: null })
@@ -167,7 +199,6 @@ export function useOnboarding(): UseOnboardingReturn {
         return;
       }
 
-      // User has valid organization and dealership
       setStatus('complete');
       setContext({
         organizationId: profile.active_organization_id,
@@ -189,7 +220,6 @@ export function useOnboarding(): UseOnboardingReturn {
     if (!user) return false;
 
     try {
-      // Verify dealership exists and belongs to user's organization
       const { data: profile } = await supabase
         .from('profiles')
         .select('active_organization_id')
@@ -213,7 +243,6 @@ export function useOnboarding(): UseOnboardingReturn {
         return false;
       }
 
-      // Update profile with active dealership
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ active_dealership_id: dealershipId })
@@ -224,7 +253,6 @@ export function useOnboarding(): UseOnboardingReturn {
         return false;
       }
 
-      // Refresh onboarding status
       await checkOnboardingStatus();
       return true;
 
@@ -241,11 +269,9 @@ export function useOnboarding(): UseOnboardingReturn {
     }
 
     try {
-      // Generate slug from name
       const baseSlug = name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
       let slug = baseSlug;
       
-      // Ensure unique slug
       let attempts = 0;
       while (attempts < 10) {
         const { data: existing } = await supabase
@@ -259,7 +285,6 @@ export function useOnboarding(): UseOnboardingReturn {
         attempts++;
       }
 
-      // Create organization
       const { data: org, error: orgError } = await supabase
         .from('organizations')
         .insert({ name, slug })
@@ -270,7 +295,6 @@ export function useOnboarding(): UseOnboardingReturn {
         return { success: false, error: orgError.message };
       }
 
-      // Create membership as owner
       const { error: membershipError } = await supabase
         .from('memberships')
         .insert({
@@ -284,7 +308,6 @@ export function useOnboarding(): UseOnboardingReturn {
         return { success: false, error: membershipError.message };
       }
 
-      // Update profile with active organization
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ active_organization_id: org.id })
@@ -294,7 +317,6 @@ export function useOnboarding(): UseOnboardingReturn {
         return { success: false, error: profileError.message };
       }
 
-      // Refresh onboarding status
       await checkOnboardingStatus();
       return { success: true, organizationId: org.id };
 
@@ -310,7 +332,6 @@ export function useOnboarding(): UseOnboardingReturn {
     }
 
     try {
-      // Get current organization
       const { data: profile } = await supabase
         .from('profiles')
         .select('active_organization_id')
@@ -321,7 +342,6 @@ export function useOnboarding(): UseOnboardingReturn {
         return { success: false, error: 'No organization set' };
       }
 
-      // Create dealership
       const { data: dealership, error: dealershipError } = await supabase
         .from('dealerships')
         .insert({
@@ -339,7 +359,6 @@ export function useOnboarding(): UseOnboardingReturn {
         return { success: false, error: dealershipError.message };
       }
 
-      // Set as active dealership
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ active_dealership_id: dealership.id })
@@ -349,7 +368,6 @@ export function useOnboarding(): UseOnboardingReturn {
         return { success: false, error: updateError.message };
       }
 
-      // Refresh onboarding status
       await checkOnboardingStatus();
       return { success: true, dealershipId: dealership.id };
 

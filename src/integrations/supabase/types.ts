@@ -338,6 +338,66 @@ export type Database = {
           },
         ]
       }
+      dealership_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          dealership_id: string
+          expires_at: string
+          id: string
+          invited_by: string
+          invited_email: string
+          membership_role: Database["public"]["Enums"]["membership_role"]
+          organization_id: string
+          status: string
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          dealership_id: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          invited_email: string
+          membership_role?: Database["public"]["Enums"]["membership_role"]
+          organization_id: string
+          status?: string
+          token?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          dealership_id?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          invited_email?: string
+          membership_role?: Database["public"]["Enums"]["membership_role"]
+          organization_id?: string
+          status?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dealership_invites_dealership_id_fkey"
+            columns: ["dealership_id"]
+            isOneToOne: false
+            referencedRelation: "dealerships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dealership_invites_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dealerships: {
         Row: {
           brand: string
@@ -819,6 +879,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_dealership_invite: { Args: { p_token: string }; Returns: Json }
       can_read_dealership: {
         Args: { p_dealership_id: string }
         Returns: boolean
