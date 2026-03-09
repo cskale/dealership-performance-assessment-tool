@@ -1,21 +1,23 @@
-import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { screen, fireEvent, waitFor } from '@testing-library/dom';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 
-// Create mock functions BEFORE vi.mock
-const mockRpc = vi.fn();
-const mockFrom = vi.fn(() => ({
-  update: vi.fn().mockReturnThis(),
-  eq: vi.fn().mockReturnThis(),
-}));
-const mockOnAuthStateChange = vi.fn(() => ({
-  data: { subscription: { unsubscribe: vi.fn() } }
-}));
-const mockGetSession = vi.fn(() => Promise.resolve({
-  data: { session: { user: { id: 'user-1', email: 'test@example.com' } } }
+// Hoist mock functions so they are available in vi.mock factory
+const { mockRpc, mockFrom, mockOnAuthStateChange, mockGetSession } = vi.hoisted(() => ({
+  mockRpc: vi.fn(),
+  mockFrom: vi.fn(() => ({
+    update: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+  })),
+  mockOnAuthStateChange: vi.fn(() => ({
+    data: { subscription: { unsubscribe: vi.fn() } }
+  })),
+  mockGetSession: vi.fn(() => Promise.resolve({
+    data: { session: { user: { id: 'user-1', email: 'test@example.com' } } }
+  })),
 }));
 
 // Mock Supabase with hoisted references

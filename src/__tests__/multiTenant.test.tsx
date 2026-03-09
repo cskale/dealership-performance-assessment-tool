@@ -5,13 +5,15 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 
-// Create mock functions BEFORE vi.mock
-const mockFrom = vi.fn();
-const mockOnAuthStateChange = vi.fn(() => ({
-  data: { subscription: { unsubscribe: vi.fn() } }
-}));
-const mockGetSession = vi.fn(() => Promise.resolve({
-  data: { session: { user: { id: 'user-1' } } }
+// Hoist mock functions so they are available in vi.mock factory
+const { mockFrom, mockOnAuthStateChange, mockGetSession } = vi.hoisted(() => ({
+  mockFrom: vi.fn(),
+  mockOnAuthStateChange: vi.fn(() => ({
+    data: { subscription: { unsubscribe: vi.fn() } }
+  })),
+  mockGetSession: vi.fn(() => Promise.resolve({
+    data: { session: { user: { id: 'user-1' } } }
+  })),
 }));
 
 // Mock Supabase with hoisted references
