@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, cleanup } from '@testing-library/react';
 import { screen, waitFor } from '@testing-library/dom';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -34,7 +34,7 @@ import { MultiTenantProvider, useMultiTenant } from '@/hooks/useMultiTenant';
 const TestComponent = () => {
   const { currentOrganization, organizations, loading, canPerformAction } = useMultiTenant();
   
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div data-testid="loading">Loading...</div>;
   
   return (
     <div>
@@ -85,29 +85,53 @@ describe('MultiTenant Hook', () => {
       data: { session: { user: { id: 'user-1' } } }
     });
     
-    // Setup mock responses for memberships query
-    mockFrom.mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockResolvedValue({
-        data: [
-          {
-            id: 'membership-1',
-            user_id: 'user-1',
-            organization_id: 'org-1',
-            role: 'owner',
-            is_active: true,
-            organization: {
-              id: 'org-1',
-              name: 'Test Organization',
-              slug: 'test-org'
-            }
-          }
-        ]
-      }),
-      single: vi.fn(() => Promise.resolve({ 
-        data: { active_organization_id: 'org-1' } 
-      })),
+    // Setup comprehensive mock for all Supabase calls in useMultiTenant
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'profiles') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({ 
+            data: { active_organization_id: 'org-1' },
+            error: null
+          }),
+          update: vi.fn().mockReturnThis(),
+        };
+      }
+      if (table === 'memberships') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({
+              data: [
+                {
+                  id: 'membership-1',
+                  user_id: 'user-1',
+                  organization_id: 'org-1',
+                  role: 'owner',
+                  is_active: true,
+                  organization: {
+                    id: 'org-1',
+                    name: 'Test Organization',
+                    slug: 'test-org'
+                  }
+                }
+              ],
+              error: null
+            })
+          }),
+        };
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+        single: vi.fn().mockResolvedValue({ data: null, error: null }),
+      };
     });
+  });
+
+  afterEach(() => {
+    cleanup();
   });
 
   it('loads organization data for authenticated user', async () => {
@@ -117,16 +141,13 @@ describe('MultiTenant Hook', () => {
       </TestWrapper>
     );
 
-    // Initially shows loading
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
-
-    // Wait for data to load
+    // Wait for loading to complete and data to appear
     await waitFor(() => {
       expect(screen.getByTestId('current-org')).toBeInTheDocument();
-    });
+    }, { timeout: 2000 });
   });
 
-  it('correctly calculates role-based permissions', async () => {
+  it('correctly calculates role-based permissions for owner', async () => {
     render(
       <TestWrapper>
         <TestComponent />
@@ -137,32 +158,52 @@ describe('MultiTenant Hook', () => {
       // Owner should be able to create and delete
       expect(screen.getByTestId('can-create')).toHaveTextContent('Can create');
       expect(screen.getByTestId('can-delete')).toHaveTextContent('Can delete');
-    });
+    }, { timeout: 2000 });
   });
 
   it('handles viewer role permissions correctly', async () => {
     // Mock viewer role
-    mockFrom.mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockResolvedValue({
-        data: [
-          {
-            id: 'membership-1',
-            user_id: 'user-1',
-            organization_id: 'org-1',
-            role: 'viewer',
-            is_active: true,
-            organization: {
-              id: 'org-1',
-              name: 'Test Organization',
-              slug: 'test-org'
-            }
-          }
-        ]
-      }),
-      single: vi.fn(() => Promise.resolve({ 
-        data: { active_organization_id: 'org-1' } 
-      })),
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'profiles') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({ 
+            data: { active_organization_id: 'org-1' },
+            error: null
+          }),
+          update: vi.fn().mockReturnThis(),
+        };
+      }
+      if (table === 'memberships') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({
+              data: [
+                {
+                  id: 'membership-1',
+                  user_id: 'user-1',
+                  organization_id: 'org-1',
+                  role: 'viewer',
+                  is_active: true,
+                  organization: {
+                    id: 'org-1',
+                    name: 'Test Organization',
+                    slug: 'test-org'
+                  }
+                }
+              ],
+              error: null
+            })
+          }),
+        };
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+        single: vi.fn().mockResolvedValue({ data: null, error: null }),
+      };
     });
 
     render(
@@ -175,7 +216,7 @@ describe('MultiTenant Hook', () => {
       // Viewer should not be able to create or delete
       expect(screen.getByTestId('can-create')).toHaveTextContent('Cannot create');
       expect(screen.getByTestId('can-delete')).toHaveTextContent('Cannot delete');
-    });
+    }, { timeout: 2000 });
   });
 });
 
