@@ -43,6 +43,7 @@ const App = () => (
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
                     <Route path="/methodology" element={<Methodology />} />
+                    <Route path="/invite/:token" element={<AcceptInvite />} />
                     <Route path="/app/*" element={
                       <ProtectedRoute>
                         <Routes>

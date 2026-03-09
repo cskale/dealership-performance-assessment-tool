@@ -22,8 +22,7 @@ interface HomeHeaderProps {
 export function HomeHeader({ hasCompletedAssessment }: HomeHeaderProps) {
   const { user, signOut } = useAuth();
   const { language } = useLanguage();
-  // Role selector removed per P0.1 - RBAC still enforced in backend
-  const { organizations, currentOrganization, switchOrganization } = useMultiTenant();
+  const { organizations, currentOrganization, userMemberships, switchOrganization } = useMultiTenant();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -35,6 +34,13 @@ export function HomeHeader({ hasCompletedAssessment }: HomeHeaderProps) {
     if (!user?.email) return 'U';
     return user.email.substring(0, 2).toUpperCase();
   };
+
+  // Only show org switcher for owner role with multiple orgs
+  const currentMembership = userMemberships.find(
+    m => m.organization_id === currentOrganization?.id
+  );
+  const isOwner = currentMembership?.role === 'owner';
+  const showOrgSwitcher = isOwner && organizations && organizations.length > 1;
 
   const content = {
     en: {
@@ -67,7 +73,6 @@ export function HomeHeader({ hasCompletedAssessment }: HomeHeaderProps) {
             Dealership Assessment
           </Link>
           
-          {/* Navigation Links - Only show after assessment completion */}
           {user && (
             <nav className="hidden md:flex items-center gap-2">
               <Link to="/app/assessment">
@@ -115,10 +120,8 @@ export function HomeHeader({ hasCompletedAssessment }: HomeHeaderProps) {
                 
                 <DropdownMenuSeparator />
                 
-                {/* Test Role Selector REMOVED per P0.1 - RBAC still enforced in backend */}
-                
-                {/* Organization Selector - Only for users with multiple orgs */}
-                {organizations && organizations.length > 1 && (
+                {/* Organization Selector - Only for owners with multiple orgs */}
+                {showOrgSwitcher && (
                   <>
                     <DropdownMenuLabel className="text-xs text-muted-foreground flex items-center gap-2">
                       <Building2 className="h-3 w-3" />

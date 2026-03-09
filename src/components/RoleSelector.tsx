@@ -3,6 +3,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 
 export const RoleSelector = () => {
+  // Only render in development mode
+  if (!import.meta.env.DEV) return null;
+
   const { testRole, setTestRole } = useRoleContext();
 
   return (
