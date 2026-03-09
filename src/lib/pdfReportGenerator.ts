@@ -11,6 +11,7 @@ import {
   calculateEnhancedMaturity,
 } from '@/lib/scoringEngine';
 import { questionnaire } from '@/data/questionnaire';
+import { generateBenchmarkDisclaimer } from '@/lib/benchmarkGovernance';
 
 // ── i18n labels ──
 const LABELS: Record<string, Record<string, string>> = {
