@@ -190,7 +190,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
       {/* ===== 4. REFERENCE BENCHMARK RANGE (full-width) ===== */}
       {kpi.benchmark && (
         <section className="mb-14">
-          <h2 className="text-[15px] font-semibold text-foreground mb-1.5">
+          <h2 className="text-sm font-semibold text-foreground mb-1.5">
             {language === 'de' ? 'Referenz-Benchmarkbereich' : 'Reference Benchmark Range'}
           </h2>
           <p className="text-sm text-muted-foreground/70 mb-6 leading-relaxed">
