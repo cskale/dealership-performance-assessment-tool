@@ -201,6 +201,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
           </p>
           <div className="rounded-xl border border-border/30 bg-card p-6 sm:p-7">
             <KPIBenchmarkStudio
+              kpiKey={kpiKey}
               benchmark={kpi.benchmark}
               unit={kpi.unitOfMeasure}
               isLowerBetter={!!isLowerBetter}
