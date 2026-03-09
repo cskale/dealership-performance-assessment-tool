@@ -961,7 +961,7 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   pdf.setFontSize(8);
   pdf.setFont('helvetica', 'italic');
   pdf.setTextColor(100, 100, 100);
-  const disclaimer = generateBenchmarkDisclaimer(lang);
+  const disclaimer = generateBenchmarkDisclaimer(lang as 'en' | 'de');
   const discLines = pdf.splitTextToSize(disclaimer, contentW);
   pdf.text(discLines, margin, y);
 
