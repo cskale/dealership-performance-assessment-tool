@@ -20,6 +20,7 @@ import { MultiTenantProvider } from "@/hooks/useMultiTenant";
 import { RoleProvider } from "@/contexts/RoleContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { PageErrorBoundary } from "@/components/shared/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
@@ -33,51 +34,56 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
-              <Routes>
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/auth/callback" element={<AuthCallback />} />
-                <Route path="/methodology" element={<Methodology />} />
-                <Route path="/app/*" element={
-                  <ProtectedRoute>
-                    <Routes>
-                      <Route index element={<Index />} />
-                      <Route path="dashboard" element={<Dashboard />} />
-                      <Route path="onboarding" element={<Onboarding />} />
-                      <Route path="assessment" element={
-                        <ProtectedRoute requiresOnboarding>
-                          <Assessment />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="results" element={<Results />} />
-                    </Routes>
-                  </ProtectedRoute>
-                } />
-                <Route path="/account/*" element={
-                  <ProtectedRoute>
-                    <Routes>
-                      <Route index element={<Account />} />
-                    </Routes>
-                  </ProtectedRoute>
-                } />
-                <Route path="/actions" element={
-                  <ProtectedRoute>
-                    <Actions />
-                  </ProtectedRoute>
-                } />
-                <Route path="/resources" element={
-                  <ProtectedRoute>
-                    <ResourceHub />
-                  </ProtectedRoute>
-                } />
-                <Route path="/" element={
-                  <ProtectedRoute>
-                    <Index />
-                  </ProtectedRoute>
-                } />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
+                <PageErrorBoundary
+                  fallbackTitle="Application Error"
+                  fallbackMessage="The application encountered an unexpected error. Please refresh the page or return to the home page."
+                >
+                  <Routes>
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/auth/callback" element={<AuthCallback />} />
+                    <Route path="/methodology" element={<Methodology />} />
+                    <Route path="/app/*" element={
+                      <ProtectedRoute>
+                        <Routes>
+                          <Route index element={<Index />} />
+                          <Route path="dashboard" element={<Dashboard />} />
+                          <Route path="onboarding" element={<Onboarding />} />
+                          <Route path="assessment" element={
+                            <ProtectedRoute requiresOnboarding>
+                              <Assessment />
+                            </ProtectedRoute>
+                          } />
+                          <Route path="results" element={<Results />} />
+                        </Routes>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/account/*" element={
+                      <ProtectedRoute>
+                        <Routes>
+                          <Route index element={<Account />} />
+                        </Routes>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/actions" element={
+                      <ProtectedRoute>
+                        <Actions />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/resources" element={
+                      <ProtectedRoute>
+                        <ResourceHub />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/" element={
+                      <ProtectedRoute>
+                        <Index />
+                      </ProtectedRoute>
+                    } />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </PageErrorBoundary>
+              </BrowserRouter>
             </TooltipProvider>
           </RoleProvider>
         </LanguageProvider>
