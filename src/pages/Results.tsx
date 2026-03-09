@@ -186,15 +186,15 @@ export default function Results() {
   } : null;
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'stroke-emerald-500';
-    if (score >= 60) return 'stroke-yellow-500';
-    return 'stroke-red-500';
+    if (score >= 80) return 'stroke-success';
+    if (score >= 60) return 'stroke-warning';
+    return 'stroke-destructive';
   };
 
   const getScoreLabel = (score: number) => {
-    if (score >= 80) return { label: t('results.excellent'), color: 'bg-emerald-600' };
-    if (score >= 60) return { label: t('results.good'), color: 'bg-yellow-600' };
-    return { label: t('results.needsImprovement'), color: 'bg-red-600' };
+    if (score >= 80) return { label: t('results.excellent'), color: 'bg-success' };
+    if (score >= 60) return { label: t('results.good'), color: 'bg-warning' };
+    return { label: t('results.needsImprovement'), color: 'bg-destructive' };
   };
 
   const formatDate = (dateString: string) => {
