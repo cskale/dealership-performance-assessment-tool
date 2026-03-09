@@ -260,7 +260,7 @@ export function IndustrialKPIDashboard({
         <CardContent>
           <ul className="text-sm text-warning-foreground/90 space-y-2">
             {Object.entries(scores)
-              .filter(([_, score]) => score < SCORE_THRESHOLDS.mature)
+              .filter(([_, score]) => score < 70) // Below mature threshold
               .slice(0, 3)
               .map(([sectionId, score]) => (
                 <li key={sectionId} className="flex items-start gap-2">
