@@ -41,6 +41,14 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+const activateTab = (name: RegExp) => {
+  const tab = screen.getByRole('tab', { name });
+  // Radix Tabs relies on pointer events in some environments
+  fireEvent.pointerDown(tab);
+  fireEvent.click(tab);
+  return tab;
+};
+
 describe('Auth Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -76,14 +84,20 @@ describe('Auth Component', () => {
     );
 
     // Switch to magic link tab
-    fireEvent.click(screen.getByRole('tab', { name: /magic link/i }));
+    const magicTab = activateTab(/magic link/i);
+    await waitFor(() => {
+      expect(magicTab).toHaveAttribute('data-state', 'active');
+    });
     await waitFor(() => {
       // Use role+name to avoid brittle text matching when icons are present
       expect(screen.getByRole('button', { name: /send magic link/i })).toBeInTheDocument();
     });
 
     // Switch to sign up tab
-    fireEvent.click(screen.getByRole('tab', { name: /sign up/i }));
+    const signupTab = activateTab(/sign up/i);
+    await waitFor(() => {
+      expect(signupTab).toHaveAttribute('data-state', 'active');
+    });
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
       expect(screen.getByPlaceholderText('Enter your full name')).toBeInTheDocument();
@@ -107,6 +121,13 @@ describe('Auth Component', () => {
   });
 
   it('shows loading states correctly', async () => {
+    // Make the sign-in mutation stay pending so we can reliably observe the loading UI
+    let resolveSignIn: ((value: any) => void) | undefined;
+    const pendingSignIn = new Promise((resolve) => {
+      resolveSignIn = resolve;
+    });
+    (supabase.auth.signInWithPassword as any).mockReturnValueOnce(pendingSignIn);
+
     render(
       <TestWrapper>
         <Auth />
@@ -126,9 +147,14 @@ describe('Auth Component', () => {
     // Submit form
     fireEvent.click(signInButton);
 
-    // Should show loading state briefly
     await waitFor(() => {
       expect(signInButton).toBeDisabled();
+    });
+
+    resolveSignIn?.({ error: null });
+
+    await waitFor(() => {
+      expect(signInButton).not.toBeDisabled();
     });
   });
 });
@@ -182,7 +208,7 @@ describe('Auth Validation', () => {
     );
 
     // Switch to sign up
-    fireEvent.click(screen.getByRole('tab', { name: /sign up/i }));
+    activateTab(/sign up/i);
 
     const passwordInput = await screen.findByPlaceholderText('Create a password (min. 6 characters)');
     expect(passwordInput).toHaveAttribute('minLength', '6');
