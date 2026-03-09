@@ -337,6 +337,50 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt }:
         </Card>
       )}
 
+      {/* KPI Intelligence for Weak-Scoring Areas */}
+      {weaknesses.length > 0 && (
+        <Card className="shadow-lg border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" />
+              {language === 'de' ? 'KPI-Einblicke für Verbesserungsbereiche' : 'KPI Insights for Improvement Areas'}
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {language === 'de'
+                ? 'Relevante KPIs und Verbesserungsansätze für Ihre schwächsten Bereiche'
+                : 'Relevant KPIs and improvement approaches for your weakest areas'}
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {weaknesses.slice(0, 2).map((item) => {
+              // Map department to representative KPI
+              const deptKpiMap: Record<string, string> = {
+                'new-vehicle-sales': 'leadConversion',
+                'used-vehicle-sales': 'grossPerUsedRetailed',
+                'service-performance': 'serviceAbsorption',
+                'parts-inventory': 'partsInventoryTurnover',
+                'financial-operations': 'netProfitMargin',
+              };
+              const kpiKey = deptKpiMap[item.dept];
+              if (!kpiKey) return null;
+              
+              return (
+                <KpiInsightPanel
+                  key={item.dept}
+                  kpiKey={kpiKey}
+                  language={language as 'en' | 'de'}
+                  mode="compact"
+                  showDeepLink
+                  onNavigateToEncyclopedia={(kpi) => {
+                    navigate(`/methodology?kpi=${kpi}`);
+                  }}
+                />
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Department Overview Cards */}
       <Card className="shadow-lg">
         <CardHeader>
