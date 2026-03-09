@@ -101,7 +101,7 @@ export function KpiRelationshipMap({ interdependencies, kpiTitle, language, onNa
         {/* Right: Likely consequences */}
         {hasDownstream && (
           <div className="min-w-0 overflow-hidden">
-            <span className="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-wider block mb-4">
+            <span className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider block mb-4">
               {language === 'de' ? 'Wahrscheinliche Auswirkungen' : 'Likely consequences'}
             </span>
             <div className="space-y-2">
