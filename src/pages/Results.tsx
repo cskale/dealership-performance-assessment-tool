@@ -21,7 +21,7 @@ import { useMultiTenant } from "@/hooks/useMultiTenant";
 import { supabase } from "@/integrations/supabase/client";
 import type { PDFExportData } from "@/lib/pdfReportGenerator";
 import { calculateWeightedScore, CATEGORY_WEIGHTS } from "@/lib/scoringEngine";
-
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 export default function Results() {
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(window.location.search);
