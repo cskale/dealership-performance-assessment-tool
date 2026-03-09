@@ -154,7 +154,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-5 pt-5 border-t border-border/20">
               {kpi.inclusions && kpi.inclusions.length > 0 && (
                 <div>
-                  <span className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wider block mb-3">
+                  <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider block mb-3">
                     {language === 'de' ? 'Einschlüsse' : 'Includes'}
                   </span>
                   <ul className="space-y-2">
