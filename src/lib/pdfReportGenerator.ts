@@ -311,7 +311,7 @@ function normalizeStatus(s: string): string {
 }
 function normalizePriority(p: string): string {
   const map: Record<string, string> = {
-    low: 'Low', medium: 'Medium', high: 'High', critical: 'High',
+    low: 'Low', medium: 'Medium', high: 'High', critical: 'Critical',
   };
   return map[p?.toLowerCase()] || (p ? p.charAt(0).toUpperCase() + p.slice(1).toLowerCase() : 'Medium');
 }
