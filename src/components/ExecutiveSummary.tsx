@@ -27,6 +27,7 @@ interface ExecutiveSummaryProps {
   scores: Record<string, number>;
   answers: Record<string, any>;
   completedAt: string;
+  onNavigateToEncyclopedia?: (kpiKey: string) => void;
 }
 
 function getScoreInterpretation(score: number, language: string): string {
