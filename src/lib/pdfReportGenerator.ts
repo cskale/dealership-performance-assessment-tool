@@ -13,7 +13,7 @@ import {
 import { questionnaire } from '@/data/questionnaire';
 import { generateBenchmarkDisclaimer } from '@/lib/benchmarkGovernance';
 import { KPI_DEFINITIONS, getKPILabel } from '@/lib/kpiDefinitions';
-import { getMaturityLevel } from '@/lib/constants';
+import { getMaturityLevel, SCORE_THRESHOLDS } from '@/lib/constants';
 
 // ── i18n labels ──
 const LABELS: Record<string, Record<string, string>> = {
@@ -311,7 +311,7 @@ function normalizeStatus(s: string): string {
 }
 function normalizePriority(p: string): string {
   const map: Record<string, string> = {
-    low: 'Low', medium: 'Medium', high: 'High', critical: 'High',
+    low: 'Low', medium: 'Medium', high: 'High', critical: 'Critical',
   };
   return map[p?.toLowerCase()] || (p ? p.charAt(0).toUpperCase() + p.slice(1).toLowerCase() : 'Medium');
 }
@@ -442,7 +442,7 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   pdf.setFont('helvetica', 'bold');
   pdf.text(l(lang, 'overallScore'), margin, 145);
 
-  const scoreColor = overallScore >= 70 ? [16, 185, 129] : overallScore >= 50 ? [234, 179, 8] : [220, 38, 38];
+  const scoreColor = overallScore >= SCORE_THRESHOLDS.excellent ? [16, 185, 129] : overallScore >= SCORE_THRESHOLDS.good ? [234, 179, 8] : [220, 38, 38];
   pdf.setFontSize(48);
   pdf.setTextColor(scoreColor[0], scoreColor[1], scoreColor[2]);
   pdf.text(`${overallScore}`, margin, 175);

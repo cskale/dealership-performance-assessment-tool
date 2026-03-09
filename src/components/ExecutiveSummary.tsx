@@ -1,11 +1,12 @@
 import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, AlertTriangle, Target, Info, ShieldAlert, BarChart3 } from "lucide-react";
+import { CheckCircle, AlertTriangle, Target, Info, ShieldAlert, BarChart3, BookOpen } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { TOTAL_QUESTIONS, getMaturityLevel as getCanonicalMaturityLevel } from "@/lib/constants";
+import { TOTAL_QUESTIONS, getMaturityLevel as getCanonicalMaturityLevel, SCORE_THRESHOLDS } from "@/lib/constants";
 import { getDepartmentName } from "@/lib/departmentNames";
 import {
   CATEGORY_WEIGHTS,
@@ -19,6 +20,7 @@ import {
   type SystemicPattern,
 } from "@/lib/scoringEngine";
 import { questionnaire } from "@/data/questionnaire";
+import { KpiInsightPanel } from "@/components/shared/KpiInsightPanel";
 
 interface ExecutiveSummaryProps {
   overallScore: number;
@@ -80,6 +82,7 @@ function capitalize(s: string): string {
 
 export function ExecutiveSummary({ overallScore, scores, answers, completedAt }: ExecutiveSummaryProps) {
   const { t, language } = useLanguage();
+  const navigate = useNavigate();
 
   // Enhanced analytics from the new scoring engine
   const subCategoryData = useMemo(() =>
@@ -330,6 +333,50 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt }:
                 </li>
               ))}
             </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* KPI Intelligence for Weak-Scoring Areas */}
+      {weaknesses.length > 0 && (
+        <Card className="shadow-lg border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" />
+              {language === 'de' ? 'KPI-Einblicke für Verbesserungsbereiche' : 'KPI Insights for Improvement Areas'}
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {language === 'de'
+                ? 'Relevante KPIs und Verbesserungsansätze für Ihre schwächsten Bereiche'
+                : 'Relevant KPIs and improvement approaches for your weakest areas'}
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {weaknesses.slice(0, 2).map((item) => {
+              // Map department to representative KPI
+              const deptKpiMap: Record<string, string> = {
+                'new-vehicle-sales': 'leadConversion',
+                'used-vehicle-sales': 'grossPerUsedRetailed',
+                'service-performance': 'serviceAbsorption',
+                'parts-inventory': 'partsInventoryTurnover',
+                'financial-operations': 'netProfitMargin',
+              };
+              const kpiKey = deptKpiMap[item.dept];
+              if (!kpiKey) return null;
+              
+              return (
+                <KpiInsightPanel
+                  key={item.dept}
+                  kpiKey={kpiKey}
+                  language={language as 'en' | 'de'}
+                  mode="compact"
+                  showDeepLink
+                  onNavigateToEncyclopedia={(kpi) => {
+                    navigate(`/methodology?kpi=${kpi}`);
+                  }}
+                />
+              );
+            })}
           </CardContent>
         </Card>
       )}

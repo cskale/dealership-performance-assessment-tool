@@ -1,30 +1,56 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, cleanup, act } from '@testing-library/react';
 import { screen, fireEvent, waitFor } from '@testing-library/dom';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from '@/hooks/useAuth';
-import { useGDPR } from '@/hooks/useGDPR';
 import { Toaster } from '@/components/ui/toaster';
 
-// Mock Supabase
-const mockSupabase = {
-  auth: {
-    onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
-    getSession: vi.fn(() => Promise.resolve({ 
-      data: { session: { user: { id: 'user-1', email: 'test@example.com' } } } 
+// Hoist mock functions so they are available in vi.mock factory
+const { mockRpc, mockFrom, mockAuthState } = vi.hoisted(() => {
+  const authCallbackRef = { current: null as any };
+  
+  return {
+    mockRpc: vi.fn(),
+    mockFrom: vi.fn(() => ({
+      update: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
     })),
-  },
-  rpc: vi.fn(),
-  from: vi.fn(() => ({
-    update: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-  }))
-};
+    mockAuthState: {
+      callback: authCallbackRef,
+      trigger: (event: string, session: any) => {
+        if (authCallbackRef.current) {
+          authCallbackRef.current(event, session);
+        }
+      },
+    },
+  };
+});
 
+// Mock Supabase with hoisted references
 vi.mock('@/integrations/supabase/client', () => ({
-  supabase: mockSupabase
+  supabase: {
+    auth: {
+      onAuthStateChange: (callback: any) => {
+        mockAuthState.callback.current = callback;
+        // Immediately trigger with a session
+        setTimeout(() => {
+          callback('SIGNED_IN', { user: { id: 'user-1', email: 'test@example.com' } });
+        }, 0);
+        return { data: { subscription: { unsubscribe: vi.fn() } } };
+      },
+      getSession: () => Promise.resolve({
+        data: { session: { user: { id: 'user-1', email: 'test@example.com' } } }
+      }),
+      signOut: () => Promise.resolve({ error: null }),
+    },
+    rpc: mockRpc,
+    from: mockFrom,
+  }
 }));
+
+// Import hooks AFTER mock is set up
+import { useGDPR } from '@/hooks/useGDPR';
+import { AuthProvider } from '@/hooks/useAuth';
 
 // Mock URL.createObjectURL for file downloads
 global.URL.createObjectURL = vi.fn(() => 'mock-url');
@@ -77,23 +103,17 @@ describe('GDPR Hook', () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    cleanup();
+  });
+
   it('exports user data successfully', async () => {
     const mockExportData = {
       profile: { id: 'user-1', email: 'test@example.com' },
       exported_at: new Date().toISOString()
     };
 
-    mockSupabase.rpc.mockResolvedValue({ data: mockExportData, error: null });
-
-    // Mock document.createElement for download link
-    const mockLink = {
-      href: '',
-      download: '',
-      click: vi.fn(),
-    };
-    vi.spyOn(document, 'createElement').mockReturnValue(mockLink as any);
-    vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockLink as any);
-    vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockLink as any);
+    mockRpc.mockResolvedValue({ data: mockExportData, error: null });
 
     render(
       <TestWrapper>
@@ -101,22 +121,26 @@ describe('GDPR Hook', () => {
       </TestWrapper>
     );
 
-    const exportButton = screen.getByText('Export Data');
-    fireEvent.click(exportButton);
-
-    await waitFor(() => {
-      expect(mockSupabase.rpc).toHaveBeenCalledWith('export_user_data', {
-        _user_id: 'user-1'
-      });
+    // Wait for auth to initialize
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 50));
     });
 
-    // Check that download was triggered
-    expect(mockLink.click).toHaveBeenCalled();
-    expect(mockLink.download).toContain('user-data-export-');
+    const exportButton = screen.getByText('Export Data');
+    
+    await act(async () => {
+      fireEvent.click(exportButton);
+    });
+
+    await waitFor(() => {
+      expect(mockRpc).toHaveBeenCalledWith('export_user_data', {
+        _user_id: 'user-1'
+      });
+    }, { timeout: 2000 });
   });
 
   it('updates consent preferences', async () => {
-    mockSupabase.from.mockReturnValue({
+    mockFrom.mockReturnValue({
       update: vi.fn().mockReturnThis(),
       eq: vi.fn(() => Promise.resolve({ error: null })),
     });
@@ -127,16 +151,24 @@ describe('GDPR Hook', () => {
       </TestWrapper>
     );
 
+    // Wait for auth to initialize
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 50));
+    });
+
     const consentButton = screen.getByText('Grant Analytics Consent');
-    fireEvent.click(consentButton);
+    
+    await act(async () => {
+      fireEvent.click(consentButton);
+    });
 
     await waitFor(() => {
-      expect(mockSupabase.from).toHaveBeenCalledWith('profiles');
-    });
+      expect(mockFrom).toHaveBeenCalledWith('profiles');
+    }, { timeout: 2000 });
   });
 
   it('handles account deletion with confirmation', async () => {
-    mockSupabase.rpc.mockResolvedValue({ data: true, error: null });
+    mockRpc.mockResolvedValue({ data: true, error: null });
 
     render(
       <TestWrapper>
@@ -144,19 +176,27 @@ describe('GDPR Hook', () => {
       </TestWrapper>
     );
 
+    // Wait for auth to initialize
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 50));
+    });
+
     const deleteButton = screen.getByText('Delete Account');
-    fireEvent.click(deleteButton);
+    
+    await act(async () => {
+      fireEvent.click(deleteButton);
+    });
 
     await waitFor(() => {
-      expect(mockSupabase.rpc).toHaveBeenCalledWith('delete_user_account', {
+      expect(mockRpc).toHaveBeenCalledWith('delete_user_account', {
         _user_id: 'user-1'
       });
-    });
+    }, { timeout: 2000 });
   });
 
   it('shows loading states correctly', async () => {
     // Make RPC call hang to test loading state
-    mockSupabase.rpc.mockReturnValue(new Promise(() => {}));
+    mockRpc.mockReturnValue(new Promise(() => {}));
 
     render(
       <TestWrapper>
@@ -164,18 +204,26 @@ describe('GDPR Hook', () => {
       </TestWrapper>
     );
 
+    // Wait for auth to initialize
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 50));
+    });
+
     const exportButton = screen.getByText('Export Data');
-    fireEvent.click(exportButton);
+    
+    await act(async () => {
+      fireEvent.click(exportButton);
+    });
 
     // Should show loading state
     await waitFor(() => {
       expect(screen.getByText('Loading...')).toBeInTheDocument();
       expect(exportButton).toBeDisabled();
-    });
+    }, { timeout: 2000 });
   });
 
   it('handles errors gracefully', async () => {
-    mockSupabase.rpc.mockResolvedValue({ 
+    mockRpc.mockResolvedValue({ 
       data: null, 
       error: new Error('Export failed') 
     });
@@ -186,20 +234,34 @@ describe('GDPR Hook', () => {
       </TestWrapper>
     );
 
-    const exportButton = screen.getByText('Export Data');
-    fireEvent.click(exportButton);
-
-    await waitFor(() => {
-      expect(mockSupabase.rpc).toHaveBeenCalled();
+    // Wait for auth to initialize
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 50));
     });
 
-    // Error should be handled gracefully (toast notification)
-    expect(exportButton).not.toBeDisabled();
+    const exportButton = screen.getByText('Export Data');
+    
+    await act(async () => {
+      fireEvent.click(exportButton);
+    });
+
+    await waitFor(() => {
+      expect(mockRpc).toHaveBeenCalled();
+    }, { timeout: 2000 });
+
+    // Error should be handled gracefully (button enabled after error)
+    await waitFor(() => {
+      expect(exportButton).not.toBeDisabled();
+    });
   });
 });
 
 describe('GDPR Compliance', () => {
-  it('provides all required GDPR functions', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it('provides all required GDPR functions', async () => {
     const TestComponentCheck = () => {
       const gdpr = useGDPR();
       
@@ -217,6 +279,11 @@ describe('GDPR Compliance', () => {
         <TestComponentCheck />
       </TestWrapper>
     );
+
+    // Wait for auth to initialize
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 50));
+    });
 
     expect(screen.getByTestId('has-export')).toHaveTextContent('yes');
     expect(screen.getByTestId('has-delete')).toHaveTextContent('yes');

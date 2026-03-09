@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
+import { BenchmarkConfidenceIndicator, BenchmarkNoteBadge } from "@/components/shared/BenchmarkConfidenceIndicator";
 
 interface KPIBenchmarkStudioProps {
+  kpiKey?: string;
   benchmark?: string;
   unit?: string;
   isLowerBetter: boolean;
@@ -8,7 +10,7 @@ interface KPIBenchmarkStudioProps {
   className?: string;
 }
 
-export function KPIBenchmarkStudio({ benchmark, unit, isLowerBetter, language, className }: KPIBenchmarkStudioProps) {
+export function KPIBenchmarkStudio({ kpiKey, benchmark, unit, isLowerBetter, language, className }: KPIBenchmarkStudioProps) {
   if (!benchmark) return null;
 
   const zones = isLowerBetter
@@ -31,14 +33,30 @@ export function KPIBenchmarkStudio({ benchmark, unit, isLowerBetter, language, c
 
   return (
     <div className={cn("", className)}>
-      {/* Value display */}
-      <div className="mb-1.5">
+      {/* Value display with confidence */}
+      <div className="mb-1.5 flex items-center gap-2">
         <span className="text-xl font-bold text-foreground tracking-tight">{benchmark}</span>
-        {unit && <span className="text-sm text-muted-foreground ml-1.5">{unit}</span>}
+        {unit && <span className="text-sm text-muted-foreground">{unit}</span>}
+        {kpiKey && (
+          <BenchmarkConfidenceIndicator
+            kpiKey={kpiKey}
+            language={(language === 'de' ? 'de' : 'en') as 'en' | 'de'}
+            showLabel
+            size="sm"
+          />
+        )}
       </div>
-      <span className="text-[11px] text-muted-foreground/50 italic block mb-5">
-        {language === 'de' ? 'Indikative Spanne' : 'Indicative range'}
-      </span>
+      <div className="flex items-center gap-2 mb-5">
+        <span className="text-[11px] text-muted-foreground/50 italic">
+          {language === 'de' ? 'Indikative Spanne' : 'Indicative range'}
+        </span>
+        {kpiKey && (
+          <BenchmarkNoteBadge
+            kpiKey={kpiKey}
+            language={(language === 'de' ? 'de' : 'en') as 'en' | 'de'}
+          />
+        )}
+      </div>
 
       {/* Spectrum rail */}
       <div className="relative mb-1.5">
