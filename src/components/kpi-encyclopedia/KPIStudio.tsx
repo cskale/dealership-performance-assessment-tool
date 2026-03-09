@@ -169,7 +169,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
               )}
               {kpi.exclusions && kpi.exclusions.length > 0 && (
                 <div>
-                  <span className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wider block mb-3">
+                  <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider block mb-3">
                     {language === 'de' ? 'Ausschlüsse' : 'Excludes'}
                   </span>
                   <ul className="space-y-2">
