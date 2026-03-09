@@ -10,7 +10,7 @@ interface KPIBenchmarkStudioProps {
   className?: string;
 }
 
-export function KPIBenchmarkStudio({ benchmark, unit, isLowerBetter, language, className }: KPIBenchmarkStudioProps) {
+export function KPIBenchmarkStudio({ kpiKey, benchmark, unit, isLowerBetter, language, className }: KPIBenchmarkStudioProps) {
   if (!benchmark) return null;
 
   const zones = isLowerBetter
