@@ -79,12 +79,8 @@ describe('Auth Component', () => {
     cleanup();
   });
 
-  it('renders auth form with all sign-in methods', () => {
-    render(
-      <TestWrapper>
-        <Auth />
-      </TestWrapper>
-    );
+  it('renders auth form with all sign-in methods', async () => {
+    await renderAuth();
 
     // Check for social auth buttons
     expect(screen.getByText('Continue with Google')).toBeInTheDocument();
@@ -98,14 +94,10 @@ describe('Auth Component', () => {
   });
 
   it('switches between auth methods', async () => {
-    render(
-      <TestWrapper>
-        <Auth />
-      </TestWrapper>
-    );
+    await renderAuth();
 
     // Switch to magic link tab
-    const magicTab = activateTab(/magic link/i);
+    const magicTab = await activateTab(/magic link/i);
     await waitFor(() => {
       expect(magicTab).toHaveAttribute('data-state', 'active');
     });
@@ -115,7 +107,7 @@ describe('Auth Component', () => {
     });
 
     // Switch to sign up tab
-    const signupTab = activateTab(/sign up/i);
+    const signupTab = await activateTab(/sign up/i);
     await waitFor(() => {
       expect(signupTab).toHaveAttribute('data-state', 'active');
     });
@@ -125,12 +117,8 @@ describe('Auth Component', () => {
     });
   });
 
-  it('has proper accessibility attributes', () => {
-    render(
-      <TestWrapper>
-        <Auth />
-      </TestWrapper>
-    );
+  it('has proper accessibility attributes', async () => {
+    await renderAuth();
 
     // Check for form labels
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
@@ -149,30 +137,32 @@ describe('Auth Component', () => {
     });
     (supabase.auth.signInWithPassword as any).mockReturnValueOnce(pendingSignIn);
 
-    render(
-      <TestWrapper>
-        <Auth />
-      </TestWrapper>
-    );
+    await renderAuth();
 
     const signInButton = screen.getByRole('button', { name: /sign in with email/i });
 
     // Fill form
-    fireEvent.change(screen.getByPlaceholderText('Enter your email'), {
-      target: { value: 'test@example.com' }
-    });
-    fireEvent.change(screen.getByPlaceholderText('Enter your password'), {
-      target: { value: 'password123' }
+    await act(async () => {
+      fireEvent.change(screen.getByPlaceholderText('Enter your email'), {
+        target: { value: 'test@example.com' }
+      });
+      fireEvent.change(screen.getByPlaceholderText('Enter your password'), {
+        target: { value: 'password123' }
+      });
     });
 
     // Submit form
-    fireEvent.click(signInButton);
+    await act(async () => {
+      fireEvent.click(signInButton);
+    });
 
     await waitFor(() => {
       expect(signInButton).toBeDisabled();
     });
 
-    resolveSignIn?.({ error: null });
+    await act(async () => {
+      resolveSignIn?.({ error: null });
+    });
 
     await waitFor(() => {
       expect(signInButton).not.toBeDisabled();
@@ -181,53 +171,71 @@ describe('Auth Component', () => {
 });
 
 describe('Auth Keyboard Navigation', () => {
-  it('is keyboard navigable', () => {
-    render(
-      <TestWrapper>
-        <Auth />
-      </TestWrapper>
-    );
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (supabase.auth.signUp as any).mockResolvedValue({ error: null });
+    (supabase.auth.signInWithPassword as any).mockResolvedValue({ error: null });
+    (supabase.auth.signInWithOtp as any).mockResolvedValue({ error: null });
+    (supabase.auth.signInWithOAuth as any).mockResolvedValue({ error: null });
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it('is keyboard navigable', async () => {
+    await renderAuth();
 
     const firstInput = screen.getByPlaceholderText('Enter your email');
     const passwordInput = screen.getByPlaceholderText('Enter your password');
 
-    firstInput.focus();
+    await act(async () => {
+      firstInput.focus();
+    });
     expect(document.activeElement).toBe(firstInput);
 
     // jsdom doesn't implement native focus traversal on Tab, so we verify both fields are focusable.
-    fireEvent.keyDown(firstInput, { key: 'Tab' });
-    passwordInput.focus();
+    await act(async () => {
+      fireEvent.keyDown(firstInput, { key: 'Tab' });
+      passwordInput.focus();
+    });
     expect(document.activeElement).toBe(passwordInput);
   });
 });
 
 describe('Auth Validation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (supabase.auth.signUp as any).mockResolvedValue({ error: null });
+    (supabase.auth.signInWithPassword as any).mockResolvedValue({ error: null });
+    (supabase.auth.signInWithOtp as any).mockResolvedValue({ error: null });
+    (supabase.auth.signInWithOAuth as any).mockResolvedValue({ error: null });
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
   it('validates email format', async () => {
-    render(
-      <TestWrapper>
-        <Auth />
-      </TestWrapper>
-    );
+    await renderAuth();
 
     const emailInput = screen.getByPlaceholderText('Enter your email');
 
     // Enter invalid email
-    fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
-    fireEvent.blur(emailInput);
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
+      fireEvent.blur(emailInput);
+    });
 
     // HTML5 validation should catch this
     expect(emailInput).toBeInvalid();
   });
 
   it('enforces password minimum length', async () => {
-    render(
-      <TestWrapper>
-        <Auth />
-      </TestWrapper>
-    );
+    await renderAuth();
 
     // Switch to sign up
-    activateTab(/sign up/i);
+    await activateTab(/sign up/i);
 
     const passwordInput = await screen.findByPlaceholderText('Create a password (min. 6 characters)');
     expect(passwordInput).toHaveAttribute('minLength', '6');
