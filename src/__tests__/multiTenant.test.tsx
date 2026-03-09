@@ -3,28 +3,31 @@ import { render } from '@testing-library/react';
 import { screen, waitFor } from '@testing-library/dom';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from '@/hooks/useAuth';
-import { MultiTenantProvider, useMultiTenant } from '@/hooks/useMultiTenant';
 import { Toaster } from '@/components/ui/toaster';
 
-// Mock Supabase
-const mockSupabase = {
-  auth: {
-    onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
-    getSession: vi.fn(() => Promise.resolve({ data: { session: { user: { id: 'user-1' } } } })),
-  },
-  from: vi.fn(() => ({
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    single: vi.fn(() => Promise.resolve({ 
-      data: { active_organization_id: 'org-1' } 
-    })),
-  }))
-};
-
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: mockSupabase
+// Create mock functions BEFORE vi.mock
+const mockFrom = vi.fn();
+const mockOnAuthStateChange = vi.fn(() => ({
+  data: { subscription: { unsubscribe: vi.fn() } }
 }));
+const mockGetSession = vi.fn(() => Promise.resolve({
+  data: { session: { user: { id: 'user-1' } } }
+}));
+
+// Mock Supabase with hoisted references
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: {
+    auth: {
+      onAuthStateChange: () => mockOnAuthStateChange(),
+      getSession: () => mockGetSession(),
+    },
+    from: (...args: any[]) => mockFrom(...args),
+  }
+}));
+
+// Import providers AFTER mock is set up
+import { AuthProvider } from '@/hooks/useAuth';
+import { MultiTenantProvider, useMultiTenant } from '@/hooks/useMultiTenant';
 
 const TestComponent = () => {
   const { currentOrganization, organizations, loading, canPerformAction } = useMultiTenant();
@@ -75,8 +78,13 @@ describe('MultiTenant Hook', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     
+    // Reset session mock
+    mockGetSession.mockResolvedValue({
+      data: { session: { user: { id: 'user-1' } } }
+    });
+    
     // Setup mock responses for memberships query
-    mockSupabase.from.mockReturnValue({
+    mockFrom.mockReturnValue({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockResolvedValue({
         data: [
@@ -132,7 +140,7 @@ describe('MultiTenant Hook', () => {
 
   it('handles viewer role permissions correctly', async () => {
     // Mock viewer role
-    mockSupabase.from.mockReturnValue({
+    mockFrom.mockReturnValue({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockResolvedValue({
         data: [
