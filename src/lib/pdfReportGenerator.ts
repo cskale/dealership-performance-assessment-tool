@@ -13,7 +13,7 @@ import {
 import { questionnaire } from '@/data/questionnaire';
 import { generateBenchmarkDisclaimer } from '@/lib/benchmarkGovernance';
 import { KPI_DEFINITIONS, getKPILabel } from '@/lib/kpiDefinitions';
-import { getMaturityLevel } from '@/lib/constants';
+import { getMaturityLevel, SCORE_THRESHOLDS } from '@/lib/constants';
 
 // ── i18n labels ──
 const LABELS: Record<string, Record<string, string>> = {
