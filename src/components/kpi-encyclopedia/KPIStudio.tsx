@@ -120,10 +120,10 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
       {kpi.executiveSummary && (
         <section className="mb-14 mt-10">
           <div className="rounded-xl bg-primary/[0.03] px-7 py-5">
-            <span className="text-[11px] font-semibold text-primary/50 uppercase tracking-widest block mb-2">
+            <span className="text-[10px] font-semibold text-primary/50 uppercase tracking-widest block mb-2">
               {language === 'de' ? 'Executive Takeaway' : 'Executive Takeaway'}
             </span>
-            <p className="text-[15px] text-foreground/75 leading-relaxed">
+            <p className="text-sm text-foreground/75 leading-relaxed">
               {kpi.executiveSummary}
             </p>
           </div>
