@@ -80,7 +80,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
           {/* Benchmark card */}
           {kpi.benchmark && (
             <div className="lg:w-[300px] shrink-0 rounded-2xl border border-border/40 bg-card p-5">
-              <span className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-widest block mb-3">
+              <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-widest block mb-3">
                 {language === 'de' ? 'Referenz-Benchmarkbereich' : 'Reference Benchmark Range'}
               </span>
               <KPIBenchmarkStudio
