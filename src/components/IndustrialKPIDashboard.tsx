@@ -89,7 +89,7 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
           const markerLeft = Math.min(95, Math.max(5, pct));
           
           return (
-            <Card key={key} className={`border-l-4 kpi-card ${isGood ? 'border-l-emerald-500' : 'border-l-red-500'}`}>
+            <Card key={key} className={`border-l-4 kpi-card ${isGood ? 'border-l-success' : 'border-l-destructive'}`}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-medium text-muted-foreground">
@@ -97,9 +97,9 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
                   </h4>
                   <div className="flex items-center gap-1">
                     {isGood ? (
-                      <TrendingUp className="h-4 w-4 text-emerald-600" />
+                      <TrendingUp className="h-4 w-4 text-success" />
                     ) : (
-                      <TrendingDown className="h-4 w-4 text-red-600" />
+                      <TrendingDown className="h-4 w-4 text-destructive" />
                     )}
                   </div>
                 </div>
@@ -117,12 +117,12 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
                     vs. Benchmark ({formatValue(key, benchmark)})
                   </div>
                   
-                  {/* Benchmark band */}
+                  {/* Benchmark band using design tokens */}
                   <div className="relative h-3 rounded-full overflow-hidden flex">
-                    <div className="h-full bg-red-300" style={{ width: '30%' }} />
-                    <div className="h-full bg-amber-300" style={{ width: '20%' }} />
-                    <div className="h-full bg-emerald-300" style={{ width: '20%' }} />
-                    <div className="h-full bg-emerald-500" style={{ width: '30%' }} />
+                    <div className="h-full bg-destructive/40" style={{ width: '30%' }} />
+                    <div className="h-full bg-warning/50" style={{ width: '20%' }} />
+                    <div className="h-full bg-success/40" style={{ width: '20%' }} />
+                    <div className="h-full bg-success/70" style={{ width: '30%' }} />
                     <div 
                       className="absolute top-0 w-0.5 h-full bg-foreground"
                       style={{ left: `${markerLeft}%` }}
@@ -178,17 +178,17 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
   return (
     <div className="space-y-8">
       {/* 1A: Estimated data disclaimer banner */}
-      <Card className="border-2 border-amber-300 bg-amber-50 dark:bg-amber-950/20 shadow-sm">
+      <Card className="border-2 border-warning bg-warning/10 shadow-sm">
         <CardContent className="py-4">
           <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+            <Info className="h-5 w-5 text-warning-foreground mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+              <p className="text-sm font-medium text-warning-foreground">
                 {language === 'de' 
                   ? 'Illustrative Schätzwerte'
                   : 'Illustrative Estimates'}
               </p>
-              <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+              <p className="text-xs text-warning-foreground/80 mt-1">
                 {language === 'de'
                   ? 'Die dargestellten Werte sind illustrative Schätzungen, die aus Ihren Bewertungsantworten abgeleitet wurden — keine tatsächlichen Geschäftsdaten des Autohauses. Für echte KPI-Analytik verbinden Sie bitte Ihre Datensysteme.'
                   : 'Values shown are illustrative estimates derived from your assessment responses — not actual dealership business data. For real KPI analytics, connect your data systems.'}
@@ -200,21 +200,21 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
 
       {/* Revenue Optimization Banner */}
       {revenueOptimizationPotential > 0 && (
-        <Card className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white border-0 shadow-xl">
+        <Card className="bg-success text-success-foreground border-0 shadow-xl">
           <CardContent className="p-6">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-success-foreground/20 rounded-full flex items-center justify-center">
                   <DollarSign className="h-6 w-6" />
                 </div>
                 <div>
                   <h3 className="text-2xl font-bold">{formatEuro(revenueOptimizationPotential)}</h3>
-                  <p className="text-emerald-100">
+                  <p className="text-success-foreground/80">
                     {language === 'de' ? 'Umsatzoptimierungspotenzial (geschätzt)' : 'Revenue Optimization Potential (estimated)'}
                   </p>
                 </div>
               </div>
-              <Badge className="bg-white/20 text-white border-white/30">
+              <Badge className="bg-success-foreground/20 text-success-foreground border-success-foreground/30">
                 {language === 'de' ? 'Basierend auf Ihrer Bewertung | Jährliches Potenzial' : 'Based on your assessment | Annual Potential'}
               </Badge>
             </div>
@@ -226,14 +226,14 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
       {(() => {
         const avgScore = Math.round(Object.values(scores).reduce((a, b) => a + b, 0) / Math.max(Object.values(scores).length, 1));
         const badge = avgScore >= 80 ? (language === 'de' ? 'Stark' : 'Strong') : avgScore >= 60 ? (language === 'de' ? 'Auf Kurs' : 'On Track') : (language === 'de' ? 'Fokus erforderlich' : 'Needs Focus');
-        const badgeColor = avgScore >= 80 ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : avgScore >= 60 ? 'bg-yellow-100 text-yellow-800 border-yellow-300' : 'bg-red-100 text-red-800 border-red-300';
+        const badgeVariant = avgScore >= 80 ? 'bg-success/20 text-success border-success/30' : avgScore >= 60 ? 'bg-warning/20 text-warning-foreground border-warning/30' : 'bg-destructive/20 text-destructive border-destructive/30';
         return (
           <Card className="col-span-2 mb-6 border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
             <CardContent className="p-6 flex items-center gap-6">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">{language === 'de' ? 'Gesamtleistung' : 'Overall Performance Score'}</p>
                 <div className="text-5xl font-bold text-foreground leading-none">{avgScore}</div>
-                <Badge className={`mt-2 ${badgeColor}`}>{badge}</Badge>
+                <Badge className={`mt-2 ${badgeVariant}`}>{badge}</Badge>
               </div>
               <div className="flex-1 text-sm text-muted-foreground">
                 <p>{language === 'de' ? 'Aggregierte Leistung über alle bewerteten Abteilungen.' : 'Aggregated performance across all assessed departments.'}</p>
@@ -278,21 +278,21 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
       ))}
 
       {/* Strategic Recommendations */}
-      <Card className="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200">
+      <Card className="bg-warning/10 border-2 border-warning/40">
         <CardHeader>
-          <CardTitle className="text-xl text-amber-800 flex items-center gap-2">
+          <CardTitle className="text-xl text-warning-foreground flex items-center gap-2">
             <Target className="h-5 w-5" />
             {language === 'de' ? 'Strategische Empfehlungen' : 'Strategic Recommendations'}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ul className="text-sm text-amber-800 space-y-2">
+          <ul className="text-sm text-warning-foreground/90 space-y-2">
             {Object.entries(scores)
               .filter(([_, score]) => score < 70)
               .slice(0, 3)
               .map(([sectionId, score]) => (
                 <li key={sectionId} className="flex items-start gap-2">
-                  <span className="text-amber-600 mt-0.5">-</span>
+                  <span className="text-warning-foreground/70 mt-0.5">-</span>
                   <span>
                     {language === 'de' ? 'Fokus auf Verbesserung von' : 'Focus on improving'} <strong>{getSectionTitle(sectionId)}</strong> ({score}%) {language === 'de' ? 'durch gezielte Schulung und Prozessoptimierung' : 'through targeted training and process optimization'}
                   </span>
@@ -301,7 +301,7 @@ export function IndustrialKPIDashboard({ scores }: { scores: Record<string, numb
             }
             {Object.values(scores).every(score => score >= 70) && (
               <li className="flex items-start gap-2">
-                <span className="text-green-600">-</span>
+                <span className="text-success">-</span>
                 {language === 'de' ? 'Hervorragende Leistung in allen Bereichen! Fokus auf kontinuierliche Verbesserung.' : 'Excellent performance across all areas! Focus on continuous improvement.'}
               </li>
             )}
