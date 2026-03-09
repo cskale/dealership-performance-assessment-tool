@@ -43,8 +43,9 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => {
 
 const activateTab = (name: RegExp) => {
   const tab = screen.getByRole('tab', { name });
-  // Radix Tabs relies on pointer events in some environments
-  fireEvent.pointerDown(tab);
+  // Radix Tabs updates value on mouse down in some environments (click alone can be insufficient in jsdom)
+  fireEvent.mouseDown(tab, { button: 0 });
+  fireEvent.mouseUp(tab, { button: 0 });
   fireEvent.click(tab);
   return tab;
 };
