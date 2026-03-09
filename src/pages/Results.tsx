@@ -355,14 +355,29 @@ export default function Results() {
           exportData={pdfExportData}
         />
 
-        {/* Tab Navigation */}
+        {/* Tab Navigation - Enterprise icons replacing emojis */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 bg-white/90 backdrop-blur-sm border shadow-lg h-12">
-            <TabsTrigger value="executive" className="text-xs sm:text-sm">📋 {t('results.tab.executive')}</TabsTrigger>
-            <TabsTrigger value="kpi" className="text-xs sm:text-sm">💰 {t('results.tab.kpi')}</TabsTrigger>
-            <TabsTrigger value="maturity" className="text-xs sm:text-sm">🏆 {t('results.tab.maturity')}</TabsTrigger>
-            <TabsTrigger value="action-plan" className="text-xs sm:text-sm">✅ {t('results.tab.actionPlan')}</TabsTrigger>
-            <TabsTrigger value="resources" className="text-xs sm:text-sm">📚 {t('results.tab.resources')}</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5 bg-card/90 backdrop-blur-sm border shadow-lg h-12">
+            <TabsTrigger value="executive" className="text-xs sm:text-sm gap-1.5">
+              <ClipboardList className="h-3.5 w-3.5 hidden sm:inline" />
+              {t('results.tab.executive')}
+            </TabsTrigger>
+            <TabsTrigger value="kpi" className="text-xs sm:text-sm gap-1.5">
+              <BarChart3 className="h-3.5 w-3.5 hidden sm:inline" />
+              {t('results.tab.kpi')}
+            </TabsTrigger>
+            <TabsTrigger value="maturity" className="text-xs sm:text-sm gap-1.5">
+              <Award className="h-3.5 w-3.5 hidden sm:inline" />
+              {t('results.tab.maturity')}
+            </TabsTrigger>
+            <TabsTrigger value="action-plan" className="text-xs sm:text-sm gap-1.5">
+              <CheckSquare className="h-3.5 w-3.5 hidden sm:inline" />
+              {t('results.tab.actionPlan')}
+            </TabsTrigger>
+            <TabsTrigger value="resources" className="text-xs sm:text-sm gap-1.5">
+              <BookOpen className="h-3.5 w-3.5 hidden sm:inline" />
+              {t('results.tab.resources')}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="executive" className="space-y-6 animate-fade-in">
@@ -377,6 +392,10 @@ export default function Results() {
           <TabsContent value="kpi" className="space-y-6 animate-fade-in">
             <IndustrialKPIDashboard
               scores={resultsData.scores}
+              onNavigateToEncyclopedia={(kpiKey) => {
+                setActiveTab("resources");
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
           </TabsContent>
 
