@@ -405,7 +405,7 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   };
 
   const overallScore = data.assessment.overallScore;
-  const maturity = getMaturityLevel(overallScore, lang === 'de' ? 'de' : 'en');
+  const maturity = getMaturityLevel(overallScore, (lang === 'de' ? 'de' : 'en') as 'en' | 'de');
 
   // ═══════════════════════════════════════════
   // PAGE 1: COVER
