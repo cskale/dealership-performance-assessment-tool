@@ -132,34 +132,60 @@ export const MultiTenantProvider = ({ children }: { children: React.ReactNode })
     await fetchUserData();
   };
 
+  /**
+   * Permission check based on user's membership role in current organization.
+   * 
+   * IMPORTANT: This is an application-level check. Database-level security
+   * is enforced by RLS policies on Supabase tables.
+   * 
+   * Role hierarchy:
+   * - owner: Full access including organization settings and deletion
+   * - admin: Full access except organization-level destructive actions
+   * - manager: Create, read, update on most resources
+   * - analyst: Read-only access
+   * - viewer: Read-only access (limited)
+   */
   const canPerformAction = (action: 'create' | 'read' | 'update' | 'delete', resource?: string): boolean => {
-    if (!currentOrganization || !user) return false;
+    // SECURITY: Require both organization context and authenticated user
+    if (!currentOrganization || !user) {
+      return false;
+    }
 
     const membership = userMemberships.find(m => 
       m.organization_id === currentOrganization.id && m.user_id === user.id
     );
     
-    if (!membership || !membership.is_active) return false;
+    // SECURITY: Require active membership
+    if (!membership || !membership.is_active) {
+      return false;
+    }
 
     const { role } = membership;
 
-    // Role-based permissions
+    // Role-based permissions matrix
+    // Note: Actual data access is enforced by Supabase RLS policies
     switch (action) {
       case 'read':
+        // All active members can read
         return ['owner', 'admin', 'manager', 'analyst', 'viewer'].includes(role);
       
       case 'create':
+        // Only privileged roles can create
         return ['owner', 'admin', 'manager'].includes(role);
       
       case 'update':
-        if (resource === 'organization') return ['owner'].includes(role);
+        // Organization updates restricted to owners
+        if (resource === 'organization') return role === 'owner';
+        // General updates for privileged roles
         return ['owner', 'admin', 'manager'].includes(role);
       
       case 'delete':
-        if (resource === 'organization') return ['owner'].includes(role);
+        // Destructive actions require higher privileges
+        if (resource === 'organization') return role === 'owner';
         return ['owner', 'admin'].includes(role);
       
       default:
+        // SECURITY: Default deny for unknown actions
         return false;
     }
   };

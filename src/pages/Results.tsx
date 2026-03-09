@@ -21,7 +21,7 @@ import { useMultiTenant } from "@/hooks/useMultiTenant";
 import { supabase } from "@/integrations/supabase/client";
 import type { PDFExportData } from "@/lib/pdfReportGenerator";
 import { calculateWeightedScore, CATEGORY_WEIGHTS } from "@/lib/scoringEngine";
-
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 export default function Results() {
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(window.location.search);
@@ -381,41 +381,51 @@ export default function Results() {
           </TabsList>
 
           <TabsContent value="executive" className="space-y-6 animate-fade-in">
-            <ExecutiveSummary
-              overallScore={overallScore}
-              scores={resultsData.scores}
-              answers={resultsData.answers}
-              completedAt={resultsData.completedAt}
-            />
+            <ErrorBoundary fallbackTitle={language === 'de' ? 'Zusammenfassung nicht verfügbar' : 'Summary unavailable'}>
+              <ExecutiveSummary
+                overallScore={overallScore}
+                scores={resultsData.scores}
+                answers={resultsData.answers}
+                completedAt={resultsData.completedAt}
+              />
+            </ErrorBoundary>
           </TabsContent>
 
           <TabsContent value="kpi" className="space-y-6 animate-fade-in">
-            <IndustrialKPIDashboard
-              scores={resultsData.scores}
-              onNavigateToEncyclopedia={(kpiKey) => {
-                setActiveTab("resources");
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-            />
+            <ErrorBoundary fallbackTitle={language === 'de' ? 'KPI-Dashboard nicht verfügbar' : 'KPI Dashboard unavailable'}>
+              <IndustrialKPIDashboard
+                scores={resultsData.scores}
+                onNavigateToEncyclopedia={(kpiKey) => {
+                  setActiveTab("resources");
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              />
+            </ErrorBoundary>
           </TabsContent>
 
           <TabsContent value="maturity" className="space-y-6 animate-fade-in">
-            <MaturityScoring
-              scores={resultsData.scores}
-              answers={resultsData.answers}
-            />
+            <ErrorBoundary fallbackTitle={language === 'de' ? 'Reifegradanalyse nicht verfügbar' : 'Maturity analysis unavailable'}>
+              <MaturityScoring
+                scores={resultsData.scores}
+                answers={resultsData.answers}
+              />
+            </ErrorBoundary>
           </TabsContent>
 
           <TabsContent value="action-plan" className="space-y-6 animate-fade-in">
-            <ActionPlan
-              assessmentId={resultsData.assessmentId}
-            />
+            <ErrorBoundary fallbackTitle={language === 'de' ? 'Maßnahmenplan nicht verfügbar' : 'Action Plan unavailable'}>
+              <ActionPlan
+                assessmentId={resultsData.assessmentId}
+              />
+            </ErrorBoundary>
           </TabsContent>
 
           <TabsContent value="resources" className="space-y-6 animate-fade-in">
-            <UsefulResources
-              scores={resultsData.scores}
-            />
+            <ErrorBoundary fallbackTitle={language === 'de' ? 'Ressourcen nicht verfügbar' : 'Resources unavailable'}>
+              <UsefulResources
+                scores={resultsData.scores}
+              />
+            </ErrorBoundary>
           </TabsContent>
         </Tabs>
       </div>

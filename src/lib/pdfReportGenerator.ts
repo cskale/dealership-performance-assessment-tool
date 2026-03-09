@@ -11,6 +11,7 @@ import {
   calculateEnhancedMaturity,
 } from '@/lib/scoringEngine';
 import { questionnaire } from '@/data/questionnaire';
+import { generateBenchmarkDisclaimer } from '@/lib/benchmarkGovernance';
 
 // ── i18n labels ──
 const LABELS: Record<string, Record<string, string>> = {
@@ -1039,6 +1040,8 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   pdf.setFont('helvetica', 'normal');
   pdf.setTextColor(60, 60, 60);
 
+  const benchmarkDisclaimer = generateBenchmarkDisclaimer(lang as 'en' | 'de');
+
   const methodText = lang === 'de'
     ? [
         'Die Bewertung basiert auf einem strukturierten Fragebogen, der die wichtigsten Leistungsbereiche eines Autohauses abdeckt.',
@@ -1058,7 +1061,10 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
         '  - Entwickelnd (50-69): Grundlegende Optimierung und Standardisierung implementiert',
         '  - Basis (0-49): Grundlegende Prozesse mit erheblichen Luecken',
         '',
-        'Benchmarks basieren auf konfigurierten Referenzwerten fuer den europaeischen Automobilmarkt. Sie dienen als Orientierungshilfe und koennen je nach Markt und Segment variieren.',
+        'Benchmark-Hinweis:',
+        benchmarkDisclaimer,
+        '',
+        'KPI-Werte: Die im KPI-Analysebereich dargestellten Werte sind bewertungsbasierte Schaetzungen und dienen als Orientierungshilfe. Sie ersetzen keine tatsaechlichen Betriebsdaten.',
       ].join('\n')
     : [
         'Scores are calculated from assessment responses across five key performance areas of dealership operations.',
@@ -1078,7 +1084,10 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
         '  - Developing (50-69): Some optimization and standardization implemented',
         '  - Basic (0-49): Foundational processes in place with significant gaps',
         '',
-        'Benchmarks shown reflect the configured reference values for the European automotive market. They serve as directional guidance and may vary by market and segment.',
+        'Benchmark Note:',
+        benchmarkDisclaimer,
+        '',
+        'KPI Values: Values shown in the KPI Analytics section are assessment-based estimates provided for directional guidance. They do not replace actual operational data.',
       ].join('\n');
 
   const methodLines = pdf.splitTextToSize(methodText, contentW);
