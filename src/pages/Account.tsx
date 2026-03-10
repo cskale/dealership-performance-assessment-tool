@@ -595,7 +595,7 @@ const Account = () => {
                       {completedAssessments.map(assessment => (
                         <div
                           key={assessment.id}
-                          onClick={() => navigate(`/assessment/${assessment.id}/results`)}
+                          onClick={() => navigate(`/app/results/${assessment.id}`)}
                           className="flex items-center gap-4 p-4 rounded-lg border border-border hover:bg-muted/30 hover:shadow-sm hover:-translate-y-px transition-all cursor-pointer"
                         >
                           <div className="h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 bg-success/10">

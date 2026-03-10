@@ -5,8 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { FileText, RefreshCw, ArrowLeft, ClipboardList, BarChart3, Award, CheckSquare, BookOpen } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { FileText, RefreshCw, ArrowLeft, ClipboardList, BarChart3, Award, CheckSquare, BookOpen, AlertCircle } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { ExecutiveSummary } from "@/components/ExecutiveSummary";
 import { IndustrialKPIDashboard } from "@/components/IndustrialKPIDashboard";
@@ -22,13 +22,16 @@ import { supabase } from "@/integrations/supabase/client";
 import type { PDFExportData } from "@/lib/pdfReportGenerator";
 import { calculateWeightedScore, CATEGORY_WEIGHTS } from "@/lib/scoringEngine";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
+
 export default function Results() {
+  const { assessmentId: routeAssessmentId } = useParams<{ assessmentId: string }>();
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get('tab') || "executive";
   });
   const [resultsData, setResultsData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [animatedScore, setAnimatedScore] = useState(0);
   const [showExportModal, setShowExportModal] = useState(false);
   const [pdfActions, setPdfActions] = useState<PDFExportData['actions']>([]);
@@ -39,25 +42,43 @@ export default function Results() {
   const { user } = useAuth();
   const { currentOrganization, userMemberships } = useMultiTenant();
 
-  // Load completed assessment results
+  // Load completed assessment results — supports both specific ID and latest
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
+      setLoadError(null);
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      // 3A: DB-first loading — try database, fallback to localStorage
       let loaded = false;
       
       if (user) {
         try {
-          const { data: dbAssessment } = await supabase
+          let query = supabase
             .from('assessments')
             .select('id, answers, scores, overall_score, completed_at, status')
             .eq('user_id', user.id)
-            .eq('status', 'completed')
-            .order('completed_at', { ascending: false })
-            .limit(1)
-            .single();
+            .eq('status', 'completed');
+
+          if (routeAssessmentId) {
+            // Load specific assessment by ID
+            query = query.eq('id', routeAssessmentId);
+          } else {
+            // Load latest completed
+            query = query.order('completed_at', { ascending: false }).limit(1);
+          }
+
+          const { data: dbAssessment, error } = await query.single();
+          
+          if (error && routeAssessmentId) {
+            // Specific assessment not found or unauthorized
+            setLoadError(
+              language === 'de' 
+                ? 'Diese Bewertung wurde nicht gefunden oder Sie haben keinen Zugriff darauf.' 
+                : 'This assessment was not found or you do not have access to it.'
+            );
+            setIsLoading(false);
+            return;
+          }
           
           if (dbAssessment && dbAssessment.answers && Object.keys(dbAssessment.answers as object).length > 0) {
             const data = {
@@ -74,7 +95,8 @@ export default function Results() {
         }
       }
 
-      if (!loaded) {
+      // Fallback to localStorage only when no specific ID requested
+      if (!loaded && !routeAssessmentId) {
         const completedResults = localStorage.getItem('completed_assessment_results');
         if (completedResults) {
           const data = JSON.parse(completedResults);
@@ -87,7 +109,7 @@ export default function Results() {
         }
       }
 
-      if (!loaded) {
+      if (!loaded && !loadError) {
         toast({
           title: t('results.noResults'),
           description: t('results.completeFirst'),
@@ -100,25 +122,23 @@ export default function Results() {
     };
     
     loadData();
-  }, [navigate, toast, t, user]);
+  }, [navigate, toast, t, user, routeAssessmentId]);
 
   // Calculate weighted overall score ONCE - memoized
   const overallScore = useMemo(() => {
     if (!resultsData?.scores) return 0;
-    // Use weighted scoring engine for proper calculation
     return calculateWeightedScore(resultsData.scores);
   }, [resultsData?.scores]);
 
-  // Animate score on load - smooth clockwise animation
+  // Animate score on load
   useEffect(() => {
     if (overallScore > 0 && !isLoading) {
-      const duration = 1200; // 1.2 seconds
+      const duration = 1200;
       const startTime = Date.now();
       
       const animate = () => {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        // Ease-out cubic for smooth deceleration
         const eased = 1 - Math.pow(1 - progress, 3);
         setAnimatedScore(Math.round(overallScore * eased));
         
@@ -205,13 +225,12 @@ export default function Results() {
     });
   };
 
-  // Handler to navigate to resources tab
   const handleNavigateToResources = () => {
     setActiveTab("resources");
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Loading state with skeleton
+  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background to-muted/50">
@@ -223,6 +242,37 @@ export default function Results() {
             <Skeleton className="h-48 w-48 rounded-full mx-auto mb-8" />
             <Skeleton className="h-12 w-full max-w-2xl mx-auto" />
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state — contextual in-app error, not generic 404
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/50">
+        <AppHeader />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Card className="max-w-md w-full mx-4">
+            <CardContent className="pt-8 pb-6 text-center space-y-4">
+              <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
+                <AlertCircle className="h-6 w-6 text-destructive" />
+              </div>
+              <h2 className="text-lg font-semibold text-foreground">
+                {language === 'de' ? 'Ergebnisse nicht verfügbar' : 'Results Unavailable'}
+              </h2>
+              <p className="text-sm text-muted-foreground">{loadError}</p>
+              <div className="flex gap-3 justify-center pt-2">
+                <Button variant="outline" onClick={() => navigate('/account?tab=activity')}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  {language === 'de' ? 'Zurück zur Aktivität' : 'Back to Activity'}
+                </Button>
+                <Button onClick={() => navigate('/app/results')}>
+                  {language === 'de' ? 'Neueste Ergebnisse' : 'Latest Results'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -246,7 +296,7 @@ export default function Results() {
       <AppHeader />
       
       <div className="p-4 max-w-7xl mx-auto" id="results-content">
-        {/* Unified Results Hero - Single Score Display */}
+        {/* Unified Results Hero */}
         <div className="text-center mb-8 animate-fade-in pt-4">
           <div className="flex items-center justify-between mb-6">
             <Button
@@ -274,36 +324,21 @@ export default function Results() {
             {language === 'de' ? 'Umfassende Analyse abgeschlossen am' : 'Comprehensive analysis completed on'} {formatDate(resultsData.completedAt)}
           </p>
           
-          {/* Single Large Score Circle with smooth clockwise animation */}
+          {/* Score Circle */}
           <div className="flex justify-center mb-8">
             <div className="relative inline-block">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="cursor-help">
                     <svg className="w-40 h-40 md:w-48 md:h-48" viewBox="0 0 100 100">
-                      {/* Background circle */}
+                      <circle cx="50" cy="50" r="45" fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
                       <circle
-                        cx="50"
-                        cy="50"
-                        r="45"
-                        fill="none"
-                        stroke="hsl(var(--muted))"
-                        strokeWidth="8"
-                      />
-                      {/* Animated progress circle - starts from top (12 o'clock) */}
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="45"
-                        fill="none"
+                        cx="50" cy="50" r="45" fill="none"
                         className={getScoreColor(overallScore)}
-                        strokeWidth="8"
-                        strokeLinecap="round"
+                        strokeWidth="8" strokeLinecap="round"
                         strokeDasharray={`${(animatedScore / 100) * 283} 283`}
                         transform="rotate(-90 50 50)"
-                        style={{ 
-                          transition: 'stroke-dasharray 0.1s ease-out'
-                        }}
+                        style={{ transition: 'stroke-dasharray 0.1s ease-out' }}
                       />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -331,31 +366,24 @@ export default function Results() {
             </div>
           </div>
 
-          {/* Score Badge */}
           <Badge className={`${scoreInfo.color} text-white text-base px-4 py-2 mb-6`}>
             {scoreInfo.label}
           </Badge>
 
-          {/* Export Options */}
           <div className="flex justify-center gap-4">
-            <Button
-              onClick={() => setShowExportModal(true)}
-              className="flex items-center gap-2"
-            >
+            <Button onClick={() => setShowExportModal(true)} className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               {t('results.exportPDF')}
             </Button>
           </div>
         </div>
 
-        {/* PDF Export Modal */}
         <ExportPDFModal
           open={showExportModal}
           onOpenChange={setShowExportModal}
           exportData={pdfExportData}
         />
 
-        {/* Tab Navigation - Enterprise icons replacing emojis */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5 bg-card/90 backdrop-blur-sm border shadow-lg h-12">
             <TabsTrigger value="executive" className="text-xs sm:text-sm gap-1.5">
@@ -409,26 +437,19 @@ export default function Results() {
 
           <TabsContent value="maturity" className="space-y-6 animate-fade-in">
             <ErrorBoundary fallbackTitle={language === 'de' ? 'Reifegradanalyse nicht verfügbar' : 'Maturity analysis unavailable'}>
-              <MaturityScoring
-                scores={resultsData.scores}
-                answers={resultsData.answers}
-              />
+              <MaturityScoring scores={resultsData.scores} answers={resultsData.answers} />
             </ErrorBoundary>
           </TabsContent>
 
           <TabsContent value="action-plan" className="space-y-6 animate-fade-in">
             <ErrorBoundary fallbackTitle={language === 'de' ? 'Maßnahmenplan nicht verfügbar' : 'Action Plan unavailable'}>
-              <ActionPlan
-                assessmentId={resultsData.assessmentId}
-              />
+              <ActionPlan assessmentId={resultsData.assessmentId} />
             </ErrorBoundary>
           </TabsContent>
 
           <TabsContent value="resources" className="space-y-6 animate-fade-in">
             <ErrorBoundary fallbackTitle={language === 'de' ? 'Ressourcen nicht verfügbar' : 'Resources unavailable'}>
-              <UsefulResources
-                scores={resultsData.scores}
-              />
+              <UsefulResources scores={resultsData.scores} />
             </ErrorBoundary>
           </TabsContent>
         </Tabs>

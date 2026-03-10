@@ -8,11 +8,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { LanguageSelectorWithFlags } from './LanguageSelectorWithFlags';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
-import { User, Settings, LogOut, ClipboardList, BarChart3, Building2 } from 'lucide-react';
+import { User, LogOut, ClipboardList, BarChart3, Building2 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
 interface HomeHeaderProps {
@@ -35,7 +34,6 @@ export function HomeHeader({ hasCompletedAssessment }: HomeHeaderProps) {
     return user.email.substring(0, 2).toUpperCase();
   };
 
-  // Only show org switcher for owner role with multiple orgs
   const currentMembership = userMemberships.find(
     m => m.organization_id === currentOrganization?.id
   );
@@ -47,7 +45,6 @@ export function HomeHeader({ hasCompletedAssessment }: HomeHeaderProps) {
       assessment: 'Assessment',
       results: 'Results',
       profile: 'Profile',
-      security: 'Security',
       signOut: 'Sign Out',
       organization: 'Organization',
       account: 'Account Settings',
@@ -56,7 +53,6 @@ export function HomeHeader({ hasCompletedAssessment }: HomeHeaderProps) {
       assessment: 'Bewertung',
       results: 'Ergebnisse',
       profile: 'Profil',
-      security: 'Sicherheit',
       signOut: 'Abmelden',
       organization: 'Organisation',
       account: 'Kontoeinstellungen',
@@ -95,8 +91,6 @@ export function HomeHeader({ hasCompletedAssessment }: HomeHeaderProps) {
         </div>
 
         <div className="flex items-center gap-3">
-          <LanguageSelectorWithFlags />
-          
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -120,7 +114,6 @@ export function HomeHeader({ hasCompletedAssessment }: HomeHeaderProps) {
                 
                 <DropdownMenuSeparator />
                 
-                {/* Organization Selector - Only for owners with multiple orgs */}
                 {showOrgSwitcher && (
                   <>
                     <DropdownMenuLabel className="text-xs text-muted-foreground flex items-center gap-2">
@@ -143,10 +136,6 @@ export function HomeHeader({ hasCompletedAssessment }: HomeHeaderProps) {
                 <DropdownMenuItem onClick={() => navigate('/account')}>
                   <User className="mr-2 h-4 w-4" />
                   {t.profile}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/account?tab=security')}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  {t.security}
                 </DropdownMenuItem>
                 
                 <DropdownMenuSeparator />
