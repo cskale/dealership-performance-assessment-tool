@@ -358,11 +358,14 @@ export function formatActionsForDatabaseInsert(
       .replace(/^(Assess|Address|Evaluate):\s*/i, '')
       .trim();
 
-    const descriptionParts = [
-      action.description.replace(/^Triggered because:.*?\.\s*/i, '').trim(),
-      '',
-      `Triggered because: ${action.signalCode}`,
-    ];
+    // Clean description — no more "Triggered because:" in user-visible fields
+    const cleanDesc = action.description
+      .replace(/^Triggered because:.*?\.\s*/i, '')
+      .replace(/\s*Triggered because:.*$/si, '')
+      .trim();
+
+    // Generate context intelligence fields
+    const ci = generateContextIntelligence(action);
 
     return {
       user_id: userId,
@@ -371,12 +374,23 @@ export function formatActionsForDatabaseInsert(
       department: action.department,
       priority: action.priority,
       action_title: cleanTitle,
-      action_description: descriptionParts.join('\n'),
+      action_description: cleanDesc,
       status: 'Open',
       responsible_person: action.defaultOwnerRole,
       target_completion_date: calculateTargetDate(action.defaultTimeframeDays),
       support_required_from: [],
-      kpis_linked_to: action.linkedKPIs || []
+      kpis_linked_to: action.linkedKPIs || [],
+      // Context Intelligence fields
+      action_context: ci.action_context,
+      business_impact: ci.business_impact,
+      recommendation: ci.recommendation,
+      expected_benefit: ci.expected_benefit,
+      linked_kpis: ci.linked_kpis,
+      likely_drivers: ci.likely_drivers,
+      likely_consequences: ci.likely_consequences,
+      impact_score: ci.impact_score,
+      effort_score: ci.effort_score,
+      urgency_score: ci.urgency_score,
     };
   });
 }
