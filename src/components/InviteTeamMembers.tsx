@@ -226,7 +226,7 @@ export function InviteTeamMembers() {
             {isSubmitting ? (
               <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
             ) : (
-              <><Send className="mr-2 h-4 w-4" /> Send Invite</>
+              <><Send className="mr-2 h-4 w-4" /> Send Invitation Email</>
             )}
           </Button>
         </form>
