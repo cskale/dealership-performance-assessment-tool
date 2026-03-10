@@ -56,6 +56,7 @@ const App = () => (
                             </ProtectedRoute>
                           } />
                           <Route path="results" element={<Results />} />
+                          <Route path="results/:assessmentId" element={<Results />} />
                         </Routes>
                       </ProtectedRoute>
                     } />
