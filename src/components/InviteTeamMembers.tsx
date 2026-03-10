@@ -163,7 +163,11 @@ export function InviteTeamMembers() {
       });
 
       if (!error && data?.success) {
-        toast.success('Invite resent — expiry extended');
+        if (data.email_sent) {
+          toast.success(`Invitation email resent to ${invite.invited_email}`);
+        } else {
+          toast.warning('Invite extended but email could not be sent');
+        }
         setInviteUrl(data.invite_url);
         loadPendingInvites();
       } else {
