@@ -1,39 +1,31 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { 
-  CheckCircle2, Circle, Clock, Plus, Sparkles, 
-  Loader2, Pencil, AlertTriangle, Target, ArrowUpDown,
-  Eye
+import {
+  CheckCircle2, Circle, Clock, Plus, Sparkles, Loader2, Pencil,
+  AlertTriangle, Target, Eye, Search, Filter, Users, X
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { toast } from 'sonner';
 import { questionnaire } from '@/data/questionnaire';
-import { 
-  generateActionsFromAssessment, 
-  formatActionsForDatabaseInsert 
-} from '@/lib/signalEngine';
-import { getHumanRationale, cleanActionTitle, cleanActionDescription, priorityDisplay, statusDisplay, resetPatternUsage } from '@/lib/actionRationaleMap';
+import { generateActionsFromAssessment, formatActionsForDatabaseInsert } from '@/lib/signalEngine';
+import { getHumanRationale, cleanActionTitle, cleanActionDescription, priorityDisplay, resetPatternUsage } from '@/lib/actionRationaleMap';
 import { ActionSheet } from './ActionSheet';
+import { OwnerLoadPanel } from './action-plan/OwnerLoadPanel';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { cn } from '@/lib/utils';
 
-interface Action {
+export interface ActionRecord {
   id: string;
   department: string;
   priority: 'critical' | 'high' | 'medium' | 'low';
@@ -49,206 +41,150 @@ interface Action {
   user_id: string | null;
   updated_at?: string;
   _loadedAt?: string;
+  // New triage fields
+  impact_score?: number | null;
+  effort_score?: number | null;
+  urgency_score?: number | null;
+  action_context?: string | null;
+  business_impact?: string | null;
+  recommendation?: string | null;
+  expected_benefit?: string | null;
+  linked_kpis?: any | null;
+  likely_drivers?: any | null;
+  likely_consequences?: any | null;
+  expected_impact?: string | null;
+  estimated_effort?: string | null;
 }
+
+function computeTriageScore(action: ActionRecord): number | null {
+  if (action.impact_score == null || action.effort_score == null || action.urgency_score == null) return null;
+  return (action.impact_score * 2) + (action.urgency_score * 2) - action.effort_score;
+}
+
+function getTriageBadge(score: number | null): { label: string; className: string } | null {
+  if (score == null) return null;
+  if (score >= 14) return { label: 'Act Now', className: 'bg-destructive/10 text-destructive border-destructive/20' };
+  if (score >= 10) return { label: 'Priority', className: 'bg-warning/10 text-warning border-warning/20' };
+  if (score >= 6) return { label: 'Plan', className: 'bg-info/10 text-info border-info/20' };
+  return { label: 'Backlog', className: 'bg-muted text-muted-foreground border-border' };
+}
+
+function isOverdue(action: ActionRecord): boolean {
+  if (!action.target_completion_date || action.status === 'Completed') return false;
+  return new Date(action.target_completion_date) < new Date(new Date().toDateString());
+}
+
+const STATUS_STRIPE: Record<string, string> = {
+  'Open': 'bg-muted-foreground',
+  'In Progress': 'bg-info',
+  'Completed': 'bg-success',
+};
 
 export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
   const { user } = useAuth();
   const { currentOrganization, canPerformAction } = useMultiTenant();
   const { t, language } = useLanguage();
-  const [actions, setActions] = useState<Action[]>([]);
+  const [actions, setActions] = useState<ActionRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [filterPriority, setFilterPriority] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'priority' | 'status' | 'date'>('priority');
-  
-  // Edit/create state
-  const [editingAction, setEditingAction] = useState<Action | null>(null);
+  const [filterDepartment, setFilterDepartment] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('priority');
+  const [filterOpen, setFilterOpen] = useState(false);
+
+  const [editingAction, setEditingAction] = useState<ActionRecord | null>(null);
   const [sheetMode, setSheetMode] = useState<'create' | 'edit'>('edit');
   const [sheetOpen, setSheetOpen] = useState(false);
   const [conflictDetected, setConflictDetected] = useState(false);
-  const [conflictAction, setConflictAction] = useState<Action | null>(null);
-  
-  // Regeneration confirmation
+  const [conflictAction, setConflictAction] = useState<ActionRecord | null>(null);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+  const [ownerPanelOpen, setOwnerPanelOpen] = useState(false);
+  const [ownerFilter, setOwnerFilter] = useState<string | null>(null);
 
-  // Permission check
   const canEdit = canPerformAction('update');
   const canCreate = canPerformAction('create');
 
-  // Calculate progress stats
   const completedCount = actions.filter(a => a.status === 'Completed').length;
   const totalCount = actions.length;
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-  const overdueCount = actions.filter(a => {
-    if (!a.target_completion_date || a.status === 'Completed') return false;
-    return new Date(a.target_completion_date) < new Date();
-  }).length;
+  const overdueCount = actions.filter(a => isOverdue(a)).length;
 
-  useEffect(() => {
-    loadActions();
-  }, [user, assessmentId, currentOrganization]);
+  useEffect(() => { loadActions(); }, [user, assessmentId, currentOrganization]);
 
-  // A2: Multi-tenant scoped action loading — strict single-user fallback if no org
   const loadActions = async () => {
     if (!user) return;
-    
     setLoading(true);
     try {
-      let query = supabase
-        .from('improvement_actions')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      // Scope by organization if available, else strict user-only
+      let query = supabase.from('improvement_actions').select('*').order('created_at', { ascending: false });
       if (currentOrganization?.id) {
         query = query.eq('organization_id', currentOrganization.id);
       } else {
         query = query.eq('user_id', user.id);
       }
-
-      if (assessmentId) {
-        query = query.eq('assessment_id', assessmentId);
-      }
-
+      if (assessmentId) query = query.eq('assessment_id', assessmentId);
       const { data, error } = await query;
       if (error) throw error;
-      
-      const actionsWithTimestamp = (data || []).map(a => ({
-        ...a,
-        _loadedAt: new Date().toISOString()
-      }));
-      setActions(actionsWithTimestamp as unknown as Action[]);
+      setActions((data || []).map(a => ({ ...a, _loadedAt: new Date().toISOString() })) as unknown as ActionRecord[]);
     } catch (error) {
       console.error('Error loading actions:', error);
-      toast.error(t('actionPlan.loadError') || 'Failed to load action plans');
+      toast.error('Failed to load action plans');
     } finally {
       setLoading(false);
     }
   };
 
-  // B1: Auto-generated action detection — uses signal metadata in description
-  const isAutoGenerated = (action: Action) => 
+  const isAutoGenerated = (action: ActionRecord) =>
     action.assessment_id === assessmentId && action.action_description?.includes('Triggered because:');
-
   const hasAutoGeneratedActions = actions.some(isAutoGenerated);
 
   const handleGenerateClick = () => {
-    if (hasAutoGeneratedActions) {
-      setShowRegenerateConfirm(true);
-    } else {
-      generateIntelligentActions(false);
-    }
+    if (hasAutoGeneratedActions) setShowRegenerateConfirm(true);
+    else generateIntelligentActions(false);
   };
 
   const generateIntelligentActions = async (replaceExisting: boolean) => {
     if (!user) return;
-    
     setGenerating(true);
     setShowRegenerateConfirm(false);
-    
     try {
       let targetAssessmentId = assessmentId;
-      
       if (!targetAssessmentId) {
-        const { data: assessments } = await supabase
-          .from('assessments')
-          .select('id, answers')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
-
-        if (!assessments) {
-          toast.error(t('actionPlan.noAssessment') || 'No assessment found. Please complete an assessment first.');
-          setGenerating(false);
-          return;
-        }
+        const { data: assessments } = await supabase.from('assessments').select('id, answers')
+          .eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).single();
+        if (!assessments) { toast.error('No assessment found.'); setGenerating(false); return; }
         targetAssessmentId = assessments.id;
       }
-
-      // B1: If replacing, delete ONLY auto-generated actions (preserve manual ones)
       if (replaceExisting && targetAssessmentId) {
-        const existingAutoActions = actions.filter(a => 
-          a.assessment_id === targetAssessmentId && 
-          a.action_description?.includes('Triggered because:')
-        );
-        if (existingAutoActions.length > 0) {
-          const { error: deleteError } = await supabase
-            .from('improvement_actions')
-            .delete()
-            .in('id', existingAutoActions.map(a => a.id));
-          if (deleteError) console.error('Error deleting old auto-actions:', deleteError);
+        const existingAuto = actions.filter(a => a.assessment_id === targetAssessmentId && a.action_description?.includes('Triggered because:'));
+        if (existingAuto.length > 0) {
+          await supabase.from('improvement_actions').delete().in('id', existingAuto.map(a => a.id));
         }
       }
-
-      const { data: assessment } = await supabase
-        .from('assessments')
-        .select('answers')
-        .eq('id', targetAssessmentId)
-        .single();
-
-      if (!assessment) {
-        toast.error(t('actionPlan.loadAssessmentError') || 'Failed to load assessment data');
-        setGenerating(false);
-        return;
-      }
-
-      // Build question weights from questionnaire
+      const { data: assessment } = await supabase.from('assessments').select('answers').eq('id', targetAssessmentId).single();
+      if (!assessment) { toast.error('Failed to load assessment data'); setGenerating(false); return; }
       const questionWeights: Record<string, number> = {};
       for (const section of questionnaire.sections) {
-        for (const question of section.questions) {
-          questionWeights[question.id] = question.weight;
-        }
+        for (const question of section.questions) questionWeights[question.id] = question.weight;
       }
-
-      // Use canonical signal engine for action generation
-      const generatedActions = generateActionsFromAssessment(
-        assessment.answers as Record<string, number>,
-        questionWeights
-      );
-
-      if (generatedActions.length === 0) {
-        toast.success(t('actionPlan.noAreasFound') || 'No critical improvement areas found.');
-        setGenerating(false);
-        return;
-      }
-
-      // Format for database insertion
-      const actionsWithOrg = formatActionsForDatabaseInsert(
-        generatedActions,
-        user.id,
-        targetAssessmentId!,
-        currentOrganization?.id || ''
-      );
-
-      const { data: insertedActions, error: insertError } = await supabase
-        .from('improvement_actions')
-        .insert(actionsWithOrg as any)
-        .select();
-
+      const generatedActions = generateActionsFromAssessment(assessment.answers as Record<string, number>, questionWeights);
+      if (generatedActions.length === 0) { toast.success('No critical improvement areas found.'); setGenerating(false); return; }
+      const actionsWithOrg = formatActionsForDatabaseInsert(generatedActions, user.id, targetAssessmentId!, currentOrganization?.id || '');
+      const { data: insertedActions, error: insertError } = await supabase.from('improvement_actions').insert(actionsWithOrg as any).select();
       if (insertError) throw insertError;
-
-      toast.success(
-        language === 'de' 
-          ? `${insertedActions?.length || 0} gezielte Aktionspunkte generiert`
-          : `Generated ${insertedActions?.length || 0} targeted action items`
-      );
+      toast.success(`Generated ${insertedActions?.length || 0} targeted action items`);
       loadActions();
     } catch (error) {
       console.error('Error generating actions:', error);
-      toast.error(t('actionPlan.generateError') || 'Failed to generate action plans');
+      toast.error('Failed to generate action plans');
     } finally {
       setGenerating(false);
     }
   };
 
-  // Open edit or create dialog (A4: centered modal)
-  const openEditPanel = (action: Action) => {
-    if (!canEdit) {
-      toast.info(t('actionPlan.viewOnlyAccess') || 'You have view-only access to actions.');
-      return;
-    }
+  const openEditPanel = (action: ActionRecord) => {
+    if (!canEdit) { toast.info('You have view-only access.'); return; }
     setEditingAction(action);
     setSheetMode('edit');
     setSheetOpen(true);
@@ -260,10 +196,8 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
     setSheetOpen(true);
   };
 
-  // Save with conflict detection
-  const handleSheetSave = async (formData: Partial<Action>) => {
+  const handleSheetSave = async (formData: Partial<ActionRecord>) => {
     if (!user) return;
-    
     if (sheetMode === 'create') {
       try {
         const actionData = {
@@ -278,75 +212,70 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
           responsible_person: formData.responsible_person || null,
           target_completion_date: formData.target_completion_date || null,
           support_required_from: formData.support_required_from || [],
-          kpis_linked_to: formData.kpis_linked_to || []
+          kpis_linked_to: formData.kpis_linked_to || [],
+          impact_score: formData.impact_score ?? null,
+          effort_score: formData.effort_score ?? null,
+          urgency_score: formData.urgency_score ?? null,
+          action_context: formData.action_context ?? null,
+          business_impact: formData.business_impact ?? null,
+          recommendation: formData.recommendation ?? null,
+          expected_benefit: formData.expected_benefit ?? null,
+          linked_kpis: formData.linked_kpis ?? null,
+          likely_drivers: formData.likely_drivers ?? null,
+          likely_consequences: formData.likely_consequences ?? null,
         };
-
-        const { error } = await supabase
-          .from('improvement_actions')
-          .insert([actionData as any]);
-
+        const { error } = await supabase.from('improvement_actions').insert([actionData as any]);
         if (error) throw error;
-        toast.success(t('actionPlan.actionAdded') || 'Action added successfully');
+        toast.success('Action added successfully');
         loadActions();
       } catch (error) {
         console.error('Error adding action:', error);
-        toast.error(t('actionPlan.addError') || 'Failed to add action');
+        toast.error('Failed to add action');
       }
     } else if (sheetMode === 'edit' && formData.id) {
-      // Edit existing action with conflict detection
       try {
         const original = actions.find(a => a.id === formData.id);
-        
         if (original?.updated_at) {
-          const { data: currentAction } = await supabase
-            .from('improvement_actions')
-            .select('*')
-            .eq('id', formData.id)
-            .single();
-
+          const { data: currentAction } = await supabase.from('improvement_actions').select('*').eq('id', formData.id).single();
           if (currentAction) {
             const currentData = currentAction as unknown as { updated_at?: string };
             if (currentData?.updated_at) {
               const serverTime = new Date(currentData.updated_at).getTime();
               const loadedTime = new Date(original.updated_at).getTime();
-              
               if (serverTime > loadedTime) {
-                // A3: Conflict — timestamp only, no user attribution
-                setConflictAction(currentAction as unknown as Action);
+                setConflictAction(currentAction as unknown as ActionRecord);
                 setConflictDetected(true);
                 return;
               }
             }
           }
         }
-
         await performUpdate(formData);
       } catch (error) {
         console.error('Error updating action:', error);
-        toast.error(t('actionPlan.updateError') || 'Failed to update action');
+        toast.error('Failed to update action');
       }
     }
   };
 
-  const performUpdate = async (formData: Partial<Action>) => {
-    const { error } = await supabase
-      .from('improvement_actions')
-      .update({
-        action_title: formData.action_title,
-        action_description: formData.action_description,
-        department: formData.department,
-        priority: formData.priority,
-        status: formData.status,
-        responsible_person: formData.responsible_person || null,
-        target_completion_date: formData.target_completion_date || null,
-        support_required_from: formData.support_required_from || [],
-        kpis_linked_to: formData.kpis_linked_to || [],
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', formData.id!);
-
+  const performUpdate = async (formData: Partial<ActionRecord>) => {
+    const { error } = await supabase.from('improvement_actions').update({
+      action_title: formData.action_title,
+      action_description: formData.action_description,
+      department: formData.department,
+      priority: formData.priority,
+      status: formData.status,
+      responsible_person: formData.responsible_person || null,
+      target_completion_date: formData.target_completion_date || null,
+      support_required_from: formData.support_required_from || [],
+      kpis_linked_to: formData.kpis_linked_to || [],
+      impact_score: formData.impact_score ?? null,
+      effort_score: formData.effort_score ?? null,
+      urgency_score: formData.urgency_score ?? null,
+      updated_at: new Date().toISOString()
+    }).eq('id', formData.id!);
     if (error) throw error;
-    toast.success(t('actionPlan.actionUpdated') || 'Action updated successfully');
+    toast.success('Action updated successfully');
     setSheetOpen(false);
     setConflictDetected(false);
     loadActions();
@@ -354,133 +283,76 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
 
   const handleDelete = async (actionId: string) => {
     try {
-      const { error } = await supabase
-        .from('improvement_actions')
-        .delete()
-        .eq('id', actionId);
+      const { error } = await supabase.from('improvement_actions').delete().eq('id', actionId);
       if (error) throw error;
-      toast.success(t('actionPlan.actionDeleted') || 'Action deleted');
+      toast.success('Action deleted');
       loadActions();
     } catch (error) {
       console.error('Error deleting action:', error);
-      toast.error(t('actionPlan.deleteError') || 'Failed to delete action');
+      toast.error('Failed to delete action');
     }
   };
 
-  const updateActionStatus = async (actionId: string, newStatus: Action['status']) => {
-    if (!canEdit) {
-      toast.info(t('actionPlan.viewOnlyAccess') || 'You have view-only access.');
-      return;
-    }
-    try {
-      const { error } = await supabase
-        .from('improvement_actions')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq('id', actionId);
+  // Departments from data
+  const departments = useMemo(() => {
+    const set = new Set(actions.map(a => a.department).filter(Boolean));
+    return Array.from(set).sort();
+  }, [actions]);
 
-      if (error) throw error;
-      setActions(actions.map(action => 
-        action.id === actionId ? { ...action, status: newStatus } : action
-      ));
-      toast.success(t('actionPlan.statusUpdated') || 'Status updated');
-    } catch (error) {
-      console.error('Error updating status:', error);
-      toast.error(t('actionPlan.statusUpdateError') || 'Failed to update status');
-    }
-  };
+  // Status counts
+  const statusCounts = useMemo(() => {
+    const counts = { all: actions.length, Open: 0, 'In Progress': 0, Completed: 0, Overdue: 0 };
+    actions.forEach(a => {
+      if (a.status === 'Open') counts.Open++;
+      else if (a.status === 'In Progress') counts['In Progress']++;
+      else if (a.status === 'Completed') counts.Completed++;
+      if (isOverdue(a)) counts.Overdue++;
+    });
+    return counts;
+  }, [actions]);
 
-  const getPriorityConfig = (priority: string) => {
-    return priorityDisplay[priority as keyof typeof priorityDisplay] || priorityDisplay.medium;
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'Completed': return <CheckCircle2 className="h-4 w-4 text-success" />;
-      case 'In Progress': return <Clock className="h-4 w-4 text-info" />;
-      default: return <Circle className="h-4 w-4 text-muted-foreground" />;
-    }
-  };
-
-  // Filter and sort actions
-  const filteredActions = actions
-    .filter(action => {
-      if (filterStatus !== 'all' && action.status !== filterStatus) return false;
+  // Filter + sort
+  const filteredActions = useMemo(() => {
+    resetPatternUsage();
+    let result = actions.filter(action => {
+      if (statusFilter === 'Overdue') {
+        if (!isOverdue(action)) return false;
+      } else if (statusFilter !== 'all' && action.status !== statusFilter) return false;
       if (filterPriority !== 'all' && action.priority !== filterPriority) return false;
+      if (filterDepartment !== 'all' && action.department !== filterDepartment) return false;
+      if (ownerFilter !== null) {
+        const owner = action.responsible_person || 'Unassigned';
+        if (owner !== ownerFilter) return false;
+      }
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        if (!action.action_title.toLowerCase().includes(q) && !action.action_description.toLowerCase().includes(q) && !action.department.toLowerCase().includes(q)) return false;
+      }
       return true;
-    })
-    .sort((a, b) => {
-      const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
-      const statusOrder = { 'Open': 0, 'In Progress': 1, 'Completed': 2 };
-      
-      if (sortBy === 'priority') {
-        return priorityOrder[a.priority] - priorityOrder[b.priority];
-      }
-      if (sortBy === 'status') {
-        return statusOrder[a.status] - statusOrder[b.status];
-      }
-      if (sortBy === 'date' && a.target_completion_date && b.target_completion_date) {
-        return new Date(a.target_completion_date).getTime() - new Date(b.target_completion_date).getTime();
+    });
+
+    const priorityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+    result.sort((a, b) => {
+      if (sortBy === 'priority') return (priorityOrder[a.priority] ?? 9) - (priorityOrder[b.priority] ?? 9);
+      if (sortBy === 'date_asc') return (a.target_completion_date || '9999').localeCompare(b.target_completion_date || '9999');
+      if (sortBy === 'date_desc') return (b.target_completion_date || '').localeCompare(a.target_completion_date || '');
+      if (sortBy === 'triage') {
+        const sa = computeTriageScore(a) ?? -99;
+        const sb = computeTriageScore(b) ?? -99;
+        return sb - sa;
       }
       return 0;
     });
+    return result;
+  }, [actions, statusFilter, filterPriority, filterDepartment, searchQuery, sortBy, ownerFilter]);
 
-  // B3: Reset pattern usage for this render cycle to ensure uniqueness
-  resetPatternUsage();
-
-  // Translated labels
-  const labels = {
-    loading: language === 'de' ? 'Laden des Aktionsplans...' : 'Loading action plan...',
-    viewOnlyBanner: language === 'de' ? 'Aktionen werden im Nur-Lese-Modus angezeigt.' : 'Showing actions created under your user account.',
-    actionsCompleted: language === 'de' 
-      ? `${completedCount} von ${totalCount} Aktionen abgeschlossen`
-      : `${completedCount} of ${totalCount} actions completed`,
-    overdue: language === 'de' ? 'überfällig' : 'overdue',
-    title: t('actionPlan.title'),
-    subtitle: language === 'de' 
-      ? 'Strategische Initiativen zur Verbesserung der Händlerleistung'
-      : 'Strategic initiatives to improve dealership performance',
-    generateActions: language === 'de' ? 'Aktionen generieren' : 'Generate Actions',
-    generating: language === 'de' ? 'Generiere...' : 'Generating...',
-    addAction: language === 'de' ? 'Aktion hinzufügen' : 'Add Action',
-    allStatus: t('actionPlan.allStatus'),
-    open: t('actionPlan.open'),
-    inProgress: t('actionPlan.inProgress'),
-    completed: t('actionPlan.completed'),
-    allPriority: t('actionPlan.allPriority'),
-    critical: t('actionPlan.critical'),
-    high: t('actionPlan.high'),
-    medium: t('actionPlan.medium'),
-    low: t('actionPlan.low'),
-    sortLabel: language === 'de' ? 'Sortieren' : 'Sort',
-    sortPriority: language === 'de' ? 'Priorität' : 'Priority',
-    sortStatus: language === 'de' ? 'Status' : 'Status',
-    sortDueDate: language === 'de' ? 'Fälligkeitsdatum' : 'Due Date',
-    noActions: t('actionPlan.noActions'),
-    noActionsDesc: language === 'de' 
-      ? 'Generieren Sie Aktionen aus Ihrer Bewertung oder fügen Sie sie manuell hinzu.'
-      : 'Generate actions from your assessment or add them manually.',
-    tableAction: language === 'de' ? 'Aktion' : 'Action',
-    tableDepartment: language === 'de' ? 'Abteilung' : 'Department',
-    tablePriority: language === 'de' ? 'Priorität' : 'Priority',
-    tableStatus: language === 'de' ? 'Status' : 'Status',
-    tableOwner: language === 'de' ? 'Verantwortlich' : 'Owner',
-    tableDueDate: language === 'de' ? 'Fälligkeitsdatum' : 'Due Date',
-    basedOnAssessment: language === 'de' ? 'Basierend auf Bewertungsdaten' : 'Based on assessment data',
-    conflictTitle: language === 'de' ? 'Bearbeitungskonflikt erkannt' : 'Edit Conflict Detected',
-    conflictDesc: language === 'de'
-      ? 'Diese Aktion wurde seit Beginn Ihrer Bearbeitung geändert. Möchten Sie die neueste Version überprüfen oder mit Ihren Änderungen überschreiben?'
-      : 'This action has been modified since you started editing. Would you like to review the latest version or overwrite with your changes?',
-    latestVersion: language === 'de' ? 'Neueste Version' : 'Latest version',
-    updated: language === 'de' ? 'Aktualisiert' : 'Updated',
-    reviewLatest: language === 'de' ? 'Neueste überprüfen' : 'Review Latest',
-    overwrite: language === 'de' ? 'Überschreiben' : 'Overwrite',
-    regenerateTitle: language === 'de' ? 'Aktionen neu generieren?' : 'Regenerate Actions?',
-    regenerateDesc: language === 'de'
-      ? 'Für diese Bewertung existieren bereits automatisch generierte Aktionen. Durch Neugenerierung werden diese durch neue ersetzt. Manuell erstellte Aktionen bleiben erhalten.'
-      : 'Auto-generated actions already exist for this assessment. Regenerating will replace them with new ones. Manually created actions will be preserved.',
-    cancel: language === 'de' ? 'Abbrechen' : 'Cancel',
-    regenerate: language === 'de' ? 'Neu generieren' : 'Regenerate',
-  };
+  const statusTabs = [
+    { key: 'all', label: 'All', count: statusCounts.all },
+    { key: 'Open', label: 'Open', count: statusCounts.Open },
+    { key: 'In Progress', label: 'In Progress', count: statusCounts['In Progress'] },
+    { key: 'Completed', label: 'Completed', count: statusCounts.Completed },
+    { key: 'Overdue', label: 'Overdue', count: statusCounts.Overdue },
+  ];
 
   if (loading) {
     return (
@@ -488,7 +360,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
         <CardContent className="flex items-center justify-center py-12">
           <div className="text-center space-y-4">
             <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-            <p className="text-muted-foreground">{labels.loading}</p>
+            <p className="text-muted-foreground">Loading action plan...</p>
           </div>
         </CardContent>
       </Card>
@@ -496,239 +368,247 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* View-only banner for restricted roles */}
+    <div className="space-y-4">
+      {/* View-only banner */}
       {!canEdit && (
         <Card className="bg-muted/50 border-muted">
           <CardContent className="py-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Eye className="h-4 w-4" />
-              <span>{labels.viewOnlyBanner}</span>
+              <span>Showing actions in view-only mode.</span>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* P3.3: Progress Summary Card */}
-      {totalCount > 0 && (
-        <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
-          <CardContent className="py-4">
-            <div className="flex items-center justify-between flex-wrap gap-3">
-              <div className="flex items-center gap-4 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <Target className="h-5 w-5 text-primary" />
-                  <span className="font-medium">{labels.actionsCompleted}</span>
-                </div>
-                {overdueCount > 0 && (
-                  <Badge variant="destructive" className="flex items-center gap-1">
-                    <AlertTriangle className="h-3 w-3" />
-                    {overdueCount} {labels.overdue}
-                  </Badge>
-                )}
+      {/* Header bar */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <h2 className="text-lg font-semibold text-foreground">Action Plan</h2>
+          {totalCount > 0 && (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 min-w-[180px]">
+                <Progress value={progressPercent} className="h-2 flex-1" />
+                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                  {completedCount}/{totalCount}
+                </span>
               </div>
-              <div className="w-48">
-                <Progress value={progressPercent} className="h-2" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <div>
-              <CardTitle>{labels.title}</CardTitle>
-              <CardDescription>{labels.subtitle}</CardDescription>
-            </div>
-            <div className="flex gap-2">
-              {canEdit && (
-                <Button
-                  onClick={handleGenerateClick}
-                  disabled={generating}
-                  variant="default"
-                >
-                  {generating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {labels.generating}
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      {labels.generateActions}
-                    </>
-                  )}
-                </Button>
+              {overdueCount > 0 && (
+                <Badge variant="destructive" className="text-xs flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  {overdueCount} overdue
+                </Badge>
               )}
-              {canCreate && (
-                <Button onClick={openCreatePanel} variant="outline">
-                  <Plus className="mr-2 h-4 w-4" />
-                  {labels.addAction}
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          {/* B4: Clean filters — Status + Priority only */}
-          <div className="flex flex-wrap gap-3 items-center">
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder={labels.tableStatus} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{labels.allStatus}</SelectItem>
-                <SelectItem value="Open">{labels.open}</SelectItem>
-                <SelectItem value="In Progress">{labels.inProgress}</SelectItem>
-                <SelectItem value="Completed">{labels.completed}</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={filterPriority} onValueChange={setFilterPriority}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder={labels.tablePriority} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{labels.allPriority}</SelectItem>
-                <SelectItem value="critical">{labels.critical}</SelectItem>
-                <SelectItem value="high">{labels.high}</SelectItem>
-                <SelectItem value="medium">{labels.medium}</SelectItem>
-                <SelectItem value="low">{labels.low}</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setSortBy(prev => prev === 'priority' ? 'status' : prev === 'status' ? 'date' : 'priority')}
-              className="flex items-center gap-1 text-xs"
-            >
-              <ArrowUpDown className="h-3 w-3" />
-              {labels.sortLabel}: {sortBy === 'priority' ? labels.sortPriority : sortBy === 'status' ? labels.sortStatus : labels.sortDueDate}
-            </Button>
-          </div>
-
-          {/* P3.1A: Table View */}
-          {filteredActions.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Target className="h-12 w-12 mx-auto mb-4 opacity-20" />
-              <p className="font-medium">{labels.noActions}</p>
-              <p className="text-sm mt-1">{labels.noActionsDesc}</p>
-            </div>
-          ) : (
-            <div className="border rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-8"></TableHead>
-                    <TableHead>{labels.tableAction}</TableHead>
-                    <TableHead className="hidden md:table-cell">{labels.tableDepartment}</TableHead>
-                    <TableHead>{labels.tablePriority}</TableHead>
-                    <TableHead>{labels.tableStatus}</TableHead>
-                    <TableHead className="hidden lg:table-cell">{labels.tableOwner}</TableHead>
-                    <TableHead className="hidden lg:table-cell">{labels.tableDueDate}</TableHead>
-                    {canEdit && <TableHead className="w-10"></TableHead>}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredActions.map((action) => {
-                    const priorityConfig = getPriorityConfig(action.priority);
-                    // A1: Get rationale from action object (uses signal code from description, not department)
-                    const rationale = getHumanRationale({ 
-                      action_description: action.action_description,
-                      department: action.department,
-                      action_title: action.action_title
-                    });
-                    // B2/B4: Clean title and description
-                    const displayTitle = cleanActionTitle(action.action_title);
-                    const displayDesc = cleanActionDescription(action.action_description);
-
-                    return (
-                      <TableRow 
-                        key={action.id} 
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => openEditPanel(action)}
-                      >
-                        <TableCell className="pr-0">
-                          {getStatusIcon(action.status)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <p className="font-medium text-sm leading-tight">{displayTitle}</p>
-                            <p className="text-xs text-muted-foreground line-clamp-1">{rationale.summary}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          <Badge variant="secondary" className="text-xs">{action.department}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={`${priorityConfig.color} text-xs`}>
-                            {priorityConfig.label}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {canEdit ? (
-                            <Select
-                              value={action.status}
-                              onValueChange={(value) => {
-                                updateActionStatus(action.id, value as Action['status']);
-                              }}
-                            >
-                              <SelectTrigger 
-                                className="w-[120px] h-7 text-xs"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Open">{labels.open}</SelectItem>
-                                <SelectItem value="In Progress">{labels.inProgress}</SelectItem>
-                                <SelectItem value="Completed">{labels.completed}</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">{action.status}</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">
-                          {action.responsible_person || '—'}
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">
-                          {action.target_completion_date 
-                            ? new Date(action.target_completion_date).toLocaleDateString()
-                            : '—'}
-                        </TableCell>
-                        {canEdit && (
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openEditPanel(action);
-                              }}
-                            >
-                              <Pencil className="h-3 w-3" />
-                            </Button>
-                          </TableCell>
-                        )}
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
             </div>
           )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={() => setOwnerPanelOpen(true)} title="Owner Workload">
+            <Users className="h-4 w-4" />
+          </Button>
+          {canEdit && (
+            <Button onClick={handleGenerateClick} disabled={generating} size="sm">
+              {generating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+              {generating ? 'Generating...' : 'Generate Actions'}
+            </Button>
+          )}
+          {canCreate && (
+            <Button onClick={openCreatePanel} variant="outline" size="sm">
+              <Plus className="mr-2 h-4 w-4" /> Add Action
+            </Button>
+          )}
+        </div>
+      </div>
 
-          {/* Assessment data source note */}
-          <p className="text-xs text-muted-foreground text-right">{labels.basedOnAssessment}</p>
-        </CardContent>
-      </Card>
+      {/* Command Bar */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="relative flex-shrink-0 w-56">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search actions..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 h-9 text-sm"
+          />
+        </div>
 
-      {/* Edit/Create Dialog (A4: centered modal) */}
+        {/* Segmented status tabs */}
+        <div className="flex items-center border-b border-border flex-1 min-w-0 overflow-x-auto">
+          {statusTabs.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setStatusFilter(tab.key)}
+              className={cn(
+                "px-3 py-2 text-sm whitespace-nowrap border-b-2 transition-colors",
+                statusFilter === tab.key
+                  ? "border-primary text-primary font-medium"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {tab.label} <span className="text-xs ml-1 opacity-70">({tab.count})</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Filter popover */}
+        <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <Filter className="h-3.5 w-3.5" /> Filter
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-3 space-y-3" align="end">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Priority</label>
+              <div className="flex flex-wrap gap-1">
+                {['all', 'critical', 'high', 'medium', 'low'].map(p => (
+                  <button key={p} onClick={() => setFilterPriority(p)}
+                    className={cn("px-2 py-1 rounded text-xs border transition-colors",
+                      filterPriority === p ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"
+                    )}>
+                    {p === 'all' ? 'All' : p.charAt(0).toUpperCase() + p.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Department</label>
+              <div className="flex flex-wrap gap-1">
+                <button onClick={() => setFilterDepartment('all')}
+                  className={cn("px-2 py-1 rounded text-xs border transition-colors",
+                    filterDepartment === 'all' ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"
+                  )}>All</button>
+                {departments.map(d => (
+                  <button key={d} onClick={() => setFilterDepartment(d)}
+                    className={cn("px-2 py-1 rounded text-xs border transition-colors",
+                      filterDepartment === d ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"
+                    )}>{d}</button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Sort</label>
+              <div className="flex flex-wrap gap-1">
+                {[
+                  { key: 'priority', label: 'Priority' },
+                  { key: 'date_asc', label: 'Due Date ↑' },
+                  { key: 'date_desc', label: 'Due Date ↓' },
+                  { key: 'triage', label: 'Triage Score' },
+                ].map(s => (
+                  <button key={s.key} onClick={() => setSortBy(s.key)}
+                    className={cn("px-2 py-1 rounded text-xs border transition-colors",
+                      sortBy === s.key ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"
+                    )}>{s.label}</button>
+                ))}
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      {/* Owner filter indicator */}
+      {ownerFilter !== null && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>Filtered by: <strong className="text-foreground">{ownerFilter}</strong></span>
+          <Button variant="ghost" size="sm" onClick={() => setOwnerFilter(null)} className="h-6 px-2">
+            <X className="h-3 w-3" />
+          </Button>
+        </div>
+      )}
+
+      {/* Action Cards */}
+      {filteredActions.length === 0 ? (
+        <div className="text-center py-16 text-muted-foreground">
+          <Target className="h-12 w-12 mx-auto mb-4 opacity-20" />
+          <p className="font-medium">No actions found</p>
+          <p className="text-sm mt-1">Generate actions from your assessment or add them manually.</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {filteredActions.map((action) => {
+            const priorityConfig = priorityDisplay[action.priority as keyof typeof priorityDisplay] || priorityDisplay.medium;
+            const displayTitle = cleanActionTitle(action.action_title);
+            const displayDesc = cleanActionDescription(action.action_description);
+            const overdue = isOverdue(action);
+            const triageScore = computeTriageScore(action);
+            const triageBadge = getTriageBadge(triageScore);
+            const linkedKpisCount = Array.isArray(action.linked_kpis) ? action.linked_kpis.length :
+              (action.linked_kpis && typeof action.linked_kpis === 'object' ? Object.keys(action.linked_kpis).length : 0);
+            const kpiCount = linkedKpisCount || (action.kpis_linked_to?.length || 0);
+            const isCompleted = action.status === 'Completed';
+
+            return (
+              <div
+                key={action.id}
+                onClick={() => openEditPanel(action)}
+                className={cn(
+                  "group relative flex gap-0 rounded-lg border bg-card cursor-pointer transition-all hover:shadow-md hover:-translate-y-px",
+                  isCompleted && "opacity-70"
+                )}
+              >
+                {/* Status stripe */}
+                <div className={cn("w-1 rounded-l-lg flex-shrink-0", STATUS_STRIPE[action.status] || 'bg-muted-foreground')} />
+
+                <div className="flex-1 p-4 min-w-0">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <h3 className="font-medium text-sm text-foreground truncate">{displayTitle}</h3>
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-1 mb-2">{displayDesc}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {/* Department as outline pill */}
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs border border-border text-muted-foreground">
+                          {action.department}
+                        </span>
+                        {/* Priority */}
+                        <Badge className={cn("text-xs", priorityConfig.color)}>{priorityConfig.label}</Badge>
+                        {/* Triage badge */}
+                        {triageBadge && (
+                          <Badge variant="outline" className={cn("text-xs", triageBadge.className)}>{triageBadge.label}</Badge>
+                        )}
+                        {/* KPI count */}
+                        {kpiCount > 0 && (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Target className="h-3 w-3" /> {kpiCount} KPIs
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                      {/* Owner */}
+                      {action.responsible_person && (
+                        <div className="flex items-center gap-1.5">
+                          <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-medium">
+                            {action.responsible_person.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                          </div>
+                          <span className="text-xs text-muted-foreground">{action.responsible_person}</span>
+                        </div>
+                      )}
+                      {/* Due date */}
+                      {action.target_completion_date && (
+                        <span className={cn("text-xs", overdue ? "text-destructive font-medium" : "text-muted-foreground")}>
+                          {overdue && <AlertTriangle className="h-3 w-3 inline mr-1" />}
+                          {new Date(action.target_completion_date).toLocaleDateString()}
+                        </span>
+                      )}
+                      {/* Edit icon */}
+                      {canEdit && (
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => { e.stopPropagation(); openEditPanel(action); }}>
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Right-side Drawer */}
       <ActionSheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}
@@ -737,77 +617,60 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
         onSave={handleSheetSave}
         onDelete={canEdit ? handleDelete : undefined}
         readOnly={!canEdit}
-        rationale={editingAction ? getHumanRationale({ 
-          action_description: editingAction.action_description,
-          department: editingAction.department,
-          action_title: editingAction.action_title
-        }) : undefined}
-        cleanDescription={editingAction ? cleanActionDescription(editingAction.action_description) : undefined}
       />
 
-      {/* A3: Conflict Resolution Dialog — timestamp only */}
+      {/* Owner Load Panel */}
+      <OwnerLoadPanel
+        open={ownerPanelOpen}
+        onOpenChange={setOwnerPanelOpen}
+        actions={actions}
+        onFilterByOwner={(owner) => { setOwnerFilter(owner); setOwnerPanelOpen(false); }}
+      />
+
+      {/* Conflict Resolution Dialog */}
       <AlertDialog open={conflictDetected} onOpenChange={setConflictDetected}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-warning" />
-              {labels.conflictTitle}
+              <AlertTriangle className="h-5 w-5 text-warning" /> Edit Conflict Detected
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {labels.conflictDesc}
+              This action has been modified since you started editing. Review the latest version or overwrite.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          
           {conflictAction && (
             <div className="p-4 bg-muted rounded-md text-sm">
-              <p><strong>{labels.latestVersion}:</strong></p>
+              <p><strong>Latest version:</strong></p>
               <p className="mt-1">{cleanActionTitle(conflictAction.action_title)}</p>
               <p className="text-xs text-muted-foreground mt-2">
-                {labels.updated}: {conflictAction.updated_at ? new Date(conflictAction.updated_at).toLocaleString() : 'Unknown'}
+                Updated: {conflictAction.updated_at ? new Date(conflictAction.updated_at).toLocaleString() : 'Unknown'}
               </p>
             </div>
           )}
-
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => {
-              setConflictDetected(false);
-              if (conflictAction) {
-                setEditingAction(conflictAction);
-              }
-              loadActions();
-            }}>
-              {labels.reviewLatest}
+            <AlertDialogCancel onClick={() => { setConflictDetected(false); if (conflictAction) setEditingAction(conflictAction); loadActions(); }}>
+              Review Latest
             </AlertDialogCancel>
             <AlertDialogAction onClick={async () => {
-              if (editingAction) {
-                try {
-                  await performUpdate(editingAction);
-                } catch (error) {
-                  toast.error(t('actionPlan.overwriteError') || 'Failed to overwrite');
-                }
-              }
+              if (editingAction) { try { await performUpdate(editingAction); } catch {} }
               setConflictDetected(false);
-            }}>
-              {labels.overwrite}
-            </AlertDialogAction>
+            }}>Overwrite</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* B1: Regeneration confirmation dialog */}
+      {/* Regeneration confirmation */}
       <AlertDialog open={showRegenerateConfirm} onOpenChange={setShowRegenerateConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{labels.regenerateTitle}</AlertDialogTitle>
+            <AlertDialogTitle>Regenerate Actions?</AlertDialogTitle>
             <AlertDialogDescription>
-              {labels.regenerateDesc}
+              Auto-generated actions will be replaced. Manually created actions will be preserved.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{labels.cancel}</AlertDialogCancel>
-            <AlertDialogAction onClick={() => generateIntelligentActions(true)}>
-              {labels.regenerate}
-            </AlertDialogAction>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => generateIntelligentActions(true)}>Regenerate</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

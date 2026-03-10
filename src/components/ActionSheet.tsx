@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,48 +9,33 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { CalendarIcon, Save, X, Trash2, Lightbulb, Target, TrendingUp } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  CalendarIcon, Save, X, Trash2, Lightbulb, Target, TrendingUp,
+  ChevronDown, ChevronUp, Clock, AlertTriangle, Zap, BookOpen
+} from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { ActionRationale } from "@/lib/actionRationaleMap";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { KPI_DEFINITIONS } from "@/lib/kpiDefinitions";
 import { useLanguage } from "@/contexts/LanguageContext";
-
-interface Action {
-  id: string;
-  department: string;
-  action_title: string;
-  action_description: string;
-  priority: string;
-  responsible_person: string | null;
-  target_completion_date: string | null;
-  status: string;
-  support_required_from: string[] | null;
-  kpis_linked_to: string[] | null;
-}
+import type { ActionRecord } from "./ActionPlan";
 
 interface ActionSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  action: Action | null;
+  action: ActionRecord | null;
   mode: 'create' | 'edit';
-  onSave: (action: Partial<Action>) => void;
+  onSave: (action: Partial<ActionRecord>) => void;
   onDelete?: (actionId: string) => void;
   readOnly?: boolean;
-  rationale?: ActionRationale;
-  cleanDescription?: string;
 }
 
 const RESPONSIBLE_PERSONS = [
-  "Dealer Principal",
-  "Aftersales Manager",
-  "Parts Supervisor",
-  "Sales Consultant",
-  "Sales Manager",
-  "Service Manager",
-  "Finance Manager",
-  "Marketing Manager"
+  "Dealer Principal", "Aftersales Manager", "Parts Supervisor", "Sales Consultant",
+  "Sales Manager", "Service Manager", "Finance Manager", "Marketing Manager"
 ];
 
 const SUPPORT_OPTIONS = ["Coach", "IT Team", "Parts Vendor", "OEM", "Management", "Training Provider", "Consultant"];
@@ -58,90 +43,83 @@ const SUPPORT_OPTIONS = ["Coach", "IT Team", "Parts Vendor", "OEM", "Management"
 const DEPARTMENTS = ["Parts", "Workshop", "Sales", "Aftersales", "Finance", "Marketing", "Customer Service",
   "New Vehicle Sales", "Used Vehicle Sales", "Service", "Parts & Inventory", "Financial Operations"];
 
-// Map departments to KPI keys for intelligent linking
-const DEPARTMENT_KPI_MAP: Record<string, string[]> = {
-  'New Vehicle Sales': ['leadResponseTime', 'leadConversion', 'showroomTrafficConversion', 'newVehicleGross', 'salesCycle', 'csiNps'],
-  'Used Vehicle Sales': ['grossPerUsedRetailed', 'usedVehicleInventoryTurn', 'reconCycleDays', 'daysSupply', 'usedRetailMix'],
-  'Service': ['serviceAbsorption', 'labourEfficiency', 'technicianUtilization', 'effectiveLabourRate', 'serviceRetention', 'hoursPerRo'],
-  'Parts': ['partsGrossProfit', 'partsInventoryTurnover', 'partsFillRate', 'partsSalesPerRo', 'partsObsolescence'],
-  'Parts & Inventory': ['partsGrossProfit', 'partsInventoryTurnover', 'partsFillRate', 'partsSalesPerRo'],
-  'Workshop': ['labourEfficiency', 'technicianUtilization', 'hoursPerRo', 'serviceRetention'],
-  'Financial Operations': ['netProfitMargin', 'returnOnAssets', 'variableSelling', 'inventoryTurnover'],
-  'Finance': ['netProfitMargin', 'returnOnAssets', 'variableSelling'],
-  'Aftersales': ['serviceAbsorption', 'serviceRetention', 'labourEfficiency', 'partsGrossProfit'],
-  'Sales': ['leadConversion', 'showroomTrafficConversion', 'newVehicleGross', 'salesCycle'],
-  'Marketing': ['leadConversion', 'leadResponseTime'],
-  'Customer Service': ['csiNps', 'serviceRetention']
-};
+const IMPACT_LABELS = ['Marginal', 'Low', 'Moderate', 'High', 'Critical'];
+const EFFORT_LABELS = ['<1 day', '<1 week', '1–2 weeks', '2–4 weeks', 'Major'];
+const URGENCY_LABELS = ['Monitor', 'Low', 'This quarter', 'High', 'Immediate'];
 
-export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete, readOnly, rationale, cleanDescription }: ActionSheetProps) {
+function computeTriageScore(impact: number | null, effort: number | null, urgency: number | null): number | null {
+  if (impact == null || effort == null || urgency == null) return null;
+  return (impact * 2) + (urgency * 2) - effort;
+}
+
+function getQuadrantLabel(impact: number, effort: number): string {
+  if (impact >= 3 && effort <= 2) return 'Quick Win';
+  if (impact >= 3 && effort >= 3) return 'Major Project';
+  if (impact < 3 && effort <= 2) return 'Fill-in';
+  return 'Time Sink';
+}
+
+function getQuadrantColor(label: string): string {
+  switch (label) {
+    case 'Quick Win': return 'text-success';
+    case 'Major Project': return 'text-info';
+    case 'Fill-in': return 'text-muted-foreground';
+    case 'Time Sink': return 'text-destructive';
+    default: return 'text-muted-foreground';
+  }
+}
+
+export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete, readOnly }: ActionSheetProps) {
   const { language } = useLanguage();
-  const [formData, setFormData] = useState<Partial<Action>>({
-    action_title: '',
-    action_description: '',
-    department: '',
-    priority: 'medium',
-    status: 'Open',
-    responsible_person: null,
-    target_completion_date: null,
-    support_required_from: [],
-    kpis_linked_to: []
+  const [activeTab, setActiveTab] = useState<'details' | 'history'>('details');
+  const [contextExpanded, setContextExpanded] = useState(true);
+  const [isDirty, setIsDirty] = useState(false);
+  const [showKpiAll, setShowKpiAll] = useState(false);
+
+  const [formData, setFormData] = useState<Partial<ActionRecord>>({
+    action_title: '', action_description: '', department: '', priority: 'medium',
+    status: 'Open', responsible_person: null, target_completion_date: null,
+    support_required_from: [], kpis_linked_to: [],
+    impact_score: null, effort_score: null, urgency_score: null,
   });
 
-  // Get relevant KPIs based on selected department
-  const relevantKpis = useMemo(() => {
-    const dept = formData.department || '';
-    const kpiKeys = DEPARTMENT_KPI_MAP[dept] || [];
-    return kpiKeys.map(key => {
-      const kpi = KPI_DEFINITIONS[key];
-      if (!kpi) return null;
-      const localized = kpi[language as 'en' | 'de'] || kpi.en;
-      return { key, title: localized.title, benchmark: localized.benchmark };
-    }).filter(Boolean) as { key: string; title: string; benchmark?: string }[];
-  }, [formData.department, language]);
-
-  // Get linked KPI details for display
-  const linkedKpiDetails = useMemo(() => {
-    const linked = formData.kpis_linked_to || [];
-    return linked.map(key => {
-      const kpi = KPI_DEFINITIONS[key];
-      if (!kpi) return null;
-      const localized = kpi[language as 'en' | 'de'] || kpi.en;
-      return { 
-        key, 
-        title: localized.title, 
-        whyItMatters: localized.whyItMatters,
-        benchmark: localized.benchmark 
-      };
-    }).filter(Boolean) as { key: string; title: string; whyItMatters: string; benchmark?: string }[];
-  }, [formData.kpis_linked_to, language]);
-
   useEffect(() => {
+    setIsDirty(false);
+    setActiveTab('details');
     if (action && mode === 'edit') {
       setFormData({
         action_title: action.action_title,
-        action_description: cleanDescription || action.action_description,
+        action_description: action.action_description,
         department: action.department,
         priority: action.priority,
         status: action.status,
         responsible_person: action.responsible_person,
         target_completion_date: action.target_completion_date,
         support_required_from: action.support_required_from || [],
-        kpis_linked_to: action.kpis_linked_to || []
+        kpis_linked_to: action.kpis_linked_to || [],
+        impact_score: action.impact_score ?? null,
+        effort_score: action.effort_score ?? null,
+        urgency_score: action.urgency_score ?? null,
       });
     } else if (mode === 'create') {
       setFormData({
         action_title: '', action_description: '', department: '', priority: 'medium',
         status: 'Open', responsible_person: null, target_completion_date: null,
-        support_required_from: [], kpis_linked_to: []
+        support_required_from: [], kpis_linked_to: [],
+        impact_score: null, effort_score: null, urgency_score: null,
       });
     }
-  }, [action, mode, open, cleanDescription]);
+  }, [action, mode, open]);
+
+  const updateField = useCallback((field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    setIsDirty(true);
+  }, []);
 
   const toggleArrayItem = (field: 'support_required_from' | 'kpis_linked_to', item: string) => {
     const current = formData[field] || [];
-    const newArray = current.includes(item) ? current.filter(i => i !== item) : [...current, item];
-    setFormData(prev => ({ ...prev, [field]: newArray }));
+    const newArray = current.includes(item) ? current.filter((i: string) => i !== item) : [...current, item];
+    updateField(field, newArray);
   };
 
   const handleSave = () => {
@@ -150,241 +128,411 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
     } else {
       onSave(formData);
     }
-    onOpenChange(false);
   };
 
-  const t = (key: string) => {
-    const translations: Record<string, Record<string, string>> = {
-      'viewAction': { en: 'View Action', de: 'Aktion anzeigen' },
-      'createAction': { en: 'Create New Action', de: 'Neue Aktion erstellen' },
-      'editAction': { en: 'Edit Action', de: 'Aktion bearbeiten' },
-      'whyMatters': { en: 'Why this matters', de: 'Warum das wichtig ist' },
-      'ourRecommendation': { en: 'Our recommendation', de: 'Unsere Empfehlung' },
-      'actionTitle': { en: 'Action Title', de: 'Aktionstitel' },
-      'titlePlaceholder': { en: 'Short, imperative action title', de: 'Kurzer, handlungsorientierter Titel' },
-      'description': { en: 'Description', de: 'Beschreibung' },
-      'descPlaceholder': { en: 'Describe what needs to be done and expected outcomes', de: 'Beschreiben Sie die Aufgabe und erwartete Ergebnisse' },
-      'department': { en: 'Department', de: 'Abteilung' },
-      'selectDept': { en: 'Select department', de: 'Abteilung wählen' },
-      'priority': { en: 'Priority', de: 'Priorität' },
-      'status': { en: 'Status', de: 'Status' },
-      'responsiblePerson': { en: 'Responsible Person', de: 'Verantwortliche Person' },
-      'assignOwner': { en: 'Assign owner', de: 'Verantwortlichen zuweisen' },
-      'targetDate': { en: 'Target Completion Date', de: 'Zieldatum' },
-      'pickDate': { en: 'Pick a date', de: 'Datum wählen' },
-      'supportRequired': { en: 'Support Required From', de: 'Benötigte Unterstützung' },
-      'linkedKpis': { en: 'Linked KPIs', de: 'Verknüpfte KPIs' },
-      'kpiContext': { en: 'KPI Context', de: 'KPI-Kontext' },
-      'expectedImpact': { en: 'Expected Impact', de: 'Erwartete Auswirkung' },
-      'delete': { en: 'Delete', de: 'Löschen' },
-      'cancel': { en: 'Cancel', de: 'Abbrechen' },
-      'save': { en: 'Save', de: 'Speichern' },
-      'create': { en: 'Create', de: 'Erstellen' },
-      'critical': { en: 'Critical', de: 'Kritisch' },
-      'high': { en: 'High', de: 'Hoch' },
-      'medium': { en: 'Medium', de: 'Mittel' },
-      'low': { en: 'Low', de: 'Niedrig' },
-      'open': { en: 'Open', de: 'Offen' },
-      'inProgress': { en: 'In Progress', de: 'In Bearbeitung' },
-      'completed': { en: 'Completed', de: 'Abgeschlossen' },
-      'selectKpis': { en: 'Select KPIs this action will improve', de: 'Wählen Sie KPIs, die diese Aktion verbessern wird' },
-      'noDeptKpis': { en: 'Select a department to see relevant KPIs', de: 'Wählen Sie eine Abteilung, um relevante KPIs zu sehen' }
-    };
-    return translations[key]?.[language] || translations[key]?.en || key;
+  const handleClose = () => {
+    if (isDirty && !readOnly) {
+      if (confirm('You have unsaved changes. Discard?')) onOpenChange(false);
+    } else {
+      onOpenChange(false);
+    }
   };
+
+  // KPI intelligence from linked_kpis jsonb
+  const linkedKpisData = useMemo(() => {
+    const data = action?.linked_kpis;
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    return [];
+  }, [action?.linked_kpis]);
+
+  const likelyDrivers = useMemo(() => {
+    const d = action?.likely_drivers;
+    if (!d) return [];
+    if (Array.isArray(d)) return d;
+    return [];
+  }, [action?.likely_drivers]);
+
+  const likelyConsequences = useMemo(() => {
+    const c = action?.likely_consequences;
+    if (!c) return [];
+    if (Array.isArray(c)) return c;
+    return [];
+  }, [action?.likely_consequences]);
+
+  // Fallback to kpis_linked_to (text[]) for KPI display
+  const linkedKpiDetails = useMemo(() => {
+    // Prefer linked_kpis jsonb, fallback to kpis_linked_to text[]
+    if (linkedKpisData.length > 0) return linkedKpisData;
+    const keys = formData.kpis_linked_to || [];
+    return keys.map((key: string) => {
+      const kpi = KPI_DEFINITIONS[key];
+      if (!kpi) return { name: key, type: 'KPI', reason: '' };
+      const loc = kpi[language as 'en' | 'de'] || kpi.en;
+      return { name: loc.title, type: 'Performance', reason: loc.whyItMatters || '' };
+    });
+  }, [linkedKpisData, formData.kpis_linked_to, language]);
+
+  const visibleKpis = showKpiAll ? linkedKpiDetails : linkedKpiDetails.slice(0, 5);
+
+  // Triage computation
+  const triageScore = computeTriageScore(
+    formData.impact_score ?? null,
+    formData.effort_score ?? null,
+    formData.urgency_score ?? null
+  );
+
+  const triageBadgeLabel = triageScore != null
+    ? (triageScore >= 14 ? 'Act Now' : triageScore >= 10 ? 'Priority' : triageScore >= 6 ? 'Plan' : 'Backlog')
+    : null;
+
+  const quadrantLabel = (formData.impact_score && formData.effort_score)
+    ? getQuadrantLabel(formData.impact_score, formData.effort_score)
+    : null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] p-0">
-        <DialogHeader className="px-6 pt-6 pb-0">
-          <DialogTitle>
-            {readOnly ? t('viewAction') : mode === 'create' ? t('createAction') : t('editAction')}
-          </DialogTitle>
-        </DialogHeader>
+    <Sheet open={open} onOpenChange={handleClose}>
+      <SheetContent side="right" className="w-full sm:max-w-xl md:max-w-2xl p-0 flex flex-col">
+        {/* Header */}
+        <SheetHeader className="px-6 pt-6 pb-3 border-b">
+          <SheetTitle className="text-base">
+            {readOnly ? 'View Action' : mode === 'create' ? 'Create Action' : 'Edit Action'}
+          </SheetTitle>
+          {/* Tabs */}
+          <div className="flex gap-4 mt-2">
+            <button
+              onClick={() => setActiveTab('details')}
+              className={cn("text-sm pb-1 border-b-2 transition-colors",
+                activeTab === 'details' ? "border-primary text-primary font-medium" : "border-transparent text-muted-foreground"
+              )}>Details</button>
+            <button
+              onClick={() => setActiveTab('history')}
+              className={cn("text-sm pb-1 border-b-2 transition-colors",
+                activeTab === 'history' ? "border-primary text-primary font-medium" : "border-transparent text-muted-foreground"
+              )}>History</button>
+          </div>
+        </SheetHeader>
 
-        <ScrollArea className="max-h-[calc(90vh-140px)] px-6">
-          <div className="space-y-4 py-4">
-            {/* Human rationale section */}
-            {rationale && mode === 'edit' && (
-              <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
-                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                  <Lightbulb className="h-4 w-4 text-primary" />
-                  {t('whyMatters')}
+        {/* Body */}
+        <ScrollArea className="flex-1">
+          {activeTab === 'details' ? (
+            <div className="px-6 py-4 space-y-6">
+              {/* ZONE A — Context Intelligence */}
+              {mode === 'edit' && (
+                <Collapsible open={contextExpanded} onOpenChange={setContextExpanded}>
+                  <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium text-foreground">
+                    <span className="flex items-center gap-2"><Lightbulb className="h-4 w-4 text-primary" /> Context Intelligence</span>
+                    {contextExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-3 space-y-3">
+                    {/* Why This Action Matters */}
+                    <div className="rounded-lg border bg-muted/30 p-4">
+                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Why This Action Matters</h4>
+                      {action?.action_context ? (
+                        <p className="text-sm text-foreground leading-relaxed">{action.action_context}</p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">No context added. Regenerate this action with AI to populate full business rationale.</p>
+                      )}
+                    </div>
+
+                    {/* Business Impact */}
+                    <div className="rounded-lg border bg-muted/30 p-4">
+                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Business Impact</h4>
+                      {action?.business_impact ? (
+                        <p className="text-sm text-foreground leading-relaxed">{action.business_impact}</p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">No business impact data available.</p>
+                      )}
+                    </div>
+
+                    {/* Recommendation */}
+                    <div className="rounded-lg border bg-primary/5 p-4">
+                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Our Recommendation</h4>
+                      {action?.recommendation ? (
+                        <p className="text-sm text-foreground leading-relaxed">{action.recommendation}</p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">No recommendation available.</p>
+                      )}
+                    </div>
+
+                    {/* Expected Benefit */}
+                    <div className="rounded-lg border bg-muted/30 p-4">
+                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Expected Benefit</h4>
+                      {action?.expected_benefit ? (
+                        <p className="text-sm text-foreground leading-relaxed">{action.expected_benefit}</p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">No expected benefit data available.</p>
+                      )}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+
+              <Separator />
+
+              {/* ZONE B — Edit Fields */}
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="title" className="text-xs font-medium">Action Title</Label>
+                  <Input id="title" disabled={readOnly} value={formData.action_title || ''}
+                    onChange={(e) => updateField('action_title', e.target.value)} placeholder="Short, imperative action title" />
                 </div>
-                <p className="text-sm text-muted-foreground">{rationale.summary}</p>
-                <Separator />
-                <div className="text-sm font-medium text-foreground">{t('ourRecommendation')}</div>
-                <p className="text-sm text-muted-foreground">{rationale.recommendation}</p>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="description" className="text-xs font-medium">Description</Label>
+                  <Textarea id="description" disabled={readOnly} value={formData.action_description || ''}
+                    onChange={(e) => updateField('action_description', e.target.value)}
+                    placeholder="Describe what needs to be done" rows={3} />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Department</Label>
+                  <Select disabled={readOnly} value={formData.department || ''} onValueChange={(v) => updateField('department', v)}>
+                    <SelectTrigger><SelectValue placeholder="Select department" /></SelectTrigger>
+                    <SelectContent>
+                      {DEPARTMENTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Triage Sliders */}
+                <div className="space-y-4 rounded-lg border p-4">
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Triage Assessment</h4>
+
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="font-medium">Impact</span>
+                      <span className="text-muted-foreground">{formData.impact_score ? IMPACT_LABELS[formData.impact_score - 1] : 'Not set'}</span>
+                    </div>
+                    <Slider disabled={readOnly} min={1} max={5} step={1}
+                      value={[formData.impact_score || 3]}
+                      onValueChange={([v]) => updateField('impact_score', v)} />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="font-medium">Effort</span>
+                      <span className="text-muted-foreground">{formData.effort_score ? EFFORT_LABELS[formData.effort_score - 1] : 'Not set'}</span>
+                    </div>
+                    <Slider disabled={readOnly} min={1} max={5} step={1}
+                      value={[formData.effort_score || 3]}
+                      onValueChange={([v]) => updateField('effort_score', v)} />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="font-medium">Urgency</span>
+                      <span className="text-muted-foreground">{formData.urgency_score ? URGENCY_LABELS[formData.urgency_score - 1] : 'Not set'}</span>
+                    </div>
+                    <Slider disabled={readOnly} min={1} max={5} step={1}
+                      value={[formData.urgency_score || 3]}
+                      onValueChange={([v]) => updateField('urgency_score', v)} />
+                  </div>
+
+                  {/* Triage result */}
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="flex items-center gap-2">
+                      {triageBadgeLabel && (
+                        <Badge variant="outline" className="text-xs">{triageBadgeLabel}</Badge>
+                      )}
+                      {triageScore != null && (
+                        <span className="text-xs text-muted-foreground">Score: {triageScore}</span>
+                      )}
+                    </div>
+                    {quadrantLabel && (
+                      <span className={cn("text-xs font-medium", getQuadrantColor(quadrantLabel))}>{quadrantLabel}</span>
+                    )}
+                  </div>
+
+                  {/* Mini Quadrant */}
+                  {formData.impact_score != null && formData.effort_score != null && (
+                    <div className="relative w-full aspect-square max-w-[160px] mx-auto border rounded bg-muted/20">
+                      {/* Quadrant labels */}
+                      <span className="absolute top-1 left-1 text-[9px] text-success/70">Quick Win</span>
+                      <span className="absolute top-1 right-1 text-[9px] text-info/70 text-right">Major Project</span>
+                      <span className="absolute bottom-1 left-1 text-[9px] text-muted-foreground/70">Fill-in</span>
+                      <span className="absolute bottom-1 right-1 text-[9px] text-destructive/70 text-right">Time Sink</span>
+                      {/* Axes */}
+                      <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border" />
+                      <div className="absolute top-1/2 left-0 right-0 h-px bg-border" />
+                      {/* Dot */}
+                      <div
+                        className="absolute w-3 h-3 rounded-full bg-primary shadow-md transition-all duration-300"
+                        style={{
+                          left: `${((formData.effort_score - 1) / 4) * 100}%`,
+                          bottom: `${((formData.impact_score - 1) / 4) * 100}%`,
+                          transform: 'translate(-50%, 50%)',
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Priority as segmented */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Priority</Label>
+                  <div className="flex rounded-lg border overflow-hidden">
+                    {(['critical', 'high', 'medium', 'low'] as const).map(p => (
+                      <button key={p} disabled={readOnly}
+                        onClick={() => updateField('priority', p)}
+                        className={cn("flex-1 py-1.5 text-xs font-medium transition-colors",
+                          formData.priority === p ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"
+                        )}>
+                        {p.charAt(0).toUpperCase() + p.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Status as segmented */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Status</Label>
+                  <div className="flex rounded-lg border overflow-hidden">
+                    {(['Open', 'In Progress', 'Completed'] as const).map(s => (
+                      <button key={s} disabled={readOnly}
+                        onClick={() => updateField('status', s)}
+                        className={cn("flex-1 py-1.5 text-xs font-medium transition-colors",
+                          formData.status === s ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"
+                        )}>
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Responsible Person</Label>
+                  <Select disabled={readOnly} value={formData.responsible_person || ''} onValueChange={(v) => updateField('responsible_person', v)}>
+                    <SelectTrigger><SelectValue placeholder="Assign owner" /></SelectTrigger>
+                    <SelectContent>
+                      {RESPONSIBLE_PERSONS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Support Required From</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {SUPPORT_OPTIONS.map(s => (
+                      <button key={s} disabled={readOnly}
+                        onClick={() => toggleArrayItem('support_required_from', s)}
+                        className={cn("px-2.5 py-1 rounded-full text-xs border transition-colors",
+                          (formData.support_required_from || []).includes(s)
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "border-border text-muted-foreground hover:bg-muted"
+                        )}>
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Target Completion Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" disabled={readOnly}
+                        className={cn("w-full justify-start text-left font-normal", !formData.target_completion_date && "text-muted-foreground")}>
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {formData.target_completion_date ? format(new Date(formData.target_completion_date), "PPP") : "Pick a date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar mode="single"
+                        selected={formData.target_completion_date ? new Date(formData.target_completion_date) : undefined}
+                        onSelect={(date) => updateField('target_completion_date', date ? format(date, "yyyy-MM-dd") : null)}
+                        initialFocus className="pointer-events-auto" />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
-            )}
 
-            {/* Linked KPI Context - Show expected impact */}
-            {linkedKpiDetails.length > 0 && mode === 'edit' && (
-              <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
-                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                  <Target className="h-4 w-4 text-primary" />
-                  {t('expectedImpact')}
-                </div>
-                <div className="space-y-2">
-                  {linkedKpiDetails.map(kpi => (
-                    <div key={kpi.key} className="flex items-start gap-2 text-xs">
-                      <TrendingUp className="h-3 w-3 text-success mt-0.5 shrink-0" />
-                      <div>
-                        <span className="font-medium text-foreground">{kpi.title}</span>
-                        {kpi.benchmark && (
-                          <span className="text-muted-foreground ml-1">({kpi.benchmark})</span>
+              <Separator />
+
+              {/* ZONE C — KPI Intelligence */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <Target className="h-4 w-4 text-primary" /> KPIs This Action Will Improve
+                </h4>
+
+                {linkedKpiDetails.length > 0 ? (
+                  <div className="space-y-2">
+                    {visibleKpis.map((kpi: any, i: number) => (
+                      <div key={i} className="rounded-lg border p-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-medium text-foreground">{kpi.name || kpi.title || kpi.key}</span>
+                          {kpi.type && (
+                            <Badge variant="outline" className="text-[10px]">{kpi.type}</Badge>
+                          )}
+                        </div>
+                        {kpi.reason && (
+                          <p className="text-xs text-muted-foreground">{kpi.reason}</p>
                         )}
                       </div>
+                    ))}
+                    {linkedKpiDetails.length > 5 && !showKpiAll && (
+                      <Button variant="ghost" size="sm" onClick={() => setShowKpiAll(true)} className="text-xs">
+                        Show {linkedKpiDetails.length - 5} more KPIs
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground italic">No KPIs linked to this action.</p>
+                )}
+
+                {/* Likely Drivers */}
+                {likelyDrivers.length > 0 && (
+                  <div className="space-y-1.5">
+                    <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Likely Drivers</h5>
+                    <div className="flex flex-wrap gap-1.5">
+                      {likelyDrivers.map((d: any, i: number) => (
+                        <Badge key={i} variant="outline" className="text-xs">{typeof d === 'string' ? d : d.name || d.label}</Badge>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="title">{t('actionTitle')}</Label>
-              <Input
-                id="title" disabled={readOnly}
-                value={formData.action_title || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, action_title: e.target.value }))}
-                placeholder={t('titlePlaceholder')}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">{t('description')}</Label>
-              <Textarea
-                id="description" disabled={readOnly}
-                value={formData.action_description || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, action_description: e.target.value }))}
-                placeholder={t('descPlaceholder')}
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>{t('department')}</Label>
-              <Select disabled={readOnly} value={formData.department || ''} onValueChange={(value) => setFormData(prev => ({ ...prev, department: value }))}>
-                <SelectTrigger><SelectValue placeholder={t('selectDept')} /></SelectTrigger>
-                <SelectContent>
-                  {DEPARTMENTS.map(dept => (<SelectItem key={dept} value={dept}>{dept}</SelectItem>))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('priority')}</Label>
-                <Select disabled={readOnly} value={formData.priority || 'medium'} onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="critical">{t('critical')}</SelectItem>
-                    <SelectItem value="high">{t('high')}</SelectItem>
-                    <SelectItem value="medium">{t('medium')}</SelectItem>
-                    <SelectItem value="low">{t('low')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>{t('status')}</Label>
-                <Select disabled={readOnly} value={formData.status || 'Open'} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Open">{t('open')}</SelectItem>
-                    <SelectItem value="In Progress">{t('inProgress')}</SelectItem>
-                    <SelectItem value="Completed">{t('completed')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>{t('responsiblePerson')}</Label>
-              <Select disabled={readOnly} value={formData.responsible_person || ''} onValueChange={(value) => setFormData(prev => ({ ...prev, responsible_person: value }))}>
-                <SelectTrigger><SelectValue placeholder={t('assignOwner')} /></SelectTrigger>
-                <SelectContent>
-                  {RESPONSIBLE_PERSONS.map(person => (<SelectItem key={person} value={person}>{person}</SelectItem>))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>{t('targetDate')}</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" disabled={readOnly} className={cn("w-full justify-start text-left font-normal", !formData.target_completion_date && "text-muted-foreground")}>
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.target_completion_date ? format(new Date(formData.target_completion_date), "PPP") : t('pickDate')}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={formData.target_completion_date ? new Date(formData.target_completion_date) : undefined}
-                    onSelect={(date) => setFormData(prev => ({ ...prev, target_completion_date: date ? format(date, "yyyy-MM-dd") : null }))}
-                    initialFocus className="pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="space-y-2">
-              <Label>{t('supportRequired')}</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {SUPPORT_OPTIONS.map(support => (
-                  <div key={support} className="flex items-center space-x-2">
-                    <Checkbox id={`support-${support}`} disabled={readOnly}
-                      checked={formData.support_required_from?.includes(support) || false}
-                      onCheckedChange={() => toggleArrayItem('support_required_from', support)} />
-                    <label htmlFor={`support-${support}`} className="text-sm cursor-pointer">{support}</label>
                   </div>
-                ))}
-              </div>
-            </div>
+                )}
 
-            <div className="space-y-2">
-              <Label>{t('linkedKpis')}</Label>
-              <p className="text-xs text-muted-foreground mb-2">
-                {relevantKpis.length > 0 ? t('selectKpis') : t('noDeptKpis')}
-              </p>
-              <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto">
-                {relevantKpis.map(kpi => (
-                  <div key={kpi.key} className="flex items-center space-x-2">
-                    <Checkbox 
-                      id={`kpi-${kpi.key}`} 
-                      disabled={readOnly}
-                      checked={formData.kpis_linked_to?.includes(kpi.key) || false}
-                      onCheckedChange={() => toggleArrayItem('kpis_linked_to', kpi.key)} 
-                    />
-                    <label htmlFor={`kpi-${kpi.key}`} className="text-sm cursor-pointer flex-1">
-                      {kpi.title}
-                      {kpi.benchmark && (
-                        <span className="text-xs text-muted-foreground ml-1">({kpi.benchmark})</span>
-                      )}
-                    </label>
+                {/* Likely Consequences */}
+                {likelyConsequences.length > 0 && (
+                  <div className="space-y-1.5">
+                    <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Likely Consequences</h5>
+                    <div className="flex flex-wrap gap-1.5">
+                      {likelyConsequences.map((c: any, i: number) => (
+                        <Badge key={i} variant="outline" className="text-xs text-destructive border-destructive/20">
+                          {typeof c === 'string' ? c : c.name || c.label}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                ))}
+                )}
               </div>
             </div>
-          </div>
+          ) : (
+            /* History Tab Placeholder */
+            <div className="px-6 py-16 text-center">
+              <Clock className="h-8 w-8 mx-auto mb-3 text-muted-foreground/30" />
+              <p className="text-sm text-muted-foreground">Action history will appear here after changes are saved.</p>
+            </div>
+          )}
         </ScrollArea>
 
+        {/* Sticky Footer */}
         {!readOnly && (
-          <DialogFooter className="flex gap-2 px-6 pb-6 pt-4 border-t">
+          <SheetFooter className="flex gap-2 px-6 py-4 border-t bg-card">
             {mode === 'edit' && onDelete && action && (
-              <Button variant="destructive" onClick={() => { onDelete(action.id); onOpenChange(false); }} className="mr-auto">
-                <Trash2 className="h-4 w-4 mr-2" /> {t('delete')}
+              <Button variant="destructive" size="sm" onClick={() => { onDelete(action.id); onOpenChange(false); }} className="mr-auto">
+                <Trash2 className="h-4 w-4 mr-1" /> Delete
               </Button>
             )}
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              <X className="h-4 w-4 mr-2" /> {t('cancel')}
+            <Button variant="outline" size="sm" onClick={handleClose}>
+              <X className="h-4 w-4 mr-1" /> Cancel
             </Button>
-            <Button onClick={handleSave}>
-              <Save className="h-4 w-4 mr-2" /> {mode === 'create' ? t('create') : t('save')}
+            <Button size="sm" onClick={handleSave}>
+              <Save className="h-4 w-4 mr-1" /> {mode === 'create' ? 'Create' : 'Save'}
             </Button>
-          </DialogFooter>
+          </SheetFooter>
         )}
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }
