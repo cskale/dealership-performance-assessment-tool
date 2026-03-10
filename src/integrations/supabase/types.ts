@@ -29,6 +29,47 @@ export type Database = {
         }
         Relationships: []
       }
+      action_audit_log: {
+        Row: {
+          action_id: string
+          changed_at: string
+          changed_by: string
+          field_name: string
+          id: string
+          new_value: string
+          old_value: string | null
+          organization_id: string
+        }
+        Insert: {
+          action_id: string
+          changed_at?: string
+          changed_by: string
+          field_name: string
+          id?: string
+          new_value: string
+          old_value?: string | null
+          organization_id: string
+        }
+        Update: {
+          action_id?: string
+          changed_at?: string
+          changed_by?: string
+          field_name?: string
+          id?: string
+          new_value?: string
+          old_value?: string | null
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_audit_log_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "improvement_actions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       actions: {
         Row: {
           created_at: string
