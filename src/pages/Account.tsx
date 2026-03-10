@@ -20,6 +20,7 @@ import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { OrganizationSettings } from '@/components/OrganizationSettings';
+import { InviteTeamMembers } from '@/components/InviteTeamMembers';
 import { 
   User, Shield, Download, Trash2, Monitor, Smartphone, Globe, Calendar, 
   Mail, CheckCircle, XCircle, Building2, Users, Activity, Link2, Key,
@@ -252,9 +253,12 @@ const Account = () => {
   const hasActivityData = completedAssessments.length > 0;
   const latestCompleted = completedAssessments[0];
 
+  const canManageTeam = currentMembership && ['owner', 'admin', 'manager'].includes(currentMembership.role);
+
   const tabs = [
     { value: 'profile', label: 'Profile', icon: User },
     { value: 'organization', label: 'Organization', icon: Building2 },
+    ...(canManageTeam ? [{ value: 'team', label: 'Team', icon: Users }] : []),
     ...(hasActivityData ? [{ value: 'activity', label: 'Activity', icon: Activity }] : []),
     { value: 'security', label: 'Security', icon: Shield },
     { value: 'privacy', label: 'Privacy', icon: Globe },
@@ -560,6 +564,13 @@ const Account = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* ===================== TEAM TAB ===================== */}
+          {canManageTeam && (
+            <TabsContent value="team" className="space-y-6">
+              <InviteTeamMembers />
+            </TabsContent>
+          )}
 
           {/* ===================== ACTIVITY TAB (Completed only) ===================== */}
           {hasActivityData && (
