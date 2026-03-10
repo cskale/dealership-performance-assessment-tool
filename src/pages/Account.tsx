@@ -253,9 +253,12 @@ const Account = () => {
   const hasActivityData = completedAssessments.length > 0;
   const latestCompleted = completedAssessments[0];
 
+  const canManageTeam = currentMembership && ['owner', 'admin', 'manager'].includes(currentMembership.role);
+
   const tabs = [
     { value: 'profile', label: 'Profile', icon: User },
     { value: 'organization', label: 'Organization', icon: Building2 },
+    ...(canManageTeam ? [{ value: 'team', label: 'Team', icon: Users }] : []),
     ...(hasActivityData ? [{ value: 'activity', label: 'Activity', icon: Activity }] : []),
     { value: 'security', label: 'Security', icon: Shield },
     { value: 'privacy', label: 'Privacy', icon: Globe },
