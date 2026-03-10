@@ -565,6 +565,13 @@ const Account = () => {
             </Card>
           </TabsContent>
 
+          {/* ===================== TEAM TAB ===================== */}
+          {canManageTeam && (
+            <TabsContent value="team" className="space-y-6">
+              <InviteTeamMembers />
+            </TabsContent>
+          )}
+
           {/* ===================== ACTIVITY TAB (Completed only) ===================== */}
           {hasActivityData && (
             <TabsContent value="activity" className="space-y-6">
