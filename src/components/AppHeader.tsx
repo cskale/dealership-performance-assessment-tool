@@ -9,11 +9,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { LanguageSelector } from './LanguageSelector';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { User, Settings, LogOut, BarChart3, ClipboardList, Home } from 'lucide-react';
+import { User, LogOut, BarChart3, ClipboardList, Home } from 'lucide-react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 export function AppHeader() {
   const { user, signOut } = useAuth();
@@ -22,10 +22,19 @@ export function AppHeader() {
   const location = useLocation();
   const [hasCompletedAssessment, setHasCompletedAssessment] = useState(false);
 
+  // Check for completed assessments from DB (persisted, not transient)
   useEffect(() => {
-    const completedResults = localStorage.getItem('completed_assessment_results');
-    setHasCompletedAssessment(!!completedResults);
-  }, []);
+    const checkCompleted = async () => {
+      if (!user) return;
+      const { count } = await supabase
+        .from('assessments')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('status', 'completed');
+      setHasCompletedAssessment((count ?? 0) > 0);
+    };
+    checkCompleted();
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -37,8 +46,6 @@ export function AppHeader() {
     return user.email.substring(0, 2).toUpperCase();
   };
 
-  // Navigation items - Resources REMOVED from nav (it's inside Results now)
-  // RoleSelector and OrganizationSwitcher removed from UI per P0.1/P0.5
   const navItems = [
     { path: '/', label: language === 'de' ? 'Start' : 'Home', icon: Home, alwaysShow: true },
     { path: '/app/assessment', label: language === 'de' ? 'Bewertung' : 'Assessment', icon: ClipboardList, alwaysShow: true },
@@ -53,10 +60,8 @@ export function AppHeader() {
             Dealership Assessment
           </Link>
           
-          {/* Navigation Links - Smart hiding based on assessment completion */}
           <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => {
-              // Hide Results if no completed assessment
               if (!item.alwaysShow && !hasCompletedAssessment) return null;
               
               const Icon = item.icon;
@@ -79,9 +84,6 @@ export function AppHeader() {
         </div>
 
         <div className="flex items-center gap-4">
-          <LanguageSelector />
-          {/* RoleSelector removed per P0.1 - RBAC still enforced in backend */}
-          {/* OrganizationSwitcher removed per P0.5 - internal tool only */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -103,10 +105,6 @@ export function AppHeader() {
               <DropdownMenuItem onClick={() => navigate('/account')}>
                 <User className="mr-2 h-4 w-4" />
                 {language === 'de' ? 'Profil' : 'Profile'}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate('/account?tab=security')}>
-                <Settings className="mr-2 h-4 w-4" />
-                {language === 'de' ? 'Sicherheit' : 'Security'}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut}>
