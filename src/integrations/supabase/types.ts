@@ -444,60 +444,90 @@ export type Database = {
       }
       improvement_actions: {
         Row: {
+          action_context: string | null
           action_description: string
           action_title: string
           assessment_id: string
+          business_impact: string | null
           created_at: string
           department: string
+          effort_score: number | null
           estimated_effort: string | null
+          expected_benefit: string | null
           expected_impact: string | null
           id: string
+          impact_score: number | null
           kpis_linked_to: string[] | null
+          likely_consequences: Json | null
+          likely_drivers: Json | null
+          linked_kpis: Json | null
           organization_id: string
           priority: string
+          recommendation: string | null
           responsible_person: string | null
           status: string | null
           support_required_from: string[] | null
           target_completion_date: string | null
           updated_at: string | null
+          urgency_score: number | null
           user_id: string | null
         }
         Insert: {
+          action_context?: string | null
           action_description: string
           action_title: string
           assessment_id: string
+          business_impact?: string | null
           created_at?: string
           department: string
+          effort_score?: number | null
           estimated_effort?: string | null
+          expected_benefit?: string | null
           expected_impact?: string | null
           id?: string
+          impact_score?: number | null
           kpis_linked_to?: string[] | null
+          likely_consequences?: Json | null
+          likely_drivers?: Json | null
+          linked_kpis?: Json | null
           organization_id: string
           priority: string
+          recommendation?: string | null
           responsible_person?: string | null
           status?: string | null
           support_required_from?: string[] | null
           target_completion_date?: string | null
           updated_at?: string | null
+          urgency_score?: number | null
           user_id?: string | null
         }
         Update: {
+          action_context?: string | null
           action_description?: string
           action_title?: string
           assessment_id?: string
+          business_impact?: string | null
           created_at?: string
           department?: string
+          effort_score?: number | null
           estimated_effort?: string | null
+          expected_benefit?: string | null
           expected_impact?: string | null
           id?: string
+          impact_score?: number | null
           kpis_linked_to?: string[] | null
+          likely_consequences?: Json | null
+          likely_drivers?: Json | null
+          linked_kpis?: Json | null
           organization_id?: string
           priority?: string
+          recommendation?: string | null
           responsible_person?: string | null
           status?: string | null
           support_required_from?: string[] | null
           target_completion_date?: string | null
           updated_at?: string | null
+          urgency_score?: number | null
           user_id?: string | null
         }
         Relationships: [
