@@ -20,6 +20,7 @@ import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { OrganizationSettings } from '@/components/OrganizationSettings';
+import { InviteTeamMembers } from '@/components/InviteTeamMembers';
 import { 
   User, Shield, Download, Trash2, Monitor, Smartphone, Globe, Calendar, 
   Mail, CheckCircle, XCircle, Building2, Users, Activity, Link2, Key,
