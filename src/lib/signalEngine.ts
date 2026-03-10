@@ -14,6 +14,7 @@ import { Signal, SignalCode, Severity } from '@/data/signalTypes';
 import { SIGNAL_MAPPINGS, getSignalMapping } from '@/data/signalMappings';
 import { ACTION_TEMPLATES, getTemplatesForSignal, ActionTemplate } from '@/data/actionTemplates';
 import { getTemplateIdsForSignal, getMaxActionsForSignal, getKPISpecificTemplateIds } from '@/data/signalToActionMap';
+import { generateContextIntelligence } from '@/lib/contextIntelligence';
 import { KPI_DEFINITIONS } from '@/lib/kpiDefinitions';
 
 export interface SignalEngineConfig {
