@@ -110,7 +110,11 @@ export function InviteTeamMembers() {
 
       if (data?.success) {
         setInviteUrl(data.invite_url);
-        toast.success('Invite created!');
+        if (data.email_sent) {
+          toast.success(`Invitation email sent to ${email.trim().toLowerCase()}`);
+        } else {
+          toast.warning('Invite created but email could not be sent. Copy the link below to share manually.');
+        }
         setEmail('');
         loadPendingInvites();
       } else {
