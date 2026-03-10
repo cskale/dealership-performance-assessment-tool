@@ -110,7 +110,11 @@ export function InviteTeamMembers() {
 
       if (data?.success) {
         setInviteUrl(data.invite_url);
-        toast.success('Invite created!');
+        if (data.email_sent) {
+          toast.success(`Invitation email sent to ${email.trim().toLowerCase()}`);
+        } else {
+          toast.warning('Invite created but email could not be sent. Copy the link below to share manually.');
+        }
         setEmail('');
         loadPendingInvites();
       } else {
@@ -159,7 +163,11 @@ export function InviteTeamMembers() {
       });
 
       if (!error && data?.success) {
-        toast.success('Invite resent — expiry extended');
+        if (data.email_sent) {
+          toast.success(`Invitation email resent to ${invite.invited_email}`);
+        } else {
+          toast.warning('Invite extended but email could not be sent');
+        }
         setInviteUrl(data.invite_url);
         loadPendingInvites();
       } else {
@@ -222,7 +230,7 @@ export function InviteTeamMembers() {
             {isSubmitting ? (
               <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
             ) : (
-              <><Send className="mr-2 h-4 w-4" /> Send Invite</>
+              <><Send className="mr-2 h-4 w-4" /> Send Invitation Email</>
             )}
           </Button>
         </form>
