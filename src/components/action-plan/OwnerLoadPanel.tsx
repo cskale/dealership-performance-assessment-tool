@@ -1,6 +1,8 @@
 import { useMemo } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ActionRecord } from "../ActionPlan";
 
@@ -9,6 +11,7 @@ interface OwnerLoadPanelProps {
   onOpenChange: (open: boolean) => void;
   actions: ActionRecord[];
   onFilterByOwner: (owner: string) => void;
+  activeOwnerFilter: string | null;
 }
 
 function isOverdue(action: ActionRecord): boolean {
@@ -26,7 +29,7 @@ interface OwnerStats {
   completed: number;
 }
 
-export function OwnerLoadPanel({ open, onOpenChange, actions, onFilterByOwner }: OwnerLoadPanelProps) {
+export function OwnerLoadPanel({ open, onOpenChange, actions, onFilterByOwner, activeOwnerFilter }: OwnerLoadPanelProps) {
   const ownerStats = useMemo(() => {
     const map = new Map<string, OwnerStats>();
 
@@ -44,66 +47,117 @@ export function OwnerLoadPanel({ open, onOpenChange, actions, onFilterByOwner }:
       if (isOverdue(a)) stats.overdue++;
     });
 
-    return Array.from(map.values()).sort((a, b) => b.total - a.total);
+    // Sort by total desc, Unassigned last
+    return Array.from(map.values()).sort((a, b) => {
+      if (a.name === 'Unassigned') return 1;
+      if (b.name === 'Unassigned') return -1;
+      return b.total - a.total;
+    });
   }, [actions]);
 
   const maxActions = Math.max(...ownerStats.map(o => o.total), 1);
   const totalActions = actions.length;
-  const overloadedCount = ownerStats.filter(o => o.total > 6).length;
+  const overloadedCount = ownerStats.filter(o => o.total > 6 && o.name !== 'Unassigned').length;
 
   const getBarColor = (total: number) => {
-    if (total <= 3) return 'bg-success';
-    if (total <= 6) return 'bg-warning';
-    return 'bg-destructive';
+    if (total <= 3) return 'bg-green-500';
+    if (total <= 6) return 'bg-amber-500';
+    return 'bg-red-500';
   };
 
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-full sm:max-w-sm p-0 flex flex-col">
-        <SheetHeader className="px-6 pt-6 pb-4 border-b">
-          <SheetTitle className="text-base">Owner Workload</SheetTitle>
-          <p className="text-xs text-muted-foreground mt-1">
-            {totalActions} total actions · {overloadedCount > 0 ? `${overloadedCount} overloaded` : 'No overloaded owners'}
-          </p>
-        </SheetHeader>
+  if (!open) return null;
 
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2">
-          {ownerStats.map(owner => (
-            <button
-              key={owner.name}
-              onClick={() => onFilterByOwner(owner.name)}
-              className="w-full text-left rounded-lg border p-3 hover:bg-muted/50 transition-colors"
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold">
-                  {owner.initials}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{owner.name}</p>
-                  <p className="text-xs text-muted-foreground">{owner.total} actions</p>
-                </div>
-              </div>
-              {/* Bar */}
-              <div className="h-2 rounded-full bg-muted overflow-hidden">
-                <div
-                  className={cn("h-full rounded-full transition-all", getBarColor(owner.total))}
-                  style={{ width: `${(owner.total / maxActions) * 100}%` }}
-                />
-              </div>
-              {/* Stats */}
-              <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
-                <span>{owner.open} Open</span>
-                <span>{owner.inProgress} Active</span>
-                {owner.overdue > 0 && <span className="text-destructive">{owner.overdue} Overdue</span>}
-                <span>{owner.completed} Done</span>
-              </div>
-            </button>
-          ))}
-          {ownerStats.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-8">No actions to display.</p>
-          )}
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/40 z-40 transition-opacity"
+        onClick={() => onOpenChange(false)}
+      />
+
+      {/* Panel */}
+      <div
+        className={cn(
+          "fixed top-0 right-0 h-full z-50 bg-background border-l shadow-2xl flex flex-col",
+          "w-full sm:w-[380px]",
+          "animate-in slide-in-from-right duration-300"
+        )}
+      >
+        {/* Header - sticky */}
+        <div className="px-5 pt-5 pb-4 border-b flex-shrink-0">
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="text-base font-semibold text-foreground">Owner Workload</h2>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onOpenChange(false)}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {ownerStats.length} owners · {totalActions} total actions
+            {overloadedCount > 0 && <span className="text-destructive"> · {overloadedCount} overloaded</span>}
+          </p>
         </div>
-      </SheetContent>
-    </Sheet>
+
+        {/* Body - scrollable */}
+        <ScrollArea className="flex-1">
+          <div className="px-5 py-4 space-y-2">
+            {ownerStats.map(owner => (
+              <button
+                key={owner.name}
+                onClick={() => {
+                  onFilterByOwner(owner.name);
+                  onOpenChange(false);
+                }}
+                className={cn(
+                  "w-full text-left rounded-lg border p-3 transition-all hover:shadow-sm",
+                  activeOwnerFilter === owner.name
+                    ? "border-primary bg-primary/5"
+                    : "hover:bg-muted/50"
+                )}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold flex-shrink-0">
+                    {owner.initials}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{owner.name}</p>
+                  </div>
+                  <span className="text-xs text-muted-foreground font-medium">{owner.total} actions</span>
+                </div>
+                {/* Bar */}
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className={cn("h-full rounded-full transition-all", getBarColor(owner.total))}
+                    style={{ width: `${(owner.total / maxActions) * 100}%` }}
+                  />
+                </div>
+                {/* Stats */}
+                <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
+                  <span>Open: {owner.open}</span>
+                  <span>Active: {owner.inProgress}</span>
+                  {owner.overdue > 0 && <span className="text-destructive">⚠ Overdue: {owner.overdue}</span>}
+                  <span>Done: {owner.completed}</span>
+                </div>
+              </button>
+            ))}
+            {ownerStats.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-8">No actions to display.</p>
+            )}
+          </div>
+        </ScrollArea>
+
+        {/* Footer - sticky, shows active filter */}
+        {activeOwnerFilter && (
+          <div className="px-5 py-3 border-t flex items-center gap-2 flex-shrink-0">
+            <span className="text-xs text-muted-foreground">Filtered:</span>
+            <Badge variant="secondary" className="text-xs gap-1">
+              {activeOwnerFilter}
+              <button onClick={(e) => { e.stopPropagation(); onFilterByOwner(''); }} className="ml-1">
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
