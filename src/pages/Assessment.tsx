@@ -317,7 +317,7 @@ export default function Assessment() {
   const isCompleting = completionState !== 'idle' && completionState !== 'error';
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--neutral-bg))]">
+    <div className="min-h-screen bg-muted">
       {/* Completion Overlay */}
       {isCompleting && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
