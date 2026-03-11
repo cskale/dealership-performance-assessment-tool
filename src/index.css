@@ -4,115 +4,160 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Enterprise SaaS Design System with Roboto font and pastel accents */
+/* ============================================================
+   DESIGN SYSTEM — Jira-Inspired Enterprise SaaS
+   ============================================================ */
 
 @layer base {
   :root {
-    /* Atlassian Blue SaaS Theme */
-    --background: 0 0% 99%;
-    --foreground: 214 15% 22%;
-    --neutral-bg: 218 20% 97%; /* #F4F5F7 */
+    /* ── Brand Blue Scale (HSL) ── */
+    --brand-700: 213 79% 41%;   /* #1558BC */
+    --brand-600: 214 81% 48%;   /* #1868DB */
+    --brand-500: 213 97% 55%;   /* #1D7AFC */
+    --brand-400: 213 100% 67%;  /* #579DFF */
+    --brand-300: 213 100% 76%;  /* #85B8FF */
+    --brand-200: 213 100% 87%;  /* #CCE0FF */
+    --brand-100: 213 100% 93%;  /* #E9F2FF */
+    --brand-050: 214 100% 98%;  /* #F7FAFF */
+
+    /* ── Neutral Scale (HSL) ── */
+    --neutral-1000: 216 77% 15%;  /* #091E42 */
+    --neutral-900: 216 51% 20%;   /* #172B4D */
+    --neutral-800: 215 37% 25%;   /* #253858 */
+    --neutral-700: 215 23% 35%;   /* #44546F */
+    --neutral-600: 215 17% 44%;   /* #5E6C84 */
+    --neutral-500: 213 13% 48%;   /* #6B778C */
+    --neutral-400: 215 14% 64%;   /* #97A0AF */
+    --neutral-300: 215 14% 74%;   /* #B3BAC5 */
+    --neutral-200: 214 16% 88%;   /* #DFE1E6 */
+    --neutral-100: 220 13% 95%;   /* #F1F2F4 */
+    --neutral-050: 210 14% 97%;   /* #F7F8F9 */
+
+    /* ── Semantic Tokens ── */
+    --background: 0 0% 100%;
+    --foreground: 216 51% 20%;
 
     --card: 0 0% 100%;
-    --card-foreground: 214 15% 22%;
+    --card-foreground: 216 51% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 214 15% 22%;
+    --popover-foreground: 216 51% 20%;
 
-    /* Atlassian Primary Blue #0052CC */
-    --primary: 214 100% 40%;
+    --primary: 213 97% 55%;
     --primary-foreground: 0 0% 100%;
 
-    /* Lighter blue for hover/secondary */
-    --secondary: 212 100% 58%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 220 13% 95%;
+    --secondary-foreground: 216 51% 20%;
 
-    --muted: 210 14% 96%;
-    --muted-foreground: 214 10% 50%;
+    --muted: 210 14% 97%;
+    --muted-foreground: 215 23% 35%;
 
-    /* Accent blue #2684FF */
-    --accent: 212 100% 58%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 213 100% 93%;
+    --accent-foreground: 213 79% 41%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Status colors */
-    --success: 134 61% 41%;
-    --success-foreground: 0 0% 100%;
-    
-    --warning: 36 100% 50%;
-    --warning-foreground: 0 0% 100%;
-    
-    --info: 212 100% 58%;
-    --info-foreground: 0 0% 100%;
+    --success: 142 71% 45%;
+    --success-foreground: 142 71% 45%;
 
-    /* Dashboard specific colors */
-    --dashboard-bg: 210 14% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 38 92% 50%;
+
+    --info: 213 97% 55%;
+    --info-foreground: 213 97% 55%;
+
+    --discovery: 270 67% 47%;
+    --discovery-foreground: 270 67% 47%;
+
+    --border: 214 16% 88%;
+    --input: 214 16% 88%;
+    --ring: 213 97% 55%;
+
+    --radius: 0.75rem;
+
+    /* ── Dashboard ── */
+    --dashboard-bg: 210 14% 97%;
     --dashboard-card: 0 0% 100%;
-    --dashboard-hover: 210 17% 95%;
+    --dashboard-hover: 220 13% 95%;
 
-    --border: 214 12% 92%;
-    --input: 214 12% 92%;
-    --ring: 214 100% 40%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* ── Sidebar ── */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 216 51% 20%;
+    --sidebar-primary: 213 97% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 213 100% 93%;
+    --sidebar-accent-foreground: 213 79% 41%;
+    --sidebar-border: 214 16% 88%;
+    --sidebar-ring: 213 97% 55%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --neutral-bg: 222 20% 12%;
+    --background: 222 47% 8%;
+    --foreground: 210 40% 92%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 92%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 92%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 213 100% 67%;
+    --primary-foreground: 216 77% 15%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 215 37% 18%;
+    --secondary-foreground: 210 40% 92%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 215 37% 18%;
+    --muted-foreground: 215 14% 64%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 215 37% 18%;
+    --accent-foreground: 213 100% 76%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62% 35%;
+    --destructive-foreground: 210 40% 92%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --success: 142 71% 45%;
+    --success-foreground: 142 71% 45%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 38 92% 50%;
+
+    --info: 213 100% 67%;
+    --info-foreground: 213 100% 67%;
+
+    --discovery: 270 67% 60%;
+    --discovery-foreground: 270 67% 60%;
+
+    --border: 215 37% 18%;
+    --input: 215 37% 18%;
+    --ring: 213 100% 67%;
+
+    --sidebar-background: 222 47% 8%;
+    --sidebar-foreground: 210 40% 92%;
+    --sidebar-primary: 213 100% 67%;
+    --sidebar-primary-foreground: 216 77% 15%;
+    --sidebar-accent: 215 37% 18%;
+    --sidebar-accent-foreground: 213 100% 76%;
+    --sidebar-border: 215 37% 18%;
+    --sidebar-ring: 213 100% 67%;
   }
+}
+
+/* ── Typography Scale ── */
+@layer utilities {
+  .text-h1 { @apply text-[32px] leading-[40px] font-bold tracking-tight; }
+  .text-h2 { @apply text-[28px] leading-[36px] font-bold tracking-tight; }
+  .text-h3 { @apply text-[24px] leading-[32px] font-bold; }
+  .text-h4 { @apply text-[20px] leading-[28px] font-bold; }
+  .text-h5 { @apply text-base leading-6 font-bold; }
+  .text-body-lg { @apply text-base leading-6 font-normal; }
+  .text-body-md { @apply text-sm leading-[22px] font-normal; }
+  .text-body-sm { @apply text-xs leading-[18px] font-normal; }
+  .text-label { @apply text-xs leading-4 font-medium; }
+  .text-caption { @apply text-[11px] leading-4 font-medium; }
+  .text-metric-lg { @apply text-[28px] leading-8 font-bold tracking-tight; }
+  .text-metric-md { @apply text-xl leading-6 font-bold tracking-tight; }
 }
 
 @layer base {
@@ -125,19 +170,18 @@
     font-family: 'Roboto', system-ui, -apple-system, sans-serif;
   }
 
-  /* Enterprise focus styles for accessibility */
+  /* Accessible focus */
   *:focus-visible {
-    @apply outline-2 outline-offset-2 outline-primary;
+    @apply outline-2 outline-offset-2 outline-ring;
   }
+}
 
-  /* Loading animation */
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
+/* ── Micro-interactions ── */
+@layer utilities {
+  .hover-lift {
+    @apply transition-all duration-200;
   }
-
-  .animate-spin {
-    animation: spin 1s linear infinite;
+  .hover-lift:hover {
+    @apply -translate-y-0.5 shadow-md;
   }
 }
