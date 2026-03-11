@@ -344,7 +344,7 @@ export default function Assessment() {
       )}
 
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b">
+      <div className="sticky top-0 z-10 bg-card border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Button
