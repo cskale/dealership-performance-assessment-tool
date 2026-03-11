@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { PDFExportData } from "@/lib/pdfReportGenerator";
 import { calculateWeightedScore, CATEGORY_WEIGHTS } from "@/lib/scoringEngine";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
+import { cn } from "@/lib/utils";
 
 export default function Results() {
   const { assessmentId: routeAssessmentId } = useParams<{ assessmentId: string }>();
@@ -42,7 +43,7 @@ export default function Results() {
   const { user } = useAuth();
   const { currentOrganization, userMemberships } = useMultiTenant();
 
-  // Load completed assessment results — supports both specific ID and latest
+  // Load completed assessment results
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
@@ -60,17 +61,14 @@ export default function Results() {
             .eq('status', 'completed');
 
           if (routeAssessmentId) {
-            // Load specific assessment by ID
             query = query.eq('id', routeAssessmentId);
           } else {
-            // Load latest completed
             query = query.order('completed_at', { ascending: false }).limit(1);
           }
 
           const { data: dbAssessment, error } = await query.single();
           
           if (error && routeAssessmentId) {
-            // Specific assessment not found or unauthorized
             setLoadError(
               language === 'de' 
                 ? 'Diese Bewertung wurde nicht gefunden oder Sie haben keinen Zugriff darauf.' 
@@ -81,13 +79,12 @@ export default function Results() {
           }
           
           if (dbAssessment && dbAssessment.answers && Object.keys(dbAssessment.answers as object).length > 0) {
-            const data = {
+            setResultsData({
               assessmentId: dbAssessment.id,
               answers: dbAssessment.answers,
               scores: dbAssessment.scores,
               completedAt: dbAssessment.completed_at || new Date().toISOString(),
-            };
-            setResultsData(data);
+            });
             loaded = true;
           }
         } catch (err) {
@@ -95,7 +92,6 @@ export default function Results() {
         }
       }
 
-      // Fallback to localStorage only when no specific ID requested
       if (!loaded && !routeAssessmentId) {
         const completedResults = localStorage.getItem('completed_assessment_results');
         if (completedResults) {
@@ -110,43 +106,31 @@ export default function Results() {
       }
 
       if (!loaded && !loadError) {
-        toast({
-          title: t('results.noResults'),
-          description: t('results.completeFirst'),
-          variant: "destructive",
-        });
+        toast({ title: t('results.noResults'), description: t('results.completeFirst'), variant: "destructive" });
         navigate('/app/assessment');
       }
       
       setIsLoading(false);
     };
-    
     loadData();
   }, [navigate, toast, t, user, routeAssessmentId]);
 
-  // Calculate weighted overall score ONCE - memoized
   const overallScore = useMemo(() => {
     if (!resultsData?.scores) return 0;
     return calculateWeightedScore(resultsData.scores);
   }, [resultsData?.scores]);
 
-  // Animate score on load
   useEffect(() => {
     if (overallScore > 0 && !isLoading) {
       const duration = 1200;
       const startTime = Date.now();
-      
       const animate = () => {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(elapsed / duration, 1);
         const eased = 1 - Math.pow(1 - progress, 3);
         setAnimatedScore(Math.round(overallScore * eased));
-        
-        if (progress < 1) {
-          requestAnimationFrame(animate);
-        }
+        if (progress < 1) requestAnimationFrame(animate);
       };
-      
       requestAnimationFrame(animate);
     }
   }, [overallScore, isLoading]);
@@ -154,14 +138,10 @@ export default function Results() {
   const handleRetakeAssessment = () => {
     localStorage.removeItem('completed_assessment_results');
     localStorage.removeItem('assessment_data');
-    toast({
-      title: t('results.assessmentReset'),
-      description: t('results.startingFresh'),
-    });
+    toast({ title: t('results.assessmentReset'), description: t('results.startingFresh') });
     navigate('/app/assessment');
   };
 
-  // Load actions for PDF export
   useEffect(() => {
     const loadActions = async () => {
       if (!user || !resultsData?.assessmentId) return;
@@ -180,16 +160,12 @@ export default function Results() {
     loadActions();
   }, [user, resultsData?.assessmentId, currentOrganization?.id]);
 
-  // Build PDF export data
   const pdfExportData: PDFExportData | null = resultsData ? {
     organization: currentOrganization ? {
       name: currentOrganization.name,
       logo_url: (currentOrganization as any).logo_url || null,
       default_language: (currentOrganization as any).default_language || language,
-    } : {
-      name: 'Dealership',
-      default_language: language,
-    },
+    } : { name: 'Dealership', default_language: language },
     user: {
       fullName: user?.user_metadata?.full_name || user?.email || 'User',
       role: userMemberships.find(m => m.organization_id === currentOrganization?.id)?.role || 'user',
@@ -212,34 +188,27 @@ export default function Results() {
   };
 
   const getScoreLabel = (score: number) => {
-    if (score >= 80) return { label: t('results.excellent'), color: 'bg-success' };
-    if (score >= 60) return { label: t('results.good'), color: 'bg-warning' };
-    return { label: t('results.needsImprovement'), color: 'bg-destructive' };
+    if (score >= 80) return { label: t('results.excellent'), variant: 'success' as const };
+    if (score >= 60) return { label: t('results.good'), variant: 'warning' as const };
+    return { label: t('results.needsImprovement'), variant: 'destructive' as const };
   };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+      year: 'numeric', month: 'long', day: 'numeric'
     });
-  };
-
-  const handleNavigateToResources = () => {
-    setActiveTab("resources");
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background to-muted/50">
+      <div className="min-h-screen bg-muted">
         <AppHeader />
-        <div className="p-4 max-w-7xl mx-auto pt-8">
-          <div className="text-center mb-8 animate-fade-in">
-            <Skeleton className="h-8 w-48 mx-auto mb-4" />
-            <Skeleton className="h-4 w-64 mx-auto mb-8" />
-            <Skeleton className="h-48 w-48 rounded-full mx-auto mb-8" />
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="text-center space-y-6">
+            <Skeleton className="h-8 w-48 mx-auto" />
+            <Skeleton className="h-4 w-64 mx-auto" />
+            <Skeleton className="h-40 w-40 rounded-full mx-auto" />
             <Skeleton className="h-12 w-full max-w-2xl mx-auto" />
           </div>
         </div>
@@ -247,10 +216,10 @@ export default function Results() {
     );
   }
 
-  // Error state — contextual in-app error, not generic 404
+  // Error state
   if (loadError) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background to-muted/50">
+      <div className="min-h-screen bg-muted">
         <AppHeader />
         <div className="flex items-center justify-center min-h-[60vh]">
           <Card className="max-w-md w-full mx-4">
@@ -258,10 +227,10 @@ export default function Results() {
               <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
                 <AlertCircle className="h-6 w-6 text-destructive" />
               </div>
-              <h2 className="text-lg font-semibold text-foreground">
+              <h2 className="text-h4 text-foreground">
                 {language === 'de' ? 'Ergebnisse nicht verfügbar' : 'Results Unavailable'}
               </h2>
-              <p className="text-sm text-muted-foreground">{loadError}</p>
+              <p className="text-body-sm text-muted-foreground">{loadError}</p>
               <div className="flex gap-3 justify-center pt-2">
                 <Button variant="outline" onClick={() => navigate('/account?tab=activity')}>
                   <ArrowLeft className="h-4 w-4 mr-2" />
@@ -280,10 +249,10 @@ export default function Results() {
 
   if (!resultsData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background to-muted/50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">{t('results.loading')}</p>
+      <div className="min-h-screen bg-muted flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary border-t-transparent mx-auto" />
+          <p className="text-body-sm text-muted-foreground">{t('results.loading')}</p>
         </div>
       </div>
     );
@@ -292,90 +261,81 @@ export default function Results() {
   const scoreInfo = getScoreLabel(overallScore);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/50">
+    <div className="min-h-screen bg-muted">
       <AppHeader />
       
-      <div className="p-4 max-w-7xl mx-auto" id="results-content">
-        {/* Unified Results Hero */}
-        <div className="text-center mb-8 animate-fade-in pt-4">
+      <div className="max-w-7xl mx-auto px-6 py-8" id="results-content">
+        {/* Results Hero */}
+        <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <Button
-              variant="outline"
-              onClick={() => navigate('/')}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
+            <Button variant="outline" size="sm" onClick={() => navigate('/')}>
+              <ArrowLeft className="h-4 w-4 mr-1.5" />
               {t('nav.backToDashboard')}
             </Button>
-            <Button
-              onClick={handleRetakeAssessment}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className="h-4 w-4" />
-              {t('results.retakeAssessment')}
-            </Button>
-          </div>
-          
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-            {language === 'de' ? 'Industrielle Bewertungsergebnisse' : 'Industrial Assessment Results'}
-          </h1>
-          <p className="text-muted-foreground mb-8">
-            {language === 'de' ? 'Umfassende Analyse abgeschlossen am' : 'Comprehensive analysis completed on'} {formatDate(resultsData.completedAt)}
-          </p>
-          
-          {/* Score Circle */}
-          <div className="flex justify-center mb-8">
-            <div className="relative inline-block">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="cursor-help">
-                    <svg className="w-40 h-40 md:w-48 md:h-48" viewBox="0 0 100 100">
-                      <circle cx="50" cy="50" r="45" fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
-                      <circle
-                        cx="50" cy="50" r="45" fill="none"
-                        className={getScoreColor(overallScore)}
-                        strokeWidth="8" strokeLinecap="round"
-                        strokeDasharray={`${(animatedScore / 100) * 283} 283`}
-                        transform="rotate(-90 50 50)"
-                        style={{ transition: 'stroke-dasharray 0.1s ease-out' }}
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-5xl md:text-6xl font-bold text-foreground">{animatedScore}</span>
-                      <span className="text-lg text-muted-foreground">/100</span>
-                    </div>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-xs p-3">
-                  <p className="font-medium mb-2">{language === 'de' ? 'Gewichtete Punktzahl' : 'Weighted Score'}</p>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    {language === 'de' 
-                      ? 'Diese Punktzahl wird nach Geschäftsbereich gewichtet berechnet:' 
-                      : 'This score is calculated with weighted categories:'}
-                  </p>
-                  <ul className="text-xs space-y-1">
-                    <li>• {language === 'de' ? 'Neuwagenverkauf' : 'New Vehicle Sales'}: 25%</li>
-                    <li>• {language === 'de' ? 'Gebrauchtwagenverkauf' : 'Used Vehicle Sales'}: 20%</li>
-                    <li>• {language === 'de' ? 'Serviceleistung' : 'Service Performance'}: 20%</li>
-                    <li>• {language === 'de' ? 'Finanzoperationen' : 'Financial Operations'}: 20%</li>
-                    <li>• {language === 'de' ? 'Teile & Lager' : 'Parts & Inventory'}: 15%</li>
-                  </ul>
-                </TooltipContent>
-              </Tooltip>
+            <div className="flex items-center gap-2">
+              <Button onClick={() => setShowExportModal(true)} size="sm" className="gap-1.5">
+                <FileText className="h-4 w-4" />
+                {t('results.exportPDF')}
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleRetakeAssessment} className="gap-1.5">
+                <RefreshCw className="h-4 w-4" />
+                {t('results.retakeAssessment')}
+              </Button>
             </div>
           </div>
+          
+          {/* Score hero card */}
+          <Card className="overflow-hidden">
+            <CardContent className="p-8">
+              <div className="flex flex-col md:flex-row items-center gap-8">
+                {/* Score ring */}
+                <div className="shrink-0">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="relative cursor-help">
+                        <svg className="w-36 h-36" viewBox="0 0 100 100">
+                          <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--border))" strokeWidth="6" />
+                          <circle
+                            cx="50" cy="50" r="42" fill="none"
+                            className={getScoreColor(overallScore)}
+                            strokeWidth="6" strokeLinecap="round"
+                            strokeDasharray={`${(animatedScore / 100) * 264} 264`}
+                            transform="rotate(-90 50 50)"
+                            style={{ transition: 'stroke-dasharray 0.1s ease-out' }}
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className="text-metric-lg text-foreground">{animatedScore}</span>
+                          <span className="text-caption text-muted-foreground">/100</span>
+                        </div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-xs p-3">
+                      <p className="font-medium mb-1">{language === 'de' ? 'Gewichtete Punktzahl' : 'Weighted Score'}</p>
+                      <p className="text-caption text-muted-foreground">
+                        {language === 'de' 
+                          ? 'Gewichtet nach Geschäftsbereich: NV 25%, UV 20%, Service 20%, Finanzen 20%, Teile 15%' 
+                          : 'Weighted by department: NV 25%, UV 20%, Service 20%, Finance 20%, Parts 15%'}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
 
-          <Badge className={`${scoreInfo.color} text-white text-base px-4 py-2 mb-6`}>
-            {scoreInfo.label}
-          </Badge>
-
-          <div className="flex justify-center gap-4">
-            <Button onClick={() => setShowExportModal(true)} className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              {t('results.exportPDF')}
-            </Button>
-          </div>
+                {/* Info */}
+                <div className="flex-1 text-center md:text-left space-y-3">
+                  <h1 className="text-h2 text-foreground">
+                    {language === 'de' ? 'Bewertungsergebnisse' : 'Assessment Results'}
+                  </h1>
+                  <p className="text-body-md text-muted-foreground">
+                    {language === 'de' ? 'Umfassende Analyse abgeschlossen am' : 'Comprehensive analysis completed on'} {formatDate(resultsData.completedAt)}
+                  </p>
+                  <Badge variant={scoreInfo.variant} className="text-sm px-3 py-1">
+                    {scoreInfo.label}
+                  </Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <ExportPDFModal
@@ -385,25 +345,25 @@ export default function Results() {
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 bg-card/90 backdrop-blur-sm border shadow-lg h-12">
-            <TabsTrigger value="executive" className="text-xs sm:text-sm gap-1.5">
-              <ClipboardList className="h-3.5 w-3.5 hidden sm:inline" />
+          <TabsList className="grid w-full grid-cols-5 h-11 bg-card border">
+            <TabsTrigger value="executive" className="gap-1.5 text-body-sm">
+              <ClipboardList className="h-4 w-4 hidden sm:inline" />
               {t('results.tab.executive')}
             </TabsTrigger>
-            <TabsTrigger value="kpi" className="text-xs sm:text-sm gap-1.5">
-              <BarChart3 className="h-3.5 w-3.5 hidden sm:inline" />
+            <TabsTrigger value="kpi" className="gap-1.5 text-body-sm">
+              <BarChart3 className="h-4 w-4 hidden sm:inline" />
               {t('results.tab.kpi')}
             </TabsTrigger>
-            <TabsTrigger value="maturity" className="text-xs sm:text-sm gap-1.5">
-              <Award className="h-3.5 w-3.5 hidden sm:inline" />
+            <TabsTrigger value="maturity" className="gap-1.5 text-body-sm">
+              <Award className="h-4 w-4 hidden sm:inline" />
               {t('results.tab.maturity')}
             </TabsTrigger>
-            <TabsTrigger value="action-plan" className="text-xs sm:text-sm gap-1.5">
-              <CheckSquare className="h-3.5 w-3.5 hidden sm:inline" />
+            <TabsTrigger value="action-plan" className="gap-1.5 text-body-sm">
+              <CheckSquare className="h-4 w-4 hidden sm:inline" />
               {t('results.tab.actionPlan')}
             </TabsTrigger>
-            <TabsTrigger value="resources" className="text-xs sm:text-sm gap-1.5">
-              <BookOpen className="h-3.5 w-3.5 hidden sm:inline" />
+            <TabsTrigger value="resources" className="gap-1.5 text-body-sm">
+              <BookOpen className="h-4 w-4 hidden sm:inline" />
               {t('results.tab.resources')}
             </TabsTrigger>
           </TabsList>

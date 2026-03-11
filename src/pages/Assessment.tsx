@@ -127,7 +127,7 @@ export default function Assessment() {
   };
 
   const getSectionColor = (index: number) => {
-    const colors = ["bg-blue-500", "bg-green-500", "bg-purple-500", "bg-orange-500", "bg-pink-500"];
+    const colors = ["bg-primary", "bg-success", "bg-discovery", "bg-warning", "bg-info"];
     return colors[index % colors.length];
   };
 
@@ -317,7 +317,7 @@ export default function Assessment() {
   const isCompleting = completionState !== 'idle' && completionState !== 'error';
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--neutral-bg))]">
+    <div className="min-h-screen bg-muted">
       {/* Completion Overlay */}
       {isCompleting && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -344,7 +344,7 @@ export default function Assessment() {
       )}
 
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b">
+      <div className="sticky top-0 z-10 bg-card border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Button
@@ -357,7 +357,7 @@ export default function Assessment() {
               {t('nav.backToDashboard')}
             </Button>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-medium text-foreground">{t('assessment.title')}</h1>
+              <h1 className="text-h5 text-foreground">{t('assessment.title')}</h1>
               {onboardingContext.dealershipName && (
                 <Badge variant="secondary" className="hidden sm:inline-flex">
                   {onboardingContext.dealershipName}
@@ -365,10 +365,10 @@ export default function Assessment() {
               )}
             </div>
             <div className="text-center">
-              <div className="text-xl font-medium text-foreground">
+              <div className="text-h4 text-foreground">
                 {Math.round(progress)}%
               </div>
-              <div className="text-xs text-muted-foreground">{t('assessment.complete')}</div>
+              <div className="text-caption text-muted-foreground">{t('assessment.complete')}</div>
             </div>
           </div>
         </div>
