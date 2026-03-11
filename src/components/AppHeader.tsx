@@ -11,9 +11,10 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { User, LogOut, BarChart3, ClipboardList, Home } from 'lucide-react';
+import { User, LogOut, BarChart3, ClipboardList, Home, Settings } from 'lucide-react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
 
 export function AppHeader() {
   const { user, signOut } = useAuth();
@@ -22,7 +23,6 @@ export function AppHeader() {
   const location = useLocation();
   const [hasCompletedAssessment, setHasCompletedAssessment] = useState(false);
 
-  // Check for completed assessments from DB (persisted, not transient)
   useEffect(() => {
     const checkCompleted = async () => {
       if (!user) return;
@@ -53,11 +53,14 @@ export function AppHeader() {
   ];
 
   return (
-    <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
       <div className="flex h-14 items-center justify-between px-4 lg:px-6">
         <div className="flex items-center gap-6">
-          <Link to="/" className="text-xl font-semibold text-primary hover:opacity-80 transition-opacity">
-            Dealership Assessment
+          <Link to="/" className="flex items-center gap-2 text-h5 text-foreground hover:opacity-80 transition-opacity">
+            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">D</span>
+            </div>
+            <span className="hidden sm:inline">Dealer Diagnostic</span>
           </Link>
           
           <nav className="hidden md:flex items-center gap-1">
@@ -70,9 +73,12 @@ export function AppHeader() {
               return (
                 <Link key={item.path} to={item.path}>
                   <Button
-                    variant={isActive ? "secondary" : "ghost"}
+                    variant="ghost"
                     size="sm"
-                    className="gap-2"
+                    className={cn(
+                      "gap-2 rounded-lg",
+                      isActive && "bg-accent text-accent-foreground"
+                    )}
                   >
                     <Icon className="h-4 w-4" />
                     {item.label}
@@ -83,20 +89,22 @@ export function AppHeader() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>{getUserInitials()}</AvatarFallback>
+              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                <Avatar className="h-9 w-9">
+                  <AvatarFallback className="bg-primary/10 text-primary text-label">
+                    {getUserInitials()}
+                  </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 bg-popover" align="end" forceMount>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{user?.email}</p>
-                  <p className="text-xs leading-none text-muted-foreground">
+                  <p className="text-body-md font-medium leading-none">{user?.email}</p>
+                  <p className="text-caption leading-none text-muted-foreground">
                     {language === 'de' ? 'Kontoeinstellungen' : 'Account Settings'}
                   </p>
                 </div>
