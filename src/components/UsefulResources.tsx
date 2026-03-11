@@ -123,15 +123,11 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
     return typeMap[type] || BookOpen;
   };
 
-  const getTypeColor = (type: string) => {
-    const colorMap: Record<string, string> = {
-      'Course': 'bg-blue-500', 'Kurs': 'bg-blue-500',
-      'Video': 'bg-purple-500',
-      'Article': 'bg-green-500', 'Artikel': 'bg-green-500',
-      'Webinar': 'bg-orange-500'
-    };
-    return colorMap[type] || 'bg-gray-500';
-  };
+  // Uniform icon styling - matches Support Materials design
+  const getTypeIconStyle = () => ({
+    bg: 'bg-brand-100',
+    text: 'text-brand-600'
+  });
 
   return (
     <div className="space-y-6">
@@ -234,8 +230,8 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
                       >
                         <CardContent className="p-4 space-y-3">
                           <div className="flex items-start justify-between gap-2">
-                            <div className={cn("p-2 rounded-lg", getTypeColor(resource.type))}>
-                              <Icon className="h-4 w-4 text-primary-foreground" />
+                            <div className="p-2 rounded-lg bg-brand-100">
+                              <Icon className="h-4 w-4 text-brand-600" />
                             </div>
                             {isPrioritized && (
                               <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">

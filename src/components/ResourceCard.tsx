@@ -25,12 +25,13 @@ interface ResourceCardProps {
   onToggleSave: (resourceId: string) => void;
 }
 
+// Uniform icon styling - subtle brand blue for all types (matches Support Materials)
 const typeConfig = {
-  video: { icon: Video, color: 'bg-blue-100 text-blue-700', label: 'Video' },
-  article: { icon: BookOpen, color: 'bg-green-100 text-green-700', label: 'Article' },
-  course: { icon: GraduationCap, color: 'bg-purple-100 text-purple-700', label: 'Course' },
-  webinar: { icon: Radio, color: 'bg-orange-100 text-orange-700', label: 'Webinar' },
-  tool: { icon: Wrench, color: 'bg-slate-100 text-slate-700', label: 'Tool' },
+  video: { icon: Video, color: 'bg-brand-100 text-brand-600', label: 'Video' },
+  article: { icon: BookOpen, color: 'bg-brand-100 text-brand-600', label: 'Article' },
+  course: { icon: GraduationCap, color: 'bg-brand-100 text-brand-600', label: 'Course' },
+  webinar: { icon: Radio, color: 'bg-brand-100 text-brand-600', label: 'Webinar' },
+  tool: { icon: Wrench, color: 'bg-brand-100 text-brand-600', label: 'Tool' },
 };
 
 const difficultyConfig = {
