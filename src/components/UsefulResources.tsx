@@ -230,8 +230,8 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
                       >
                         <CardContent className="p-4 space-y-3">
                           <div className="flex items-start justify-between gap-2">
-                            <div className={cn("p-2 rounded-lg", getTypeColor(resource.type))}>
-                              <Icon className="h-4 w-4 text-primary-foreground" />
+                            <div className="p-2 rounded-lg bg-brand-100">
+                              <Icon className="h-4 w-4 text-brand-600" />
                             </div>
                             {isPrioritized && (
                               <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
