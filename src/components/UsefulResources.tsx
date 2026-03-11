@@ -123,15 +123,11 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
     return typeMap[type] || BookOpen;
   };
 
-  const getTypeColor = (type: string) => {
-    const colorMap: Record<string, string> = {
-      'Course': 'bg-blue-500', 'Kurs': 'bg-blue-500',
-      'Video': 'bg-purple-500',
-      'Article': 'bg-green-500', 'Artikel': 'bg-green-500',
-      'Webinar': 'bg-orange-500'
-    };
-    return colorMap[type] || 'bg-gray-500';
-  };
+  // Uniform icon styling - matches Support Materials design
+  const getTypeIconStyle = () => ({
+    bg: 'bg-brand-100',
+    text: 'text-brand-600'
+  });
 
   return (
     <div className="space-y-6">
