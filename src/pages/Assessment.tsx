@@ -127,7 +127,7 @@ export default function Assessment() {
   };
 
   const getSectionColor = (index: number) => {
-    const colors = ["bg-blue-500", "bg-green-500", "bg-purple-500", "bg-orange-500", "bg-pink-500"];
+    const colors = ["bg-primary", "bg-success", "bg-discovery", "bg-warning", "bg-info"];
     return colors[index % colors.length];
   };
 
