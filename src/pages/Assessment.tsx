@@ -357,7 +357,7 @@ export default function Assessment() {
               {t('nav.backToDashboard')}
             </Button>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-medium text-foreground">{t('assessment.title')}</h1>
+              <h1 className="text-h5 text-foreground">{t('assessment.title')}</h1>
               {onboardingContext.dealershipName && (
                 <Badge variant="secondary" className="hidden sm:inline-flex">
                   {onboardingContext.dealershipName}
