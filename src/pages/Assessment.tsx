@@ -365,10 +365,10 @@ export default function Assessment() {
               )}
             </div>
             <div className="text-center">
-              <div className="text-xl font-medium text-foreground">
+              <div className="text-h4 text-foreground">
                 {Math.round(progress)}%
               </div>
-              <div className="text-xs text-muted-foreground">{t('assessment.complete')}</div>
+              <div className="text-caption text-muted-foreground">{t('assessment.complete')}</div>
             </div>
           </div>
         </div>
