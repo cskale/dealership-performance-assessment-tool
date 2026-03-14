@@ -227,8 +227,8 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
           </CardTitle>
           <p className="text-sm text-muted-foreground">
             {language === 'de'
-              ? 'Ihre Bewertung (blau) vs. Branchendurchschnitt 75% (graue Linie)'
-              : 'Your assessment (blue) vs. industry benchmark 75% (gray line)'}
+              ? 'Ihre Bewertung (blau) vs. indikativer Benchmark 75% (graue Linie)'
+              : 'Your assessment (blue) vs. indicative benchmark 75% (gray line)'}
           </p>
         </CardHeader>
         <CardContent>
