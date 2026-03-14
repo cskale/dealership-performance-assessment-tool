@@ -253,8 +253,8 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
           <CardTitle>{language === 'de' ? 'Lückenanalyse' : 'Performance Gap Analysis'}</CardTitle>
           <p className="text-sm text-muted-foreground">
             {language === 'de'
-              ? 'Vergleich Ihrer Leistung mit dem Branchendurchschnitt'
-              : 'Comparison of your performance against industry average'}
+              ? 'Vergleich Ihrer Leistung mit dem indikativen Benchmark'
+              : 'Comparison of your performance against indicative benchmark'}
           </p>
         </CardHeader>
         <CardContent>
