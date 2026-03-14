@@ -162,6 +162,29 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
     setGenerating(true);
     setShowRegenerateConfirm(false);
     try {
+      // Server-side rate limit check via Edge Function
+      const { data: sessionData } = await supabase.auth.getSession();
+      const rateLimitResponse = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-actions`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${sessionData.session?.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            assessmentId: assessmentId || null,
+            organizationId: currentOrganization?.id || null,
+          }),
+        }
+      );
+      if (!rateLimitResponse.ok) {
+        const errData = await rateLimitResponse.json();
+        toast.error(errData.error ?? 'Action generation temporarily limited. Please try again later.');
+        setGenerating(false);
+        return;
+      }
+
       let targetAssessmentId = assessmentId;
       if (!targetAssessmentId) {
         const { data: assessments } = await supabase.from('assessments').select('id, answers')
