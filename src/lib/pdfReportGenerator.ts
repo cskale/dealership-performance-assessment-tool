@@ -843,8 +843,8 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
 
   if (data.actions.length > 0) {
     const actionRows = data.actions.map(a => [
-      a.action_title.length > 70 ? a.action_title.slice(0, 67) + '...' : a.action_title,
-      a.responsible_person || l(lang, 'unassigned'),
+      sanitizeText(a.action_title.length > 70 ? a.action_title.slice(0, 67) + '...' : a.action_title),
+      sanitizeText(a.responsible_person || l(lang, 'unassigned')),
       a.target_completion_date?.slice(0, 10) || '--',
       normalizeStatus(a.status),
       normalizePriority(a.priority),
