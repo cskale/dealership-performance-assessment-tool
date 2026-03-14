@@ -28,6 +28,7 @@ import {
   AlertCircle, ChevronRight, Zap, BarChart3, ArrowLeft, Pencil, Save, X
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { profileSchema } from '@/lib/validationSchemas';
 
 interface AssessmentRecord {
   id: string;

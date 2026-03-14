@@ -212,6 +212,12 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
   const saveSettings = async () => {
     const err = validate();
     if (err) { toast({ title: 'Validation Error', description: err, variant: 'destructive' }); return; }
+    const zodResult = organizationSettingsSchema.safeParse(settings);
+    if (!zodResult.success) {
+      const firstError = zodResult.error.errors[0];
+      toast({ title: 'Validation Error', description: firstError?.message || 'Invalid input', variant: 'destructive' });
+      return;
+    }
     setSaving(true);
     try {
       const safeSettings = sanitizeFormData(settings as unknown as Record<string, unknown>) as unknown as OrgSettings;

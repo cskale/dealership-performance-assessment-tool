@@ -41,6 +41,10 @@ export function useAssessmentNotes() {
 
   // Save or update a note
   const saveNote = async (questionId: string, noteText: string) => {
+    if (noteText.trim().length > 5000) {
+      toast({ title: "Validation Error", description: "Note must be under 5,000 characters", variant: "destructive" });
+      return;
+    }
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
