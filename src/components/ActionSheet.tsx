@@ -20,6 +20,7 @@ import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { KPI_DEFINITIONS } from "@/lib/kpiDefinitions";
 import { cleanDescription } from "@/lib/cleanDescription";
+import { sanitizeFormData } from "@/lib/sanitize";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { ActionRecord } from "./ActionPlan";
