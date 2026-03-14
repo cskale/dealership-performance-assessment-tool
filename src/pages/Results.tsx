@@ -36,6 +36,7 @@ export default function Results() {
   const [animatedScore, setAnimatedScore] = useState(0);
   const [showExportModal, setShowExportModal] = useState(false);
   const [pdfActions, setPdfActions] = useState<PDFExportData['actions']>([]);
+  const [isBannerDismissed, setIsBannerDismissed] = useState(false);
   
   const { toast } = useToast();
   const navigate = useNavigate();
