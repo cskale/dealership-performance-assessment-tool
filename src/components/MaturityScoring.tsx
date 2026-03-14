@@ -297,6 +297,11 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
               })}
             </TableBody>
           </Table>
+          <p className="text-xs text-muted-foreground mt-4 italic">
+            {language === 'de'
+              ? '* Benchmark ist indikativ. Segmentierte Benchmarks nach Markenklasse und Markttyp in der Enterprise-Konfiguration verfügbar.'
+              : '* Benchmark is indicative. Segmented benchmarks by brand tier and market type available in enterprise configuration.'}
+          </p>
         </CardContent>
       </Card>
 
