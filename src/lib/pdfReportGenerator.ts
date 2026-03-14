@@ -13,6 +13,7 @@ import {
 import { questionnaire } from '@/data/questionnaire';
 import { generateBenchmarkDisclaimer } from '@/lib/benchmarkGovernance';
 import { KPI_DEFINITIONS, getKPILabel } from '@/lib/kpiDefinitions';
+import { sanitizeText } from '@/lib/sanitize';
 import { getMaturityLevel, SCORE_THRESHOLDS } from '@/lib/constants';
 
 // ── i18n labels ──
