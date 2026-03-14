@@ -213,7 +213,7 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
     if (err) { toast({ title: 'Validation Error', description: err, variant: 'destructive' }); return; }
     setSaving(true);
     try {
-      const safeSettings = sanitizeFormData(settings as Record<string, unknown>) as OrgSettings;
+      const safeSettings = sanitizeFormData(settings as unknown as Record<string, unknown>) as unknown as OrgSettings;
       const { error } = await supabase.from('organizations').update({
         brand_mode: safeSettings.brand_mode, oem_authorization: safeSettings.oem_authorization,
         network_structure: safeSettings.network_structure, business_model: safeSettings.business_model,

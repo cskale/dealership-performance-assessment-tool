@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Copy, Loader2, Send, UserPlus, XCircle, RefreshCw } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface PendingInvite {
   id: string;
