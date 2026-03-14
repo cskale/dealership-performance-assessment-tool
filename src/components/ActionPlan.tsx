@@ -784,7 +784,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => generateIntelligentActions(true)}>Regenerate</AlertDialogAction>
+            <AlertDialogAction onClick={() => { setLastGenerated(Date.now()); generateIntelligentActions(true); }}>Regenerate</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
