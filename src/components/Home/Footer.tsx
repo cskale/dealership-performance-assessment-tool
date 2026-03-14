@@ -60,7 +60,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/resources" className="text-slate-400 hover:text-white transition-colors text-sm">
+                <Link to="/methodology" className="text-slate-400 hover:text-white transition-colors text-sm">
                   {t.methodology}
                 </Link>
               </li>
@@ -77,14 +77,14 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/resources" className="text-slate-400 hover:text-white transition-colors text-sm">
+                <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">
                   {t.contactUs}
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/resources" className="text-slate-400 hover:text-white transition-colors text-sm">
+                <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">
                   {t.privacy}
-                </Link>
+                </a>
               </li>
             </ul>
           </div>

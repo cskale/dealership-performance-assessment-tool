@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { FileText, RefreshCw, ArrowLeft, ClipboardList, BarChart3, Award, CheckSquare, BookOpen, AlertCircle } from "lucide-react";
+import { FileText, RefreshCw, ArrowLeft, ClipboardList, BarChart3, Award, CheckSquare, BookOpen, AlertCircle, X } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { ExecutiveSummary } from "@/components/ExecutiveSummary";
@@ -36,6 +36,7 @@ export default function Results() {
   const [animatedScore, setAnimatedScore] = useState(0);
   const [showExportModal, setShowExportModal] = useState(false);
   const [pdfActions, setPdfActions] = useState<PDFExportData['actions']>([]);
+  const [isBannerDismissed, setIsBannerDismissed] = useState(false);
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -199,6 +200,25 @@ export default function Results() {
     });
   };
 
+  const assessmentId = resultsData?.assessmentId;
+  const actionCount = pdfActions.length;
+  const BANNER_KEY = `results_banner_dismissed_${assessmentId ?? 'default'}`;
+
+  // Sync banner dismissal from localStorage on data load
+  useEffect(() => {
+    if (assessmentId) {
+      const key = `results_banner_dismissed_${assessmentId}`;
+      setIsBannerDismissed(localStorage.getItem(key) === 'true');
+    }
+  }, [assessmentId]);
+
+  const dismissBanner = () => {
+    localStorage.setItem(BANNER_KEY, 'true');
+    setIsBannerDismissed(true);
+  };
+
+  const scoreInfo = getScoreLabel(overallScore);
+
   // Loading state
   if (isLoading) {
     return (
@@ -258,13 +278,38 @@ export default function Results() {
     );
   }
 
-  const scoreInfo = getScoreLabel(overallScore);
-
   return (
     <div className="min-h-screen bg-muted">
       <AppHeader />
       
       <div className="max-w-7xl mx-auto px-6 py-8" id="results-content">
+
+        {/* Post-Assessment Next Steps Banner */}
+        {!isBannerDismissed && (
+          <div className="mb-6 rounded-xl border bg-card p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-base font-semibold text-foreground">
+                {language === 'de' ? 'Bewertung abgeschlossen' : 'Assessment Complete'} — {language === 'de' ? 'Ihre nächsten Schritte' : "Here's What To Do Next"}
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                {actionCount > 0
+                  ? `${actionCount} ${language === 'de' ? 'empfohlene Maßnahmen zur Überprüfung bereit' : 'recommended actions ready for review'}.`
+                  : (language === 'de' ? 'Ihr personalisierter Maßnahmenplan ist bereit.' : 'Your personalised action plan is ready.')}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button size="sm" onClick={() => navigate('/actions')}>
+                {language === 'de' ? 'Maßnahmenplan ansehen' : 'View Action Plan'}
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setShowExportModal(true)}>
+                {language === 'de' ? 'Bericht herunterladen' : 'Download Report'}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={dismissBanner} className="h-8 w-8 p-0">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
         {/* Results Hero */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
