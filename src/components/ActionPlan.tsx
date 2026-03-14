@@ -508,7 +508,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
             </button>
           </div>
           {canEdit && (
-            <Button onClick={handleGenerateClick} disabled={generating} size="sm">
+            <Button onClick={handleGenerateClick} disabled={generating || (lastGenerated !== null && Date.now() - lastGenerated < 30000)} size="sm">
               {generating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
               {generating ? 'Generating...' : 'Generate Actions'}
             </Button>
