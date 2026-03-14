@@ -170,10 +170,9 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
   );
 
   const gapAnalysisData = useMemo(() => {
-    const INDUSTRY_AVG = 75;
     return Object.entries(scores)
       .map(([dept, score]) => {
-        const gap = score - INDUSTRY_AVG;
+        const gap = score - INDICATIVE_BENCHMARK;
         let priorityLabel: string, priorityColor: string, priorityIcon: React.ReactNode;
         if (gap <= -30) {
           priorityLabel = language === 'de' ? 'Kritisch' : 'Critical';
