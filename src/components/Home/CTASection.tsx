@@ -9,7 +9,7 @@ export function CTASection() {
   const content = {
     en: {
       title: 'Ready to Transform Your Dealership?',
-      subtitle: 'Join thousands who discovered their potential. Start comprehensive assessment and unlock insights in just 15 minutes.',
+      subtitle: 'Built for serious dealership networks. Start your comprehensive assessment and unlock actionable insights in 15 minutes.',
       button: 'Begin Assessment',
       timeLabel: 'Takes only 15 minutes',
     },
