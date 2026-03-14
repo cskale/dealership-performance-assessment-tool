@@ -96,6 +96,9 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
   const [sortBy, setSortBy] = useState<string>('priority');
   const [filterOpen, setFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list');
+  const [lastGenerated, setLastGenerated] = useState<number | null>(null);
+  const [actionPage, setActionPage] = useState(0);
+  const PAGE_SIZE = 50;
 
   const [editingAction, setEditingAction] = useState<ActionRecord | null>(null);
   const [sheetMode, setSheetMode] = useState<'create' | 'edit'>('edit');
