@@ -58,7 +58,8 @@ export function InviteTeamMembers() {
         .select('id, invited_email, membership_role, created_at, expires_at, token')
         .eq('organization_id', currentOrganization.id)
         .eq('status', 'pending')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(100);
 
       if (!error && data) {
         setPendingInvites(data as PendingInvite[]);
