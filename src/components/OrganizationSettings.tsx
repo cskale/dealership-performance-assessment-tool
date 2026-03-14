@@ -163,7 +163,7 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
 
   const fetchSettings = async () => {
     try {
-      const { data, error } = await supabase.from('organizations').select('*').eq('id', organizationId).single();
+      const { data, error } = await supabase.from('organizations').select('*').eq('id', organizationId).limit(200).single();
       if (error) throw error;
       if (data) {
         const segs = (data.product_segments as string[] | null) ?? ['passenger'];

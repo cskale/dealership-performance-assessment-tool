@@ -866,11 +866,11 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
 
     // Action descriptions
     data.actions.forEach((a, i) => {
-      const titleText = `${i + 1}. ${a.action_title}`;
-      const cleanDesc = a.action_description
+      const titleText = `${i + 1}. ${sanitizeText(a.action_title)}`;
+      const cleanDesc = sanitizeText(a.action_description
         .replace(/Triggered because:.*$/s, '')
         .trim()
-        .slice(0, 400);
+        .slice(0, 400));
       const descLines = cleanDesc ? pdf.splitTextToSize(cleanDesc, contentW - 12) : [];
       const blockH = 8 + descLines.length * 4;
 
