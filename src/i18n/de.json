@@ -1,0 +1,45 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "assessment": "Bewertung",
+    "results": "Ergebnisse",
+    "actions": "Maßnahmenplan",
+    "dashboard": "Dashboard",
+    "account": "Konto",
+    "signIn": "Anmelden"
+  },
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "loading": "Lädt...",
+    "generating": "Wird generiert...",
+    "generate": "Maßnahmen generieren",
+    "loadMore": "Weitere Maßnahmen laden",
+    "export": "Exportieren",
+    "downloadPdf": "PDF-Bericht herunterladen",
+    "exportExcel": "Nach Excel exportieren",
+    "generatingPdf": "PDF wird erstellt..."
+  },
+  "assessment": {
+    "title": "Händler-Bewertung",
+    "complete": "Bewertung abgeschlossen",
+    "nextSteps": "Ihre nächsten Schritte",
+    "actionsReady": "empfohlene Maßnahmen zur Überprüfung bereit",
+    "viewActionPlan": "Maßnahmenplan ansehen",
+    "downloadReport": "Bericht herunterladen"
+  },
+  "actions": {
+    "title": "Maßnahmenplan",
+    "unassigned": "Nicht zugewiesen",
+    "noActions": "Keine Maßnahmen gefunden",
+    "rateLimitWarning": "Bitte warten Sie {{seconds}} Sekunden vor der nächsten Generierung.",
+    "hourlyLimitReached": "Stundenlimit erreicht. Bitte warten Sie."
+  },
+  "benchmark": {
+    "indicativeLabel": "Indikative Benchmark (75%) ⓘ",
+    "tooltip": "Diese Benchmark basiert auf indikativen Durchschnittswerten europäischer Automobilhändlernetzwerke. Sie ist nicht statistisch validiert. Für markenspezifische Benchmarks wenden Sie sich an Ihren OEM-Programmmanager.",
+    "footnote": "* Benchmark ist indikativ. Segmentierte Benchmarks nach Markenklasse und Markttyp in der Enterprise-Konfiguration verfügbar."
+  }
+}

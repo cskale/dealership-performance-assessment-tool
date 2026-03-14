@@ -1,0 +1,45 @@
+{
+  "nav": {
+    "home": "Home",
+    "assessment": "Assessment",
+    "results": "Results",
+    "actions": "Action Plan",
+    "dashboard": "Dashboard",
+    "account": "Account",
+    "signIn": "Sign In"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "generating": "Generating...",
+    "generate": "Generate Actions",
+    "loadMore": "Load More Actions",
+    "export": "Export",
+    "downloadPdf": "Download PDF Report",
+    "exportExcel": "Export to Excel",
+    "generatingPdf": "Generating PDF..."
+  },
+  "assessment": {
+    "title": "Dealer Assessment",
+    "complete": "Assessment Complete",
+    "nextSteps": "Here's What To Do Next",
+    "actionsReady": "recommended actions ready for review",
+    "viewActionPlan": "View Action Plan",
+    "downloadReport": "Download Report"
+  },
+  "actions": {
+    "title": "Action Plan",
+    "unassigned": "Unassigned",
+    "noActions": "No actions found",
+    "rateLimitWarning": "Please wait {{seconds}} seconds before generating again.",
+    "hourlyLimitReached": "Action generation limit reached. Please wait before generating again."
+  },
+  "benchmark": {
+    "indicativeLabel": "Indicative Benchmark (75%) ⓘ",
+    "tooltip": "This benchmark represents an indicative average based on European automotive retail network observations. It is not statistically validated. For brand-specific benchmarks, contact your OEM program manager.",
+    "footnote": "* Benchmark is indicative. Segmented benchmarks by brand tier and market type available in enterprise configuration."
+  }
+}
