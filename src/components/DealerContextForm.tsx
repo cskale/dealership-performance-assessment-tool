@@ -120,6 +120,14 @@ export function DealerContextForm({ onComplete, existingContext }: DealerContext
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+
+    const validation = dealerContextSchema.safeParse(formData);
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError?.message || 'Validation failed');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
