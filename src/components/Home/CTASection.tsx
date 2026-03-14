@@ -15,7 +15,7 @@ export function CTASection() {
     },
     de: {
       title: 'Bereit, Ihr Autohaus zu transformieren?',
-      subtitle: 'Schließen Sie sich Tausenden an, die ihr Potenzial entdeckt haben. Starten Sie die umfassende Bewertung und gewinnen Sie Erkenntnisse in nur 15 Minuten.',
+      subtitle: 'Entwickelt für professionelle Händlernetzwerke. Starten Sie Ihre umfassende Bewertung und gewinnen Sie umsetzbare Erkenntnisse in 15 Minuten.',
       button: 'Bewertung beginnen',
       timeLabel: 'Dauert nur 15 Minuten',
     }

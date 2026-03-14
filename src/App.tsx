@@ -23,7 +23,19 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { PageErrorBoundary } from "@/components/shared/ErrorBoundary";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,      // 5 min — prevents redundant refetches on remount
+      gcTime: 10 * 60 * 1000,         // 10 min garbage collection window
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 0,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
