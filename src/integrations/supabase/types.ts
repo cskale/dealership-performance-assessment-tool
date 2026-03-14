@@ -1004,6 +1004,20 @@ export type Database = {
         Args: { p_dealership_id: string }
         Returns: boolean
       }
+      update_action_if_unchanged: {
+        Args: {
+          p_description: string
+          p_expected_updated_at: string
+          p_id: string
+          p_priority: string
+          p_responsible_person: string
+          p_status: string
+          p_target_completion_date: string
+          p_title: string
+          p_updated_at?: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "coach" | "dealer"
