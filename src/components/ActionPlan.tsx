@@ -130,6 +130,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
         query = query.eq('user_id', user.id);
       }
       if (assessmentId) query = query.eq('assessment_id', assessmentId);
+      query = query.range(0, (actionPage + 1) * PAGE_SIZE - 1);
       const { data, error } = await query;
       if (error) throw error;
       setActions((data || []).map(a => ({ ...a, _loadedAt: new Date().toISOString() })) as unknown as ActionRecord[]);
