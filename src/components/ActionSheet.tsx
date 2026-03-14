@@ -164,10 +164,11 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
   const handleSave = async () => {
     setSaving(true);
     try {
+      const sanitizedData = sanitizeFormData(formData as Record<string, unknown>) as Partial<ActionRecord>;
       if (mode === 'edit' && action) {
-        await onSave({ ...formData, id: action.id });
+        await onSave({ ...sanitizedData, id: action.id });
       } else {
-        await onSave(formData);
+        await onSave(sanitizedData);
       }
     } finally {
       setSaving(false);

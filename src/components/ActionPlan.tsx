@@ -117,7 +117,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
   const overdueCount = actions.filter(a => isOverdue(a)).length;
 
-  useEffect(() => { loadActions(); }, [user, assessmentId, currentOrganization]);
+  useEffect(() => { loadActions(); }, [user, assessmentId, currentOrganization, actionPage]);
 
   const loadActions = async () => {
     if (!user) return;

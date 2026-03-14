@@ -130,16 +130,18 @@ export function DealerContextForm({ onComplete, existingContext }: DealerContext
         return;
       }
 
+      const safeFormData = sanitizeFormData(formData as Record<string, unknown>);
+
       const { error } = await supabase
         .from('dealer_contexts')
         .upsert({
           user_id: user.id,
-          brand_represented: formData.brandRepresented,
+          brand_represented: safeFormData.brandRepresented as string,
           brand_tier: brandTier,
-          market_type: formData.marketType,
-          annual_unit_sales: parseInt(formData.annualUnitSales),
-          avg_gross_profit_per_unit: formData.avgGrossProfitPerUnit ? parseFloat(formData.avgGrossProfitPerUnit) : null,
-          avg_monthly_leads: formData.avgMonthlyLeads ? parseInt(formData.avgMonthlyLeads) : null,
+          market_type: safeFormData.marketType as string,
+          annual_unit_sales: parseInt(safeFormData.annualUnitSales as string),
+          avg_gross_profit_per_unit: safeFormData.avgGrossProfitPerUnit ? parseFloat(safeFormData.avgGrossProfitPerUnit as string) : null,
+          avg_monthly_leads: safeFormData.avgMonthlyLeads ? parseInt(safeFormData.avgMonthlyLeads as string) : null,
           updated_at: new Date().toISOString()
         }, {
           onConflict: 'user_id'

@@ -213,13 +213,14 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
     if (err) { toast({ title: 'Validation Error', description: err, variant: 'destructive' }); return; }
     setSaving(true);
     try {
+      const safeSettings = sanitizeFormData(settings as Record<string, unknown>) as OrgSettings;
       const { error } = await supabase.from('organizations').update({
-        brand_mode: settings.brand_mode, oem_authorization: settings.oem_authorization,
-        network_structure: settings.network_structure, business_model: settings.business_model,
-        positioning: settings.positioning, default_language: settings.default_language,
-        country: settings.country?.trim(), city: settings.city?.trim(),
-        logo_url: settings.logo_url, oem_brands: settings.oem_brands,
-        product_segments: settings.product_segments, operational_focus: settings.operational_focus,
+        brand_mode: safeSettings.brand_mode, oem_authorization: safeSettings.oem_authorization,
+        network_structure: safeSettings.network_structure, business_model: safeSettings.business_model,
+        positioning: safeSettings.positioning, default_language: safeSettings.default_language,
+        country: safeSettings.country?.trim(), city: safeSettings.city?.trim(),
+        logo_url: safeSettings.logo_url, oem_brands: safeSettings.oem_brands,
+        product_segments: safeSettings.product_segments, operational_focus: safeSettings.operational_focus,
       } as any).eq('id', organizationId);
       if (error) throw error;
       toast({ title: 'Saved', description: 'Organization settings updated successfully' });
