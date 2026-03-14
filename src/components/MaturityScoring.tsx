@@ -263,7 +263,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
               <TableRow>
                 <TableHead>{language === 'de' ? 'Kategorie' : 'Category'}</TableHead>
                 <TableHead className="text-center">{language === 'de' ? 'Ihre Punktzahl' : 'Your Score'}</TableHead>
-                <TableHead className="text-center">{language === 'de' ? 'Branchendurchschnitt' : 'Industry Avg'}</TableHead>
+                <TableHead className="text-center">{language === 'de' ? 'Benchmark' : 'Benchmark'}</TableHead>
                 <TableHead className="text-center">{language === 'de' ? 'Lücke' : 'Gap'}</TableHead>
                 <TableHead className="text-center">{language === 'de' ? 'Konfidenz' : 'Confidence'}</TableHead>
                 <TableHead className="text-center">{language === 'de' ? 'Priorität' : 'Priority'}</TableHead>
