@@ -7,9 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Loader2, Globe, Shield, AlertCircle } from 'lucide-react';
+import { FileText, Loader2, Globe, Shield, AlertCircle, FileSpreadsheet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generatePDFReport, type PDFExportData } from '@/lib/pdfReportGenerator';
+import { generateExcelReport, type ExcelExportParams } from '@/lib/excelExportGenerator';
+import { useTranslation } from 'react-i18next';
+import { getDepartmentName } from '@/lib/departmentNames';
+import { getMaturityLevel } from '@/lib/constants';
+import { calculateWeightedScore } from '@/lib/scoringEngine';
 
 interface ExportPDFModalProps {
   open: boolean;
@@ -27,16 +32,21 @@ const LANG_NAMES: Record<string, string> = {
 
 export function ExportPDFModal({ open, onOpenChange, exportData }: ExportPDFModalProps) {
   const [includeWatermark, setIncludeWatermark] = useState(false);
-  const [generating, setGenerating] = useState(false);
+  const [pdfGenerating, setPdfGenerating] = useState(false);
+  const [xlsxGenerating, setXlsxGenerating] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const reportLang = exportData?.organization?.default_language || 'en';
 
   const handleGenerate = async () => {
     if (!exportData) return;
 
-    setGenerating(true);
+    setPdfGenerating(true);
     try {
+      // Defer to next tick so React can render the loading state before
+      // the synchronous jsPDF work blocks the main thread
+      await new Promise(resolve => setTimeout(resolve, 50));
       await generatePDFReport({
         ...exportData,
         includeWatermark,
@@ -54,7 +64,65 @@ export function ExportPDFModal({ open, onOpenChange, exportData }: ExportPDFModa
         variant: 'destructive',
       });
     } finally {
-      setGenerating(false);
+      setPdfGenerating(false);
+    }
+  };
+
+  const handleDownloadExcel = async () => {
+    if (!exportData) return;
+    setXlsxGenerating(true);
+    try {
+      const lang = (exportData.organization?.default_language as 'en' | 'de') || 'en';
+      const overallScore = exportData.assessment.overallScore;
+      const maturityLevel = getMaturityLevel(overallScore, lang === 'de' ? 'de' : 'en');
+      const INDICATIVE_BENCHMARK = 75;
+
+      const kpiData = Object.entries(exportData.assessment.scores).map(([dept, score]) => ({
+        category: getDepartmentName(dept, lang),
+        score,
+        benchmark: INDICATIVE_BENCHMARK,
+        gap: score - INDICATIVE_BENCHMARK,
+        confidence: 'N/A',
+      }));
+
+      const actionData = (exportData.actions ?? []).map(a => ({
+        title: a.action_title ?? '',
+        priority: a.priority ?? '',
+        owner: a.responsible_person ?? undefined,
+        dueDate: a.target_completion_date ?? undefined,
+        triageScore: undefined,
+        status: a.status ?? '',
+      }));
+
+      const gapAnalysisData = Object.entries(exportData.assessment.scores).map(([dept, score]) => ({
+        department: getDepartmentName(dept, lang),
+        score,
+        benchmark: INDICATIVE_BENCHMARK,
+        gap: score - INDICATIVE_BENCHMARK,
+      }));
+
+      generateExcelReport({
+        dealerName: exportData.organization?.name ?? 'Dealer',
+        assessmentDate: new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+        overallScore,
+        maturityLevel,
+        kpiData,
+        actionData,
+        gapAnalysisData,
+      });
+      toast({
+        title: 'Excel Report Generated',
+        description: 'Your report has been downloaded.',
+      });
+    } catch (error) {
+      console.error('Excel generation error:', error);
+      toast({
+        title: 'Export Failed',
+        description: 'Unable to generate Excel report. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setXlsxGenerating(false);
     }
   };
 
@@ -113,24 +181,42 @@ export function ExportPDFModal({ open, onOpenChange, exportData }: ExportPDFModa
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={generating}>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pdfGenerating || xlsxGenerating}>
             Cancel
           </Button>
-          <Button onClick={handleGenerate} disabled={generating || !exportData}>
-            {generating ? (
+          <Button
+            variant="outline"
+            onClick={handleDownloadExcel}
+            disabled={xlsxGenerating || !exportData}
+            className="flex items-center gap-2"
+          >
+            {xlsxGenerating ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="h-4 w-4" />
+            )}
+            {xlsxGenerating ? t('common.generating') : t('common.exportExcel')}
+          </Button>
+          <Button onClick={handleGenerate} disabled={pdfGenerating || !exportData}>
+            {pdfGenerating ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Generating PDF…
+                {t('common.generatingPdf')}
               </>
             ) : (
               <>
                 <FileText className="h-4 w-4 mr-2" />
-                Generate PDF
+                {t('common.downloadPdf')}
               </>
             )}
           </Button>
         </DialogFooter>
+
+        <p className="text-xs text-muted-foreground text-center mt-2">
+          PDF generation may take 5–15 seconds for full reports. Please keep this window
+          open until the download begins.
+        </p>
       </DialogContent>
     </Dialog>
   );
