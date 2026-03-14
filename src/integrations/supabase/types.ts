@@ -70,6 +70,30 @@ export type Database = {
           },
         ]
       }
+      action_generation_log: {
+        Row: {
+          assessment_id: string | null
+          created_at: string | null
+          id: string
+          organization_id: string | null
+          user_id: string
+        }
+        Insert: {
+          assessment_id?: string | null
+          created_at?: string | null
+          id?: string
+          organization_id?: string | null
+          user_id: string
+        }
+        Update: {
+          assessment_id?: string | null
+          created_at?: string | null
+          id?: string
+          organization_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       actions: {
         Row: {
           created_at: string

@@ -13,6 +13,7 @@ import {
 import { questionnaire } from '@/data/questionnaire';
 import { generateBenchmarkDisclaimer } from '@/lib/benchmarkGovernance';
 import { KPI_DEFINITIONS, getKPILabel } from '@/lib/kpiDefinitions';
+import { sanitizeText } from '@/lib/sanitize';
 import { getMaturityLevel, SCORE_THRESHOLDS } from '@/lib/constants';
 
 // ── i18n labels ──
@@ -842,8 +843,8 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
 
   if (data.actions.length > 0) {
     const actionRows = data.actions.map(a => [
-      a.action_title.length > 70 ? a.action_title.slice(0, 67) + '...' : a.action_title,
-      a.responsible_person || l(lang, 'unassigned'),
+      sanitizeText(a.action_title.length > 70 ? a.action_title.slice(0, 67) + '...' : a.action_title),
+      sanitizeText(a.responsible_person || l(lang, 'unassigned')),
       a.target_completion_date?.slice(0, 10) || '--',
       normalizeStatus(a.status),
       normalizePriority(a.priority),
@@ -865,11 +866,11 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
 
     // Action descriptions
     data.actions.forEach((a, i) => {
-      const titleText = `${i + 1}. ${a.action_title}`;
-      const cleanDesc = a.action_description
+      const titleText = `${i + 1}. ${sanitizeText(a.action_title)}`;
+      const cleanDesc = sanitizeText(a.action_description
         .replace(/Triggered because:.*$/s, '')
         .trim()
-        .slice(0, 400);
+        .slice(0, 400));
       const descLines = cleanDesc ? pdf.splitTextToSize(cleanDesc, contentW - 12) : [];
       const blockH = 8 + descLines.length * 4;
 

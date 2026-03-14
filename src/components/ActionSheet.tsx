@@ -20,6 +20,7 @@ import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { KPI_DEFINITIONS } from "@/lib/kpiDefinitions";
 import { cleanDescription } from "@/lib/cleanDescription";
+import { sanitizeFormData } from "@/lib/sanitize";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { ActionRecord } from "./ActionPlan";
@@ -164,10 +165,11 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
   const handleSave = async () => {
     setSaving(true);
     try {
+      const sanitizedData = sanitizeFormData(formData as Record<string, unknown>) as Partial<ActionRecord>;
       if (mode === 'edit' && action) {
-        await onSave({ ...formData, id: action.id });
+        await onSave({ ...sanitizedData, id: action.id });
       } else {
-        await onSave(formData);
+        await onSave(sanitizedData);
       }
     } finally {
       setSaving(false);

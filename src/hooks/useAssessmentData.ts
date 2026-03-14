@@ -350,7 +350,7 @@ export const useAssessmentData = () => {
     setError(null);
     
     try {
-      let query = supabase.from('benchmarks').select('*');
+      let query = supabase.from('benchmarks').select('*').limit(500);
       
       if (brand) {
         query = query.eq('brand', brand);

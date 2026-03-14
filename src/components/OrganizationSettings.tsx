@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Save, Upload, X, Building2, ShoppingCart, Globe, Star, Palette, HelpCircle, Pencil, Loader2, CheckCircle, MapPin, Languages, Briefcase, Network } from 'lucide-react';
+import { sanitizeFormData } from '@/lib/sanitize';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface OrgSettings {
@@ -162,7 +163,7 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
 
   const fetchSettings = async () => {
     try {
-      const { data, error } = await supabase.from('organizations').select('*').eq('id', organizationId).single();
+      const { data, error } = await supabase.from('organizations').select('*').eq('id', organizationId).limit(200).single();
       if (error) throw error;
       if (data) {
         const segs = (data.product_segments as string[] | null) ?? ['passenger'];
@@ -212,13 +213,14 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
     if (err) { toast({ title: 'Validation Error', description: err, variant: 'destructive' }); return; }
     setSaving(true);
     try {
+      const safeSettings = sanitizeFormData(settings as unknown as Record<string, unknown>) as unknown as OrgSettings;
       const { error } = await supabase.from('organizations').update({
-        brand_mode: settings.brand_mode, oem_authorization: settings.oem_authorization,
-        network_structure: settings.network_structure, business_model: settings.business_model,
-        positioning: settings.positioning, default_language: settings.default_language,
-        country: settings.country?.trim(), city: settings.city?.trim(),
-        logo_url: settings.logo_url, oem_brands: settings.oem_brands,
-        product_segments: settings.product_segments, operational_focus: settings.operational_focus,
+        brand_mode: safeSettings.brand_mode, oem_authorization: safeSettings.oem_authorization,
+        network_structure: safeSettings.network_structure, business_model: safeSettings.business_model,
+        positioning: safeSettings.positioning, default_language: safeSettings.default_language,
+        country: safeSettings.country?.trim(), city: safeSettings.city?.trim(),
+        logo_url: safeSettings.logo_url, oem_brands: safeSettings.oem_brands,
+        product_segments: safeSettings.product_segments, operational_focus: safeSettings.operational_focus,
       } as any).eq('id', organizationId);
       if (error) throw error;
       toast({ title: 'Saved', description: 'Organization settings updated successfully' });

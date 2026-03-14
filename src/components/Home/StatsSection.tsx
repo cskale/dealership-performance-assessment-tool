@@ -1,6 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Building2, Target, Clock, Globe } from 'lucide-react';
-import { AnimatedCounter } from './AnimatedCounter';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export function StatsSection() {
@@ -9,33 +8,29 @@ export function StatsSection() {
   const stats = [
     {
       icon: Building2,
-      value: 10000,
-      suffix: '+',
-      label: { en: 'Dealerships Assessed', de: 'Bewertete Autohäuser' },
+      value: null,
+      label: { en: 'Enterprise-grade platform', de: 'Enterprise-Plattform' },
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
     },
     {
       icon: Target,
-      value: 95,
-      suffix: '%',
-      label: { en: 'Accuracy Rate', de: 'Genauigkeitsrate' },
+      value: null,
+      label: { en: 'Consulting-grade methodology', de: 'Beratungsqualität' },
       color: 'text-emerald-600',
       bgColor: 'bg-emerald-50',
     },
     {
       icon: Clock,
-      value: 15,
-      suffix: ' min',
-      label: { en: 'Average Completion', de: 'Durchschn. Bearbeitungszeit' },
+      value: null,
+      label: { en: 'Built for dealer networks', de: 'Für Händlernetzwerke' },
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
     },
     {
       icon: Globe,
-      value: 50,
-      suffix: '+',
-      label: { en: 'Countries Served', de: 'Länder bedient' },
+      value: null,
+      label: { en: 'Multi-language support', de: 'Mehrsprachig' },
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
     },
@@ -56,9 +51,6 @@ export function StatsSection() {
                 <CardContent className="p-6 text-center">
                   <div className={`w-14 h-14 ${stat.bgColor} rounded-xl flex items-center justify-center mx-auto mb-4`}>
                     <Icon className={`h-7 w-7 ${stat.color}`} />
-                  </div>
-                  <div className={`text-4xl font-bold ${stat.color} mb-2`}>
-                    <AnimatedCounter end={stat.value} suffix={stat.suffix} />
                   </div>
                   <div className="text-sm font-medium text-muted-foreground">
                     {stat.label[language as keyof typeof stat.label] || stat.label.en}

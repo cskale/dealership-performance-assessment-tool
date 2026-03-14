@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Copy, Loader2, Send, UserPlus, XCircle, RefreshCw } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface PendingInvite {
   id: string;
@@ -58,7 +59,8 @@ export function InviteTeamMembers() {
         .select('id, invited_email, membership_role, created_at, expires_at, token')
         .eq('organization_id', currentOrganization.id)
         .eq('status', 'pending')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(100);
 
       if (!error && data) {
         setPendingInvites(data as PendingInvite[]);
@@ -249,30 +251,37 @@ export function InviteTeamMembers() {
         {!loadingInvites && pendingInvites.length > 0 && (
           <div className="space-y-3">
             <h4 className="text-sm font-semibold text-muted-foreground">Pending Invites</h4>
-            {pendingInvites.map((invite) => (
-              <div key={invite.id} className="flex items-center justify-between border rounded-lg p-3">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">{invite.invited_email}</p>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-xs">{invite.membership_role}</Badge>
-                    <span className="text-xs text-muted-foreground">
-                      Expires {new Date(invite.expires_at).toLocaleDateString()}
-                    </span>
+            {pendingInvites.map((invite) => {
+              const isExpired = new Date(invite.expires_at) <= new Date();
+              return (
+                <div key={invite.id} className={cn("flex items-center justify-between border rounded-lg p-3", isExpired && "opacity-50")}>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">{invite.invited_email}</p>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-xs">{invite.membership_role}</Badge>
+                      {isExpired ? (
+                        <Badge variant="destructive" className="text-xs">Expired</Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">
+                          Expires {new Date(invite.expires_at).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button size="sm" variant="ghost" onClick={() => copyToClipboard(`${window.location.origin}/invite/${invite.token}`)}>
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => handleResend(invite)}>
+                      <RefreshCw className="h-3 w-3" />
+                    </Button>
+                    <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleRevoke(invite.id)}>
+                      <XCircle className="h-3 w-3" />
+                    </Button>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Button size="sm" variant="ghost" onClick={() => copyToClipboard(`${window.location.origin}/invite/${invite.token}`)}>
-                    <Copy className="h-3 w-3" />
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => handleResend(invite)}>
-                    <RefreshCw className="h-3 w-3" />
-                  </Button>
-                  <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleRevoke(invite.id)}>
-                    <XCircle className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </CardContent>

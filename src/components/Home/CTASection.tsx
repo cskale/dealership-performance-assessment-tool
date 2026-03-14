@@ -9,13 +9,13 @@ export function CTASection() {
   const content = {
     en: {
       title: 'Ready to Transform Your Dealership?',
-      subtitle: 'Join thousands who discovered their potential. Start comprehensive assessment and unlock insights in just 15 minutes.',
+      subtitle: 'Built for serious dealership networks. Start your comprehensive assessment and unlock actionable insights in 15 minutes.',
       button: 'Begin Assessment',
       timeLabel: 'Takes only 15 minutes',
     },
     de: {
       title: 'Bereit, Ihr Autohaus zu transformieren?',
-      subtitle: 'Schließen Sie sich Tausenden an, die ihr Potenzial entdeckt haben. Starten Sie die umfassende Bewertung und gewinnen Sie Erkenntnisse in nur 15 Minuten.',
+      subtitle: 'Entwickelt für professionelle Händlernetzwerke. Starten Sie Ihre umfassende Bewertung und gewinnen Sie umsetzbare Erkenntnisse in 15 Minuten.',
       button: 'Bewertung beginnen',
       timeLabel: 'Dauert nur 15 Minuten',
     }
