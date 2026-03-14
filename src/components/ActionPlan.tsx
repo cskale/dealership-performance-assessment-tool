@@ -709,6 +709,15 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
               })}
             </div>
           )}
+          {actions.length === PAGE_SIZE * (actionPage + 1) && (
+            <Button
+              variant="outline"
+              onClick={() => setActionPage(p => p + 1)}
+              className="w-full mt-4"
+            >
+              Load More Actions
+            </Button>
+          )}
         </>
       )}
 
