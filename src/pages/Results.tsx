@@ -200,6 +200,25 @@ export default function Results() {
     });
   };
 
+  const assessmentId = resultsData?.assessmentId;
+  const actionCount = pdfActions.length;
+  const BANNER_KEY = `results_banner_dismissed_${assessmentId ?? 'default'}`;
+
+  // Sync banner dismissal from localStorage on data load
+  useEffect(() => {
+    if (assessmentId) {
+      const key = `results_banner_dismissed_${assessmentId}`;
+      setIsBannerDismissed(localStorage.getItem(key) === 'true');
+    }
+  }, [assessmentId]);
+
+  const dismissBanner = () => {
+    localStorage.setItem(BANNER_KEY, 'true');
+    setIsBannerDismissed(true);
+  };
+
+  const scoreInfo = getScoreLabel(overallScore);
+
   // Loading state
   if (isLoading) {
     return (
@@ -258,26 +277,6 @@ export default function Results() {
       </div>
     );
   }
-
-  const assessmentId = resultsData?.assessmentId;
-  const actionCount = pdfActions.length;
-
-  const BANNER_KEY = `results_banner_dismissed_${assessmentId ?? 'default'}`;
-  
-  // Sync banner dismissal from localStorage on data load
-  useEffect(() => {
-    if (assessmentId) {
-      const key = `results_banner_dismissed_${assessmentId}`;
-      setIsBannerDismissed(localStorage.getItem(key) === 'true');
-    }
-  }, [assessmentId]);
-
-  const dismissBanner = () => {
-    localStorage.setItem(BANNER_KEY, 'true');
-    setIsBannerDismissed(true);
-  };
-
-  const scoreInfo = getScoreLabel(overallScore);
 
   return (
     <div className="min-h-screen bg-muted">
