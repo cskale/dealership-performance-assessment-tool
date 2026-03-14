@@ -28,6 +28,7 @@ import {
   AlertCircle, ChevronRight, Zap, BarChart3, ArrowLeft, Pencil, Save, X
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { profileSchema } from '@/lib/validationSchemas';
 
 interface AssessmentRecord {
   id: string;
@@ -125,8 +126,11 @@ const Account = () => {
   };
 
   const updateProfile = async () => {
-    if (!user || !displayName.trim()) {
-      toast({ title: "Validation Error", description: "Display name cannot be empty", variant: "destructive" });
+    if (!user) return;
+    const validation = profileSchema.safeParse({ display_name: displayName, job_title: jobTitle, department, bio, timezone });
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast({ title: "Validation Error", description: firstError?.message || "Invalid input", variant: "destructive" });
       return;
     }
     setSaving(true);
@@ -134,11 +138,11 @@ const Account = () => {
       const { error } = await supabase
         .from('profiles')
         .update({ 
-          display_name: displayName.trim(),
-          job_title: jobTitle.trim(),
-          department: department.trim(),
-          bio: bio.trim(),
-          timezone: timezone
+          display_name: validation.data.display_name,
+          job_title: validation.data.job_title,
+          department: validation.data.department,
+          bio: validation.data.bio,
+          timezone: validation.data.timezone,
         })
         .eq('user_id', user.id);
       if (error) throw error;
