@@ -150,11 +150,20 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
     return m[overallMaturity.level] || maturityLevels[0];
   }, [overallMaturity, maturityLevels]);
 
+  /**
+   * Indicative benchmark based on European automotive dealer network observations.
+   * NOT statistically validated across a live dealer population.
+   * Segmented benchmarks by brand tier and market type are available in 
+   * enterprise configuration. Do not cite this value in OEM presentations 
+   * without the indicative qualifier.
+   */
+  const INDICATIVE_BENCHMARK = 75;
+
   const radarData = useMemo(() =>
     Object.entries(scores).map(([key, score]) => ({
       subject: getDepartmentName(key, language),
       score: score || 0,
-      benchmark: 75,
+      benchmark: INDICATIVE_BENCHMARK,
       fullMark: 100
     })),
     [scores, language]
