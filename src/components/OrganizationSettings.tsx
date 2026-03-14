@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Save, Upload, X, Building2, ShoppingCart, Globe, Star, Palette, HelpCircle, Pencil, Loader2, CheckCircle, MapPin, Languages, Briefcase, Network } from 'lucide-react';
+import { sanitizeFormData } from '@/lib/sanitize';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface OrgSettings {
