@@ -163,6 +163,13 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
   };
 
   const handleSave = async () => {
+    // Validate with Zod schema
+    const result = actionSchema.safeParse(formData);
+    if (!result.success) {
+      const firstError = result.error.errors[0];
+      toast.error(firstError?.message || 'Validation failed');
+      return;
+    }
     setSaving(true);
     try {
       const sanitizedData = sanitizeFormData(formData as Record<string, unknown>) as Partial<ActionRecord>;
