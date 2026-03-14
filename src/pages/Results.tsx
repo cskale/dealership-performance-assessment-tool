@@ -263,9 +263,15 @@ export default function Results() {
   const actionCount = pdfActions.length;
 
   const BANNER_KEY = `results_banner_dismissed_${assessmentId ?? 'default'}`;
-  const [isBannerDismissed, setIsBannerDismissed] = useState(
-    () => localStorage.getItem(BANNER_KEY) === 'true'
-  );
+  
+  // Sync banner dismissal from localStorage on data load
+  useEffect(() => {
+    if (assessmentId) {
+      const key = `results_banner_dismissed_${assessmentId}`;
+      setIsBannerDismissed(localStorage.getItem(key) === 'true');
+    }
+  }, [assessmentId]);
+
   const dismissBanner = () => {
     localStorage.setItem(BANNER_KEY, 'true');
     setIsBannerDismissed(true);
