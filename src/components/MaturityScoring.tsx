@@ -187,7 +187,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
           priorityColor = 'bg-green-100 text-green-800';
           priorityIcon = <CheckCircle className="h-3 w-3 text-green-600 inline mr-1" />;
         }
-        return { category: getDepartmentName(dept, language), yourScore: score, industryAvg: INDUSTRY_AVG, gap, priorityLabel, priorityColor, priorityIcon };
+        return { category: getDepartmentName(dept, language), yourScore: score, industryAvg: INDICATIVE_BENCHMARK, gap, priorityLabel, priorityColor, priorityIcon };
       })
       .sort((a, b) => a.gap - b.gap);
   }, [scores, language]);
