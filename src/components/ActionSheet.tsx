@@ -286,13 +286,13 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
   }
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
-      <SheetContent side="right" className="w-full sm:max-w-[520px] p-0 flex flex-col">
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="max-w-[900px] w-[95vw] max-h-[90vh] p-0 flex flex-col">
         {/* Header */}
-        <SheetHeader className="px-6 pt-5 pb-3 border-b flex-shrink-0">
-          <SheetTitle className="text-xl font-semibold">
+        <DialogHeader className="px-6 pt-5 pb-3 border-b flex-shrink-0">
+          <DialogTitle className="text-xl font-semibold">
             {readOnly ? 'View Action' : mode === 'create' ? 'Create Action' : 'Edit Action'}
-          </SheetTitle>
+          </DialogTitle>
           {/* Dept + priority inline */}
           {mode === 'edit' && action && (
             <div className="flex items-center gap-2 mt-1">
