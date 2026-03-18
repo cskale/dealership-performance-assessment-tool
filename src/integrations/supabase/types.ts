@@ -999,6 +999,7 @@ export type Database = {
         Returns: boolean
       }
       is_org_admin: { Args: { org_id: string }; Returns: boolean }
+      is_org_admin_or_owner: { Args: { _org_id: string }; Returns: boolean }
       is_org_member: { Args: { org_id: string }; Returns: boolean }
       is_privileged_in_dealer_org: {
         Args: { p_dealership_id: string }
