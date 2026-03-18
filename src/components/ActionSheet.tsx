@@ -403,9 +403,6 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                 </Collapsible>
               )}
 
-              {/* ZONE B — Edit Fields */}
-              <div className="space-y-5">
-                {/* Group 1 — Basic */}
                 <div className="space-y-4">
                   <div className="space-y-1.5">
                     <Label htmlFor="title" className="text-xs font-medium">Action Title</Label>
