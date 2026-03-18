@@ -998,8 +998,8 @@ export type Database = {
         Args: { p_dealership_id: string }
         Returns: boolean
       }
-      is_org_admin: { Args: { p_org: string }; Returns: boolean }
-      is_org_member: { Args: { p_org: string }; Returns: boolean }
+      is_org_admin: { Args: { org_id: string }; Returns: boolean }
+      is_org_member: { Args: { org_id: string }; Returns: boolean }
       is_privileged_in_dealer_org: {
         Args: { p_dealership_id: string }
         Returns: boolean
@@ -1014,7 +1014,7 @@ export type Database = {
           p_status: string
           p_target_completion_date: string
           p_title: string
-          p_updated_at?: string
+          p_updated_at: string
         }
         Returns: Json
       }
