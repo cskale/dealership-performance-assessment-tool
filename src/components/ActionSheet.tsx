@@ -322,7 +322,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                 activeTab === 'history' ? "border-primary text-primary font-medium" : "border-transparent text-muted-foreground"
               )}>History</button>
           </div>
-        </SheetHeader>
+        </DialogHeader>
 
         {/* Body */}
         <ScrollArea className="flex-1">
