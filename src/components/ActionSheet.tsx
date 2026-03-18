@@ -323,7 +323,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
         </DialogHeader>
 
         {/* Body */}
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 160px)' }}>
           {activeTab === 'details' ? (
             <div className="px-6 py-4">
               <div className={cn("gap-6", mode === 'edit' ? "grid grid-cols-1 lg:grid-cols-2" : "space-y-6")}>
