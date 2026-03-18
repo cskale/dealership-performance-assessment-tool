@@ -327,9 +327,13 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
         {/* Body */}
         <ScrollArea className="flex-1">
           {activeTab === 'details' ? (
-            <div className="px-6 py-4 space-y-6">
-              {/* ZONE A — Context Intelligence */}
-              {mode === 'edit' && (
+            <div className="px-6 py-4">
+              <div className={cn("gap-6", mode === 'edit' ? "grid grid-cols-1 lg:grid-cols-2" : "space-y-6")}>
+                {/* LEFT COLUMN — Edit Fields */}
+                <div className="space-y-6 order-2 lg:order-1">
+              {/* ZONE B — Edit Fields moved here */}
+              <div className="space-y-5">
+                {/* Group 1 — Basic */}
                 <Collapsible open={contextExpanded} onOpenChange={setContextExpanded}>
                   <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-5">
                     <CollapsibleTrigger className="flex items-center justify-between w-full">
