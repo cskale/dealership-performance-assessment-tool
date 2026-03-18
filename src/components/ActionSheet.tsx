@@ -287,7 +287,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[900px] w-[95vw] max-h-[90vh] p-0 flex flex-col">
+      <DialogContent className="max-w-[1200px] w-[80vw] max-h-[90vh] p-0 flex flex-col overflow-hidden">
         {/* Header */}
         <DialogHeader className="px-6 pt-5 pb-3 border-b flex-shrink-0">
           <DialogTitle className="text-xl font-semibold">
@@ -323,7 +323,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
         </DialogHeader>
 
         {/* Body */}
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 160px)' }}>
           {activeTab === 'details' ? (
             <div className="px-6 py-4">
               <div className={cn("gap-6", mode === 'edit' ? "grid grid-cols-1 lg:grid-cols-2" : "space-y-6")}>
