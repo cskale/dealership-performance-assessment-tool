@@ -29,6 +29,137 @@ export type Database = {
         }
         Relationships: []
       }
+      access_assignments: {
+        Row: {
+          created_at: string
+          granted_by: string | null
+          id: string
+          is_active: boolean
+          organization_id: string | null
+          outlet_id: string | null
+          profile_id: string
+          project_id: string | null
+          role: Database["public"]["Enums"]["access_role"]
+          scope_type: Database["public"]["Enums"]["scope_type"]
+          updated_at: string
+          valid_from: string | null
+          valid_to: string | null
+        }
+        Insert: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean
+          organization_id?: string | null
+          outlet_id?: string | null
+          profile_id: string
+          project_id?: string | null
+          role: Database["public"]["Enums"]["access_role"]
+          scope_type: Database["public"]["Enums"]["scope_type"]
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Update: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean
+          organization_id?: string | null
+          outlet_id?: string | null
+          profile_id?: string
+          project_id?: string | null
+          role?: Database["public"]["Enums"]["access_role"]
+          scope_type?: Database["public"]["Enums"]["scope_type"]
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "access_assignments_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "dealerships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "access_assignments_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "access_assignments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      access_audit_log: {
+        Row: {
+          actor_profile_id: string | null
+          after_state: Json | null
+          before_state: Json | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          event_type: string
+          id: string
+          reason: string | null
+          target_profile_id: string | null
+        }
+        Insert: {
+          actor_profile_id?: string | null
+          after_state?: Json | null
+          before_state?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          event_type: string
+          id?: string
+          reason?: string | null
+          target_profile_id?: string | null
+        }
+        Update: {
+          actor_profile_id?: string | null
+          after_state?: Json | null
+          before_state?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          event_type?: string
+          id?: string
+          reason?: string | null
+          target_profile_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_audit_log_actor_profile_id_fkey"
+            columns: ["actor_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "access_audit_log_target_profile_id_fkey"
+            columns: ["target_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       action_audit_log: {
         Row: {
           action_id: string
@@ -674,6 +805,9 @@ export type Database = {
             | null
           oem_brands: string[] | null
           operational_focus: string[] | null
+          organization_type:
+            | Database["public"]["Enums"]["organization_type"]
+            | null
           positioning: Database["public"]["Enums"]["enum_positioning"] | null
           product_segments: string[] | null
           settings: Json | null
@@ -703,6 +837,9 @@ export type Database = {
             | null
           oem_brands?: string[] | null
           operational_focus?: string[] | null
+          organization_type?:
+            | Database["public"]["Enums"]["organization_type"]
+            | null
           positioning?: Database["public"]["Enums"]["enum_positioning"] | null
           product_segments?: string[] | null
           settings?: Json | null
@@ -732,6 +869,9 @@ export type Database = {
             | null
           oem_brands?: string[] | null
           operational_focus?: string[] | null
+          organization_type?:
+            | Database["public"]["Enums"]["organization_type"]
+            | null
           positioning?: Database["public"]["Enums"]["enum_positioning"] | null
           product_segments?: string[] | null
           settings?: Json | null
@@ -744,6 +884,7 @@ export type Database = {
         Row: {
           active_dealership_id: string | null
           active_organization_id: string | null
+          actor_type: Database["public"]["Enums"]["actor_type"] | null
           avatar_url: string | null
           bio: string | null
           consent_analytics: boolean | null
@@ -767,6 +908,7 @@ export type Database = {
         Insert: {
           active_dealership_id?: string | null
           active_organization_id?: string | null
+          actor_type?: Database["public"]["Enums"]["actor_type"] | null
           avatar_url?: string | null
           bio?: string | null
           consent_analytics?: boolean | null
@@ -790,6 +932,7 @@ export type Database = {
         Update: {
           active_dealership_id?: string | null
           active_organization_id?: string | null
+          actor_type?: Database["public"]["Enums"]["actor_type"] | null
           avatar_url?: string | null
           bio?: string | null
           consent_analytics?: boolean | null
@@ -821,6 +964,89 @@ export type Database = {
           {
             foreignKeyName: "profiles_active_organization_id_fkey"
             columns: ["active_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_outlets: {
+        Row: {
+          created_at: string
+          outlet_id: string
+          project_id: string
+        }
+        Insert: {
+          created_at?: string
+          outlet_id: string
+          project_id: string
+        }
+        Update: {
+          created_at?: string
+          outlet_id?: string
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_outlets_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "dealerships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_outlets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          name: string
+          project_type: string
+          sponsor_organization_id: string | null
+          start_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          project_type?: string
+          sponsor_organization_id?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          project_type?: string
+          sponsor_organization_id?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_sponsor_organization_id_fkey"
+            columns: ["sponsor_organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
@@ -975,6 +1201,7 @@ export type Database = {
     }
     Functions: {
       accept_dealership_invite: { Args: { p_token: string }; Returns: Json }
+      can_access_project: { Args: { _project_id: string }; Returns: boolean }
       can_read_dealership: {
         Args: { p_dealership_id: string }
         Returns: boolean
@@ -982,6 +1209,20 @@ export type Database = {
       delete_user_account: { Args: { _user_id: string }; Returns: boolean }
       export_user_data: { Args: { _user_id: string }; Returns: Json }
       get_user_dealer_id: { Args: { _user_id: string }; Returns: string }
+      has_org_access: {
+        Args: {
+          _min_role?: Database["public"]["Enums"]["access_role"]
+          _org_id: string
+        }
+        Returns: boolean
+      }
+      has_outlet_access: {
+        Args: {
+          _min_role?: Database["public"]["Enums"]["access_role"]
+          _outlet_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1005,22 +1246,39 @@ export type Database = {
         Args: { p_dealership_id: string }
         Returns: boolean
       }
-      update_action_if_unchanged: {
-        Args: {
-          p_description: string
-          p_expected_updated_at: string
-          p_id: string
-          p_priority: string
-          p_responsible_person: string
-          p_status: string
-          p_target_completion_date: string
-          p_title: string
-          p_updated_at: string
-        }
-        Returns: Json
-      }
+      update_action_if_unchanged:
+        | {
+            Args: {
+              p_description: string
+              p_expected_updated_at: string
+              p_id: string
+              p_priority: string
+              p_responsible_person: string
+              p_status: string
+              p_target_completion_date: string
+              p_title: string
+              p_updated_at: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_description: string
+              p_expected_updated_at: string
+              p_id: string
+              p_priority: string
+              p_responsible_person: string
+              p_status: string
+              p_target_completion_date: string
+              p_title: string
+              p_updated_at: string
+            }
+            Returns: Json
+          }
     }
     Enums: {
+      access_role: "owner" | "admin" | "member" | "viewer"
+      actor_type: "dealer" | "coach" | "oem" | "internal"
       app_role: "coach" | "dealer"
       enum_brand_mode: "single_brand" | "multi_brand"
       enum_business_model: "sales_only" | "service_only" | "2s" | "3s" | "4s"
@@ -1029,6 +1287,12 @@ export type Database = {
       enum_oem_authorization: "authorized" | "independent"
       enum_positioning: "mass_market" | "premium" | "luxury" | "super_luxury"
       membership_role: "owner" | "admin" | "manager" | "analyst" | "viewer"
+      organization_type:
+        | "independent_dealer"
+        | "dealer_group"
+        | "oem"
+        | "internal"
+      scope_type: "organization" | "project" | "outlet"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1156,6 +1420,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      access_role: ["owner", "admin", "member", "viewer"],
+      actor_type: ["dealer", "coach", "oem", "internal"],
       app_role: ["coach", "dealer"],
       enum_brand_mode: ["single_brand", "multi_brand"],
       enum_business_model: ["sales_only", "service_only", "2s", "3s", "4s"],
@@ -1164,6 +1430,13 @@ export const Constants = {
       enum_oem_authorization: ["authorized", "independent"],
       enum_positioning: ["mass_market", "premium", "luxury", "super_luxury"],
       membership_role: ["owner", "admin", "manager", "analyst", "viewer"],
+      organization_type: [
+        "independent_dealer",
+        "dealer_group",
+        "oem",
+        "internal",
+      ],
+      scope_type: ["organization", "project", "outlet"],
     },
   },
 } as const
