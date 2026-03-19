@@ -34,7 +34,7 @@ interface DealerStats {
 
 export default function CoachActions() {
   const { user } = useAuth();
-  const { role, loading: roleLoading } = useUserRole();
+  const { uxRole: role, loading: roleLoading } = useActiveRole();
   const { toast } = useToast();
   const [actions, setActions] = useState<Action[]>([]);
   const [filteredActions, setFilteredActions] = useState<Action[]>([]);

@@ -1,3 +1,10 @@
+/**
+ * @deprecated
+ * This hook reads from user_roles (legacy table) and has been superseded.
+ * Use useActiveRole from '@/hooks/useActiveRole' instead.
+ * This file is retained only to avoid breaking test files.
+ * It will be removed in a future cleanup commit.
+ */
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';

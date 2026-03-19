@@ -27,7 +27,7 @@ interface Action {
 export default function DealerActions() {
   const { dealerId } = useParams<{ dealerId: string }>();
   const { user } = useAuth();
-  const { role, dealerId: userDealerId, loading: roleLoading } = useUserRole();
+  const { uxRole: role, dealerId: userDealerId, loading: roleLoading } = useActiveRole();
   const { toast } = useToast();
   const [actions, setActions] = useState<Action[]>([]);
   const [loading, setLoading] = useState(true);
