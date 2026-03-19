@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useActiveRole } from '@/hooks/useActiveRole';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -27,7 +27,7 @@ interface Action {
 export default function DealerActions() {
   const { dealerId } = useParams<{ dealerId: string }>();
   const { user } = useAuth();
-  const { role, dealerId: userDealerId, loading: roleLoading } = useUserRole();
+  const { uxRole: role, dealerId: userDealerId, loading: roleLoading } = useActiveRole();
   const { toast } = useToast();
   const [actions, setActions] = useState<Action[]>([]);
   const [loading, setLoading] = useState(true);
