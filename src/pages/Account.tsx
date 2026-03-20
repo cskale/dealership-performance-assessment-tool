@@ -712,9 +712,9 @@ const Account = () => {
           )}
 
           {/* ── ORGANIZATION ── */}
-          {activeTab === 'organization' && (
+          {activeTab === 'organization' && currentOrganization && (
             <div style={{ background: 'white', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 20 }}>
-              <OrganizationSettings />
+              <OrganizationSettings organizationId={currentOrganization.id} isAdmin={isOrgAdmin} />
             </div>
           )}
 
