@@ -558,7 +558,7 @@ export type Database = {
           id?: string
           invited_by: string
           invited_email: string
-          membership_role?: Database["public"]["Enums"]["membership_role"]
+          membership_role: Database["public"]["Enums"]["membership_role"]
           organization_id: string
           status?: string
           token?: string
@@ -1174,6 +1174,7 @@ export type Database = {
         Args: { p_dealership_id: string }
         Returns: boolean
       }
+      cleanup_expired_sessions: { Args: never; Returns: undefined }
       delete_user_account: { Args: { _user_id: string }; Returns: boolean }
       export_user_data: { Args: { _user_id: string }; Returns: Json }
       has_org_access: {
@@ -1245,7 +1246,7 @@ export type Database = {
       enum_network_structure: "single_outlet" | "multi_outlet_group"
       enum_oem_authorization: "authorized" | "independent"
       enum_positioning: "mass_market" | "premium" | "luxury" | "super_luxury"
-      membership_role: "owner" | "admin" | "manager" | "analyst" | "viewer"
+      membership_role: "owner" | "admin" | "member" | "viewer"
       organization_type:
         | "independent_dealer"
         | "dealer_group"
@@ -1387,7 +1388,7 @@ export const Constants = {
       enum_network_structure: ["single_outlet", "multi_outlet_group"],
       enum_oem_authorization: ["authorized", "independent"],
       enum_positioning: ["mass_market", "premium", "luxury", "super_luxury"],
-      membership_role: ["owner", "admin", "manager", "analyst", "viewer"],
+      membership_role: ["owner", "admin", "member", "viewer"],
       organization_type: [
         "independent_dealer",
         "dealer_group",

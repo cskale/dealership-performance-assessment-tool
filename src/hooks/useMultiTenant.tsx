@@ -16,7 +16,7 @@ interface Membership {
   id: string;
   user_id: string;
   organization_id: string;
-  role: 'owner' | 'admin' | 'manager' | 'analyst' | 'viewer';
+  role: 'owner' | 'admin' | 'member' | 'viewer';
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -141,9 +141,8 @@ export const MultiTenantProvider = ({ children }: { children: React.ReactNode })
    * Role hierarchy:
    * - owner: Full access including organization settings and deletion
    * - admin: Full access except organization-level destructive actions
-   * - manager: Create, read, update on most resources
-   * - analyst: Read-only access
-   * - viewer: Read-only access (limited)
+   * - member: Create, read, update on most resources
+   * - viewer: Read-only access
    */
   const canPerformAction = (action: 'create' | 'read' | 'update' | 'delete', resource?: string): boolean => {
     // SECURITY: Require both organization context and authenticated user
@@ -167,17 +166,17 @@ export const MultiTenantProvider = ({ children }: { children: React.ReactNode })
     switch (action) {
       case 'read':
         // All active members can read
-        return ['owner', 'admin', 'manager', 'analyst', 'viewer'].includes(role);
+        return ['owner', 'admin', 'member', 'viewer'].includes(role);
       
       case 'create':
         // Only privileged roles can create
-        return ['owner', 'admin', 'manager'].includes(role);
+        return ['owner', 'admin', 'member'].includes(role);
       
       case 'update':
         // Organization updates restricted to owners
         if (resource === 'organization') return role === 'owner';
         // General updates for privileged roles
-        return ['owner', 'admin', 'manager'].includes(role);
+        return ['owner', 'admin', 'member'].includes(role);
       
       case 'delete':
         // Destructive actions require higher privileges
