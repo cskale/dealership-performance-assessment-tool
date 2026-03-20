@@ -16,7 +16,7 @@ interface Membership {
   id: string;
   user_id: string;
   organization_id: string;
-  role: 'owner' | 'admin' | 'manager' | 'analyst' | 'viewer';
+  role: 'owner' | 'admin' | 'member' | 'viewer';
   is_active: boolean;
   created_at: string;
   updated_at: string;
