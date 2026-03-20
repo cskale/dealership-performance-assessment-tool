@@ -1,17 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useSessionManager } from '@/hooks/useSessionManager';
@@ -22,10 +15,9 @@ import { useToast } from '@/hooks/use-toast';
 import { OrganizationSettings } from '@/components/OrganizationSettings';
 import { InviteTeamMembers } from '@/components/InviteTeamMembers';
 import { 
-  User, Shield, Download, Trash2, Monitor, Smartphone, Globe, Calendar, 
-  Mail, CheckCircle, XCircle, Building2, Users, Activity, Link2, Key,
-  MapPin, Clock, TrendingUp, FileText, Settings, Lock, Eye, EyeOff,
-  AlertCircle, ChevronRight, Zap, BarChart3, ArrowLeft, Pencil, Save, X
+  User, Shield, Download, Trash2, Monitor, Smartphone, Globe, 
+  Mail, CheckCircle, Building2, Users, Activity, Link2, Key,
+  ChevronRight, ArrowLeft, Pencil, Save, X
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { profileSchema } from '@/lib/validationSchemas';
@@ -39,16 +31,16 @@ interface AssessmentRecord {
 }
 
 const ROLES_MATRIX = [
-  { permission: 'View assessments & results', owner: true, admin: true, coach: true, user: true, viewer: true },
-  { permission: 'Create assessments', owner: true, admin: true, coach: true, user: true, viewer: false },
-  { permission: 'Edit action plans', owner: true, admin: true, coach: true, user: false, viewer: false },
-  { permission: 'Export PDF reports', owner: true, admin: true, coach: true, user: true, viewer: true },
-  { permission: 'Manage organization', owner: true, admin: true, coach: false, user: false, viewer: false },
-  { permission: 'Edit organization settings', owner: true, admin: true, coach: false, user: false, viewer: false },
-  { permission: 'Invite members', owner: true, admin: true, coach: false, user: false, viewer: false },
-  { permission: 'Assign coaches', owner: true, admin: true, coach: false, user: false, viewer: false },
-  { permission: 'Delete records', owner: true, admin: true, coach: false, user: false, viewer: false },
-  { permission: 'Delete organization', owner: true, admin: false, coach: false, user: false, viewer: false },
+  { permission: 'View assessments & results', owner: true,  admin: true,  member: true,  viewer: true  },
+  { permission: 'Create assessments',         owner: true,  admin: true,  member: true,  viewer: false },
+  { permission: 'Edit action plans',          owner: true,  admin: true,  member: true,  viewer: false },
+  { permission: 'Export PDF reports',         owner: true,  admin: true,  member: true,  viewer: true  },
+  { permission: 'Manage organization',        owner: true,  admin: true,  member: false, viewer: false },
+  { permission: 'Edit organization settings', owner: true,  admin: true,  member: false, viewer: false },
+  { permission: 'Invite members',             owner: true,  admin: true,  member: true,  viewer: false },
+  { permission: 'Assign coaches',             owner: true,  admin: true,  member: false, viewer: false },
+  { permission: 'Delete records',             owner: true,  admin: true,  member: false, viewer: false },
+  { permission: 'Delete organization',        owner: true,  admin: false, member: false, viewer: false },
 ];
 
 const Account = () => {
@@ -76,7 +68,15 @@ const Account = () => {
   const [orgSaving, setOrgSaving] = useState(false);
   const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
   const [assessmentsLoading, setAssessmentsLoading] = useState(true);
-  // Activity shows completed only (drafts accessible via Dashboard)
+
+  // New state
+  const [isEditingPersonal, setIsEditingPersonal] = useState(false);
+  const [isEditingPreferences, setIsEditingPreferences] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordStrength, setPasswordStrength] = useState(0);
 
   const currentMembership = userMemberships.find(
     m => m.organization_id === currentOrganization?.id
@@ -223,6 +223,36 @@ const Account = () => {
     return Math.round((completed / total) * 100);
   };
 
+  const calculatePasswordStrength = (pw: string): number => {
+    let score = 0;
+    if (pw.length >= 8) score++;
+    if (pw.length >= 12) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    return score;
+  };
+
+  const handlePasswordUpdate = async () => {
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Passwords don't match", description: "New password and confirmation must match", variant: "destructive" });
+      return;
+    }
+    if (newPassword.length < 8) {
+      toast({ title: "Password too short", description: "Minimum 8 characters required", variant: "destructive" });
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast({ title: "Password updated", description: "Your password has been changed successfully" });
+      setIsChangingPassword(false);
+      setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
+    } catch (error: any) {
+      toast({ title: "Update failed", description: error.message, variant: "destructive" });
+    }
+  };
+
   useEffect(() => {
     if (user) {
       fetchProfile();
@@ -257,657 +287,594 @@ const Account = () => {
   const hasActivityData = completedAssessments.length > 0;
   const latestCompleted = completedAssessments[0];
 
-  const canManageTeam = currentMembership && ['owner', 'admin', 'manager'].includes(currentMembership.role);
-
-  const tabs = [
-    { value: 'profile', label: 'Profile', icon: User },
-    { value: 'organization', label: 'Organization', icon: Building2 },
-    ...(canManageTeam ? [{ value: 'team', label: 'Team', icon: Users }] : []),
-    ...(hasActivityData ? [{ value: 'activity', label: 'Activity', icon: Activity }] : []),
-    { value: 'security', label: 'Security', icon: Shield },
-    { value: 'privacy', label: 'Privacy', icon: Globe },
-    { value: 'integrations', label: 'Integrations', icon: Link2 },
-  ];
+  const canManageTeam = currentMembership && ['owner', 'admin', 'member'].includes(currentMembership.role);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-card border-b border-border">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 py-6">
-          <div className="flex items-center gap-3 mb-6">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="h-4 w-4" />
-              Back to Dashboard
-            </Button>
-          </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <Avatar className="h-16 w-16 border-2 border-primary/20">
-              <AvatarImage src={profile?.avatar_url} />
-              <AvatarFallback className="bg-primary text-primary-foreground text-xl font-medium">
-                {getInitials(displayName || user.email || '')}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-semibold text-foreground truncate">{displayName || user.email}</h1>
-              <div className="flex flex-wrap items-center gap-3 mt-1 text-sm text-muted-foreground">
-                {jobTitle && <span>{jobTitle}</span>}
-                {jobTitle && currentOrganization && <span>•</span>}
-                {currentOrganization && (
-                  <span className="flex items-center gap-1">
-                    <Building2 className="h-3.5 w-3.5" />
-                    {currentOrganization.name}
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="text-right hidden sm:block">
-                <p className="text-xs text-muted-foreground">Profile completion</p>
-                <p className="text-lg font-semibold text-primary">{calculateProfileCompletion()}%</p>
-              </div>
-              <div className="w-16">
-                <Progress value={calculateProfileCompletion()} className="h-2" />
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="min-h-screen" style={{ background: 'var(--color-background-secondary, #F5F5F5)' }}>
+      {/* Back button */}
+      <div style={{ background: 'white', borderBottom: '0.5px solid var(--color-border-tertiary)', padding: '12px 24px' }}>
+        <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Dashboard
+        </Button>
       </div>
 
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        {/* P0-3: Profile Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">Completed</p>
-              <p className="text-2xl font-bold text-foreground">{completedAssessments.length}</p>
-            </CardContent>
-          </Card>
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">Latest Score</p>
-              {latestCompleted ? (
-                <p className="text-2xl font-bold text-primary">{Math.round(latestCompleted.overall_score || 0)}/100</p>
-              ) : (
-                <p className="text-sm text-muted-foreground mt-1">No completed yet</p>
-              )}
-            </CardContent>
-          </Card>
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">Latest Date</p>
-              {latestCompleted?.completed_at ? (
-                <p className="text-sm font-semibold text-foreground mt-1">{format(new Date(latestCompleted.completed_at), 'MMM d, yyyy')}</p>
-              ) : (
-                <p className="text-sm text-muted-foreground mt-1">—</p>
-              )}
-            </CardContent>
-          </Card>
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">Organizations</p>
-              <p className="text-2xl font-bold text-foreground">{organizations.length}</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <div className="bg-card rounded-lg border border-border p-1">
-            <TabsList className="grid w-full bg-transparent gap-1" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
-              {tabs.map(tab => (
-                <TabsTrigger 
-                  key={tab.value}
-                  value={tab.value} 
-                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm"
-                >
-                  <tab.icon className="h-4 w-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
+      {/* Two-column layout */}
+      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', minHeight: 'calc(100vh - 49px)' }}>
+        {/* LEFT SIDEBAR */}
+        <div style={{
+          background: 'white',
+          borderRight: '0.5px solid var(--color-border-tertiary)',
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100%'
+        }}>
+          {/* User identity block */}
+          <div style={{ padding: '16px', borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: '50%',
+                background: '#185FA5', color: 'white',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 14, fontWeight: 500, flexShrink: 0
+              }}>
+                {getInitials(displayName || user.email || '')}
+              </div>
+              <div style={{ overflow: 'hidden' }}>
+                <div style={{ fontSize: 14, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {displayName || user.email}
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {currentMembership?.role} · {currentOrganization?.name}
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* ===================== PROFILE TAB ===================== */}
-          <TabsContent value="profile" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Personal Information</CardTitle>
-                <CardDescription>Update your personal details and preferences</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="display-name">Display Name *</Label>
-                    <Input id="display-name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="John Doe" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
-                    <div className="flex items-center gap-2">
-                      <Input id="email" value={user.email || ''} disabled className="flex-1" />
-                      {user.email_confirmed_at ? (
-                        <Badge variant="secondary" className="bg-success/10 text-success border-success/20 flex items-center gap-1">
-                          <CheckCircle className="h-3 w-3" /> Verified
-                        </Badge>
-                      ) : (
-                        <Badge variant="destructive" className="flex items-center gap-1">
-                          <XCircle className="h-3 w-3" /> Unverified
-                        </Badge>
-                      )}
+          {/* Nav */}
+          <nav style={{ padding: '8px 0', flex: 1 }}>
+            {/* GROUP: Account */}
+            <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', padding: '8px 16px 4px' }}>Account</div>
+            {[
+              { value: 'profile',      icon: User,      label: 'Edit profile' },
+              { value: 'organization', icon: Building2, label: 'Organization' },
+              ...(canManageTeam ? [{ value: 'team', icon: Users, label: 'Team' }] : []),
+              ...(hasActivityData ? [{ value: 'activity', icon: Activity, label: 'Activity' }] : []),
+            ].map(item => (
+              <button key={item.value} onClick={() => setActiveTab(item.value)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '8px 16px', width: '100%', border: 'none',
+                  background: activeTab === item.value ? '#E6F1FB' : 'transparent',
+                  borderLeft: `2px solid ${activeTab === item.value ? '#185FA5' : 'transparent'}`,
+                  color: activeTab === item.value ? '#185FA5' : 'var(--color-text-secondary)',
+                  fontWeight: activeTab === item.value ? 500 : 400,
+                  fontSize: 13, cursor: 'pointer', textAlign: 'left',
+                  transition: 'all 150ms'
+                }}
+              >
+                <item.icon style={{ width: 16, height: 16, flexShrink: 0 }} />
+                {item.label}
+              </button>
+            ))}
+
+            {/* GROUP: Secure */}
+            <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', padding: '16px 16px 4px' }}>Secure</div>
+            {[
+              { value: 'security',     icon: Shield, label: 'Password & security' },
+              { value: 'privacy',      icon: Globe,  label: 'Privacy' },
+            ].map(item => (
+              <button key={item.value} onClick={() => setActiveTab(item.value)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '8px 16px', width: '100%', border: 'none',
+                  background: activeTab === item.value ? '#E6F1FB' : 'transparent',
+                  borderLeft: `2px solid ${activeTab === item.value ? '#185FA5' : 'transparent'}`,
+                  color: activeTab === item.value ? '#185FA5' : 'var(--color-text-secondary)',
+                  fontWeight: activeTab === item.value ? 500 : 400,
+                  fontSize: 13, cursor: 'pointer', textAlign: 'left',
+                  transition: 'all 150ms'
+                }}
+              >
+                <item.icon style={{ width: 16, height: 16, flexShrink: 0 }} />
+                {item.label}
+              </button>
+            ))}
+
+            {/* GROUP: Connect */}
+            <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', padding: '16px 16px 4px' }}>Connect</div>
+            <button onClick={() => setActiveTab('integrations')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '8px 16px', width: '100%', border: 'none',
+                background: activeTab === 'integrations' ? '#E6F1FB' : 'transparent',
+                borderLeft: `2px solid ${activeTab === 'integrations' ? '#185FA5' : 'transparent'}`,
+                color: activeTab === 'integrations' ? '#185FA5' : 'var(--color-text-secondary)',
+                fontWeight: activeTab === 'integrations' ? 500 : 400,
+                fontSize: 13, cursor: 'pointer', textAlign: 'left', transition: 'all 150ms'
+              }}
+            >
+              <Link2 style={{ width: 16, height: 16, flexShrink: 0 }} /> Integrations
+            </button>
+          </nav>
+
+          {/* Danger zone — bottom of sidebar */}
+          <div style={{ borderTop: '0.5px solid var(--color-border-tertiary)', padding: '8px 0' }}>
+            <button onClick={() => setActiveTab('privacy')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '8px 16px', width: '100%', border: 'none',
+                background: 'transparent', color: '#A32D2D',
+                fontSize: 13, cursor: 'pointer', textAlign: 'left', transition: 'all 150ms'
+              }}
+            >
+              <Trash2 style={{ width: 16, height: 16, flexShrink: 0 }} /> Delete account
+            </button>
+          </div>
+        </div>
+
+        {/* MAIN CONTENT */}
+        <div style={{ padding: 24, overflowY: 'auto' }}>
+          {/* STAT ROW — always visible */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
+            {[
+              { label: 'Assessments',    value: String(assessments.filter(a => a.status === 'completed').length), color: undefined },
+              { label: 'Latest score',   value: latestCompleted?.overall_score != null ? Math.round(latestCompleted.overall_score) + '/100' : '—', color: '#185FA5' },
+              { label: 'Last assessment',value: latestCompleted?.completed_at ? format(new Date(latestCompleted.completed_at), 'MMM d, yyyy') : '—', color: undefined },
+              { label: 'Organizations',  value: String(organizations.length), color: undefined },
+            ].map(card => (
+              <div key={card.label} style={{ background: 'white', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 10, padding: '12px 14px' }}>
+                <div style={{ fontSize: 20, fontWeight: 500, color: card.color || 'var(--color-text-primary)' }}>{card.value}</div>
+                <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 2 }}>{card.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* ── PROFILE ── */}
+          {activeTab === 'profile' && (
+            <div>
+              {/* Hero + Completion row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 16, alignItems: 'start' }}>
+                {/* Hero card */}
+                <div style={{ background: 'white', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 20 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div style={{ position: 'relative', flexShrink: 0 }}>
+                      <div style={{
+                        width: 72, height: 72, borderRadius: '50%',
+                        background: '#185FA5', color: 'white',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 22, fontWeight: 500
+                      }}>
+                        {getInitials(displayName || user.email || '')}
+                      </div>
+                      <div style={{
+                        position: 'absolute', bottom: 0, right: 0,
+                        width: 22, height: 22, borderRadius: '50%',
+                        background: '#185FA5', border: '2px solid white',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
+                      }}>
+                        <Pencil style={{ width: 11, height: 11, color: 'white' }} />
+                      </div>
+                    </div>
+                    <div style={{ flex: 1, overflow: 'hidden' }}>
+                      <div style={{ fontSize: 18, fontWeight: 500 }}>{displayName || user.email}</div>
+                      <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 2 }}>
+                        {currentMembership?.role} · {user.email}
+                      </div>
+                      <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                        <span style={{ background: '#E6F1FB', color: '#0C447C', fontSize: 12, padding: '2px 10px', borderRadius: 20 }}>
+                          {currentMembership?.role || 'member'}
+                        </span>
+                        {user.email_confirmed_at && (
+                          <span style={{ background: '#EAF3DE', color: '#27500A', fontSize: 12, padding: '2px 10px', borderRadius: 20 }}>
+                            ✓ Verified
+                          </span>
+                        )}
+                        {currentOrganization && (
+                          <span style={{ background: 'var(--color-background-secondary)', color: 'var(--color-text-secondary)', fontSize: 12, padding: '2px 10px', borderRadius: 20 }}>
+                            {currentOrganization.name}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="job-title">Job Title</Label>
-                    <Input id="job-title" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder="Sales Manager" />
+                {/* Completion card */}
+                <div style={{ background: 'white', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 16 }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 12 }}>Profile completion</div>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+                    <svg width="80" height="80" viewBox="0 0 80 80">
+                      <circle cx="40" cy="40" r="32" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="8" />
+                      <circle cx="40" cy="40" r="32" fill="none" stroke="#185FA5" strokeWidth="8"
+                        strokeDasharray="201"
+                        strokeDashoffset={201 - (201 * calculateProfileCompletion()) / 100}
+                        strokeLinecap="round"
+                        transform="rotate(-90 40 40)" />
+                      <text x="40" y="45" textAnchor="middle" fontSize="14" fontWeight="500" fill="var(--color-text-primary)">
+                        {calculateProfileCompletion()}%
+                      </text>
+                    </svg>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="department">Department</Label>
-                    <Input id="department" value={department} onChange={(e) => setDepartment(e.target.value)} placeholder="Sales" />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell us about yourself..." rows={3} />
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="timezone">Timezone</Label>
-                    <Input id="timezone" value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="UTC" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Account Created</Label>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
-                      <Calendar className="h-4 w-4" />
-                      {user.created_at ? format(new Date(user.created_at), 'PPP') : 'Unknown'}
+                  {[
+                    { label: 'Display name',  done: !!displayName },
+                    { label: 'Email',         done: !!user?.email },
+                    { label: 'Job title',     done: !!jobTitle },
+                    { label: 'Department',    done: !!department },
+                    { label: 'Organization',  done: !!currentOrganization },
+                    { label: 'Bio',           done: !!bio },
+                  ].map(item => (
+                    <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: 4 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: item.done ? '#639922' : '#BA7517' }} />
+                      <span style={{ color: 'var(--color-text-secondary)' }}>{item.label}</span>
                     </div>
-                  </div>
+                  ))}
                 </div>
+              </div>
 
-                <div className="flex justify-end">
-                  <Button onClick={updateProfile} disabled={saving || !displayName.trim()}>
-                    {saving ? "Saving..." : "Save Changes"}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* ===================== ORGANIZATION TAB ===================== */}
-          <TabsContent value="organization" className="space-y-6">
-            {/* Org Name + Basic Info */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Organization Details</CardTitle>
-                    <CardDescription>
-                      {isOrgAdmin ? 'Manage your organization settings' : 'View your organization membership'}
-                    </CardDescription>
-                  </div>
-                  {isOrgAdmin && currentOrganization && !orgEditing && (
-                    <Button variant="outline" size="sm" onClick={() => { setOrgName(currentOrganization.name); setOrgEditing(true); }}>
-                      <Pencil className="h-4 w-4 mr-2" /> Edit Name
+              {/* Personal information card — inline edit */}
+              <div style={{ background: 'white', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 20, marginBottom: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <div style={{ fontSize: 14, fontWeight: 500 }}>Personal information</div>
+                  {!isEditingPersonal ? (
+                    <Button variant="outline" size="sm" onClick={() => setIsEditingPersonal(true)} style={{ fontSize: 12 }}>
+                      <Pencil className="h-3 w-3 mr-1" /> Edit
                     </Button>
+                  ) : (
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <Button size="sm" onClick={() => { updateProfile(); setIsEditingPersonal(false); }} disabled={saving} style={{ fontSize: 12, background: '#185FA5' }}>
+                        <Save className="h-3 w-3 mr-1" /> {saving ? 'Saving...' : 'Save'}
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => { fetchProfile(); setIsEditingPersonal(false); }} style={{ fontSize: 12 }}>
+                        <X className="h-3 w-3 mr-1" /> Cancel
+                      </Button>
+                    </div>
                   )}
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-start gap-4 p-4 rounded-lg border border-border bg-muted/30">
-                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Building2 className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    {orgEditing ? (
-                      <div className="space-y-3">
-                        <div className="space-y-1">
-                          <Label htmlFor="org-name">Organization Name</Label>
-                          <Input id="org-name" value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder="Organization name" />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button size="sm" onClick={saveOrgName} disabled={orgSaving || !orgName.trim()}>
-                            <Save className="h-4 w-4 mr-1" /> {orgSaving ? 'Saving...' : 'Save'}
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={() => { setOrgEditing(false); setOrgName(currentOrganization?.name || ''); }}>
-                            <X className="h-4 w-4 mr-1" /> Cancel
-                          </Button>
-                        </div>
-                      </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  {[
+                    { label: 'DISPLAY NAME', value: displayName, onChange: setDisplayName, readOnly: false },
+                    { label: 'EMAIL ADDRESS', value: user.email || '', onChange: () => {}, readOnly: true },
+                    { label: 'JOB TITLE', value: jobTitle, onChange: setJobTitle, readOnly: false },
+                    { label: 'DEPARTMENT', value: department, onChange: setDepartment, readOnly: false },
+                  ].map(field => (
+                    <div key={field.label}>
+                      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', marginBottom: 4 }}>{field.label}</div>
+                      {isEditingPersonal && !field.readOnly ? (
+                        <Input value={field.value} onChange={e => field.onChange(e.target.value)} style={{ fontSize: 14 }} />
+                      ) : (
+                        <div style={{ fontSize: 14, color: field.readOnly ? 'var(--color-text-secondary)' : 'var(--color-text-primary)' }}>{field.value || '—'}</div>
+                      )}
+                    </div>
+                  ))}
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', marginBottom: 4 }}>BIO</div>
+                    {isEditingPersonal ? (
+                      <Textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} style={{ fontSize: 14 }} />
                     ) : (
-                      <>
-                        <h3 className="font-semibold text-lg">{currentOrganization?.name || 'No Organization'}</h3>
-                        {currentOrganization?.slug && (
-                          <p className="text-sm text-muted-foreground">Slug: {currentOrganization.slug}</p>
-                        )}
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Member since {currentOrganization?.created_at ? format(new Date(currentOrganization.created_at), 'PPP') : 'Unknown'}
-                        </p>
-                      </>
+                      <div style={{ fontSize: 14, color: bio ? 'var(--color-text-primary)' : 'var(--color-text-secondary)' }}>{bio || '—'}</div>
                     )}
                   </div>
                 </div>
+              </div>
 
-                {organizations.length > 1 && (
-                  <>
-                    <Separator />
-                    <div>
-                      <h4 className="font-medium mb-4">Your Organizations</h4>
-                      <div className="space-y-2">
-                        {organizations.map(org => (
-                          <div key={org.id} className="flex items-center justify-between p-3 rounded-lg border border-border">
-                            <div className="flex items-center gap-3">
-                              <Building2 className="h-4 w-4 text-muted-foreground" />
-                              <span className="font-medium text-sm">{org.name}</span>
-                            </div>
-                            {org.id === currentOrganization?.id ? (
-                              <Badge variant="secondary" className="bg-success/10 text-success border-success/20">Active</Badge>
-                            ) : (
-                              <Button variant="ghost" size="sm" onClick={() => switchOrganization(org.id)}>Switch</Button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* P0-2: Organization Settings (5 groups) */}
-            {currentOrganization && (
-              <OrganizationSettings organizationId={currentOrganization.id} isAdmin={isOrgAdmin} />
-            )}
-
-            {/* P1-2: Roles Matrix */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-primary" />
-                  <div>
-                    <CardTitle className="text-base">Roles & Permissions</CardTitle>
-                    <CardDescription>
-                      Your role: <Badge className="ml-1 bg-primary/10 text-primary border-primary/20 capitalize">{currentRole}</Badge>
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="min-w-[180px]">Permission</TableHead>
-                        {['Owner', 'Admin', 'Coach', 'User', 'Viewer'].map(role => (
-                          <TableHead key={role} className={`text-center ${role.toLowerCase() === currentRole ? 'bg-primary/5' : ''}`}>
-                            {role}
-                          </TableHead>
-                        ))}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {ROLES_MATRIX.map((row) => (
-                        <TableRow key={row.permission}>
-                          <TableCell className="font-medium text-sm">{row.permission}</TableCell>
-                          {(['owner', 'admin', 'coach', 'user', 'viewer'] as const).map(role => (
-                            <TableCell key={role} className={`text-center ${role === currentRole ? 'bg-primary/5' : ''}`}>
-                              {row[role as keyof typeof row] ? (
-                                <CheckCircle className="h-4 w-4 text-success mx-auto" />
-                              ) : (
-                                <XCircle className="h-4 w-4 text-muted-foreground/40 mx-auto" />
-                              )}
-                            </TableCell>
-                          ))}
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-                <p className="text-xs text-muted-foreground mt-3">Permissions are enforced by system role.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* ===================== TEAM TAB ===================== */}
-          {canManageTeam && (
-            <TabsContent value="team" className="space-y-6">
-              <InviteTeamMembers />
-            </TabsContent>
-          )}
-
-          {/* ===================== ACTIVITY TAB (Completed only) ===================== */}
-          {hasActivityData && (
-            <TabsContent value="activity" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Completed Assessments ({completedAssessments.length})</CardTitle>
-                  <CardDescription>Click any assessment to view its results</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {assessmentsLoading ? (
-                    <div className="flex items-center justify-center py-8">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                    </div>
-                  ) : completedAssessments.length === 0 ? (
-                    <div className="text-center py-8">
-                      <FileText className="h-10 w-10 mx-auto mb-2 text-muted-foreground/30" />
-                      <p className="text-sm text-muted-foreground">No completed assessments</p>
-                    </div>
+              {/* Preferences card — inline edit */}
+              <div style={{ background: 'white', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 20 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <div style={{ fontSize: 14, fontWeight: 500 }}>Preferences</div>
+                  {!isEditingPreferences ? (
+                    <Button variant="outline" size="sm" onClick={() => setIsEditingPreferences(true)} style={{ fontSize: 12 }}>
+                      <Pencil className="h-3 w-3 mr-1" /> Edit
+                    </Button>
                   ) : (
-                    <div className="space-y-2">
-                      {completedAssessments.map(assessment => (
-                        <div
-                          key={assessment.id}
-                          onClick={() => navigate(`/app/results/${assessment.id}`)}
-                          className="flex items-center gap-4 p-4 rounded-lg border border-border hover:bg-muted/30 hover:shadow-sm hover:-translate-y-px transition-all cursor-pointer"
-                        >
-                          <div className="h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 bg-success/10">
-                            <CheckCircle className="h-5 w-5 text-success" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm">Completed Assessment</p>
-                            <p className="text-xs text-muted-foreground">
-                              {format(new Date(assessment.completed_at || assessment.created_at), 'PPP')}
-                            </p>
-                          </div>
-                          {assessment.overall_score !== null && (
-                            <div className="text-right flex-shrink-0">
-                              <p className="text-lg font-bold text-primary">{Math.round(assessment.overall_score)}%</p>
-                              <p className="text-xs text-muted-foreground">Score</p>
-                            </div>
-                          )}
-                          <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        </div>
-                      ))}
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <Button size="sm" onClick={() => { updateProfile(); setIsEditingPreferences(false); toast({ title: 'Preferences saved' }); }} style={{ fontSize: 12, background: '#185FA5' }}>
+                        <Save className="h-3 w-3 mr-1" /> Save
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setIsEditingPreferences(false)} style={{ fontSize: 12 }}>
+                        <X className="h-3 w-3 mr-1" /> Cancel
+                      </Button>
                     </div>
                   )}
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', marginBottom: 4 }}>TIMEZONE</div>
+                    {isEditingPreferences ? (
+                      <Input value={timezone} onChange={e => setTimezone(e.target.value)} style={{ fontSize: 14 }} />
+                    ) : (
+                      <div style={{ fontSize: 14 }}>{timezone || 'UTC'}</div>
+                    )}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', marginBottom: 4 }}>ACCOUNT CREATED</div>
+                    <div style={{ fontSize: 14, color: 'var(--color-text-secondary)' }}>
+                      {user.created_at ? format(new Date(user.created_at), 'PPP') : '—'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
 
-          {/* ===================== SECURITY TAB ===================== */}
-          <TabsContent value="security" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Active Sessions</CardTitle>
-                <CardDescription>Manage your active login sessions across devices</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {sessionsLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+          {/* ── SECURITY ── */}
+          {activeTab === 'security' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {/* Password card */}
+              <div style={{ background: 'white', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 20 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 4 }}>Password</div>
+                <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 16 }}>Manage your account password</div>
+                {/* Change password row */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 500 }}>Current password</div>
+                    <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>Last changed: account creation date</div>
                   </div>
-                ) : sessions.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Monitor className="h-12 w-12 mx-auto mb-2 text-muted-foreground opacity-20" />
-                    <p className="text-muted-foreground">No active sessions found</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {sessions.map((session) => (
-                      <div key={session.id} className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/30 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            {getDeviceIcon(session.device_info?.device_type)}
-                          </div>
-                          <div>
-                            <div className="font-medium text-sm">
-                              {session.device_info?.browser || 'Unknown Browser'} on {session.device_info?.os || 'Unknown OS'}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              IP: {maskIP(session.ip_address)} • Last active: {format(new Date(session.last_seen), 'PPP p')}
-                            </div>
-                          </div>
+                  <Button variant="outline" size="sm" onClick={() => setIsChangingPassword(!isChangingPassword)}>
+                    Change password
+                  </Button>
+                </div>
+                {isChangingPassword && (
+                  <div style={{ marginTop: 16, padding: 16, background: 'var(--color-background-secondary)', borderRadius: 8 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      <div>
+                        <Label style={{ fontSize: 13 }}>Current password</Label>
+                        <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} placeholder="Enter current password" className="mt-1" />
+                      </div>
+                      <div>
+                        <Label style={{ fontSize: 13 }}>New password</Label>
+                        <Input type="password" value={newPassword} onChange={e => { setNewPassword(e.target.value); setPasswordStrength(calculatePasswordStrength(e.target.value)); }} placeholder="Min. 8 characters" className="mt-1" />
+                        <div style={{ height: 4, borderRadius: 2, background: 'var(--color-border-tertiary)', marginTop: 6, overflow: 'hidden' }}>
+                          <div style={{
+                            height: '100%', borderRadius: 2,
+                            width: `${(passwordStrength / 5) * 100}%`,
+                            background: passwordStrength <= 1 ? '#E24B4A' : passwordStrength <= 2 ? '#BA7517' : passwordStrength <= 3 ? '#639922' : '#1D9E75',
+                            transition: 'width 0.3s, background 0.3s'
+                          }} />
                         </div>
-                        <Button variant="outline" size="sm" onClick={() => handleRevokeSession(session.session_id)}
-                          className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground">
+                        <div style={{ fontSize: 11, marginTop: 3, color: passwordStrength <= 1 ? '#E24B4A' : passwordStrength <= 2 ? '#BA7517' : passwordStrength <= 3 ? '#639922' : '#1D9E75' }}>
+                          {passwordStrength === 0 ? '' : passwordStrength <= 1 ? 'Weak' : passwordStrength <= 2 ? 'Fair' : passwordStrength <= 3 ? 'Strong' : 'Very strong'}
+                        </div>
+                      </div>
+                      <div>
+                        <Label style={{ fontSize: 13 }}>Confirm new password</Label>
+                        <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Repeat new password" className="mt-1" />
+                      </div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <Button onClick={handlePasswordUpdate} style={{ background: '#185FA5', color: 'white' }}>Update password</Button>
+                        <Button variant="ghost" onClick={() => { setIsChangingPassword(false); setNewPassword(''); setConfirmPassword(''); setCurrentPassword(''); }}>Cancel</Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {/* Forgot password row */}
+                <div style={{ borderTop: '0.5px solid var(--color-border-tertiary)', marginTop: 16, paddingTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 500 }}>Forgot your password?</div>
+                    <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>Send a reset link to {user.email}</div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={async () => {
+                    await supabase.auth.resetPasswordForEmail(user.email!, { redirectTo: window.location.origin + '/auth/callback' });
+                    toast({ title: 'Reset link sent', description: `Check ${user.email}` });
+                  }}>
+                    Send reset link
+                  </Button>
+                </div>
+              </div>
+
+              {/* 2FA card */}
+              <div style={{ background: 'white', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 20 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 16 }}>Two-factor authentication</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontSize: 14 }}>Authenticator app (TOTP)</div>
+                    <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>Use Google Authenticator, Authy, or similar</div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ background: 'var(--color-background-secondary)', color: 'var(--color-text-secondary)', fontSize: 12, padding: '2px 10px', borderRadius: 20 }}>Not configured</span>
+                    <Button variant="outline" size="sm" onClick={() => toast({ title: 'MFA setup', description: 'Configure via your authenticator app' })}>Set up</Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Active sessions card */}
+              <div style={{ background: 'white', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 20 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 4 }}>Active sessions</div>
+                <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 16 }}>Devices currently signed in to your account</div>
+                {sessionsLoading ? (
+                  <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>
+                ) : sessions.length === 0 ? (
+                  <p style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>No active sessions found</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {sessions.map((session: any) => (
+                      <div key={session.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
+                        <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--color-background-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          {getDeviceIcon(session.device_info?.device_type)}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 14, fontWeight: 500 }}>{session.device_info?.browser} on {session.device_info?.os}</div>
+                          <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>{maskIP(session.ip_address)} · {format(new Date(session.last_seen), 'PPP')}</div>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={() => handleRevokeSession(session.session_id)} style={{ fontSize: 12, borderColor: '#E24B4A', color: '#A32D2D' }}>
                           Revoke
                         </Button>
                       </div>
                     ))}
+                    <div style={{ paddingTop: 8 }}>
+                      <Button variant="outline" size="sm" onClick={async () => { await supabase.auth.signOut({ scope: 'others' }); toast({ title: 'All other sessions revoked' }); fetchSessions(); }} style={{ fontSize: 12, borderColor: '#E24B4A', color: '#A32D2D' }}>
+                        Revoke all other sessions
+                      </Button>
+                    </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+          )}
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Two-Factor Authentication</CardTitle>
-                <CardDescription>Add an extra layer of security to your account</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between p-4 border border-border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-                      <Lock className="h-5 w-5 text-muted-foreground" />
+          {/* ── ORGANIZATION ── */}
+          {activeTab === 'organization' && (
+            <div style={{ background: 'white', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 20 }}>
+              <OrganizationSettings />
+            </div>
+          )}
+
+          {/* ── TEAM ── */}
+          {activeTab === 'team' && canManageTeam && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ background: 'white', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 20 }}>
+                <InviteTeamMembers />
+              </div>
+              <div style={{ background: 'white', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 20 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 16 }}>Current members</div>
+                {userMemberships.map((m: any) => (
+                  <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#E6F1FB', color: '#0C447C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 500 }}>
+                      {getInitials(m.user_id.substring(0, 4))}
                     </div>
-                    <div>
-                      <div className="font-medium">Two-Factor Authentication</div>
-                      <div className="text-sm text-muted-foreground">Not configured</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14 }}>{m.user_id}</div>
                     </div>
+                    <span style={{ background: '#E6F1FB', color: '#0C447C', fontSize: 11, padding: '2px 8px', borderRadius: 20 }}>{m.role}</span>
                   </div>
-                  <Badge variant="secondary">Not Enabled</Badge>
-                </div>
-              </CardContent>
-            </Card>
+                ))}
+              </div>
+            </div>
+          )}
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Login History</CardTitle>
-                <CardDescription>Recent authentication events</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {sessions.slice(0, 5).map((session) => (
-                    <div key={session.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-                      <CheckCircle className="h-4 w-4 text-success" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Successful login</p>
-                        <p className="text-xs text-muted-foreground">
-                          {format(new Date(session.first_seen), 'PPP p')} • {maskIP(session.ip_address)}
-                        </p>
+          {/* ── ACTIVITY ── */}
+          {activeTab === 'activity' && hasActivityData && (
+            <div style={{ background: 'white', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 20 }}>
+              <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 4 }}>Completed assessments ({completedAssessments.length})</div>
+              <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 16 }}>Click any assessment to view its results</div>
+              {assessmentsLoading ? (
+                <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {completedAssessments.map(assessment => (
+                    <div key={assessment.id} onClick={() => navigate(`/app/results/${assessment.id}`)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 8, border: '0.5px solid var(--color-border-tertiary)', cursor: 'pointer' }}>
+                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#EAF3DE', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <CheckCircle className="h-5 w-5 text-green-600" />
                       </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 14, fontWeight: 500 }}>Completed Assessment</div>
+                        <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>{format(new Date(assessment.completed_at || assessment.created_at), 'PPP')}</div>
+                      </div>
+                      {assessment.overall_score != null && (
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: 18, fontWeight: 700, color: '#185FA5' }}>{Math.round(assessment.overall_score)}%</div>
+                          <div style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>Score</div>
+                        </div>
+                      )}
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              )}
+            </div>
+          )}
 
-          {/* ===================== PRIVACY TAB ===================== */}
-          <TabsContent value="privacy" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Privacy Preferences</CardTitle>
-                <CardDescription>Control how your data is used</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 rounded-lg border border-border">
-                    <div className="flex items-center gap-3">
-                      <BarChart3 className="h-5 w-5 text-primary" />
-                      <div>
-                        <div className="font-medium">Analytics Tracking</div>
-                        <div className="text-sm text-muted-foreground">Help us improve by sharing anonymous usage data</div>
-                      </div>
-                    </div>
-                    <Switch checked={analyticsConsent} onCheckedChange={async (checked) => {
-                      setAnalyticsConsent(checked);
-                      const success = await updateConsent('analytics', checked);
-                      if (!success) setAnalyticsConsent(!checked);
-                    }} />
+          {/* ── PRIVACY ── */}
+          {activeTab === 'privacy' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ background: 'white', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 20 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 4 }}>Privacy preferences</div>
+                <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 16 }}>Control how your data is used</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 500 }}>Analytics tracking</div>
+                    <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>Help us improve by sharing anonymous usage data</div>
                   </div>
-                  <div className="flex items-center justify-between p-4 rounded-lg border border-border">
-                    <div className="flex items-center gap-3">
-                      <Mail className="h-5 w-5 text-primary" />
-                      <div>
-                        <div className="font-medium">Marketing Communications</div>
-                        <div className="text-sm text-muted-foreground">Receive updates about new features and improvements</div>
-                      </div>
-                    </div>
-                    <Switch checked={marketingConsent} onCheckedChange={async (checked) => {
-                      setMarketingConsent(checked);
-                      const success = await updateConsent('marketing', checked);
-                      if (!success) setMarketingConsent(!checked);
-                    }} />
-                  </div>
+                  <Switch checked={analyticsConsent} onCheckedChange={async (v) => { setAnalyticsConsent(v); const success = await updateConsent('analytics', v); if (!success) setAnalyticsConsent(!v); }} />
                 </div>
-
-                <Separator />
-
-                <div>
-                  <h4 className="font-medium mb-4">Data Region</h4>
-                  <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30">
-                    <Globe className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="font-medium">European Union</p>
-                      <p className="text-sm text-muted-foreground">Your data is stored in EU data centers</p>
-                    </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 500 }}>Marketing communications</div>
+                    <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>Receive updates about new features</div>
                   </div>
+                  <Switch checked={marketingConsent} onCheckedChange={async (v) => { setMarketingConsent(v); const success = await updateConsent('marketing', v); if (!success) setMarketingConsent(!v); }} />
                 </div>
-              </CardContent>
-            </Card>
+              </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Data Management</CardTitle>
-                <CardDescription>Export or delete your account data</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/30 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Download className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <div className="font-medium">Export My Data</div>
-                      <div className="text-sm text-muted-foreground">Download all your data in JSON format</div>
-                    </div>
+              <div style={{ background: 'white', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 20 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 16 }}>Data management</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 14 }}>Export your data</div>
+                    <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>Download a copy of all your data</div>
                   </div>
-                  <Button variant="outline" onClick={handleExportData} disabled={gdprLoading}>
-                    {gdprLoading ? "Exporting..." : "Export"}
+                  <Button variant="outline" size="sm" onClick={handleExportData} disabled={gdprLoading}>
+                    <Download className="h-4 w-4 mr-1" /> Export data
                   </Button>
                 </div>
+              </div>
 
-                <div className="flex items-center justify-between p-4 border-2 border-destructive/20 rounded-lg bg-destructive/5">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center">
-                      <Trash2 className="h-5 w-5 text-destructive" />
-                    </div>
-                    <div>
-                      <div className="font-medium text-destructive">Delete Account</div>
-                      <div className="text-sm text-muted-foreground">Permanently delete your account and all data</div>
-                    </div>
+              {/* Danger zone */}
+              <div style={{ background: 'white', border: '1px solid #F0D0D0', borderRadius: 12, padding: 20 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, color: '#A32D2D', marginBottom: 4 }}>Danger zone</div>
+                <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 16 }}>Irreversible actions — proceed with care</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 500 }}>Delete account</div>
+                    <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>Permanently remove your account and all data</div>
                   </div>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="destructive">Delete Account</Button>
+                      <Button variant="outline" size="sm" style={{ borderColor: '#E24B4A', color: '#A32D2D' }}>Delete account</Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle className="flex items-center gap-2">
-                          <AlertCircle className="h-5 w-5 text-destructive" />
-                          Are you absolutely sure?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription className="space-y-2">
-                          <p>This action cannot be undone. This will permanently delete:</p>
-                          <ul className="list-disc list-inside text-sm space-y-1 mt-2 ml-2">
-                            <li>Your profile and account information</li>
-                            <li>All assessments and dealership data</li>
-                            <li>Organization memberships and data</li>
-                            <li>All improvement actions and recommendations</li>
-                          </ul>
-                          <p className="mt-4 font-medium text-destructive">This action is irreversible and cannot be recovered.</p>
-                        </AlertDialogDescription>
+                        <AlertDialogTitle>Delete account?</AlertDialogTitle>
+                        <AlertDialogDescription>This action cannot be undone. All your data will be permanently deleted.</AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive hover:bg-destructive/90">
-                          {deleteConfirmStep === 0 ? "Delete Account" : "Confirm Deletion"}
-                        </AlertDialogAction>
+                        <AlertDialogAction onClick={handleDeleteAccount} style={{ background: '#A32D2D' }}>Delete permanently</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
+            </div>
+          )}
 
-          {/* ===================== INTEGRATIONS TAB ===================== */}
-          <TabsContent value="integrations" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Connected Platforms</CardTitle>
-                <CardDescription>Manage your connected accounts and services</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center">
-                      <Mail className="h-5 w-5 text-destructive" />
-                    </div>
-                    <div>
-                      <div className="font-medium">Google Account</div>
-                      <div className="text-sm text-muted-foreground">Connect your Google account</div>
-                    </div>
-                  </div>
-                  <Button variant="outline">Connect</Button>
-                </div>
-                <div className="flex items-center justify-between p-4 border border-border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Building2 className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <div className="font-medium">Microsoft 365</div>
-                      <div className="text-sm text-muted-foreground">Connect your Microsoft account</div>
-                    </div>
-                  </div>
-                  <Button variant="outline">Connect</Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>API Access</CardTitle>
-                <CardDescription>Manage API tokens for external integrations</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <Key className="h-12 w-12 mx-auto mb-2 text-muted-foreground opacity-20" />
-                  <p className="text-muted-foreground text-sm">No API tokens configured</p>
-                  <Button variant="outline" className="mt-4">Generate API Token</Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Connected Devices</CardTitle>
-                <CardDescription>Devices with access to your account</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {sessions.slice(0, 3).map((session) => (
-                    <div key={session.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                      <div className="flex items-center gap-3">
-                        {getDeviceIcon(session.device_info?.device_type)}
-                        <div>
-                          <p className="text-sm font-medium">{session.device_info?.browser || 'Unknown'} • {session.device_info?.os || 'Unknown OS'}</p>
-                          <p className="text-xs text-muted-foreground">Last active: {format(new Date(session.last_seen), 'PPP')}</p>
-                        </div>
+          {/* ── INTEGRATIONS ── */}
+          {activeTab === 'integrations' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ background: 'white', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 20 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 4 }}>Connected platforms</div>
+                <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 16 }}>Manage your connected accounts and services</div>
+                {[
+                  { name: 'Google Account', desc: 'Connect your Google account', icon: Mail, bg: '#FCEBEB', iconColor: '#A32D2D' },
+                  { name: 'Microsoft 365', desc: 'Connect your Microsoft account', icon: Building2, bg: '#E6F1FB', iconColor: '#185FA5' },
+                ].map(p => (
+                  <div key={p.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: '50%', background: p.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <p.icon style={{ width: 20, height: 20, color: p.iconColor }} />
                       </div>
-                      <Badge variant="secondary" className="bg-success/10 text-success border-success/20">Active</Badge>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 500 }}>{p.name}</div>
+                        <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>{p.desc}</div>
+                      </div>
                     </div>
-                  ))}
+                    <Button variant="outline" size="sm">Connect</Button>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ background: 'white', border: '0.5px solid var(--color-border-tertiary)', borderRadius: 12, padding: 20 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 4 }}>API access</div>
+                <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 16 }}>Manage API tokens for external integrations</div>
+                <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                  <Key className="h-10 w-10 mx-auto mb-2 text-muted-foreground opacity-20" />
+                  <p style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>No API tokens configured</p>
+                  <Button variant="outline" style={{ marginTop: 12 }}>Generate API token</Button>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
