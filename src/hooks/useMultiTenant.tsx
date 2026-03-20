@@ -176,7 +176,7 @@ export const MultiTenantProvider = ({ children }: { children: React.ReactNode })
         // Organization updates restricted to owners
         if (resource === 'organization') return role === 'owner';
         // General updates for privileged roles
-        return ['owner', 'admin', 'manager'].includes(role);
+        return ['owner', 'admin', 'member'].includes(role);
       
       case 'delete':
         // Destructive actions require higher privileges

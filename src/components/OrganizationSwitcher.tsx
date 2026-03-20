@@ -11,8 +11,7 @@ import { Loader2, ChevronDown, Building2 } from 'lucide-react';
 const roleBadgeVariant: Record<string, 'default' | 'secondary' | 'outline'> = {
   owner: 'default',
   admin: 'default',
-  manager: 'secondary',
-  analyst: 'outline',
+  member: 'secondary',
   viewer: 'outline',
 };
 

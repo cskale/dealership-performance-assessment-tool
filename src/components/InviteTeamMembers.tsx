@@ -41,7 +41,7 @@ export function InviteTeamMembers() {
   const currentMembership = userMemberships.find(
     m => m.organization_id === currentOrganization?.id
   );
-  const canInvite = currentMembership && ['owner', 'admin', 'manager'].includes(currentMembership.role);
+  const canInvite = currentMembership && ['owner', 'admin', 'member'].includes(currentMembership.role);
 
   useEffect(() => {
     if (canInvite && currentOrganization) {
