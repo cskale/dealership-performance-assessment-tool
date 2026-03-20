@@ -141,9 +141,8 @@ export const MultiTenantProvider = ({ children }: { children: React.ReactNode })
    * Role hierarchy:
    * - owner: Full access including organization settings and deletion
    * - admin: Full access except organization-level destructive actions
-   * - manager: Create, read, update on most resources
-   * - analyst: Read-only access
-   * - viewer: Read-only access (limited)
+   * - member: Create, read, update on most resources
+   * - viewer: Read-only access
    */
   const canPerformAction = (action: 'create' | 'read' | 'update' | 'delete', resource?: string): boolean => {
     // SECURITY: Require both organization context and authenticated user
