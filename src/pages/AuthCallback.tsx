@@ -37,33 +37,14 @@ const AuthCallback = () => {
         }
 
         if (data.session) {
-          const { data: roleData } = await supabase
-            .from('user_roles')
-            .select('role, dealer_id')
-            .eq('user_id', data.session.user.id)
-            .single();
-
           toast({
             title: "Welcome back!",
             description: "You've been successfully signed in.",
           });
 
-          if (roleData) {
-            let targetPath = '/';
-            if (roleData.role === 'dealer' && roleData.dealer_id) {
-              targetPath = `/dealer/${roleData.dealer_id}/actions`;
-            } else if (roleData.role === 'coach') {
-              targetPath = '/coach/actions';
-            }
-
-            if (isValidRedirectPath(targetPath)) {
-              navigate(targetPath, { replace: true });
-            } else {
-              navigate('/', { replace: true });
-            }
-          } else {
-            navigate('/', { replace: true });
-          }
+          // Role-based routing is handled by useActiveRole + ProtectedRoute.
+          // After auth callback, simply navigate to the app root.
+          navigate('/', { replace: true });
         } else {
           navigate('/auth');
         }

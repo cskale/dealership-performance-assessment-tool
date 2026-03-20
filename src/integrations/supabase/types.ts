@@ -1098,38 +1098,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_roles: {
-        Row: {
-          created_at: string
-          dealer_id: string | null
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          dealer_id?: string | null
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          dealer_id?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_roles_dealer_id_fkey"
-            columns: ["dealer_id"]
-            isOneToOne: false
-            referencedRelation: "dealerships"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_saved_resources: {
         Row: {
           id: string
@@ -1208,7 +1176,6 @@ export type Database = {
       }
       delete_user_account: { Args: { _user_id: string }; Returns: boolean }
       export_user_data: { Args: { _user_id: string }; Returns: Json }
-      get_user_dealer_id: { Args: { _user_id: string }; Returns: string }
       has_org_access: {
         Args: {
           _min_role?: Database["public"]["Enums"]["access_role"]
@@ -1220,13 +1187,6 @@ export type Database = {
         Args: {
           _min_role?: Database["public"]["Enums"]["access_role"]
           _outlet_id: string
-        }
-        Returns: boolean
-      }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
         }
         Returns: boolean
       }
@@ -1279,7 +1239,6 @@ export type Database = {
     Enums: {
       access_role: "owner" | "admin" | "member" | "viewer"
       actor_type: "dealer" | "coach" | "oem" | "internal"
-      app_role: "coach" | "dealer"
       enum_brand_mode: "single_brand" | "multi_brand"
       enum_business_model: "sales_only" | "service_only" | "2s" | "3s" | "4s"
       enum_default_language: "en" | "de" | "fr" | "es" | "it"
@@ -1422,7 +1381,6 @@ export const Constants = {
     Enums: {
       access_role: ["owner", "admin", "member", "viewer"],
       actor_type: ["dealer", "coach", "oem", "internal"],
-      app_role: ["coach", "dealer"],
       enum_brand_mode: ["single_brand", "multi_brand"],
       enum_business_model: ["sales_only", "service_only", "2s", "3s", "4s"],
       enum_default_language: ["en", "de", "fr", "es", "it"],
