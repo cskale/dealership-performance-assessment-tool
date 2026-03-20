@@ -23,8 +23,7 @@ interface PendingInvite {
 
 const ROLE_OPTIONS = [
   { value: 'viewer', label: 'Viewer' },
-  { value: 'analyst', label: 'Analyst' },
-  { value: 'manager', label: 'Manager' },
+  { value: 'member', label: 'Member' },
   { value: 'admin', label: 'Admin' },
 ] as const;
 
