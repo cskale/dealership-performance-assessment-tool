@@ -166,7 +166,7 @@ export const MultiTenantProvider = ({ children }: { children: React.ReactNode })
     switch (action) {
       case 'read':
         // All active members can read
-        return ['owner', 'admin', 'manager', 'analyst', 'viewer'].includes(role);
+        return ['owner', 'admin', 'member', 'viewer'].includes(role);
       
       case 'create':
         // Only privileged roles can create
