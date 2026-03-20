@@ -170,7 +170,7 @@ export const MultiTenantProvider = ({ children }: { children: React.ReactNode })
       
       case 'create':
         // Only privileged roles can create
-        return ['owner', 'admin', 'manager'].includes(role);
+        return ['owner', 'admin', 'member'].includes(role);
       
       case 'update':
         // Organization updates restricted to owners
