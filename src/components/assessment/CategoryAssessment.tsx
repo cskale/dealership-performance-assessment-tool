@@ -239,6 +239,13 @@ export function CategoryAssessment({
                       })}
                     </div>
 
+                    {value !== undefined && (
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
+                        <span className="text-xs text-muted-foreground">Saved</span>
+                      </div>
+                    )}
+
                     {value && (
                       <div className="text-center p-3 bg-muted/30 rounded border">
                         <p className="text-sm text-foreground">
