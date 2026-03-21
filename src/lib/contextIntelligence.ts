@@ -365,12 +365,12 @@ export function generateContextIntelligence(action: InstantiatedAction): Context
   };
 
   const moduleWeight = MODULE_WEIGHTS[dept] ?? 0.20;
-  const benchmark = MODULE_BENCHMARKS[dept] ?? 70;
+  const benchmarkTarget = MODULE_BENCHMARKS[dept] ?? 70;
 
   // Infer a representative score gap from the action priority
   const priorityBaseScore: Record<string, number> = { critical: 30, high: 50, medium: 65, low: 75 };
   const deptScore = priorityBaseScore[action.priority] ?? 60;
-  const scoreGap = Math.max(0, benchmark - deptScore);
+  const scoreGap = Math.max(0, benchmarkTarget - deptScore);
   const kpiCount = (action.linkedKPIs || []).length;
 
   // impact = f(module_weight, score_gap, kpi_count) — raw 0–10, clamped to 1–5
@@ -403,7 +403,7 @@ export function generateContextIntelligence(action: InstantiatedAction): Context
   // urgency = f(priority_base, escalate if score < 60% of benchmark)
   const priorityBaseUrgency: Record<string, number> = { critical: 5, high: 4, medium: 3, low: 2 };
   let urgency_score = priorityBaseUrgency[action.priority] ?? 3;
-  if (deptScore < benchmark * 0.60) {
+  if (deptScore < benchmarkTarget * 0.60) {
     urgency_score = Math.min(5, urgency_score + 1);
   }
   urgency_score = Math.min(5, Math.max(1, urgency_score));
