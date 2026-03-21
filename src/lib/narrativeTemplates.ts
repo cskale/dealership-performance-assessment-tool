@@ -142,6 +142,9 @@ export function interpolate(template: string, vars: Record<string, string>): str
   return template.replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? `{${key}}`);
 }
 
+// Each returned paragraph is self-contained: starts with a capital letter,
+// ends with a full stop, and has no prefix concatenated in this function.
+// Do NOT prepend sentences here — edit the template strings above instead.
 export function buildExecutiveNarrative(input: NarrativeInput): NarrativeBlock {
   const { maturityLevel, primarySignal, dealerName = 'Your dealership', department = 'this department', isSystemic = false } = input;
 
