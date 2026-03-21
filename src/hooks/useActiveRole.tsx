@@ -6,7 +6,7 @@
  *
  * Maps membership roles to two UX personas:
  *   coach  → membership role is 'owner' or 'admin' (cross-dealer visibility)
- *   dealer → membership role is 'manager', 'analyst', or 'viewer' (single-dealer)
+ *   dealer → membership role is 'member' or 'viewer' (single-dealer)
  *
  * This hook governs UI routing and display only.
  * Actual data access security is enforced by Supabase RLS policies.
@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
 export type ActiveUXRole = 'coach' | 'dealer' | null;
-export type MembershipRole = 'owner' | 'admin' | 'manager' | 'analyst' | 'viewer';
+export type MembershipRole = 'owner' | 'admin' | 'member' | 'viewer';
 
 interface ActiveRoleData {
   uxRole: ActiveUXRole;
