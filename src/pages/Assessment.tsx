@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 type CompletionState = 'idle' | 'saving' | 'generating_actions' | 'complete' | 'error';
 
 export default function Assessment() {
+  useEffect(() => { document.title = 'Assessment — Dealer Diagnostic'; }, []);
   const [currentSection, setCurrentSection] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [showAssistant, setShowAssistant] = useState(false);

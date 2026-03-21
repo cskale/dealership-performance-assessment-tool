@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ interface KPICardProps {
 }
 
 const Dashboard = () => {
+  useEffect(() => { document.title = 'Dashboard — Dealer Diagnostic'; }, []);
   const [selectedPeriod, setSelectedPeriod] = useState("month");
   const [selectedDealer, setSelectedDealer] = useState("main");
   const { t, language } = useLanguage();

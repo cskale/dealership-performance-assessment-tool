@@ -25,6 +25,7 @@ import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { cn } from "@/lib/utils";
 
 export default function Results() {
+  useEffect(() => { document.title = 'Results — Dealer Diagnostic'; }, []);
   const { assessmentId: routeAssessmentId } = useParams<{ assessmentId: string }>();
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(window.location.search);

@@ -44,6 +44,7 @@ const ROLES_MATRIX = [
 ];
 
 const Account = () => {
+  useEffect(() => { document.title = 'Account Settings — Dealer Diagnostic'; }, []);
   const { user } = useAuth();
   const { sessions, loading: sessionsLoading, fetchSessions, revokeSession } = useSessionManager();
   const { exportUserData, deleteAccount, updateConsent, loading: gdprLoading } = useGDPR();
