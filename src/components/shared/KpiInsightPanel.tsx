@@ -7,6 +7,21 @@ import { cn } from '@/lib/utils';
 import { ChevronDown, ArrowUpRight, ArrowDownRight, Lightbulb, Target, TrendingUp, BookOpen, ExternalLink } from 'lucide-react';
 import { KPI_DEFINITIONS, KPIDefinition } from '@/lib/kpiDefinitions';
 import { getDepartmentConfig } from '@/lib/departmentConfig';
+import { estimateKpiPosition, formatEstimatedRange } from '@/lib/kpiPositionEstimator';
+
+/**
+ * Maps each KPI key to the assessment question whose score best proxies
+ * that KPI's real-world performance. Used by the position estimator.
+ */
+const KPI_PRIMARY_QUESTION: Record<string, string> = {
+  leadResponseTime: 'nvs-1',
+  leadConversion: 'nvs-3',
+  showroomConversion: 'nvs-2',
+  serviceAbsorption: 'svc-1',
+  labourEfficiency: 'svc-3',
+  technicianUtilization: 'svc-4',
+  serviceRetention: 'svc-5',
+};
 
 interface KpiInsightPanelProps {
   kpiKey: string;
@@ -15,6 +30,8 @@ interface KpiInsightPanelProps {
   showDeepLink?: boolean;
   onNavigateToEncyclopedia?: (kpiKey: string) => void;
   className?: string;
+  /** Assessment answers keyed by question ID, used for KPI position estimation. */
+  answers?: Record<string, number>;
 }
 
 /**
@@ -29,7 +46,8 @@ export function KpiInsightPanel({
   mode = 'compact',
   showDeepLink = true,
   onNavigateToEncyclopedia,
-  className
+  className,
+  answers,
 }: KpiInsightPanelProps) {
   const [isExpanded, setIsExpanded] = useState(mode === 'expanded');
 
@@ -43,6 +61,15 @@ export function KpiInsightPanel({
     if (!kpiData?.department) return null;
     return getDepartmentConfig(kpiData.department);
   }, [kpiData?.department]);
+
+  const positionEstimate = useMemo(() => {
+    if (!answers) return null;
+    const questionId = KPI_PRIMARY_QUESTION[kpiKey];
+    if (!questionId) return null;
+    const score = answers[questionId];
+    if (score === undefined) return null;
+    return estimateKpiPosition(kpiKey, score);
+  }, [kpiKey, answers]);
 
   if (!kpiData) {
     return null;
@@ -90,6 +117,11 @@ export function KpiInsightPanel({
                         <ArrowUpRight className="h-2.5 w-2.5 mr-0.5 text-success" />
                       )}
                       {kpiData.benchmark}
+                    </Badge>
+                  )}
+                  {positionEstimate && (
+                    <Badge variant="outline" className="text-[10px] font-normal px-1.5 py-0 text-muted-foreground">
+                      ~{formatEstimatedRange(positionEstimate.estimatedRange)} · {positionEstimate.positionLabel}
                     </Badge>
                   )}
                 </div>
