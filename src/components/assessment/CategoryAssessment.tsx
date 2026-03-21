@@ -338,8 +338,12 @@ export function CategoryAssessment({
                       onChange={(e) => handleNotesChange(question.id, e.target.value)}
                       placeholder={t('assessment.placeholder.notes')}
                       rows={3}
+                      maxLength={5000}
                       className="w-full bg-white border"
                     />
+                    <p className="text-xs text-muted-foreground text-right mt-1">
+                      {5000 - (notesText[question.id]?.length ?? 0)} characters remaining
+                    </p>
                     <div className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
                       <Save className="h-3 w-3" />
                       {t('assessment.autoSaves')}

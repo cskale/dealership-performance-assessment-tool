@@ -210,8 +210,12 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
               onChange={(e) => setNotes(e.target.value)}
               placeholder={t('assessment.placeholder.notes')}
               rows={3}
+              maxLength={5000}
               className="w-full"
             />
+            <p className="text-xs text-muted-foreground text-right mt-1">
+              {5000 - (notes?.length ?? 0)} characters remaining
+            </p>
           </CardContent>
         </Card>
       )}
