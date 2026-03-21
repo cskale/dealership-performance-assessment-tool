@@ -605,8 +605,8 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                         {visibleKpis.map((kpi: any, i: number) => (
                           <div key={i} className="rounded-lg border p-3">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                                📊 {kpi.name || kpi.title || kpi.key}
+                              <span className="text-sm font-medium text-foreground">
+                                {kpi.name || kpi.title || kpi.key}
                               </span>
                               {kpi.type && (
                                 <Badge variant="outline" className={cn("text-[10px]", getKpiBadgeStyle(kpi.type))}>
