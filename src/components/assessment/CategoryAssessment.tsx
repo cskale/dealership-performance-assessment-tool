@@ -220,16 +220,16 @@ export function CategoryAssessment({
                             key={rating}
                             variant={isSelected ? "default" : "outline"}
                             onClick={() => handleRatingClick(question.id, rating)}
-                            className={`h-auto p-3 flex flex-col items-center gap-1.5 transition-all duration-200 ${
-                              isSelected 
-                                ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                            className={`min-h-[72px] h-auto p-3 flex flex-col items-center gap-1.5 transition-all duration-200 ${
+                              isSelected
+                                ? "bg-primary text-primary-foreground hover:bg-primary/90"
                                 : "border hover:bg-muted/50 hover:scale-[1.02]"
                             }`}
                           >
                             <span className={`text-xl font-medium ${isSelected ? '' : 'text-foreground'}`}>
                               {rating}
                             </span>
-                            <span className={`text-xs text-center leading-tight ${
+                            <span className={`text-[10px] text-center leading-tight break-words hyphens-auto px-0.5 w-full ${
                               isSelected ? 'opacity-90' : 'text-muted-foreground'
                             }`}>
                               {label}

@@ -83,12 +83,12 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
                   key={rating}
                   variant={isSelected ? "default" : "outline"}
                   onClick={() => handleRatingClick(rating)}
-                  className={`min-h-[80px] h-auto p-2 flex flex-col items-start justify-between gap-1 transition-all duration-200 overflow-hidden ${
+                  className={`min-h-[72px] h-auto p-2 flex flex-col items-center gap-1.5 transition-all duration-200 ${
                     isSelected ? getRatingColor(rating) : "hover:bg-muted/50"
                   }`}
                 >
-                  <span className="text-2xl font-bold self-center">{rating}</span>
-                  <span className="text-[10px] text-center leading-tight line-clamp-3 overflow-hidden px-1 w-full">
+                  <span className="text-2xl font-bold">{rating}</span>
+                  <span className="text-[10px] text-center leading-tight break-words hyphens-auto px-0.5 w-full">
                     {label}
                   </span>
                 </Button>
