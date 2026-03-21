@@ -330,6 +330,15 @@ function shortId(id: string): string {
   return `${id.slice(0, 8)}...${id.slice(-4)}`;
 }
 
+function sanitizeFilename(name: string): string {
+  return name
+    .replace(/[^\w\s\-]/g, '')
+    .replace(/\s+/g, '_')
+    .replace(/_+/g, '_')
+    .slice(0, 50)
+    .trim() || 'Dealership';
+}
+
 export async function generatePDFReport(data: PDFExportData): Promise<void> {
   const lang = data.organization?.default_language || 'en';
   const now = new Date();
@@ -982,6 +991,6 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   }
 
   // Save
-  const fileName = `${orgName.replace(/\s+/g, '_')}_Assessment_Report_${dateStr}.pdf`;
+  const fileName = `${sanitizeFilename(orgName)}_Assessment_Report_${dateStr}.pdf`;
   pdf.save(fileName);
 }
