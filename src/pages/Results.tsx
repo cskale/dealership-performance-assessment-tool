@@ -96,12 +96,17 @@ export default function Results() {
         const completedResults = localStorage.getItem('completed_assessment_results');
         if (completedResults) {
           const data = JSON.parse(completedResults);
-          if (!data.assessmentId) {
-            data.assessmentId = crypto.randomUUID();
-            localStorage.setItem('completed_assessment_results', JSON.stringify(data));
+          if (data._expiresAt && Date.now() > data._expiresAt) {
+            localStorage.removeItem('completed_assessment_results');
+            // do not set resultsData from this stale cache — fall through to DB load
+          } else {
+            if (!data.assessmentId) {
+              data.assessmentId = crypto.randomUUID();
+              localStorage.setItem('completed_assessment_results', JSON.stringify(data));
+            }
+            setResultsData(data);
+            loaded = true;
           }
-          setResultsData(data);
-          loaded = true;
         }
       }
 

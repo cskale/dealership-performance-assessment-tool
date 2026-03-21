@@ -220,7 +220,8 @@ export default function Assessment() {
         scores: finalScores,
         overallScore,
         completedAt: new Date().toISOString(),
-        assessmentId: realAssessmentId // Real DB ID
+        assessmentId: realAssessmentId, // Real DB ID
+        _expiresAt: Date.now() + (7 * 24 * 60 * 60 * 1000)
       }));
       
       // STEP 2: Generate actions using REAL assessment ID
