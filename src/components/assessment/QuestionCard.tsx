@@ -14,6 +14,13 @@ interface QuestionCardProps {
   onChange: (value: number) => void;
 }
 
+function getWeightLabel(weight: number): string {
+  if (weight >= 1.8) return 'Critical diagnostic question';
+  if (weight >= 1.4) return 'High diagnostic value';
+  if (weight >= 1.1) return 'Important indicator';
+  return 'Supporting indicator';
+}
+
 export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
   const [showNotes, setShowNotes] = useState(false);
   const [notes, setNotes] = useState("");
@@ -187,7 +194,7 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
 
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <HelpCircle className="h-4 w-4" />
-          <span>Question weight: {question.weight}x</span>
+          <span className="text-xs text-muted-foreground flex items-center gap-1.5"><Info className="h-3 w-3" />{getWeightLabel(question.weight)}</span>
         </div>
       </div>
 
