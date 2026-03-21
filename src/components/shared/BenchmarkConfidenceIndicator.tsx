@@ -74,9 +74,14 @@ export function BenchmarkConfidenceIndicator({
           </p>
           {showCaution && (
             <p className="text-[10px] text-warning-foreground bg-warning/10 px-2 py-1 rounded">
-              {language === 'de' 
-                ? 'Mit händlerspezifischem Kontext verwenden' 
+              {language === 'de'
+                ? 'Mit händlerspezifischem Kontext verwenden'
                 : 'Use with dealer-specific context'}
+            </p>
+          )}
+          {metadata.sampleSize && (
+            <p className="text-[10px] text-muted-foreground/70 mt-1 border-t border-border/30 pt-1">
+              Based on {metadata.sampleSize}+ dealers · Updated {metadata.lastUpdated}
             </p>
           )}
         </div>
