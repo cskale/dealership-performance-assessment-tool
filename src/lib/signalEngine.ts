@@ -12,7 +12,7 @@
 
 import { Signal, SignalCode, Severity } from '@/data/signalTypes';
 import { SIGNAL_MAPPINGS, getSignalMapping } from '@/data/signalMappings';
-import { ACTION_TEMPLATES, getTemplatesForSignal, ActionTemplate } from '@/data/actionTemplates';
+import { ACTION_TEMPLATES, getTemplatesForSignal, ActionTemplate, ImplementationStep } from '@/data/actionTemplates';
 import { getTemplateIdsForSignal, getMaxActionsForSignal, getKPISpecificTemplateIds } from '@/data/signalToActionMap';
 import { generateContextIntelligence } from '@/lib/contextIntelligence';
 import { KPI_DEFINITIONS } from '@/lib/kpiDefinitions';
@@ -21,6 +21,8 @@ export interface SignalEngineConfig {
   enableAutoActions: boolean;
   weakScoreThreshold: number; // Score at or below this is considered weak (default: 3)
   criticalScoreThreshold: number; // Score at or below this is critical (default: 2)
+  sectionScores?: Record<string, number>;
+  businessModel?: string;
 }
 
 export interface GeneratedSignal extends Signal {
@@ -38,7 +40,7 @@ export interface InstantiatedAction {
   priority: 'critical' | 'high' | 'medium' | 'low';
   defaultOwnerRole: string;
   defaultTimeframeDays: number;
-  implementationSteps: string[];
+  implementationSteps: ImplementationStep[];
   triggeringQuestionIds: string[];
   rationale: string;
   /** KPI keys this action is designed to improve */
@@ -234,20 +236,43 @@ export function generateSignals(
 function selectTemplates(
   signal: GeneratedSignal,
   usedTemplateIds: Set<string>,
-  maxForSignal: number
+  maxForSignal: number,
+  config: SignalEngineConfig = DEFAULT_CONFIG
 ): ActionTemplate[] {
   const selected: ActionTemplate[] = [];
-  
+
+  const checkFilters = (template: ActionTemplate): boolean => {
+    // Filter by score band if template has one specified
+    if (template.scoreBand) {
+      const sectionScores = config.sectionScores ?? {};
+      const moduleScore = sectionScores[signal.moduleKey] ?? 50;
+      const activeBand: 'foundational' | 'developing' | 'optimising' =
+        moduleScore <= 45 ? 'foundational'
+        : moduleScore <= 69 ? 'developing'
+        : 'optimising';
+      if (template.scoreBand !== activeBand) return false;
+    }
+
+    // Filter by business model relevance
+    if (template.relevantBusinessModels && template.relevantBusinessModels.length > 0) {
+      const dealerBM = config.businessModel ?? '4s';
+      if (!template.relevantBusinessModels.includes(dealerBM as any)) return false;
+    }
+
+    return true;
+  };
+
   // 1. Try KPI-specific templates first if linkedKPIs exist
   if (signal.linkedKPIs && signal.linkedKPIs.length > 0 && signal.signalCode !== 'NONE') {
     const kpiSpecificIds = getKPISpecificTemplateIds(signal.signalCode as Exclude<SignalCode, 'NONE'>);
     for (const templateId of kpiSpecificIds) {
       if (selected.length >= maxForSignal) break;
       if (usedTemplateIds.has(templateId)) continue;
-      
+
       const template = ACTION_TEMPLATES.find(t => t.templateId === templateId);
       if (!template) continue;
-      
+      if (!checkFilters(template)) continue;
+
       // Check if this template's linkedKPIs overlap with signal's linkedKPIs
       if (template.linkedKPIs) {
         const hasOverlap = template.linkedKPIs.some(k => signal.linkedKPIs!.includes(k));
@@ -263,11 +288,12 @@ function selectTemplates(
   if (selected.length < maxForSignal) {
     const genericTemplates = getTemplatesForSignal(signal.signalCode as Exclude<SignalCode, 'NONE'>)
       .filter(t => !t.linkedKPIs); // Only truly generic templates
-    
+
     for (const template of genericTemplates) {
       if (selected.length >= maxForSignal) break;
       if (usedTemplateIds.has(template.templateId)) continue;
-      
+      if (!checkFilters(template)) continue;
+
       selected.push(template);
       usedTemplateIds.add(template.templateId);
     }
@@ -279,7 +305,8 @@ function selectTemplates(
     for (const template of allTemplates) {
       if (selected.length >= maxForSignal) break;
       if (usedTemplateIds.has(template.templateId)) continue;
-      
+      if (!checkFilters(template)) continue;
+
       selected.push(template);
       usedTemplateIds.add(template.templateId);
     }
@@ -293,7 +320,8 @@ function selectTemplates(
  */
 export function instantiateActions(
   signals: GeneratedSignal[],
-  maxActions: number = 10
+  maxActions: number = 10,
+  config: SignalEngineConfig = DEFAULT_CONFIG
 ): InstantiatedAction[] {
   const actions: InstantiatedAction[] = [];
   const usedTemplateIds = new Set<string>();
@@ -306,7 +334,7 @@ export function instantiateActions(
     const remaining = maxActions - actions.length;
     const limit = Math.min(maxForSignal, remaining);
 
-    const templates = selectTemplates(signal, usedTemplateIds, limit);
+    const templates = selectTemplates(signal, usedTemplateIds, limit, config);
 
     for (const template of templates) {
       const priority = severityToPriority(signal.severity);
@@ -341,7 +369,7 @@ export function generateActionsFromAssessment(
   questionLinkedKPIs?: Record<string, string[]>
 ): InstantiatedAction[] {
   const signals = generateSignals(answers, questionWeights, config, questionLinkedKPIs);
-  return instantiateActions(signals);
+  return instantiateActions(signals, 10, config);
 }
 
 /**
