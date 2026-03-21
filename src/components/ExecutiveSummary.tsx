@@ -21,6 +21,10 @@ import {
 } from "@/lib/scoringEngine";
 import { questionnaire } from "@/data/questionnaire";
 import { KpiInsightPanel } from "@/components/shared/KpiInsightPanel";
+import { buildExecutiveNarrative, DEPT_LABELS } from '@/lib/narrativeTemplates';
+import type { MaturityLevel, PrimarySignalCode } from '@/lib/narrativeTemplates';
+import { generateCeilingInsights } from '@/lib/ceilingAnalysis';
+import { generateSignals } from '@/lib/signalEngine';
 
 interface ExecutiveSummaryProps {
   overallScore: number;
@@ -80,6 +84,15 @@ function confidenceBadge(c: ConfidenceMetrics, language: string) {
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
+
+// Map question prefix to department key for ceiling insights
+const PREFIX_TO_DEPT: Record<string, string> = {
+  nvs: 'new-vehicle-sales',
+  uvs: 'used-vehicle-sales',
+  svc: 'service-performance',
+  fin: 'financial-operations',
+  pts: 'parts-inventory',
+};
 
 export function ExecutiveSummary({ overallScore, scores, answers, completedAt, onNavigateToEncyclopedia }: ExecutiveSummaryProps) {
   const { t, language } = useLanguage();
@@ -190,116 +203,160 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
     [language]
   );
 
+  // ── New data hooks ──
+
+  const narrative = useMemo(() => {
+    const sortedByScore = Object.entries(scores).sort(([, a], [, b]) => b - a);
+    const sortedAsc = [...Object.entries(scores)].sort(([, a], [, b]) => a - b);
+    const topDept = DEPT_LABELS[sortedByScore[0]?.[0]] ?? 'New Vehicle Sales';
+    const weakestDept = DEPT_LABELS[sortedAsc[0]?.[0]] ?? 'New Vehicle Sales';
+    const avgScore = Math.round(Object.values(scores).reduce((s, v) => s + v, 0) / Math.max(Object.values(scores).length, 1));
+    const maturityMap: Record<string, MaturityLevel> = {
+      'Advanced': 'leading', 'Mature': 'capable', 'Developing': 'developing', 'Basic': 'foundational', 'Inconsistent': 'developing',
+    };
+    const subCats = Object.values(subCategoryData).flatMap(d => d.subCategories);
+    const avgConf = { standardDeviation: 0.5, consistencyScore: 75, confidence: 'medium' as const, reviewRecommended: false };
+    const maturity = calculateEnhancedMaturity(avgScore, subCats, avgConf);
+    const maturityLevelKey: MaturityLevel = maturityMap[maturity.level] ?? 'developing';
+    const questionWeights: Record<string, number> = {};
+    questionnaire.sections.forEach(s => s.questions.forEach(q => { questionWeights[q.id] = q.weight; }));
+    const signals = generateSignals(answers as Record<string, number>, questionWeights);
+    const primarySignal = (signals[0]?.signalCode ?? 'PROCESS_NOT_STANDARDISED') as PrimarySignalCode;
+    const isSystemic = systemicPatterns.some(p => p.severity === 'systemic');
+    return buildExecutiveNarrative({ maturityLevel: maturityLevelKey, primarySignal, isSystemic, dealerName: 'Your dealership', department: weakestDept, score: avgScore, benchmark: 72 });
+  }, [scores, answers, subCategoryData, systemicPatterns]);
+
+  const ceilingInsights = useMemo(() =>
+    generateCeilingInsights(answers as Record<string, number>, scores),
+    [answers, scores]
+  );
+
+  const topSignals = useMemo(() => {
+    const questionWeights: Record<string, number> = {};
+    questionnaire.sections.forEach(s => s.questions.forEach(q => { questionWeights[q.id] = q.weight; }));
+    return generateSignals(answers as Record<string, number>, questionWeights).slice(0, 3);
+  }, [answers]);
+
+  const MODULE_BENCHMARKS: Record<string, number> = {
+    'new-vehicle-sales': 72, 'used-vehicle-sales': 70,
+    'service-performance': 75, 'financial-operations': 68, 'parts-inventory': 65,
+  };
+
+  const signalLabels: Record<string, string> = {
+    PROCESS_NOT_STANDARDISED: 'Process standardisation gap',
+    PROCESS_NOT_EXECUTED: 'Process execution gap',
+    ROLE_OWNERSHIP_MISSING: 'Unclear role accountability',
+    KPI_NOT_DEFINED: 'Performance metrics not defined',
+    KPI_NOT_REVIEWED: 'KPIs not regularly reviewed',
+    CAPACITY_MISALIGNED: 'Capacity misalignment',
+    TOOL_UNDERUTILISED: 'Technology underutilised',
+    GOVERNANCE_WEAK: 'Weak management governance',
+  };
+
   return (
     <div className="space-y-6">
-      {/* Summary Paragraph */}
+
+      {/* SECTION 1 — Diagnostic Narrative */}
+      {narrative && (
+        <Card className="shadow-lg border">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <ShieldAlert className="h-5 w-5 text-primary" />
+              <h3 className="text-base font-semibold text-foreground">
+                Diagnostic Summary
+              </h3>
+            </div>
+
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">{narrative.situation}</p>
+
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">{narrative.diagnosis}</p>
+
+            <div className="border-l-2 border-primary pl-4">
+              <p className="text-sm text-foreground leading-relaxed font-medium">{narrative.priority}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* SECTION 2 — Department Score Cards */}
       <Card className="shadow-lg border">
-        <CardContent className="p-6">
-          <p className="text-muted-foreground leading-relaxed text-base">{summaryParagraph}</p>
+        <CardHeader>
+          <CardTitle className="text-base font-semibold text-foreground">
+            Department Performance
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {Object.entries(scores)
+              .sort(([, a], [, b]) => b - a)
+              .map(([dept, score]) => {
+                const benchmark = MODULE_BENCHMARKS[dept] ?? 72;
+                const gap = score - benchmark;
+                const isAbove = gap >= 0;
+                const statusColor = score >= 75 ? 'border-green-200 bg-green-50/50'
+                  : score >= 55 ? 'border-amber-200 bg-amber-50/50'
+                  : 'border-red-200 bg-red-50/50';
+                const scoreColor = score >= 75 ? 'text-green-700'
+                  : score >= 55 ? 'text-amber-700'
+                  : 'text-red-700';
+                return (
+                  <div key={dept} className={`rounded-lg border p-4 text-center ${statusColor}`}>
+                    <div className="text-sm text-muted-foreground font-medium mb-1">
+                      {getDepartmentName(dept, language)}
+                    </div>
+                    <div className={`text-3xl font-bold ${scoreColor}`}>{score}%</div>
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      <span className={isAbove ? 'text-green-600' : 'text-red-600'}>
+                        {isAbove ? '+' : ''}{gap} vs benchmark
+                      </span>
+                    </div>
+                    <Progress value={score} className="mt-2 h-1.5" />
+                  </div>
+                );
+              })}
+          </div>
         </CardContent>
       </Card>
 
-      {/* 3-Column Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="shadow-lg border">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-              <CheckCircle className="h-5 w-5 text-emerald-500" />
-              {language === 'de' ? 'Schlüsselstärken' : 'Key Strengths'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-3">
-              {strengths.map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-muted-foreground">
-                  <CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm">{item.text}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-lg border">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-              <AlertTriangle className="h-5 w-5 text-yellow-500" />
-              {language === 'de' ? 'Verbesserungsbereiche' : 'Areas for Improvement'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {weaknesses.length > 0 ? (
-              <ul className="space-y-3">
-                {weaknesses.map((item, i) => (
-                  <li key={i} className="flex items-start gap-3 text-muted-foreground">
-                    <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">{item.text}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                {language === 'de' ? 'Alle Bereiche über dem Durchschnitt' : 'All areas performing above average'}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-lg border">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-              <Target className="h-5 w-5 text-red-500" />
-              {language === 'de' ? 'Empfohlener Fokus' : 'Recommended Focus'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-3">
-              {actions.map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-muted-foreground">
-                  <Target className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm">{item.text}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Sub-Category Capability Breakdown */}
-      {Object.keys(subCategoryData).length > 0 && (
+      {/* SECTION 3 — Top Findings */}
+      {topSignals.length > 0 && (
         <Card className="shadow-lg border">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-primary" />
-              {language === 'de' ? 'Capability-Analyse nach Teilbereich' : 'Capability Analysis by Sub-Category'}
+            <CardTitle className="text-base font-semibold text-foreground">
+              Top Findings
             </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {language === 'de'
-                ? 'Detaillierte Aufschlüsselung nach Kompetenzbereich innerhalb jeder Abteilung'
-                : 'Detailed breakdown by capability area within each department'}
-            </p>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {Object.entries(subCategoryData).map(([dept, data]) => {
-                const conf = confidenceData[dept];
+            <div className="space-y-3">
+              {topSignals.map((signal, i) => {
+                const severityColor = signal.severity === 'HIGH'
+                  ? 'border-l-red-500 bg-red-50/30'
+                  : signal.severity === 'MEDIUM'
+                  ? 'border-l-amber-500 bg-amber-50/30'
+                  : 'border-l-blue-400 bg-blue-50/30';
+                const severityLabel = signal.severity === 'HIGH' ? 'Critical'
+                  : signal.severity === 'MEDIUM' ? 'Moderate' : 'Monitor';
+                const severityBadge = signal.severity === 'HIGH'
+                  ? 'bg-red-100 text-red-700 border-red-200'
+                  : signal.severity === 'MEDIUM'
+                  ? 'bg-amber-100 text-amber-700 border-amber-200'
+                  : 'bg-blue-100 text-blue-700 border-blue-200';
+                const deptName = getDepartmentName(signal.moduleKey, language);
+                const triggerCount = signal.triggeringQuestionIds?.length ?? 1;
                 return (
-                  <div key={dept} className="border rounded-lg p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-semibold text-sm">{getDepartmentName(dept, language)}</h4>
-                      {conf && confidenceBadge(conf, language)}
-                    </div>
-                    <div className="space-y-2">
-                      {data.subCategories.map((sc) => {
-                        const color = sc.score >= 75 ? 'text-emerald-600' : sc.score >= 50 ? 'text-yellow-600' : 'text-red-600';
-                        return (
-                          <div key={sc.category} className="flex items-center gap-3">
-                            <span className="text-xs text-muted-foreground w-24 truncate capitalize">{sc.category}</span>
-                            <Progress value={sc.score} className="flex-1 h-2" />
-                            <span className={`text-xs font-semibold w-10 text-right ${color}`}>{sc.score}%</span>
-                          </div>
-                        );
-                      })}
+                  <div key={i} className={`border-l-4 rounded-r-lg p-4 ${severityColor}`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="text-sm font-semibold text-foreground">
+                          {signalLabels[signal.signalCode] ?? signal.signalCode}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {deptName} · {triggerCount} question{triggerCount > 1 ? 's' : ''} flagged
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={`text-xs shrink-0 ${severityBadge}`}>
+                        {severityLabel}
+                      </Badge>
                     </div>
                   </div>
                 );
@@ -309,139 +366,69 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
         </Card>
       )}
 
-      {/* Systemic Patterns */}
+      {/* SECTION 4 — Systemic Patterns (only when fired) */}
       {systemicPatterns.filter(p => p.severity === 'systemic').length > 0 && (
         <Card className="shadow-lg border border-red-200 bg-red-50/30">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-red-800">
               <ShieldAlert className="h-5 w-5" />
-              {language === 'de' ? 'Systemische Muster erkannt' : 'Systemic Patterns Detected'}
+              Organisation-Wide Pattern Detected
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-3">
-              {systemicPatterns.filter(p => p.severity === 'systemic').map((p, i) => (
-                <li key={i} className="text-sm text-red-700">
-                  <span className="font-medium capitalize">{p.signalCode.toLowerCase()}</span>: {p.description}
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    {p.departments.map(d => (
-                      <Badge key={d} variant="outline" className="text-xs border-red-300 text-red-700">
-                        {getDepartmentName(d, language)}
-                      </Badge>
-                    ))}
-                  </div>
-                </li>
-              ))}
-            </ul>
+            {systemicPatterns.filter(p => p.severity === 'systemic').map((p, i) => (
+              <div key={i} className="mb-3 last:mb-0">
+                <p className="text-sm text-red-700">{p.description}</p>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {p.departments.map(d => (
+                    <Badge key={d} variant="outline" className="text-xs border-red-300 text-red-700">
+                      {getDepartmentName(d, language)}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ))}
           </CardContent>
         </Card>
       )}
 
-      {/* KPI Intelligence for Weak-Scoring Areas */}
-      {weaknesses.length > 0 && (
+      {/* SECTION 5 — Excellence Gaps (only for high scorers) */}
+      {ceilingInsights.length > 0 && (
         <Card className="shadow-lg border">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-primary" />
-              {language === 'de' ? 'KPI-Einblicke für Verbesserungsbereiche' : 'KPI Insights for Improvement Areas'}
+            <CardTitle className="text-base font-semibold text-foreground">
+              Excellence Gaps — Path to Top Quartile
             </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {language === 'de'
-                ? 'Relevante KPIs und Verbesserungsansätze für Ihre schwächsten Bereiche'
-                : 'Relevant KPIs and improvement approaches for your weakest areas'}
-            </p>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {weaknesses.slice(0, 2).map((item) => {
-              // Map department to representative KPI
-              const deptKpiMap: Record<string, string> = {
-                'new-vehicle-sales': 'leadConversion',
-                'used-vehicle-sales': 'grossPerUsedRetailed',
-                'service-performance': 'serviceAbsorption',
-                'parts-inventory': 'partsInventoryTurnover',
-                'financial-operations': 'netProfitMargin',
-              };
-              const kpiKey = deptKpiMap[item.dept];
-              if (!kpiKey) return null;
-              
-              return (
-                <KpiInsightPanel
-                  key={item.dept}
-                  kpiKey={kpiKey}
-                  language={language as 'en' | 'de'}
-                  mode="compact"
-                  showDeepLink
-                  onNavigateToEncyclopedia={onNavigateToEncyclopedia}
-                />
-              );
-            })}
+          <CardContent>
+            <div className="space-y-4">
+              {ceilingInsights.map((insight, i) => {
+                const prefix = insight.questionId.split('-')[0];
+                const deptKey = PREFIX_TO_DEPT[prefix] ?? 'new-vehicle-sales';
+                const deptLabel = getDepartmentName(deptKey, language);
+                return (
+                  <div key={i} className="border rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-sm font-semibold text-foreground">{deptLabel}</span>
+                      <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">
+                        Above Average
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                      {insight.bestInClassDescription}
+                    </p>
+                    <div className="flex items-start gap-2 bg-blue-50/50 rounded-md p-3">
+                      <span className="text-primary font-bold mt-0.5">→</span>
+                      <p className="text-sm text-foreground">{insight.nextLevelAction}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Department Overview Cards */}
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {language === 'de' ? 'Abteilungsübersicht' : 'Department Overview'}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button type="button" className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-muted hover:bg-muted/80 transition-colors" aria-label="Score calculation info">
-                  <Info className="h-3.5 w-3.5 text-muted-foreground" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-xs p-3">
-                <p className="font-medium mb-2">{language === 'de' ? 'Gewichtete Berechnung' : 'Weighted Calculation'}</p>
-                <ul className="text-xs space-y-1">
-                  {weightTooltipContent.map((line, i) => (
-                    <li key={i}>- {line}</li>
-                  ))}
-                </ul>
-              </TooltipContent>
-            </Tooltip>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {Object.entries(scores).map(([dept, score]) => {
-              const deptName = getDepartmentName(dept, language);
-              const scoreColor = score >= 75 ? 'text-emerald-600' : score >= 60 ? 'text-yellow-600' : 'text-red-600';
-              const bgColor = score >= 75 ? 'bg-emerald-50' : score >= 60 ? 'bg-yellow-50' : 'bg-red-50';
-              return (
-                <div key={dept} className={`${bgColor} rounded-lg p-4 text-center transition-transform hover:scale-105`}>
-                  <div className={`text-3xl font-bold ${scoreColor}`}>{score}%</div>
-                  <div className="text-sm text-muted-foreground mt-1 font-medium">{deptName}</div>
-                  <Progress value={score} className="mt-2 h-2" />
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Bottom Stats */}
-      <Card className="bg-gradient-to-r from-primary/90 to-primary text-white border-0 shadow-lg">
-        <CardContent className="p-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold">{overallScore}%</div>
-              <div className="text-sm text-white/80">{language === 'de' ? 'Gewichtete Punktzahl' : 'Weighted Score'}</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{industryComparison.label}</div>
-              <div className="text-sm text-white/80">{industryComparison.percentile}</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{questionsAnswered}/{TOTAL_QUESTIONS}</div>
-              <div className="text-sm text-white/80">{language === 'de' ? 'Fragen' : 'Questions'}</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{maturityLevel}</div>
-              <div className="text-sm text-white/80">{language === 'de' ? 'Reifestufe' : 'Maturity Level'}</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
