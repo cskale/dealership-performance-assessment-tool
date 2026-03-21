@@ -220,7 +220,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Bewertet die Prozesseffizienz und Qualität der Kundenerfahrung, die sich auf Kundenzufriedenheit und Wettbewerbsvorteile auswirken.",
               situationAnalysis: "Schnellere Lieferzeiten verbessern die Kundenzufriedenheit, reduzieren Geschäftsabbrüche und verbessern die Wettbewerbspositionierung auf dem Markt.",
               benefits: "Die Verkürzung der Lieferzeit erhöht die Kundenzufriedenheit, reduziert Stornierungen, verbessert den Cashflow und schafft Wettbewerbsdifferenzierung.",
-              scaleLabels: [">30 Tage", "21-30 Tage", "14-20 Tage", "7-13 Tage", "<7 Tage"]
+              scaleLabels: ["Kein standardisierter Übergabeprozess", "Checkliste vorhanden, aber inkonsistent befolgt", "Dokumentierter Prozess meist eingehalten", "Konsistente strukturierte Übergabe mit CSI-Nachverfolgung", "Best-Practice-Übergabe mit digitalen Tools und systematischer Nachverfolgung"]
             }
           }
         },
@@ -251,7 +251,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Misst die Wirksamkeit Ihrer digitalen Marketingstrategie und Online-Kundenbindungsfähigkeiten.",
               situationAnalysis: "Die Konvertierung digitaler Leads zeigt, wie gut Ihre Online-Präsenz und Ihr digitaler Verkaufstrichter im heutigen digitalen Markt funktionieren.",
               benefits: "Die Verbesserung der digitalen Konvertierung reduziert Marketingkosten, erhöht die Lead-Qualität und positioniert Sie vor Wettbewerbern im digitalen Bereich.",
-              scaleLabels: ["<5%", "5-10%", "11-15%", "16-20%", ">20%"]
+              scaleLabels: ["Keine digitale Präsenz — nur Laufkundschaft", "Einfache Website-Leads manuell bearbeitet, >1 Tag Antwortzeit", "CRM für Online-Leads genutzt, Antwort am selben Tag", "Strukturierter digitaler Prozess, <2 Std. Antwortzeit, Konversion verfolgt", "Automatisches Routing, <5 Min. Antwortzeit, vollständige Trichteranalyse aktiv"]
             }
           }
         },
@@ -911,7 +911,7 @@ export const questionnaire: Questionnaire = {
             de: {
               text: "Wie effektiv nutzen Sie digitale Tools, um Kunden über den Servicestatus ihres Fahrzeugs zu informieren?",
               description: "Einschließlich SMS-Updates, Service-Videos, digitale Inspektionen und Online-Zahlung",
-              scaleLabels: ["Keine", "Grundlegend", "Gut", "Sehr gut", "Ausgezeichnet"]
+              scaleLabels: ["Keine digitale Kommunikation — nur Telefonanrufe", "E-Mail-Updates nur auf Anfrage", "Proaktive SMS/E-Mail-Updates bei Fertigstellung", "Digitale Inspektionsberichte mit Fotos, Online-Zahlung verfügbar", "Vollständige digitale Reise — Video-Inspektion, Status-Tracker, Online-Zahlung, Nachverfolgungsumfrage"]
             }
           }
         },
@@ -936,7 +936,7 @@ export const questionnaire: Questionnaire = {
             de: {
               text: "Wie viele Reparaturaufträge bearbeitet jeder Serviceberater typischerweise pro Tag?",
               description: "Berechnen Sie die durchschnittliche tägliche RO-Anzahl pro Berater",
-              scaleLabels: ["<8 ROs", "8-10 ROs", "11-13 ROs", "14-16 ROs", ">16 ROs"]
+              scaleLabels: ["Unter 6 ROs pro Berater pro Tag", "6-8 ROs pro Tag — unter Benchmark", "9-11 ROs pro Tag — europäischer Benchmark", "12-14 ROs pro Tag — überdurchschnittlich", "15+ ROs pro Tag — Hochleistungsbetrieb mit DMS-Workflow-Unterstützung"]
             }
           }
         },
