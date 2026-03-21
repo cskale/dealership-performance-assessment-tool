@@ -223,7 +223,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
     const signals = generateSignals(answers as Record<string, number>, questionWeights);
     const primarySignal = (signals[0]?.signalCode ?? 'PROCESS_NOT_STANDARDISED') as PrimarySignalCode;
     const isSystemic = systemicPatterns.some(p => p.severity === 'systemic');
-    return buildExecutiveNarrative({ maturityLevel: maturityLevelKey, primarySignal, isSystemic, topDepartment: topDept, weakestDepartment: weakestDept, overallScore: avgScore, weakestDeptScore: sortedAsc[0]?.[1] ?? 0 });
+    return buildExecutiveNarrative({ maturityLevel: maturityLevelKey, primarySignal, isSystemic, dealerName: 'Your dealership', department: weakestDept, score: avgScore, benchmark: 72 });
   }, [scores, answers, subCategoryData, systemicPatterns]);
 
   const ceilingInsights = useMemo(() =>
