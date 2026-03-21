@@ -199,6 +199,40 @@ export function generateSignals(
     }
   }
 
+  // Ceiling pass: score exactly 4 on high-weight questions in high-performing modules
+  // This generates a softer signal so the action engine has something to work with
+  // when a dealer is performing well but not yet at 5/5 on key questions
+  for (const [questionId, score] of Object.entries(answers)) {
+    if (score !== 4) continue;
+
+    const mapping = getSignalMapping(questionId);
+    if (!mapping || mapping.primarySignalCode === 'NONE') continue;
+
+    const weight = questionWeights[questionId] || 1.0;
+    if (weight < 1.2) continue; // only high-weight questions
+
+    const groupKey = `CEILING::${mapping.moduleKey}`;
+    if (signalGroups.has(groupKey)) continue; // one ceiling signal per module max
+
+    // Only add ceiling signal if this module is NOT already flagged as weak
+    const moduleAlreadyWeak = Array.from(signalGroups.keys()).some(k => k.endsWith(`::${mapping.moduleKey}`));
+    if (moduleAlreadyWeak) continue;
+
+    // Only fire if the section score is high (≥65) — ceiling gap, not a weakness
+    const sectionScores = config.sectionScores ?? {};
+    const moduleScore = sectionScores[mapping.moduleKey] ?? 0;
+    if (moduleScore < 65) continue;
+
+    signalGroups.set(groupKey, {
+      signalCode: 'PROCESS_NOT_STANDARDISED' as any,
+      moduleKey: mapping.moduleKey,
+      questionIds: [questionId],
+      scores: { [questionId]: score },
+      maxSeverity: 'LOW' as any,
+      linkedKPIs: new Set(),
+    });
+  }
+
   const signals: GeneratedSignal[] = [];
 
   for (const group of signalGroups.values()) {
