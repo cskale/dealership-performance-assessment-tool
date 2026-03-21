@@ -1281,7 +1281,7 @@ export const questionnaire: Questionnaire = {
           text: "How consistent and predictable is your dealership's monthly cash flow?",
           description: "Rate the stability of cash inflows and outflows",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["Poor", "Fair", "Good", "Very Good", "Excellent"] },
+          scale: { min: 1, max: 5, labels: ["Regular cash shortfalls — payroll or supplier payments at risk", "Tight cash position — managed but little headroom", "Adequate cash flow, monthly obligations met comfortably", "Healthy position with 45+ days of operating reserves", "Strong liquidity with formal treasury management and investment buffer"] },
           weight: 1.8,
           category: "cashflow",
           purpose: "Assesses financial management effectiveness and business stability, crucial for operational continuity.",
@@ -1292,7 +1292,7 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How consistent and predictable is your dealership's monthly cash flow?",
               description: "Rate the stability of cash inflows and outflows",
-              scaleLabels: ["Poor", "Fair", "Good", "Very Good", "Excellent"]
+              scaleLabels: ["Regular cash shortfalls — payroll or supplier payments at risk", "Tight cash position — managed but little headroom", "Adequate cash flow, monthly obligations met comfortably", "Healthy position with 45+ days of operating reserves", "Strong liquidity with formal treasury management and investment buffer"]
             },
             de: {
               text: "Wie konsistent und vorhersehbar ist der monatliche Cashflow Ihres Autohauses?",
