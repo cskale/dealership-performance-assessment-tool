@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { MessageSquare, Save, ChevronRight, AlertCircle, StickyNote } from "lucide-react";
+import { MessageSquare, Save, ChevronRight, AlertCircle, StickyNote, Target, Search, BarChart3, Briefcase } from "lucide-react";
 import { Question, Section } from "@/data/questionnaire";
 import { useAssessmentNotes } from "@/hooks/useAssessmentNotes";
 import { useToast } from "@/hooks/use-toast";
@@ -278,7 +278,7 @@ export function CategoryAssessment({
                             {question.purpose && (
                               <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
                                 <h4 className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                                  🎯 {t('assessment.assessmentPurpose')}
+                                  <Target className="h-3.5 w-3.5 text-primary flex-shrink-0" /> {t('assessment.assessmentPurpose')}
                                 </h4>
                                 <p className="text-xs text-muted-foreground leading-relaxed">{question.purpose}</p>
                               </div>
@@ -286,7 +286,7 @@ export function CategoryAssessment({
                             {question.situationAnalysis && (
                               <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
                                 <h4 className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                                  🔎 {t('assessment.situationAnalysis')}
+                                  <Search className="h-3.5 w-3.5 text-primary flex-shrink-0" /> {t('assessment.situationAnalysis')}
                                 </h4>
                                 <p className="text-xs text-muted-foreground leading-relaxed">{question.situationAnalysis}</p>
                               </div>
@@ -294,7 +294,7 @@ export function CategoryAssessment({
                             {question.linkedKPIs && question.linkedKPIs.length > 0 && (
                               <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
                                 <h4 className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                                  📊 {t('assessment.linkedKPIs')}
+                                  <BarChart3 className="h-3.5 w-3.5 text-primary flex-shrink-0" /> {t('assessment.linkedKPIs')}
                                 </h4>
                                 <div className="flex flex-wrap gap-1.5 mt-1">
                                   {question.linkedKPIs.map((kpi, kpiIndex) => (
@@ -308,7 +308,7 @@ export function CategoryAssessment({
                             {question.benefits && (
                               <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
                                 <h4 className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                                  💼 {t('assessment.businessBenefits')}
+                                  <Briefcase className="h-3.5 w-3.5 text-primary flex-shrink-0" /> {t('assessment.businessBenefits')}
                                 </h4>
                                 <p className="text-xs text-muted-foreground leading-relaxed">{question.benefits}</p>
                               </div>
