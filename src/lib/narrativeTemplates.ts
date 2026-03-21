@@ -39,7 +39,7 @@ export interface NarrativeInput {
 
 export const SITUATION_TEMPLATES: Record<MaturityLevel, string> = {
   foundational:
-    'The assessment results reveal that {dealerName} is currently operating at a foundational level across key performance dimensions, with significant gaps between current practice and industry benchmarks. Core processes are either undefined or inconsistently applied, and the dealership lacks the structured infrastructure needed to sustain performance improvements over time. This stage represents a significant opportunity: dealers who successfully transition from foundational to developing typically achieve 15–25% improvements in operational efficiency within 12 months.',
+    '{dealerName} is currently operating at a foundational level across key performance dimensions, with significant gaps between current practice and industry benchmarks. Core processes are either undefined or inconsistently applied, and the dealership lacks the structured infrastructure needed to sustain performance improvements over time. This stage represents a significant opportunity: dealers who successfully transition from foundational to developing typically achieve 15–25% improvements in operational efficiency within 12 months.',
 
   developing:
     '{dealerName} is operating at a developing level, with some structured processes in place but inconsistent execution across departments and team members. The dealership has established the basic building blocks of performance management, yet has not yet embedded the discipline and accountability frameworks needed to translate intent into consistent outcomes. Dealers at this stage who close execution gaps typically move to capable-level performance within 6–9 months with targeted interventions.',
