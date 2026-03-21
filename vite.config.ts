@@ -24,4 +24,18 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'kpi-definitions': ['./src/lib/kpiDefinitions'],
+          'scoring-engine': ['./src/lib/scoringEngine', './src/lib/signalEngine'],
+          'vendor-pdf': ['jspdf', 'jspdf-autotable'],
+          'vendor-excel': ['xlsx'],
+          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-tabs', '@radix-ui/react-select'],
+        }
+      },
+    },
+    chunkSizeWarningLimit: 1000,
+  },
 }));
