@@ -60,9 +60,9 @@ function computeTriageScore(impact: number | null, effort: number | null, urgenc
 
 function getQuadrantLabel(impact: number, effort: number): string {
   if (impact >= 3 && effort <= 2) return 'Quick Win';
-  if (impact >= 3 && effort >= 3) return 'Major Project';
-  if (impact < 3 && effort <= 2) return 'Fill-in';
-  return 'Time Sink';
+  if (impact >= 3 && effort >= 3) return 'Strategic Initiative';
+  if (impact < 3 && effort <= 2) return 'Maintenance';
+  return 'Low Priority';
 }
 
 interface AuditEntry {
@@ -251,8 +251,8 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
     : null;
 
   const quadrantColor = quadrantLabel === 'Quick Win' ? 'text-green-600'
-    : quadrantLabel === 'Major Project' ? 'text-amber-600'
-    : quadrantLabel === 'Time Sink' ? 'text-destructive'
+    : quadrantLabel === 'Strategic Initiative' ? 'text-amber-600'
+    : quadrantLabel === 'Low Priority' ? 'text-destructive'
     : 'text-muted-foreground';
 
   function getKpiBadgeStyle(type: string) {
@@ -417,9 +417,9 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                             <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-slate-50 dark:bg-slate-950/20 rounded-bl-lg" />
                             <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-red-50 dark:bg-red-950/20 rounded-br-lg" />
                             <span className="absolute top-1 left-1 text-[9px] text-green-600">Quick Win</span>
-                            <span className="absolute top-1 right-1 text-[9px] text-amber-600 text-right">Major Project</span>
-                            <span className="absolute bottom-1 left-1 text-[9px] text-muted-foreground">Fill-in</span>
-                            <span className="absolute bottom-1 right-1 text-[9px] text-destructive text-right">Time Sink</span>
+                            <span className="absolute top-1 right-1 text-[9px] text-amber-600 text-right">Strategic Initiative</span>
+                            <span className="absolute bottom-1 left-1 text-[9px] text-muted-foreground">Maintenance</span>
+                            <span className="absolute bottom-1 right-1 text-[9px] text-destructive text-right">Low Priority</span>
                             <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border" />
                             <div className="absolute top-1/2 left-0 right-0 h-px bg-border" />
                             <div
