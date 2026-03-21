@@ -339,19 +339,74 @@ export function generateContextIntelligence(action: InstantiatedAction): Context
   }
   likely_consequences = likely_consequences.slice(0, 3);
 
-  // Triage scores based on priority and template characteristics
-  const priorityToImpact: Record<string, number> = { critical: 5, high: 4, medium: 3, low: 2 };
-  const priorityToUrgency: Record<string, number> = { critical: 5, high: 4, medium: 3, low: 2 };
-  
-  const impact_score = priorityToImpact[action.priority] || 3;
-  const urgency_score = priorityToUrgency[action.priority] || 3;
-  
-  // Effort based on timeframe
-  let effort_score: number;
-  if (action.defaultTimeframeDays <= 7) effort_score = 2;
-  else if (action.defaultTimeframeDays <= 14) effort_score = 3;
-  else if (action.defaultTimeframeDays <= 30) effort_score = 4;
-  else effort_score = 5;
+  // Formula-driven triage scoring
+  const MODULE_WEIGHTS: Record<string, number> = {
+    'New Vehicle Sales': 0.25,
+    'Used Vehicle Sales': 0.20,
+    'Service': 0.20,
+    'Financial Operations': 0.20,
+    'Parts & Inventory': 0.15,
+  };
+
+  const MODULE_BENCHMARKS: Record<string, number> = {
+    'New Vehicle Sales': 72,
+    'Used Vehicle Sales': 70,
+    'Service': 75,
+    'Financial Operations': 68,
+    'Parts & Inventory': 65,
+  };
+
+  const ROOT_CAUSE_MODIFIERS: Record<string, number> = {
+    people: 1.3,
+    structure: 1.2,
+    process: 1.0,
+    incentives: 0.9,
+    tools: 0.8,
+  };
+
+  const moduleWeight = MODULE_WEIGHTS[dept] ?? 0.20;
+  const benchmark = MODULE_BENCHMARKS[dept] ?? 70;
+
+  // Infer a representative score gap from the action priority
+  const priorityBaseScore: Record<string, number> = { critical: 30, high: 50, medium: 65, low: 75 };
+  const deptScore = priorityBaseScore[action.priority] ?? 60;
+  const scoreGap = Math.max(0, benchmark - deptScore);
+  const kpiCount = (action.linkedKPIs || []).length;
+
+  // impact = f(module_weight, score_gap, kpi_count) — raw 0–10, clamped to 1–5
+  const rawImpact = (moduleWeight * 10) + (scoreGap / 20) + (kpiCount * 0.25);
+  const impact_score = Math.min(5, Math.max(1, Math.round(rawImpact)));
+
+  // Infer root cause dimension from signal code
+  const signalToDimension: Record<string, string> = {
+    ROLE_OWNERSHIP_MISSING: 'people',
+    GOVERNANCE_WEAK: 'structure',
+    PROCESS_NOT_STANDARDISED: 'process',
+    PROCESS_NOT_EXECUTED: 'process',
+    KPI_NOT_DEFINED: 'process',
+    KPI_NOT_REVIEWED: 'process',
+    CAPACITY_MISALIGNED: 'incentives',
+    TOOL_UNDERUTILISED: 'tools',
+  };
+  const dimension = signalToDimension[signal] ?? 'process';
+  const rootCauseModifier = ROOT_CAUSE_MODIFIERS[dimension] ?? 1.0;
+
+  // effort = f(step_count proxy via timeframe, root_cause_dimension_modifier)
+  let stepProxy: number;
+  if (action.defaultTimeframeDays <= 7) stepProxy = 1;
+  else if (action.defaultTimeframeDays <= 14) stepProxy = 2;
+  else if (action.defaultTimeframeDays <= 30) stepProxy = 3;
+  else stepProxy = 4;
+  const rawEffort = stepProxy * rootCauseModifier;
+  const effort_score = Math.min(5, Math.max(1, Math.round(rawEffort)));
+
+  // urgency = f(priority_base, escalate if score < 60% of benchmark)
+  const priorityBaseUrgency: Record<string, number> = { critical: 5, high: 4, medium: 3, low: 2 };
+  let urgency_score = priorityBaseUrgency[action.priority] ?? 3;
+  if (deptScore < benchmark * 0.60) {
+    urgency_score = Math.min(5, urgency_score + 1);
+  }
+  urgency_score = Math.min(5, Math.max(1, urgency_score));
 
   return {
     action_context,
