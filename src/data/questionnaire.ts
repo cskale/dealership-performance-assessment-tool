@@ -167,7 +167,7 @@ export const questionnaire: Questionnaire = {
           text: "What is the average gross profit your dealership earns on each new vehicle sold?",
           description: "Calculate front-end profit after all discounts and incentives",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<$1,000", "$1,000-$2,000", "$2,000-$3,500", "$3,500-$5,000", ">$5,000"] },
+          scale: { min: 1, max: 5, labels: ["Below €500 per unit", "€500-€900 per unit", "€900-€1,400 per unit", "€1,400-€2,000 per unit", "Above €2,000 per unit"] },
           weight: 1.4,
           category: "profitability",
           purpose: "Assesses pricing strategy effectiveness and negotiation skills, directly impacting dealership profitability and financial sustainability.",
@@ -181,7 +181,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Assesses pricing strategy effectiveness and negotiation skills, directly impacting dealership profitability and financial sustainability.",
               situationAnalysis: "Profit margins indicate your competitive positioning, pricing power, and ability to add value during the sales process.",
               benefits: "Optimizing gross profit per unit significantly improves overall dealership profitability, cash flow, and ability to invest in growth initiatives.",
-              scaleLabels: ["<€1.000", "€1.000-€2.000", "€2.000-€3.500", "€3.500-€5.000", ">€5.000"]
+              scaleLabels: ["Below €500 per unit", "€500-€900 per unit", "€900-€1,400 per unit", "€1,400-€2,000 per unit", "Above €2,000 per unit"]
             },
             de: {
               text: "Wie hoch ist der durchschnittliche Bruttogewinn, den Ihr Autohaus bei jedem verkauften Neuwagen erzielt?",
@@ -198,7 +198,7 @@ export const questionnaire: Questionnaire = {
           text: "How long does it typically take from a customer's initial inquiry to vehicle delivery?",
           description: "Measure the average time from first contact to keys-in-hand",
           type: "scale",
-          scale: { min: 1, max: 5, labels: [">30 days", "21-30 days", "14-20 days", "7-13 days", "<7 days"] },
+          scale: { min: 1, max: 5, labels: ["No standard delivery process", "Checklist exists but inconsistently followed", "Documented process followed most of the time", "Consistent structured delivery with CSI follow-up", "Best-practice delivery with digital tools and systematic follow-up"] },
           weight: 1.1,
           category: "efficiency",
           purpose: "Evaluates process efficiency and customer experience quality, impacting customer satisfaction and competitive advantage.",
@@ -212,7 +212,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Evaluates process efficiency and customer experience quality, impacting customer satisfaction and competitive advantage.",
               situationAnalysis: "Faster delivery times improve customer satisfaction, reduce deal fallout, and enhance competitive positioning in the market.",
               benefits: "Reducing delivery time increases customer satisfaction, reduces cancellations, improves cash flow, and creates competitive differentiation.",
-              scaleLabels: [">30 days", "21-30 days", "14-20 days", "7-13 days", "<7 days"]
+              scaleLabels: ["No standard delivery process", "Checklist exists but inconsistently followed", "Documented process followed most of the time", "Consistent structured delivery with CSI follow-up", "Best-practice delivery with digital tools and systematic follow-up"]
             },
             de: {
               text: "Wie lange dauert es typischerweise von der ersten Kundenanfrage bis zur Fahrzeugauslieferung?",
@@ -229,7 +229,7 @@ export const questionnaire: Questionnaire = {
           text: "What percentage of your online leads result in actual showroom visits?",
           description: "Track conversion from digital inquiry to physical dealership visit",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<5%", "5-10%", "11-15%", "16-20%", ">20%"] },
+          scale: { min: 1, max: 5, labels: ["No digital presence — walk-ins only", "Basic website leads handled manually >1 day response", "CRM used for online leads same-day response", "Structured digital process <2 hour response conversion tracked", "Automated routing <5 min response full funnel analytics active"] },
           weight: 1.2,
           category: "digital",
           purpose: "Measures the effectiveness of your digital marketing strategy and online customer engagement capabilities.",
@@ -243,7 +243,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Measures the effectiveness of your digital marketing strategy and online customer engagement capabilities.",
               situationAnalysis: "Digital lead conversion indicates how well your online presence and digital sales funnel are performing in today's digital-first marketplace.",
               benefits: "Improving digital conversion reduces marketing costs, increases lead quality, and positions you ahead of competitors in the digital space.",
-              scaleLabels: ["<5%", "5-10%", "11-15%", "16-20%", ">20%"]
+              scaleLabels: ["No digital presence — walk-ins only", "Basic website leads handled manually >1 day response", "CRM used for online leads same-day response", "Structured digital process <2 hour response conversion tracked", "Automated routing <5 min response full funnel analytics active"]
             },
             de: {
               text: "Welcher Prozentsatz Ihrer Online-Leads führt zu tatsächlichen Showroom-Besuchen?",
@@ -260,7 +260,7 @@ export const questionnaire: Questionnaire = {
           text: "How frequently does your sales team receive formal training and skill development?",
           description: "Include product training, sales techniques, and customer service skills",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["Rarely", "Annually", "Bi-annually", "Quarterly", "Monthly"] },
+          scale: { min: 1, max: 5, labels: ["No formal training in the last 12 months", "1 manufacturer-required session per year only", "2x per year structured training most staff attend", "Quarterly training schedule with mandatory attendance and tracking", "Monthly development sessions 100% attendance certifications tracked"] },
           weight: 1.0,
           category: "training",
           purpose: "Assesses investment in team development and continuous improvement, which directly correlates with sales performance and customer satisfaction.",
@@ -274,7 +274,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Assesses investment in team development and continuous improvement, which directly correlates with sales performance and customer satisfaction.",
               situationAnalysis: "Regular training ensures your team stays updated with product knowledge, sales techniques, and industry best practices.",
               benefits: "Consistent training improves sales results, reduces staff turnover, enhances customer experience, and builds long-term competitive advantage.",
-              scaleLabels: ["Rarely", "Annually", "Bi-annually", "Quarterly", "Monthly"]
+              scaleLabels: ["No formal training in the last 12 months", "1 manufacturer-required session per year only", "2x per year structured training most staff attend", "Quarterly training schedule with mandatory attendance and tracking", "Monthly development sessions 100% attendance certifications tracked"]
             },
             de: {
               text: "Wie häufig erhält Ihr Verkaufsteam formale Schulungen und Kompetenzentwicklung?",
@@ -353,7 +353,7 @@ export const questionnaire: Questionnaire = {
           text: "How effectively does your team utilize the CRM system for lead management and follow-up?",
           description: "Consider data entry consistency, follow-up automation, and reporting usage",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["Poor", "Fair", "Good", "Very Good", "Excellent"] },
+          scale: { min: 1, max: 5, labels: ["CRM not used or <30% of leads logged", "Basic logging only 30-60% of interactions recorded", "Most leads logged limited automation used", "Consistent use automated follow-ups active weekly reports reviewed", "Full adoption all touchpoints logged pipeline managed reporting drives decisions"] },
           weight: 1.1,
           category: "technology",
           purpose: "Assesses your team's ability to leverage technology for customer relationship management and sales process optimization.",
@@ -367,7 +367,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Assesses your team's ability to leverage technology for customer relationship management and sales process optimization.",
               situationAnalysis: "Effective CRM usage indicates systematic approach to customer management, improved follow-up processes, and data-driven decision making.",
               benefits: "Better CRM utilization improves lead conversion, enhances customer relationships, increases repeat business, and provides valuable insights for growth.",
-              scaleLabels: ["Poor", "Fair", "Good", "Very Good", "Excellent"]
+              scaleLabels: ["CRM not used or <30% of leads logged", "Basic logging only 30-60% of interactions recorded", "Most leads logged limited automation used", "Consistent use automated follow-ups active weekly reports reviewed", "Full adoption all touchpoints logged pipeline managed reporting drives decisions"]
             },
             de: {
               text: "Wie effektiv nutzt Ihr Team das CRM-System für Lead-Management und Nachverfolgung?",
@@ -452,7 +452,7 @@ export const questionnaire: Questionnaire = {
           text: "How accurate are your initial trade-in valuations compared to the final selling prices achieved?",
           description: "Measure the consistency between appraisal values and actual sale outcomes",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<70%", "70-75%", "76-80%", "81-85%", ">85%"] },
+          scale: { min: 1, max: 5, labels: ["More than 21 days reconditioning time", "15-21 days", "10-14 days", "6-9 days", "Under 5 days — best-in-class reconditioning pipeline"] },
           weight: 1.2,
           category: "accuracy",
           purpose: "Measures the effectiveness of your appraisal process and market knowledge, impacting both acquisition costs and profitability.",
@@ -463,7 +463,7 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How accurate are your initial trade-in valuations compared to the final selling prices achieved?",
               description: "Measure the consistency between appraisal values and actual sale outcomes",
-              scaleLabels: ["<70%", "70-75%", "76-80%", "81-85%", ">85%"]
+              scaleLabels: ["More than 21 days reconditioning time", "15-21 days", "10-14 days", "6-9 days", "Under 5 days — best-in-class reconditioning pipeline"]
             },
             de: {
               text: "Wie genau sind Ihre anfänglichen Inzahlungnahme-Bewertungen im Vergleich zu den erzielten Endverkaufspreisen?",
@@ -627,7 +627,7 @@ export const questionnaire: Questionnaire = {
           text: "How effective is your strategy for managing vehicles that remain unsold for more than 60 days?",
           description: "Describe your aged inventory reduction approach and pricing adjustments",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["No strategy", "Reactive", "Basic plan", "Good plan", "Excellent plan"] },
+          scale: { min: 1, max: 5, labels: ["No process — vehicles age without intervention", "Ad-hoc price cuts only when pressure builds", "30-day review trigger with basic price adjustment", "Structured 21-day review targeted marketing 45-day exit rule", "Real-time tracking with automated price adjustments and proactive disposal strategy"] },
           weight: 1.3,
           category: "inventory",
           purpose: "Assesses risk management and inventory optimization strategies, crucial for maintaining healthy cash flow and profitability.",
@@ -638,7 +638,7 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How effective is your strategy for managing vehicles that remain unsold for more than 60 days?",
               description: "Describe your aged inventory reduction approach and pricing adjustments",
-              scaleLabels: ["No strategy", "Reactive", "Basic plan", "Good plan", "Excellent plan"]
+              scaleLabels: ["No process — vehicles age without intervention", "Ad-hoc price cuts only when pressure builds", "30-day review trigger with basic price adjustment", "Structured 21-day review targeted marketing 45-day exit rule", "Real-time tracking with automated price adjustments and proactive disposal strategy"]
             },
             de: {
               text: "Wie effektiv ist Ihre Strategie zur Verwaltung von Fahrzeugen, die länger als 60 Tage unverkauft bleiben?",
@@ -720,7 +720,7 @@ export const questionnaire: Questionnaire = {
           text: "How soon can customers typically get an appointment for routine service at your dealership?",
           description: "Measure average wait time from request to available appointment slot",
           type: "scale",
-          scale: { min: 1, max: 5, labels: [">14 days", "8-14 days", "4-7 days", "2-3 days", "Same/next day"] },
+          scale: { min: 1, max: 5, labels: ["Below €150 ARO", "€150-€220 ARO below benchmark", "€220-€300 ARO at European average", "€300-€400 ARO above average", "Above €400 ARO active multi-point inspection process"] },
           weight: 1.3,
           category: "availability",
           purpose: "Measures customer convenience and operational capacity, directly affecting customer satisfaction and retention.",
@@ -731,7 +731,7 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How soon can customers typically get an appointment for routine service at your dealership?",
               description: "Measure average wait time from request to available appointment slot",
-              scaleLabels: [">14 days", "8-14 days", "4-7 days", "2-3 days", "Same/next day"]
+              scaleLabels: ["Below €150 ARO", "€150-€220 ARO below benchmark", "€220-€300 ARO at European average", "€300-€400 ARO above average", "Above €400 ARO active multi-point inspection process"]
             },
             de: {
               text: "Wie schnell können Kunden typischerweise einen Termin für Routineservice in Ihrem Autohaus bekommen?",
@@ -895,7 +895,7 @@ export const questionnaire: Questionnaire = {
           text: "How effectively do you use digital tools to keep customers informed about their vehicle's service status?",
           description: "Include text updates, service videos, digital inspections, and online payment",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["None", "Basic", "Good", "Very Good", "Excellent"] },
+          scale: { min: 1, max: 5, labels: ["No digital communication — phone calls only", "Email updates on request only", "Proactive SMS/email status updates on job completion", "Digital inspection reports with photos online payment available", "Full digital journey — video inspection status tracker online payment follow-up survey"] },
           weight: 1.0,
           category: "digital",
           purpose: "Assesses adoption of modern communication tools, enhancing customer experience and operational efficiency.",
@@ -906,7 +906,7 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How effectively do you use digital tools to keep customers informed about their vehicle's service status?",
               description: "Include text updates, service videos, digital inspections, and online payment",
-              scaleLabels: ["None", "Basic", "Good", "Very Good", "Excellent"]
+              scaleLabels: ["No digital communication — phone calls only", "Email updates on request only", "Proactive SMS/email status updates on job completion", "Digital inspection reports with photos online payment available", "Full digital journey — video inspection status tracker online payment follow-up survey"]
             },
             de: {
               text: "Wie effektiv nutzen Sie digitale Tools, um Kunden über den Servicestatus ihres Fahrzeugs zu informieren?",
@@ -920,7 +920,7 @@ export const questionnaire: Questionnaire = {
           text: "How many repair orders does each service advisor typically process per day?",
           description: "Calculate average daily RO count per advisor",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<8 ROs", "8-10 ROs", "11-13 ROs", "14-16 ROs", ">16 ROs"] },
+          scale: { min: 1, max: 5, labels: ["Under 6 ROs per advisor per day", "6-8 ROs per day below benchmark", "9-11 ROs per day at European benchmark", "12-14 ROs per day above average", "15+ ROs per day high-efficiency operation with DMS workflow support"] },
           weight: 1.3,
           category: "productivity",
           purpose: "Measures front-end efficiency and customer handling capacity, directly impacting service department revenue.",
@@ -931,7 +931,7 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How many repair orders does each service advisor typically process per day?",
               description: "Calculate average daily RO count per advisor",
-              scaleLabels: ["<8 ROs", "8-10 ROs", "11-13 ROs", "14-16 ROs", ">16 ROs"]
+              scaleLabels: ["Under 6 ROs per advisor per day", "6-8 ROs per day below benchmark", "9-11 ROs per day at European benchmark", "12-14 ROs per day above average", "15+ ROs per day high-efficiency operation with DMS workflow support"]
             },
             de: {
               text: "Wie viele Reparaturaufträge bearbeitet jeder Serviceberater typischerweise pro Tag?",
@@ -1256,7 +1256,7 @@ export const questionnaire: Questionnaire = {
           text: "How would you describe your dealership's overall profitability trend over the past 12 months?",
           description: "Consider net profit growth, stability, or decline patterns",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["Declining", "Stable/Low", "Moderate", "Good", "Excellent"] },
+          scale: { min: 1, max: 5, labels: ["Net profit declining more than 20% versus prior year", "Declining 0-20% or breakeven no recovery plan in place", "Stable net profit 1-2% net margin", "Growing net profit 2-4% net margin", "Net profit above 4% and improving year-on-year"] },
           weight: 2.0,
           category: "profitability",
           purpose: "Evaluates overall business performance and sustainability, the ultimate measure of dealership success.",
@@ -1267,7 +1267,7 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How would you describe your dealership's overall profitability trend over the past 12 months?",
               description: "Consider net profit growth, stability, or decline patterns",
-              scaleLabels: ["Declining", "Stable/Low", "Moderate", "Good", "Excellent"]
+              scaleLabels: ["Net profit declining more than 20% versus prior year", "Declining 0-20% or breakeven no recovery plan in place", "Stable net profit 1-2% net margin", "Growing net profit 2-4% net margin", "Net profit above 4% and improving year-on-year"]
             },
             de: {
               text: "Wie würden Sie den Rentabilitätstrend Ihres Autohauses in den letzten 12 Monaten beschreiben?",
