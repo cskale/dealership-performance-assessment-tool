@@ -214,7 +214,6 @@ export default function Results() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-muted">
-        <AppHeader />
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="text-center space-y-6">
             <Skeleton className="h-8 w-48 mx-auto" />
