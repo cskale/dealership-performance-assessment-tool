@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { MessageSquare, Save, ChevronRight, AlertCircle, StickyNote, Target, Search, BarChart3, Briefcase } from "lucide-react";
+import { MessageSquare, Save, ChevronRight, StickyNote } from "lucide-react";
 import { Question, Section } from "@/data/questionnaire";
 import { useAssessmentNotes } from "@/hooks/useAssessmentNotes";
 import { useToast } from "@/hooks/use-toast";
@@ -28,7 +27,6 @@ export function CategoryAssessment({
   canContinue,
   isLastSection 
 }: CategoryAssessmentProps) {
-  const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(new Set());
   const [notesText, setNotesText] = useState<Record<string, string>>({});
   const [autoSaveTimers, setAutoSaveTimers] = useState<Record<string, NodeJS.Timeout>>({});
   const questionRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -54,11 +52,9 @@ export function CategoryAssessment({
   const handleRatingClick = (questionId: string, rating: number) => {
     onAnswer(questionId, rating);
     
-    // Find the next unanswered question and scroll to it
     const currentIndex = section.questions.findIndex(q => q.id === questionId);
-    let nextQuestion = null;
+    let nextQuestion: Question | null = null;
     
-    // First, look for the next unanswered question after the current one
     for (let i = currentIndex + 1; i < section.questions.length; i++) {
       if (answers[section.questions[i].id] === undefined) {
         nextQuestion = section.questions[i];
@@ -66,7 +62,6 @@ export function CategoryAssessment({
       }
     }
     
-    // If no unanswered question found after current, check from the beginning
     if (!nextQuestion) {
       for (let i = 0; i < currentIndex; i++) {
         if (answers[section.questions[i].id] === undefined) {
@@ -76,10 +71,9 @@ export function CategoryAssessment({
       }
     }
     
-    // If there's a next unanswered question, scroll to it smoothly
     if (nextQuestion && questionRefs.current[nextQuestion.id]) {
       setTimeout(() => {
-        questionRefs.current[nextQuestion.id]?.scrollIntoView({
+        questionRefs.current[nextQuestion!.id]?.scrollIntoView({
           behavior: 'smooth',
           block: 'center'
         });
@@ -106,18 +100,6 @@ export function CategoryAssessment({
     setAutoSaveTimers(prev => ({ ...prev, [questionId]: timer }));
   };
 
-  const toggleQuestionExpansion = (questionId: string) => {
-    setExpandedQuestions(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(questionId)) {
-        newSet.delete(questionId);
-      } else {
-        newSet.add(questionId);
-      }
-      return newSet;
-    });
-  };
-
   const getRatingText = (question: Question, rating: number) => {
     if (!question.scale) return "";
     return question.scale.labels[rating - 1] || "";
@@ -130,6 +112,9 @@ export function CategoryAssessment({
       });
     };
   }, [autoSaveTimers]);
+
+  const hasContext = (question: Question) =>
+    !!(question.purpose || question.situationAnalysis || question.linkedKPIs?.length || question.benefits);
 
   return (
     <div className="space-y-4">
@@ -169,6 +154,7 @@ export function CategoryAssessment({
       <div className="space-y-4">
         {section.questions.map((question, index) => {
           const value = answers[question.id];
+          const showContext = hasContext(question);
           
           return (
             <Card 
@@ -177,193 +163,187 @@ export function CategoryAssessment({
               className="border bg-white hover:shadow-sm transition-all duration-200"
             >
               <CardContent className="p-5">
-                <div className="space-y-3 mb-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-1">
-                      <div className="flex items-start gap-2 mb-1">
-                        <span className="text-xs font-medium text-muted-foreground">Q{index + 1}</span>
-                        <Badge variant="outline" className="text-xs h-5 font-normal">
-                          {question.category}
-                        </Badge>
-                        {value !== undefined && (
-                          <Badge className="text-xs h-5 bg-green-100 text-green-700 border-green-200">
-                            ✓ Answered
-                          </Badge>
-                        )}
-                      </div>
-                      <h3 className="text-base font-medium text-foreground leading-relaxed">
-                        {question.text}
-                      </h3>
-                      {question.description && (
-                        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                          {question.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {question.type === "scale" && question.scale && (
-                  <div className="space-y-4 mb-4">
-                    <div className="text-xs text-muted-foreground text-center">
-                      {t('assessment.rateFrom')} {question.scale.min} ({t('assessment.lowest')}) {t('assessment.to')} {question.scale.max} ({t('assessment.highest')})
-                    </div>
-
-                    <div className="grid grid-cols-5 gap-2">
-                      {Array.from({ length: question.scale.max }, (_, i) => {
-                        const rating = i + 1;
-                        const isSelected = value === rating;
-                        const label = getRatingText(question, rating);
-
-                        return (
-                          <Button
-                            key={rating}
-                            variant={isSelected ? "default" : "outline"}
-                            onClick={() => handleRatingClick(question.id, rating)}
-                            className={`min-h-[80px] h-auto p-2 flex flex-col items-center justify-start gap-1 transition-all duration-200 ${
-                              isSelected
-                                ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                                : "border hover:bg-muted/50 hover:scale-[1.02]"
-                            }`}
-                          >
-                            <span className={`text-xl font-medium ${isSelected ? '' : 'text-foreground'}`}>
-                              {rating}
-                            </span>
-                            <span className={`text-[10px] text-center leading-tight whitespace-normal break-words w-full overflow-visible ${
-                              isSelected ? 'opacity-90' : 'text-muted-foreground'
-                            }`}>
-                              {label}
-                            </span>
-                          </Button>
-                        );
-                      })}
-                    </div>
-
-                    {value !== undefined && (
-                      <div className="flex items-center gap-1.5 mt-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
-                        <span className="text-xs text-muted-foreground">Saved</span>
-                      </div>
-                    )}
-
-                    {value && (
-                      <div className="text-center p-3 bg-muted/30 rounded border">
-                        <p className="text-sm text-foreground">
-                          <span className="font-medium">{t('assessment.selected')}:</span> {value} - {getRatingText(question, value)}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {(question.purpose || question.situationAnalysis || question.linkedKPIs || question.benefits) && (
-                  <Card className="border bg-card mb-4">
-                    <CardContent className="p-0">
-                      <Collapsible 
-                        open={expandedQuestions.has(question.id)}
-                        onOpenChange={() => toggleQuestionExpansion(question.id)}
-                      >
-                        <CollapsibleTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            className="w-full justify-between p-4 h-auto text-left hover:bg-muted/50"
-                          >
-                            <div className="flex items-center gap-2">
-                              <AlertCircle className="h-4 w-4 text-primary" />
-                              <span className="font-medium text-foreground">
-                                {t('assessment.whyThisMatters')}
-                              </span>
-                            </div>
-                            <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${
-                              expandedQuestions.has(question.id) ? 'rotate-90' : ''
-                            }`} />
-                          </Button>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="px-4 pb-4">
-                          {/* P2.1: Structured sub-cards */}
-                          <div className="grid gap-3 sm:grid-cols-2">
-                            {question.purpose && (
-                              <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
-                                <h4 className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                                  <Target className="h-3.5 w-3.5 text-primary flex-shrink-0" /> {t('assessment.assessmentPurpose')}
-                                </h4>
-                                <p className="text-xs text-muted-foreground leading-relaxed">{question.purpose}</p>
-                              </div>
-                            )}
-                            {question.situationAnalysis && (
-                              <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
-                                <h4 className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                                  <Search className="h-3.5 w-3.5 text-primary flex-shrink-0" /> {t('assessment.situationAnalysis')}
-                                </h4>
-                                <p className="text-xs text-muted-foreground leading-relaxed">{question.situationAnalysis}</p>
-                              </div>
-                            )}
-                            {question.linkedKPIs && question.linkedKPIs.length > 0 && (
-                              <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
-                                <h4 className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                                  <BarChart3 className="h-3.5 w-3.5 text-primary flex-shrink-0" /> {t('assessment.linkedKPIs')}
-                                </h4>
-                                <div className="flex flex-wrap gap-1.5 mt-1">
-                                  {question.linkedKPIs.map((kpi, kpiIndex) => (
-                                    <Badge key={kpiIndex} variant="outline" className="text-xs">
-                                      {kpi}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                            {question.benefits && (
-                              <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
-                                <h4 className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                                  <Briefcase className="h-3.5 w-3.5 text-primary flex-shrink-0" /> {t('assessment.businessBenefits')}
-                                </h4>
-                                <p className="text-xs text-muted-foreground leading-relaxed">{question.benefits}</p>
-                              </div>
+                <div className={showContext ? 'grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5' : ''}>
+                  {/* Left column — question + rating + notes */}
+                  <div>
+                    <div className="space-y-3 mb-4">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-1">
+                          <div className="flex items-start gap-2 mb-1">
+                            <span className="text-xs font-medium text-[hsl(var(--dd-ghost))]">Q{index + 1}</span>
+                            <Badge variant="outline" className="text-xs h-5 font-normal">
+                              {question.category}
+                            </Badge>
+                            {value !== undefined && (
+                              <Badge className="text-xs h-5 bg-[hsl(var(--dd-green-light))] text-[hsl(var(--dd-ink))] border border-[hsl(var(--dd-rule))]">
+                                ✓ Answered
+                              </Badge>
                             )}
                           </div>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    </CardContent>
-                  </Card>
-                )}
+                          <h3 className="text-base font-medium text-foreground leading-relaxed">
+                            {question.text}
+                          </h3>
+                          {question.description && (
+                            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                              {question.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
 
-                <Card className="border bg-white">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <MessageSquare className="h-4 w-4 text-primary" />
-                      <label className="text-sm font-medium text-foreground">
-                        {t('assessment.additionalNotes')}
-                        {hasNotes(question.id) && (
-                          <Badge variant="outline" className="ml-2 text-xs text-primary">
-                            {t('assessment.saved')}
-                          </Badge>
+                    {question.type === "scale" && question.scale && (
+                      <div className="space-y-4 mb-4">
+                        <div className="text-xs text-[hsl(var(--dd-ghost))] text-center">
+                          {t('assessment.rateFrom')} {question.scale.min} ({t('assessment.lowest')}) {t('assessment.to')} {question.scale.max} ({t('assessment.highest')})
+                        </div>
+
+                        {/* Neutral rating tiles */}
+                        <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
+                          {Array.from({ length: question.scale.max }, (_, i) => {
+                            const rating = i + 1;
+                            const isSelected = value === rating;
+                            const label = getRatingText(question, rating);
+
+                            return (
+                              <button
+                                key={rating}
+                                type="button"
+                                onClick={() => handleRatingClick(question.id, rating)}
+                                className={`rounded-lg p-3 text-center transition-all cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-[hsl(var(--dd-accent-light))] border-l-[3px] border-l-[hsl(var(--dd-accent))] border-t border-r border-b border-[hsl(var(--dd-accent-mid))]'
+                                    : 'bg-white border border-[hsl(var(--dd-rule))] hover:border-[hsl(var(--dd-accent-mid))] hover:bg-[hsl(var(--dd-accent-light))]'
+                                }`}
+                              >
+                                <span className="block text-[15px] font-semibold text-[hsl(var(--dd-ink))] mb-1">
+                                  {rating}
+                                </span>
+                                <span className="block text-[11px] text-[hsl(var(--dd-muted))] leading-tight text-center">
+                                  {label}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {value !== undefined && (
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--dd-green))] flex-shrink-0" />
+                            <span className="text-xs text-[hsl(var(--dd-ghost))]">Saved</span>
+                          </div>
                         )}
-                      </label>
+
+                        {value && (
+                          <div className="text-center p-3 bg-[hsl(var(--dd-accent-light))] rounded-lg border border-[hsl(var(--dd-accent-mid))]">
+                            <p className="text-sm text-[hsl(var(--dd-ink))]">
+                              <span className="font-medium">{t('assessment.selected')}:</span> {value} - {getRatingText(question, value)}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Notes */}
+                    <div className="border border-[hsl(var(--dd-rule))] rounded-lg bg-white p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <MessageSquare className="h-4 w-4 text-[hsl(var(--dd-accent))]" />
+                        <label className="text-sm font-medium text-foreground">
+                          {t('assessment.additionalNotes')}
+                          {hasNotes(question.id) && (
+                            <Badge variant="outline" className="ml-2 text-xs text-[hsl(var(--dd-accent))]">
+                              {t('assessment.saved')}
+                            </Badge>
+                          )}
+                        </label>
+                      </div>
+                      <Textarea
+                        value={notesText[question.id] || ''}
+                        onChange={(e) => handleNotesChange(question.id, e.target.value)}
+                        placeholder={t('assessment.placeholder.notes')}
+                        rows={3}
+                        maxLength={5000}
+                        className="w-full bg-white border border-[hsl(var(--dd-rule))]"
+                      />
+                      <p className="text-xs text-[hsl(var(--dd-ghost))] text-right mt-1">
+                        {5000 - (notesText[question.id]?.length ?? 0)} characters remaining
+                      </p>
+                      <div className="text-xs text-[hsl(var(--dd-ghost))] mt-2 flex items-center gap-1">
+                        <Save className="h-3 w-3" />
+                        {t('assessment.autoSaves')}
+                      </div>
                     </div>
-                    <Textarea
-                      value={notesText[question.id] || ''}
-                      onChange={(e) => handleNotesChange(question.id, e.target.value)}
-                      placeholder={t('assessment.placeholder.notes')}
-                      rows={3}
-                      maxLength={5000}
-                      className="w-full bg-white border"
-                    />
-                    <p className="text-xs text-muted-foreground text-right mt-1">
-                      {5000 - (notesText[question.id]?.length ?? 0)} characters remaining
-                    </p>
-                    <div className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                      <Save className="h-3 w-3" />
-                      {t('assessment.autoSaves')}
+                  </div>
+
+                  {/* Right column — persistent context panel */}
+                  {showContext && (
+                    <div className="bg-[hsl(var(--dd-fog))] border border-[hsl(var(--dd-rule))] rounded-xl p-5 h-fit sticky top-6">
+                      <div className="text-[11px] font-semibold uppercase tracking-widest text-[hsl(var(--dd-ghost))] mb-4">
+                        Context
+                      </div>
+
+                      <div className="divide-y divide-[hsl(var(--dd-rule))]">
+                        {question.purpose && (
+                          <div className="py-3 first:pt-0">
+                            <div className="text-[11px] font-semibold uppercase tracking-wider text-[hsl(var(--dd-ghost))] mb-1">
+                              Purpose
+                            </div>
+                            <p className="text-[12px] text-[hsl(var(--dd-muted))] leading-relaxed">
+                              {question.purpose}
+                            </p>
+                          </div>
+                        )}
+
+                        {question.situationAnalysis && (
+                          <div className="py-3">
+                            <div className="text-[11px] font-semibold uppercase tracking-wider text-[hsl(var(--dd-ghost))] mb-1">
+                              Situation Analysis
+                            </div>
+                            <p className="text-[12px] text-[hsl(var(--dd-muted))] leading-relaxed">
+                              {question.situationAnalysis}
+                            </p>
+                          </div>
+                        )}
+
+                        {question.linkedKPIs && question.linkedKPIs.length > 0 && (
+                          <div className="py-3">
+                            <div className="text-[11px] font-semibold uppercase tracking-wider text-[hsl(var(--dd-ghost))] mb-1">
+                              Linked KPIs
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {question.linkedKPIs.map((kpi, kpiIndex) => (
+                                <span
+                                  key={kpiIndex}
+                                  className="text-[11px] font-medium bg-white border border-[hsl(var(--dd-rule))] rounded-full px-2.5 py-0.5 text-[hsl(var(--dd-ink))]"
+                                >
+                                  {kpi}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {question.benefits && (
+                          <div className="py-3">
+                            <div className="text-[11px] font-semibold uppercase tracking-wider text-[hsl(var(--dd-ghost))] mb-1">
+                              Business Benefits
+                            </div>
+                            <p className="text-[12px] text-[hsl(var(--dd-muted))] leading-relaxed">
+                              {question.benefits}
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  )}
+                </div>
               </CardContent>
             </Card>
           );
         })}
       </div>
 
-      <Card className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-0">
+      <Card className="bg-gradient-to-r from-[hsl(var(--dd-accent))] to-[hsl(var(--dd-accent))]/80 text-white border-0">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -373,7 +353,7 @@ export function CategoryAssessment({
                   : `${answeredQuestions}/${section.questions.length} ${t('assessment.questionsAnswered')}`
                 }
               </h3>
-              <p className="text-primary-foreground/80">
+              <p className="text-white/80">
                 {answeredQuestions === section.questions.length
                   ? isLastSection 
                     ? t('assessment.readyToView')
