@@ -8,7 +8,7 @@ import { Loader2, Search, BookOpen, Star, Bookmark, Sparkles } from 'lucide-reac
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { AppHeader } from '@/components/AppHeader';
+
 import { ResourceCard } from '@/components/ResourceCard';
 import { toast } from 'sonner';
 

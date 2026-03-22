@@ -14,7 +14,7 @@ import { MaturityScoring } from "@/components/MaturityScoring";
 import { ActionPlan } from "@/components/ActionPlan";
 import { UsefulResources } from "@/components/UsefulResources";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { AppHeader } from "@/components/AppHeader";
+
 import { ExportPDFModal } from "@/components/ExportPDFModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useMultiTenant } from "@/hooks/useMultiTenant";
