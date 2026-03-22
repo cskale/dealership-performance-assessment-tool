@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
 import {
   BarChart3, Building2, Plus, ClipboardList, CheckSquare,
-  BookOpen, FileText, LogOut,
+  BookOpen, FileText, LogOut, Database,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -15,6 +15,10 @@ export function AppSidebar() {
   const location = useLocation();
   const [completedCount, setCompletedCount] = useState(0);
 
+  // Route guard — never render on public pages
+  const publicRoutes = ['/', '/auth', '/methodology', '/invite'];
+  const isPublic = publicRoutes.some(r => location.pathname === r || location.pathname.startsWith(r + '/'));
+  
   useEffect(() => {
     const fetchCount = async () => {
       if (!user) return;
@@ -27,6 +31,8 @@ export function AppSidebar() {
     };
     fetchCount();
   }, [user]);
+
+  if (isPublic) return null;
 
   const currentRole = userMemberships.find(
     m => m.organization_id === currentOrganization?.id
@@ -76,7 +82,8 @@ export function AppSidebar() {
     {
       label: 'Reference',
       items: [
-        { path: '/resources', label: 'KPI Encyclopedia', icon: BookOpen },
+        { path: '/kpi-encyclopedia', label: 'KPI Encyclopedia', icon: Database },
+        { path: '/resources', label: 'Resource Hub', icon: BookOpen },
         { path: '/methodology', label: 'Methodology', icon: FileText },
       ],
     },
@@ -86,7 +93,7 @@ export function AppSidebar() {
     <aside className="w-60 shrink-0 bg-[hsl(var(--dd-midnight))] flex flex-col h-screen sticky top-0">
       {/* Header */}
       <div className="px-5 py-4 border-b border-white/[0.06]">
-        <Link to="/" className="flex items-center gap-2.5">
+        <Link to="/app/dashboard" className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-[hsl(var(--dd-accent))] flex items-center justify-center">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <rect x="1" y="1" width="5" height="5" rx="1" fill="white" />

@@ -292,11 +292,9 @@ const Account = () => {
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-background-secondary, #F5F5F5)' }}>
-      {/* Back button */}
-      <div style={{ background: 'white', borderBottom: '0.5px solid var(--color-border-tertiary)', padding: '12px 24px' }}>
-        <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Dashboard
-        </Button>
+      {/* Page header */}
+      <div style={{ background: 'white', borderBottom: '0.5px solid var(--color-border-tertiary)', padding: '16px 24px' }}>
+        <h1 style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>Account Settings</h1>
       </div>
 
       {/* Two-column layout */}
