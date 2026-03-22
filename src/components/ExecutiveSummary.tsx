@@ -279,44 +279,59 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
       )}
 
       {/* SECTION 2 — Department Score Cards */}
-      <Card className="shadow-lg border">
-        <CardHeader>
-          <CardTitle className="text-base font-semibold text-foreground">
-            Department Performance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {Object.entries(scores)
+      <div>
+        <h3 className="text-[11px] font-semibold uppercase tracking-widest text-[hsl(var(--dd-ghost))] mb-3">
+          Department Performance
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          {(() => {
+            const MODULE_BADGE_MAP: Record<string, "module-nvs" | "module-uvs" | "module-service" | "module-financial" | "module-parts"> = {
+              'new-vehicle-sales': 'module-nvs',
+              'used-vehicle-sales': 'module-uvs',
+              'service-performance': 'module-service',
+              'financial-operations': 'module-financial',
+              'parts-inventory': 'module-parts',
+            };
+            const MODULE_SHORT: Record<string, string> = {
+              'new-vehicle-sales': 'NVS',
+              'used-vehicle-sales': 'UVS',
+              'service-performance': 'Service',
+              'financial-operations': 'Finance',
+              'parts-inventory': 'Parts',
+            };
+            return Object.entries(scores)
               .sort(([, a], [, b]) => b - a)
               .map(([dept, score]) => {
                 const benchmark = MODULE_BENCHMARKS[dept] ?? 72;
                 const gap = score - benchmark;
-                const isAbove = gap >= 0;
-                const statusColor = score >= 75 ? 'border-green-200 bg-green-50/50'
-                  : score >= 55 ? 'border-amber-200 bg-amber-50/50'
-                  : 'border-red-200 bg-red-50/50';
-                const scoreColor = score >= 75 ? 'text-green-700'
-                  : score >= 55 ? 'text-amber-700'
-                  : 'text-red-700';
+                const fillColor = gap >= 0
+                  ? 'bg-[hsl(var(--dd-green))]'
+                  : gap >= -10
+                  ? 'bg-[hsl(var(--dd-amber))]'
+                  : 'bg-[hsl(var(--dd-red))]';
                 return (
-                  <div key={dept} className={`rounded-lg border p-4 text-center ${statusColor}`}>
-                    <div className="text-sm text-muted-foreground font-medium mb-1">
-                      {getDepartmentName(dept, language)}
+                  <div key={dept} className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                    <Badge variant={MODULE_BADGE_MAP[dept] ?? 'module-parts'} className="mb-2">
+                      {MODULE_SHORT[dept] ?? getDepartmentName(dept, language)}
+                    </Badge>
+                    <div className="text-[24px] font-semibold tracking-tight text-[hsl(var(--dd-ink))]">
+                      {score}
                     </div>
-                    <div className={`text-3xl font-bold ${scoreColor}`}>{score}%</div>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      <span className={isAbove ? 'text-green-600' : 'text-red-600'}>
-                        {isAbove ? '+' : ''}{gap} vs benchmark
-                      </span>
+                    <div className="h-1.5 bg-[hsl(var(--dd-fog))] rounded-full w-full mt-2">
+                      <div
+                        className={`h-full rounded-full ${fillColor}`}
+                        style={{ width: `${Math.min(100, score)}%` }}
+                      />
                     </div>
-                    <Progress value={score} className="mt-2 h-1.5" />
+                    <div className="text-[10px] font-mono text-[hsl(var(--dd-ghost))] mt-1">
+                      Benchmark: {benchmark}
+                    </div>
                   </div>
                 );
-              })}
-          </div>
-        </CardContent>
-      </Card>
+              });
+          })()}
+        </div>
+      </div>
 
       {/* SECTION 3 — Top Findings */}
       {topSignals.length > 0 && (
