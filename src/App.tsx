@@ -22,12 +22,13 @@ import { RoleProvider } from "@/contexts/RoleContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { PageErrorBoundary } from "@/components/shared/ErrorBoundary";
+import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000,      // 5 min — prevents redundant refetches on remount
-      gcTime: 10 * 60 * 1000,         // 10 min garbage collection window
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
       retry: 1,
       refetchOnWindowFocus: false,
     },
@@ -52,46 +53,59 @@ const App = () => (
                   fallbackMessage="The application encountered an unexpected error. Please refresh the page or return to the home page."
                 >
                   <Routes>
+                    {/* Public routes — no sidebar */}
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
                     <Route path="/methodology" element={<Methodology />} />
                     <Route path="/invite/:token" element={<AcceptInvite />} />
+
+                    {/* Authenticated routes — wrapped in sidebar layout */}
                     <Route path="/app/*" element={
                       <ProtectedRoute>
-                        <Routes>
-                          <Route index element={<Index />} />
-                          <Route path="dashboard" element={<Dashboard />} />
-                          <Route path="onboarding" element={<Onboarding />} />
-                          <Route path="assessment" element={
-                            <ProtectedRoute requiresOnboarding>
-                              <Assessment />
-                            </ProtectedRoute>
-                          } />
-                          <Route path="results" element={<Results />} />
-                          <Route path="results/:assessmentId" element={<Results />} />
-                        </Routes>
+                        <AuthenticatedLayout>
+                          <Routes>
+                            <Route index element={<Index />} />
+                            <Route path="dashboard" element={<Dashboard />} />
+                            <Route path="onboarding" element={<Onboarding />} />
+                            <Route path="assessment" element={
+                              <ProtectedRoute requiresOnboarding>
+                                <Assessment />
+                              </ProtectedRoute>
+                            } />
+                            <Route path="results" element={<Results />} />
+                            <Route path="results/:assessmentId" element={<Results />} />
+                          </Routes>
+                        </AuthenticatedLayout>
                       </ProtectedRoute>
                     } />
                     <Route path="/account/*" element={
                       <ProtectedRoute>
-                        <Routes>
-                          <Route index element={<Account />} />
-                        </Routes>
+                        <AuthenticatedLayout>
+                          <Routes>
+                            <Route index element={<Account />} />
+                          </Routes>
+                        </AuthenticatedLayout>
                       </ProtectedRoute>
                     } />
                     <Route path="/actions" element={
                       <ProtectedRoute>
-                        <Actions />
+                        <AuthenticatedLayout>
+                          <Actions />
+                        </AuthenticatedLayout>
                       </ProtectedRoute>
                     } />
                     <Route path="/resources" element={
                       <ProtectedRoute>
-                        <ResourceHub />
+                        <AuthenticatedLayout>
+                          <ResourceHub />
+                        </AuthenticatedLayout>
                       </ProtectedRoute>
                     } />
                     <Route path="/" element={
                       <ProtectedRoute>
-                        <Index />
+                        <AuthenticatedLayout>
+                          <Index />
+                        </AuthenticatedLayout>
                       </ProtectedRoute>
                     } />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

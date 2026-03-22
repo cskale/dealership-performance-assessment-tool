@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { AppHeader } from "@/components/AppHeader";
+
 
 interface KPICardProps {
   title: string;
@@ -105,7 +105,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-muted">
-      <AppHeader />
+      
 
       {/* Context bar */}
       <div className="border-b bg-card">

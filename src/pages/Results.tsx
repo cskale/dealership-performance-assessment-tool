@@ -14,7 +14,7 @@ import { MaturityScoring } from "@/components/MaturityScoring";
 import { ActionPlan } from "@/components/ActionPlan";
 import { UsefulResources } from "@/components/UsefulResources";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { AppHeader } from "@/components/AppHeader";
+
 import { ExportPDFModal } from "@/components/ExportPDFModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useMultiTenant } from "@/hooks/useMultiTenant";
@@ -214,7 +214,6 @@ export default function Results() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-muted">
-        <AppHeader />
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="text-center space-y-6">
             <Skeleton className="h-8 w-48 mx-auto" />
@@ -231,7 +230,6 @@ export default function Results() {
   if (loadError) {
     return (
       <div className="min-h-screen bg-muted">
-        <AppHeader />
         <div className="flex items-center justify-center min-h-[60vh]">
           <Card className="max-w-md w-full mx-4">
             <CardContent className="pt-8 pb-6 text-center space-y-4">
@@ -271,7 +269,7 @@ export default function Results() {
 
   return (
     <div className="min-h-screen bg-muted">
-      <AppHeader />
+      
       
       <div className="max-w-7xl mx-auto px-6 py-8" id="results-content">
 
