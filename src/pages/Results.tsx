@@ -276,7 +276,7 @@ export default function Results() {
         {/* Results Hero */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <Button variant="outline" size="sm" onClick={() => navigate('/')}>
+            <Button variant="outline" size="sm" onClick={() => navigate('/app/dashboard')}>
               <ArrowLeft className="h-4 w-4 mr-1.5" />
               {t('nav.backToDashboard')}
             </Button>

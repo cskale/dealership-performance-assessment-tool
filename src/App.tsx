@@ -16,6 +16,7 @@ import Methodology from "./pages/Methodology";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import AcceptInvite from "./pages/AcceptInvite";
+import KPIEncyclopediaPage from "./pages/KPIEncyclopediaPage";
 import { AuthProvider } from "@/hooks/useAuth";
 import { MultiTenantProvider } from "@/hooks/useMultiTenant";
 import { RoleProvider } from "@/contexts/RoleContext";
@@ -54,6 +55,7 @@ const App = () => (
                 >
                   <Routes>
                     {/* Public routes — no sidebar */}
+                    <Route path="/" element={<Index />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
                     <Route path="/methodology" element={<Methodology />} />
@@ -64,7 +66,6 @@ const App = () => (
                       <ProtectedRoute>
                         <AuthenticatedLayout>
                           <Routes>
-                            <Route index element={<Index />} />
                             <Route path="dashboard" element={<Dashboard />} />
                             <Route path="onboarding" element={<Onboarding />} />
                             <Route path="assessment" element={
@@ -101,10 +102,10 @@ const App = () => (
                         </AuthenticatedLayout>
                       </ProtectedRoute>
                     } />
-                    <Route path="/" element={
+                    <Route path="/kpi-encyclopedia" element={
                       <ProtectedRoute>
                         <AuthenticatedLayout>
-                          <Index />
+                          <KPIEncyclopediaPage />
                         </AuthenticatedLayout>
                       </ProtectedRoute>
                     } />
