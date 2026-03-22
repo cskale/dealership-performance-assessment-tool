@@ -14,6 +14,12 @@ import { Signal, SignalCode, Severity } from '@/data/signalTypes';
 import { SIGNAL_MAPPINGS, getSignalMapping } from '@/data/signalMappings';
 import { ACTION_TEMPLATES, getTemplatesForSignal, ActionTemplate, ImplementationStep } from '@/data/actionTemplates';
 import { getTemplateIdsForSignal, getMaxActionsForSignal, getKPISpecificTemplateIds } from '@/data/signalToActionMap';
+import {
+  getTieredTemplate,
+  filterByBusinessModel,
+  TieredSignalCode,
+  BusinessModel as TieredBusinessModel,
+} from '@/data/actionTemplatesTiered';
 import { generateContextIntelligence } from '@/lib/contextIntelligence';
 import { KPI_DEFINITIONS } from '@/lib/kpiDefinitions';
 
@@ -350,6 +356,44 @@ function selectTemplates(
 }
 
 /**
+ * Maps "moduleKey::signalCode" to the most relevant TieredSignalCode.
+ * When a match exists, the tiered lookup takes priority over generic ACTION_TEMPLATES.
+ * If filterByBusinessModel returns null for a matched entry, the signal is skipped entirely.
+ */
+const SIGNAL_TO_TIERED: Record<string, TieredSignalCode> = {
+  'new-vehicle-sales::PROCESS_NOT_EXECUTED':     'NVS_LEAD_RESPONSE',
+  'new-vehicle-sales::ROLE_OWNERSHIP_MISSING':   'NVS_LEAD_RESPONSE',
+  'new-vehicle-sales::KPI_NOT_REVIEWED':         'NVS_CLOSING_RATIO',
+  'new-vehicle-sales::KPI_NOT_DEFINED':          'NVS_CLOSING_RATIO',
+  'new-vehicle-sales::CAPACITY_MISALIGNED':      'NVS_CLOSING_RATIO',
+  'new-vehicle-sales::PROCESS_NOT_STANDARDISED': 'NVS_GROSS_PER_UNIT',
+  'new-vehicle-sales::GOVERNANCE_WEAK':          'NVS_GROSS_PER_UNIT',
+  'used-vehicle-sales::PROCESS_NOT_STANDARDISED':'UVS_STOCK_TURN',
+  'used-vehicle-sales::PROCESS_NOT_EXECUTED':    'UVS_STOCK_TURN',
+  'used-vehicle-sales::KPI_NOT_REVIEWED':        'UVS_STOCK_TURN',
+  'used-vehicle-sales::CAPACITY_MISALIGNED':     'UVS_STOCK_TURN',
+  'used-vehicle-sales::GOVERNANCE_WEAK':         'UVS_STOCK_TURN',
+  'service-performance::CAPACITY_MISALIGNED':    'SVC_WORKSHOP_UTILISATION',
+  'service-performance::TOOL_UNDERUTILISED':     'SVC_WORKSHOP_UTILISATION',
+  'service-performance::PROCESS_NOT_STANDARDISED':'SVC_WORKSHOP_UTILISATION',
+  'service-performance::KPI_NOT_REVIEWED':       'SVC_CSI',
+  'service-performance::PROCESS_NOT_EXECUTED':   'SVC_CSI',
+  'service-performance::KPI_NOT_DEFINED':        'SVC_CSI',
+  'parts-inventory::KPI_NOT_REVIEWED':           'PTS_OBSOLESCENCE',
+  'parts-inventory::TOOL_UNDERUTILISED':         'PTS_OBSOLESCENCE',
+  'parts-inventory::PROCESS_NOT_STANDARDISED':   'PTS_OBSOLESCENCE',
+  'parts-inventory::KPI_NOT_DEFINED':            'PTS_OBSOLESCENCE',
+  'financial-operations::KPI_NOT_REVIEWED':      'FIN_NET_PROFIT',
+  'financial-operations::GOVERNANCE_WEAK':       'FIN_NET_PROFIT',
+  'financial-operations::KPI_NOT_DEFINED':       'FIN_NET_PROFIT',
+  'financial-operations::PROCESS_NOT_STANDARDISED':'FIN_NET_PROFIT',
+};
+
+function resolveTieredCode(moduleKey: string, signalCode: string): TieredSignalCode | null {
+  return SIGNAL_TO_TIERED[`${moduleKey}::${signalCode}`] ?? null;
+}
+
+/**
  * Instantiate actions from signals with KPI-aware template selection
  */
 export function instantiateActions(
@@ -363,6 +407,38 @@ export function instantiateActions(
   for (const signal of signals) {
     if (actions.length >= maxActions) break;
     if (signal.signalCode === 'NONE') continue;
+
+    // ── Tiered template lookup (takes priority over generic ACTION_TEMPLATES) ──
+    const tieredCode = resolveTieredCode(signal.moduleKey, signal.signalCode);
+    if (tieredCode !== null) {
+      const sectionScore = config.sectionScores?.[signal.moduleKey] ?? 50;
+      const tieredTemplate = getTieredTemplate(tieredCode, sectionScore);
+      if (!tieredTemplate) continue; // no template for this band — skip signal
+
+      const bm = (config.businessModel ?? '4s') as TieredBusinessModel;
+      const filtered = filterByBusinessModel(tieredTemplate, bm);
+      if (!filtered) continue; // business model mismatch — skip signal entirely
+
+      if (!usedTemplateIds.has(filtered.templateId)) {
+        usedTemplateIds.add(filtered.templateId);
+        actions.push({
+          templateId: filtered.templateId,
+          signalCode: signal.signalCode,
+          title: filtered.title,
+          description: filtered.description,
+          department: MODULE_TO_DEPARTMENT[signal.moduleKey] || signal.moduleKey,
+          priority: severityToPriority(signal.severity),
+          defaultOwnerRole: filtered.defaultOwnerRole,
+          defaultTimeframeDays: filtered.defaultTimeframeDays,
+          implementationSteps: filtered.implementationSteps as ImplementationStep[],
+          triggeringQuestionIds: signal.triggeringQuestionIds,
+          rationale: signal.rationale,
+          linkedKPIs: signal.linkedKPIs,
+        });
+      }
+      continue; // tiered template handled — skip generic fallback for this signal
+    }
+    // ── End tiered lookup ──
 
     const maxForSignal = getMaxActionsForSignal(signal.signalCode);
     const remaining = maxActions - actions.length;
