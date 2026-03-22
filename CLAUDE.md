@@ -85,3 +85,322 @@ Base components come from shadcn/ui (`src/components/ui/`) — don't edit these 
 ## Testing
 
 Tests live in `src/__tests__/`. The test setup is in `src/test-setup.ts`. Coverage thresholds are 80% for branches, functions, lines, and statements. Vitest uses jsdom environment.
+
+## Loaded Skills
+
+### artifacts-builder
+
+To build powerful frontend claude.ai artifacts, follow these steps:
+1. Initialize the frontend repo using `scripts/init-artifact.sh`
+2. Develop your artifact by editing the generated code
+3. Bundle all code into a single HTML file using `scripts/bundle-artifact.sh`
+4. Display artifact to user
+5. (Optional) Test the artifact
+
+**Stack**: React 18 + TypeScript + Vite + Parcel (bundling) + Tailwind CSS + shadcn/ui
+
+#### Design & Style Guidelines
+
+VERY IMPORTANT: To avoid what is often referred to as "AI slop", avoid using excessive centered layouts, purple gradients, uniform rounded corners, and Inter font.
+
+#### Quick Start
+
+##### Step 1: Initialize Project
+
+Run the initialization script to create a new React project:
+```bash
+bash scripts/init-artifact.sh <project-name>
+cd <project-name>
+```
+
+This creates a fully configured project with:
+- ✅ React + TypeScript (via Vite)
+- ✅ Tailwind CSS 3.4.1 with shadcn/ui theming system
+- ✅ Path aliases (`@/`) configured
+- ✅ 40+ shadcn/ui components pre-installed
+- ✅ All Radix UI dependencies included
+- ✅ Parcel configured for bundling (via .parcelrc)
+- ✅ Node 18+ compatibility (auto-detects and pins Vite version)
+
+##### Step 2: Develop Your Artifact
+
+To build the artifact, edit the generated files. See **Common Development Tasks** below for guidance.
+
+##### Step 3: Bundle to Single HTML File
+
+To bundle the React app into a single HTML artifact:
+```bash
+bash scripts/bundle-artifact.sh
+```
+
+This creates `bundle.html` - a self-contained artifact with all JavaScript, CSS, and dependencies inlined. This file can be directly shared in Claude conversations as an artifact.
+
+**Requirements**: Your project must have an `index.html` in the root directory.
+
+**What the script does**:
+- Installs bundling dependencies (parcel, @parcel/config-default, parcel-resolver-tspaths, html-inline)
+- Creates `.parcelrc` config with path alias support
+- Builds with Parcel (no source maps)
+- Inlines all assets into single HTML using html-inline
+
+##### Step 4: Share Artifact with User
+
+Finally, share the bundled HTML file in conversation with the user so they can view it as an artifact.
+
+##### Step 5: Testing/Visualizing the Artifact (Optional)
+
+Note: This is a completely optional step. Only perform if necessary or requested.
+
+To test/visualize the artifact, use available tools (including other Skills or built-in tools like Playwright or Puppeteer). In general, avoid testing the artifact upfront as it adds latency between the request and when the finished artifact can be seen. Test later, after presenting the artifact, if requested or if issues arise.
+
+#### Reference
+
+- **shadcn/ui components**: https://ui.shadcn.com/docs/components
+
+---
+
+### webapp-testing
+
+To test local web applications, write native Python Playwright scripts.
+
+**Helper Scripts Available**:
+- `scripts/with_server.py` - Manages server lifecycle (supports multiple servers)
+
+**Always run scripts with `--help` first** to see usage. DO NOT read the source until you try running the script first and find that a customized solution is absolutely necessary. These scripts can be very large and thus pollute your context window. They exist to be called directly as black-box scripts rather than ingested into your context window.
+
+#### Decision Tree: Choosing Your Approach
+
+```
+User task → Is it static HTML?
+    ├─ Yes → Read HTML file directly to identify selectors
+    │         ├─ Success → Write Playwright script using selectors
+    │         └─ Fails/Incomplete → Treat as dynamic (below)
+    │
+    └─ No (dynamic webapp) → Is the server already running?
+        ├─ No → Run: python scripts/with_server.py --help
+        │        Then use the helper + write simplified Playwright script
+        │
+        └─ Yes → Reconnaissance-then-action:
+            1. Navigate and wait for networkidle
+            2. Take screenshot or inspect DOM
+            3. Identify selectors from rendered state
+            4. Execute actions with discovered selectors
+```
+
+#### Example: Using with_server.py
+
+To start a server, run `--help` first, then use the helper:
+
+**Single server:**
+```bash
+python scripts/with_server.py --server "npm run dev" --port 5173 -- python your_automation.py
+```
+
+**Multiple servers (e.g., backend + frontend):**
+```bash
+python scripts/with_server.py \
+  --server "cd backend && python server.py" --port 3000 \
+  --server "cd frontend && npm run dev" --port 5173 \
+  -- python your_automation.py
+```
+
+To create an automation script, include only Playwright logic (servers are managed automatically):
+```python
+from playwright.sync_api import sync_playwright
+
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=True) # Always launch chromium in headless mode
+    page = browser.new_page()
+    page.goto('http://localhost:5173') # Server already running and ready
+    page.wait_for_load_state('networkidle') # CRITICAL: Wait for JS to execute
+    # ... your automation logic
+    browser.close()
+```
+
+#### Reconnaissance-Then-Action Pattern
+
+1. **Inspect rendered DOM**:
+   ```python
+   page.screenshot(path='/tmp/inspect.png', full_page=True)
+   content = page.content()
+   page.locator('button').all()
+   ```
+
+2. **Identify selectors** from inspection results
+
+3. **Execute actions** using discovered selectors
+
+#### Common Pitfall
+
+❌ **Don't** inspect the DOM before waiting for `networkidle` on dynamic apps
+✅ **Do** wait for `page.wait_for_load_state('networkidle')` before inspection
+
+#### Best Practices
+
+- **Use bundled scripts as black boxes** - To accomplish a task, consider whether one of the scripts available in `scripts/` can help. These scripts handle common, complex workflows reliably without cluttering the context window. Use `--help` to see usage, then invoke directly.
+- Use `sync_playwright()` for synchronous scripts
+- Always close the browser when done
+- Use descriptive selectors: `text=`, `role=`, CSS selectors, or IDs
+- Add appropriate waits: `page.wait_for_selector()` or `page.wait_for_timeout()`
+
+#### Reference Files
+
+- **examples/** - Examples showing common patterns:
+  - `element_discovery.py` - Discovering buttons, links, and inputs on a page
+  - `static_html_automation.py` - Using file:// URLs for local HTML
+  - `console_logging.py` - Capturing console logs during automation
+
+---
+
+### mcp-builder
+
+To create high-quality MCP (Model Context Protocol) servers that enable LLMs to effectively interact with external services, use this skill. An MCP server provides tools that allow LLMs to access external services and APIs. The quality of an MCP server is measured by how well it enables LLMs to accomplish real-world tasks using the tools provided.
+
+#### High-Level Workflow
+
+Creating a high-quality MCP server involves four main phases:
+
+**Phase 1: Deep Research and Planning**
+
+- Understand agent-centric design principles: build for workflows (not just API endpoints), optimize for limited context, design actionable error messages, follow natural task subdivisions, use evaluation-driven development.
+- Fetch the latest MCP protocol documentation via WebFetch: `https://modelcontextprotocol.io/llms-full.txt`
+- For Python: fetch `https://raw.githubusercontent.com/modelcontextprotocol/python-sdk/main/README.md`
+- For Node/TypeScript: fetch `https://raw.githubusercontent.com/modelcontextprotocol/typescript-sdk/main/README.md`
+- Study all available API documentation exhaustively.
+- Create a comprehensive implementation plan covering tool selection, shared utilities, input/output design, and error handling strategy.
+
+**Phase 2: Implementation**
+
+- Python: single `.py` file or modules, MCP Python SDK, Pydantic models, async/await.
+- Node/TypeScript: proper project structure, `package.json`/`tsconfig.json`, MCP TypeScript SDK, Zod schemas.
+- Implement core infrastructure first (API helpers, error handling, response formatting, pagination, auth).
+- For each tool: define input schema with Pydantic/Zod, write comprehensive docstrings, implement logic with shared utilities, add tool annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`).
+
+**Phase 3: Review and Refine**
+
+- Review for DRY, composability, consistency, error handling, type safety, documentation.
+- **Important**: MCP servers are long-running processes — running directly will hang. Safe testing: use evaluation harness, run in tmux, or use `timeout 5s python server.py`.
+- Python: verify syntax with `python -m py_compile your_server.py`.
+- Node/TypeScript: run `npm run build` and verify `dist/index.js` is created.
+
+**Phase 4: Create Evaluations**
+
+- Create 10 evaluation questions that are independent, read-only, complex, realistic, verifiable, and stable.
+- Output as XML: `<evaluation><qa_pair><question>...</question><answer>...</answer></qa_pair></evaluation>`
+
+#### Reference Files (load as needed)
+
+- MCP Protocol: `https://modelcontextprotocol.io/llms-full.txt`
+- Python SDK: `https://raw.githubusercontent.com/modelcontextprotocol/python-sdk/main/README.md`
+- TypeScript SDK: `https://raw.githubusercontent.com/modelcontextprotocol/typescript-sdk/main/README.md`
+- Language-specific guides: `./reference/python_mcp_server.md`, `./reference/node_mcp_server.md`
+- Evaluation guide: `./reference/evaluation.md`
+
+---
+
+# Project Context — Dealership Performance Assessment Tool
+
+## Identity
+- **Product**: Enterprise Dealer Diagnostic & Performance Improvement Platform
+- **Target users**: Dealer principals, field coaches, OEM programme managers (BMW, Mercedes, VW-group)
+- **Repo**: `cskale/dealership-performance-assessment-tool` (private, GitHub)
+- **Production URL**: `https://dealership-performance-assessment-t.vercel.app`
+- **Current branch**: `main` — all changes commit here unless explicitly branching
+
+## Stack
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui (Radix UI primitives)
+- **Backend**: Supabase (Postgres, Auth, Edge Functions, RLS)
+- **Deployment**: Vercel (auto-deploys on push to main)
+- **Dev platform**: Lovable AI (UI scaffolding) + Claude Code (logic, data, DB)
+- **Package manager**: npm (not bun, not yarn)
+
+## Infrastructure IDs
+- **Supabase project ID**: `xrypgosuyfdkkqafftae`
+- **Supabase URL**: `https://xrypgosuyfdkkqafftae.supabase.co`
+- **Vercel project ID**: `prj_mZ0wgESKAmV5MiR8UwMrtZIipTVR`
+- **Vercel team ID**: `team_cdH1L9KDYd3JzW48BrxrKkQq`
+
+## Key File Locations
+- **Assessment questions**: `src/data/assessmentQuestions.ts`
+- **KPI definitions**: `src/lib/kpiDefinitions.ts`
+- **Signal engine**: `src/lib/signalEngine.ts`
+- **Action templates**: `src/data/actionTemplates.ts`
+- **Benchmark governance**: `src/lib/benchmarkGovernance.ts`
+- **Narrative templates**: `src/lib/narrativeTemplates.ts`
+- **Cross-validation rules**: `src/lib/crossValidationRules.ts`
+- **Ceiling analysis**: `src/lib/ceilingAnalysis.ts`
+- **PDF generator**: `src/lib/pdfReportGenerator.ts`
+- **Role hook (broken)**: `src/hooks/useUserRole.tsx` — RoleContext disabled in production
+- **Multi-tenant hook**: `src/hooks/useMultiTenant.tsx` — current active role system
+- **i18n**: `src/lib/i18n.ts` — EN + DE complete, FR/ES/IT partial
+- **Supabase types**: `src/integrations/supabase/types.ts`
+- **Edge functions**: `supabase/functions/` — CORS locked to allowlist
+
+## Architecture — Critical Known Issues
+1. **Role architecture is broken**: `RoleContext` is disabled in production. Two conflicting systems exist — `useMultiTenant` (active) and `useUserRole` (inactive). Item #01 on tracker — highest priority unfixed issue.
+2. **No network-level view**: Zero OEM or coach views exist. All data is scoped at dealer level only. Item #38.
+3. **evaluateCrossValidations() not wired**: Function exists in `crossValidationRules.ts` but is not called from `signalEngine.ts`. Item #11.
+4. **ceilingAnalysis not wired**: `generateCeilingInsights()` exists but not rendered on Results page. Item #15.
+
+## Role Model (Target — not yet implemented)
+```
+OEM Admin  →  sees all dealers across network, network dashboard, leaderboard
+Coach      →  sees assigned dealers only, visit log, score trends
+Dealer Owner / Staff / Viewer  →  sees own dealership only
+```
+Two new DB tables required: `oem_organisations` and `coach_assignments`.
+
+## Database Tables (existing)
+- `assessments` — dealer assessment records, answers (jsonb), scores (jsonb), overall_score
+- `improvement_actions` — action plan items per assessment, linked by assessment_id
+- `organizations` — dealer org records with business_model, brand_mode, network_structure enums
+- `memberships` — user ↔ org join with role enum (owner/admin/manager/analyst/viewer)
+- `profiles` — user profiles, active_organization_id, active_dealership_id
+- `dealerships` — individual outlet records under organizations
+
+## Assessment Structure
+- **5 departments**: New Vehicle Sales (NVS), Used Vehicle Sales (UVS), Service (SVC), Parts (PTS), Financial Operations (FIN)
+- **Scoring**: 1–5 scale per question, weighted by category, normalised to 0–100
+- **Weights**: defined in `CATEGORY_WEIGHTS` in scoring logic
+- **Business models**: 2S (sales+service), 3S (+parts), 4S (+bodyshop) — branching not yet implemented
+
+## Diagnostic Engine (implemented, partially wired)
+- `signalEngine.ts` — generates signal codes from scores (CRITICAL_GAP, HIGH_PRIORITY, etc.)
+- `detectSystemicPatterns()` — cross-department clustering (3+ depts = systemic, 2 = recurring)
+- `calculateEnhancedMaturity()` — 5-level model, requires ≥85 AND no sub-cat below 60 for Advanced
+- `confidenceInterval scoring` — implemented
+- `buildExecutiveNarrative()` — 32 variants (4 maturity × 8 signals × single/systemic)
+- `ACTION_TEMPLATES` — 22 templates with `relevantBusinessModels[]` and `implementationSteps[]`
+
+## i18n
+- Supported languages: EN, DE (complete), FR, ES, IT (schema exists, translations incomplete)
+- Language context: `src/contexts/LanguageContext.tsx`
+- Translation keys: `src/lib/i18n.ts`
+
+## Development Rules
+- **Never install new npm packages** without explicit confirmation — bundle is already 1.3MB post-split
+- **Never commit directly to main** for large multi-file changes — create a branch and PR
+- **Lovable handles**: React/TSX component builds and UI-only changes
+- **Claude Code handles**: logic files, data files, DB migrations, Edge Functions, config
+- **Supabase MCP**: use for all schema changes, RLS policies, SQL migrations — never ask Lovable to write DB migrations
+- **Vercel MCP**: use for deployments and environment variable management
+- **Do not touch**: `src/integrations/supabase/types.ts` manually — regenerate via Supabase CLI after schema changes
+
+## Current Tracker Status (as of 22 March 2026)
+- Total items: 58
+- Done: ~32 (55%)
+- Pending/Partial: ~26 (45%)
+- Highest priority pending: #01 (role architecture), #13 (2S/3S/4S branching), #38 (OEM dashboard), #29 (causal chain UI), #32 (5×5 heatmap)
+
+## Improvement Tracker File
+- Location in repo: `improvement_tracker_updated.html`
+- Open in browser to view full status — filterable by status, category, phase
+
+## Loaded Skills (in this CLAUDE.md)
+- `artifacts-builder` — multi-component React artifact generation
+- `webapp-testing` — Playwright-based web app testing
+- `mcp-builder` — MCP server creation patterns
+
+## Global Skills (auto-loaded via stitch-skills CLI)
+- `shadcn-ui` → `~\.agents\skills\shadcn-ui`
+- `react:components` → `~\.agents\skills\react-components`
