@@ -18,8 +18,10 @@ export default {
 			}
 		},
 		extend: {
-			fontFamily: {
-				sans: ['Roboto', 'system-ui', 'sans-serif'],
+		fontFamily: {
+				sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+				display: ['"Instrument Serif"', 'Georgia', 'serif'],
+				mono: ['"DM Mono"', 'monospace'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
