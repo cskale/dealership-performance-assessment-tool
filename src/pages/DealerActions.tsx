@@ -167,7 +167,7 @@ export default function DealerActions() {
 
   return (
     <div className="min-h-screen bg-neutral-bg">
-      <AppHeader />
+      
       
       <main className="container mx-auto px-4 py-8 max-w-5xl">
         <div className="flex items-center justify-between mb-8">

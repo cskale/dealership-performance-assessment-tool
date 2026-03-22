@@ -105,7 +105,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-muted">
-      <AppHeader />
+      
 
       {/* Context bar */}
       <div className="border-b bg-card">
