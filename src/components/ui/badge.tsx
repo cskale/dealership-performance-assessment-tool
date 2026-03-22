@@ -23,6 +23,48 @@ const badgeVariants = cva(
           "border-transparent bg-info/10 text-info-foreground",
         discovery:
           "border-transparent bg-discovery/10 text-discovery-foreground",
+
+        // Maturity variants
+        "maturity-advanced":
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-green-light))] text-[hsl(160,60%,22%)] border border-[#6ee7b7] font-medium",
+        "maturity-developing":
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] border border-[hsl(var(--dd-accent-mid))] font-medium",
+        "maturity-inconsistent":
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-amber-light))] text-[hsl(38,70%,28%)] border border-[#fcd34d] font-medium",
+        "maturity-foundational":
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-red-light))] text-[hsl(0,60%,35%)] border border-[#fca5a5] font-medium",
+        "maturity-critical":
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-fog))] text-[hsl(var(--dd-muted))] border border-[hsl(var(--dd-rule))] font-medium",
+
+        // Module variants
+        "module-nvs":
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-teal-light))] text-[hsl(var(--dd-teal))] border border-[#7dd3fc] font-medium",
+        "module-uvs":
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] border border-[hsl(var(--dd-accent-mid))] font-medium",
+        "module-service":
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-green-light))] text-[hsl(var(--dd-green))] border border-[#6ee7b7] font-medium",
+        "module-financial":
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-amber-light))] text-[hsl(var(--dd-amber))] border border-[#fcd34d] font-medium",
+        "module-parts":
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-fog))] text-[hsl(var(--dd-muted))] border border-[hsl(var(--dd-rule))] font-medium",
+
+        // Priority variants
+        "priority-critical":
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-red-light))] text-[hsl(var(--dd-red))] border border-[#fca5a5] font-medium",
+        "priority-high":
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-amber-light))] text-[hsl(var(--dd-amber))] border border-[#fcd34d] font-medium",
+        "priority-medium":
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] border border-[hsl(var(--dd-accent-mid))] font-medium",
+        "priority-low":
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-fog))] text-[hsl(var(--dd-muted))] border border-[hsl(var(--dd-rule))] font-medium",
+
+        // Phase variants
+        "phase-30":
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-green-light))] text-[hsl(var(--dd-green))] border border-[#6ee7b7] font-medium",
+        "phase-60":
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] border border-[hsl(var(--dd-accent-mid))] font-medium",
+        "phase-90":
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-fog))] text-[hsl(var(--dd-muted))] border border-[hsl(var(--dd-rule))] font-medium",
       },
     },
     defaultVariants: {
