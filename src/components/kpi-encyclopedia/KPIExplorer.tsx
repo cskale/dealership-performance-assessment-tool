@@ -134,6 +134,11 @@ export function KPIExplorer({ scores }: KPIExplorerProps) {
         language={language}
         onBack={handleCloseStudio}
         onNavigateToKpi={handleNavigateToKpi}
+        assessmentScore={
+          scores[selectedItem.departmentKey] !== undefined
+            ? Math.max(1, Math.min(5, Math.ceil((scores[selectedItem.departmentKey] / 100) * 5)))
+            : undefined
+        }
       />
     );
   }

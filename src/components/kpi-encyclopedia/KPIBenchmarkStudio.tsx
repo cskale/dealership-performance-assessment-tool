@@ -1,6 +1,41 @@
 import { cn } from "@/lib/utils";
 import { BenchmarkConfidenceIndicator, BenchmarkNoteBadge } from "@/components/shared/BenchmarkConfidenceIndicator";
 
+function parseBenchmarkRange(
+  benchmark: string,
+  isLowerBetter: boolean
+): { corridorLeftPct: number; corridorWidthPct: number } {
+  const numbers = benchmark.match(/[\d.]+/g)?.map(Number) ?? [];
+  const allPct = numbers.every(n => n <= 100);
+  if (numbers.length === 0) {
+    return { corridorLeftPct: isLowerBetter ? 0 : 50, corridorWidthPct: 25 };
+  }
+  let low: number, high: number;
+  if (numbers.length === 1) {
+    const n = numbers[0];
+    if (benchmark.startsWith('<') || benchmark.startsWith('≤')) {
+      low = 0; high = allPct ? n : Math.min(n / 1.5, 100);
+    } else if (benchmark.startsWith('>') || benchmark.startsWith('≥')) {
+      low = allPct ? n : Math.min(n / 1.5, 100); high = 100;
+    } else {
+      low = Math.max(0, (allPct ? n : n / 1.5) - 10);
+      high = Math.min(100, (allPct ? n : n / 1.5) + 10);
+    }
+  } else {
+    const [a, b] = numbers;
+    if (allPct) {
+      low = Math.min(a, b); high = Math.max(a, b);
+    } else {
+      const scale = Math.max(b, 100);
+      low = (Math.min(a, b) / scale) * 100;
+      high = (Math.max(a, b) / scale) * 100;
+    }
+  }
+  low = Math.max(0, Math.min(100, low));
+  high = Math.max(0, Math.min(100, high));
+  return { corridorLeftPct: low, corridorWidthPct: Math.max(5, high - low) };
+}
+
 interface KPIBenchmarkStudioProps {
   kpiKey?: string;
   benchmark?: string;
@@ -27,9 +62,8 @@ export function KPIBenchmarkStudio({ kpiKey, benchmark, unit, isLowerBetter, lan
         { label: language === 'de' ? 'Führend' : 'Leading', color: 'hsl(var(--primary) / 0.22)' },
       ];
 
-  // Corridor position: covers the "Strong" zone
-  const corridorLeftPct = isLowerBetter ? 0 : 50;
-  const corridorWidthPct = 25;
+  // Corridor position derived from the benchmark string
+  const { corridorLeftPct, corridorWidthPct } = parseBenchmarkRange(benchmark, isLowerBetter);
 
   return (
     <div className={cn("", className)}>

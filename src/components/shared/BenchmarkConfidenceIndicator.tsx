@@ -80,8 +80,15 @@ export function BenchmarkConfidenceIndicator({
             </p>
           )}
           {metadata.sampleSize && (
-            <p className="text-[10px] text-muted-foreground/70 mt-1 border-t border-border/30 pt-1">
-              Based on {metadata.sampleSize}+ dealers · Updated {metadata.lastUpdated}
+            <p className="text-[10px] text-muted-foreground/60 mt-1">
+              {language === 'de'
+                ? `Stichprobe: n=${metadata.sampleSize.toLocaleString()}+ Händler`
+                : `Sample: n=${metadata.sampleSize.toLocaleString()}+ dealers`}
+            </p>
+          )}
+          {metadata.lastUpdated && (
+            <p className="text-[10px] text-muted-foreground/60">
+              {language === 'de' ? `Aktualisiert: ${metadata.lastUpdated}` : `Updated: ${metadata.lastUpdated}`}
             </p>
           )}
         </div>

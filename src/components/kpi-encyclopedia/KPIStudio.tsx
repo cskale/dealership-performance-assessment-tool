@@ -7,6 +7,7 @@ import { RootCauseIntelligenceBoard } from "./RootCauseIntelligenceBoard";
 import { ImprovementPlaybook } from "./ImprovementPlaybook";
 import { KpiRelationshipMap } from "./KpiRelationshipMap";
 import type { KPIDefinition } from "@/lib/kpiDefinitions";
+import { inferKPIPosition } from "@/lib/benchmarkGovernance";
 
 interface KPIStudioProps {
   kpiKey: string;
@@ -15,9 +16,10 @@ interface KPIStudioProps {
   language: string;
   onBack: () => void;
   onNavigateToKpi: (name: string) => void;
+  assessmentScore?: number;
 }
 
-export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavigateToKpi }: KPIStudioProps) {
+export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavigateToKpi, assessmentScore }: KPIStudioProps) {
   const config = getDepartmentConfig(departmentKey);
   const DeptIcon = config.icon;
   const deptLabel = config.label[language as 'en' | 'de'] || config.label.en;
@@ -208,6 +210,32 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
               language={language}
             />
           </div>
+          {(() => {
+            const position = inferKPIPosition(kpiKey, assessmentScore, language as 'en' | 'de');
+            if (!position) return null;
+            const colourMap = {
+              well_below: 'bg-destructive/10 border border-destructive/20 text-destructive',
+              below:      'bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400',
+              at:         'bg-primary/8 border border-primary/20 text-primary/80',
+              above:      'bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400',
+              leading:    'bg-emerald-500/15 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300',
+            };
+            const iconMap = { well_below: '↓↓', below: '↓', at: '→', above: '↑', leading: '↑↑' };
+            return (
+              <div className={`mt-4 rounded-lg px-4 py-3 text-xs leading-relaxed ${colourMap[position.positionOnSpectrum]}`}>
+                <span className="font-semibold mr-1.5">{iconMap[position.positionOnSpectrum]}</span>
+                <span className="font-medium mr-1">
+                  {language === 'de' ? 'Geschätzte Position:' : 'Estimated position:'}
+                </span>
+                {position.statement}
+                <span className="block mt-1 opacity-60 text-[10px]">
+                  {language === 'de'
+                    ? 'Basierend auf Ihren Bewertungsantworten. Tatsächliche Werte erfordern Systemintegration.'
+                    : 'Based on your assessment responses. Actual values require system integration.'}
+                </span>
+              </div>
+            );
+          })()}
         </section>
       )}
 

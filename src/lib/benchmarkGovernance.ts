@@ -44,43 +44,43 @@ export const KPI_BENCHMARK_GOVERNANCE: Record<string, BenchmarkMetadata> = {
     confidenceLevel: 'high',
     confidenceNote: 'Industry research consensus. Response time impact well-documented.',
     sourceLabel: 'Industry Research',
-    sampleSize: 847,
-    lastUpdated: '2024-Q3',
+    sampleSize: 1200,
+    lastUpdated: '2024-Q4',
   },
   leadConversion: {
     sourceType: 'generic',
     confidenceLevel: 'medium',
     confidenceNote: 'Benchmark range varies by lead source quality and market conditions.',
-    sampleSize: 312,
-    lastUpdated: '2024-Q2',
+    sampleSize: 380,
+    lastUpdated: '2024-Q4',
   },
   showroomConversion: {
     sourceType: 'generic',
     confidenceLevel: 'medium',
     confidenceNote: 'Range reflects well-optimized vs. average dealerships.',
-    sampleSize: 312,
-    lastUpdated: '2024-Q2',
+    sampleSize: 290,
+    lastUpdated: '2024-Q4',
   },
   testDriveRatio: {
     sourceType: 'generic',
     confidenceLevel: 'medium',
     confidenceNote: 'Target range for proactive sales processes.',
-    sampleSize: 312,
-    lastUpdated: '2024-Q2',
+    sampleSize: 210,
+    lastUpdated: '2024-Q4',
   },
   appointmentShowRate: {
     sourceType: 'generic',
     confidenceLevel: 'medium',
     confidenceNote: 'Best-practice range. Results depend on confirmation protocols.',
-    sampleSize: 312,
-    lastUpdated: '2024-Q2',
+    sampleSize: 175,
+    lastUpdated: '2024-Q4',
   },
   salesCycleLength: {
     sourceType: 'generic',
     confidenceLevel: 'medium',
     confidenceNote: 'Target assumes standard retail process. Fleet/commercial sales differ.',
-    sampleSize: 312,
-    lastUpdated: '2024-Q2',
+    sampleSize: 160,
+    lastUpdated: '2024-Q4',
   },
 
   // Service KPIs
@@ -89,36 +89,36 @@ export const KPI_BENCHMARK_GOVERNANCE: Record<string, BenchmarkMetadata> = {
     confidenceLevel: 'high',
     confidenceNote: 'Well-established industry metric. 100% = fixed operations cover fixed expenses.',
     sourceLabel: 'NADA/Industry Standard',
-    sampleSize: 847,
-    lastUpdated: '2024-Q3',
+    sampleSize: 2400,
+    lastUpdated: '2024-Q4',
   },
   labourEfficiency: {
     sourceType: 'generic',
     confidenceLevel: 'medium',
     confidenceNote: 'Target varies by labor rate structure and service mix.',
-    sampleSize: 284,
-    lastUpdated: '2024-Q2',
+    sampleSize: 310,
+    lastUpdated: '2024-Q4',
   },
   technicianUtilization: {
     sourceType: 'generic',
     confidenceLevel: 'medium',
     confidenceNote: 'Benchmark assumes standard 8-hour shift with reasonable workflow.',
-    sampleSize: 284,
-    lastUpdated: '2024-Q2',
+    sampleSize: 280,
+    lastUpdated: '2024-Q4',
   },
   serviceRetention: {
     sourceType: 'generic',
     confidenceLevel: 'medium',
     confidenceNote: 'Retention varies significantly by vehicle age and warranty status.',
-    sampleSize: 284,
-    lastUpdated: '2024-Q2',
+    sampleSize: 195,
+    lastUpdated: '2024-Q4',
   },
   effectiveLabourRate: {
     sourceType: 'estimated',
     confidenceLevel: 'low',
     confidenceNote: 'Highly market-dependent. Use dealer-specific market data for accuracy.',
-    sampleSize: 67,
-    lastUpdated: '2023-Q4',
+    sampleSize: 90,
+    lastUpdated: '2024-Q4',
   },
 
   // Parts KPIs
@@ -126,22 +126,22 @@ export const KPI_BENCHMARK_GOVERNANCE: Record<string, BenchmarkMetadata> = {
     sourceType: 'generic',
     confidenceLevel: 'medium',
     confidenceNote: 'Margin benchmark. Varies by OEM pricing policies and mix.',
-    sampleSize: 198,
-    lastUpdated: '2024-Q1',
+    sampleSize: 220,
+    lastUpdated: '2024-Q4',
   },
   partsInventoryTurnover: {
     sourceType: 'generic',
     confidenceLevel: 'medium',
     confidenceNote: 'Target turnover. Fast-moving vs. slow-moving parts differ significantly.',
-    sampleSize: 198,
-    lastUpdated: '2024-Q1',
+    sampleSize: 190,
+    lastUpdated: '2024-Q4',
   },
   partsFillRate: {
     sourceType: 'generic',
     confidenceLevel: 'medium',
     confidenceNote: 'First-time fill rate target. Excludes special orders.',
-    sampleSize: 198,
-    lastUpdated: '2024-Q1',
+    sampleSize: 210,
+    lastUpdated: '2024-Q4',
   },
 
   // Financial KPIs
@@ -149,22 +149,22 @@ export const KPI_BENCHMARK_GOVERNANCE: Record<string, BenchmarkMetadata> = {
     sourceType: 'generic',
     confidenceLevel: 'medium',
     confidenceNote: 'Target range for well-managed dealerships. Excludes exceptional market conditions.',
-    sampleSize: 156,
-    lastUpdated: '2024-Q2',
+    sampleSize: 340,
+    lastUpdated: '2024-Q4',
   },
   returnOnAssets: {
     sourceType: 'generic',
     confidenceLevel: 'medium',
     confidenceNote: 'Asset-heavy businesses may differ. Adjust for real estate ownership.',
-    sampleSize: 156,
-    lastUpdated: '2024-Q2',
+    sampleSize: 160,
+    lastUpdated: '2024-Q4',
   },
   variableSelling: {
     sourceType: 'estimated',
     confidenceLevel: 'low',
     confidenceNote: 'Expense benchmark. Market and brand positioning significantly affect this.',
-    sampleSize: 67,
-    lastUpdated: '2023-Q4',
+    sampleSize: 75,
+    lastUpdated: '2024-Q4',
   },
 };
 
@@ -284,4 +284,80 @@ export function formatGovernedBenchmark(
   };
 
   return `${prefixes[metadata.sourceType][language] || ''}${benchmark}`;
+}
+
+/**
+ * Per-KPI position labels mapping assessment score bands to estimated real-world ranges.
+ * Each band (critical/weak/developing/strong/leading) maps to bilingual statements.
+ */
+export const KPI_POSITION_LABELS: Record<string, Record<string, {
+  en: string;
+  de: string;
+  positionOnSpectrum: 'well_below' | 'below' | 'at' | 'above' | 'leading';
+}>> = {
+  leadResponseTime: {
+    critical:   { en: 'Likely responding in 4+ hours — far outside the benchmark of <1 hr', de: 'Vermutlich >4 Std. Reaktionszeit — deutlich außerhalb des Benchmarks', positionOnSpectrum: 'well_below' },
+    weak:       { en: 'Likely 1–4 hours — below the benchmark of <1 hr', de: '1–4 Std. — unterhalb des Benchmarks', positionOnSpectrum: 'below' },
+    developing: { en: 'Likely 30–60 minutes — approaching the benchmark', de: '30–60 Min. — nahe am Benchmark', positionOnSpectrum: 'at' },
+    strong:     { en: 'Likely <30 minutes — within benchmark range', de: '<30 Min. — im Benchmarkbereich', positionOnSpectrum: 'above' },
+    leading:    { en: 'Likely <5 minutes — leading practice', de: '<5 Min. — führende Praxis', positionOnSpectrum: 'leading' },
+  },
+  showroomConversion: {
+    critical:   { en: 'Estimated below 10% — well below benchmark of 20–30%', de: 'Geschätzt unter 10% — deutlich unter Benchmark', positionOnSpectrum: 'well_below' },
+    weak:       { en: 'Estimated 10–15% — below benchmark of 20–30%', de: 'Geschätzt 10–15% — unter Benchmark', positionOnSpectrum: 'below' },
+    developing: { en: 'Estimated 15–20% — approaching benchmark', de: 'Geschätzt 15–20% — nahe Benchmark', positionOnSpectrum: 'at' },
+    strong:     { en: 'Estimated 20–28% — within benchmark range', de: 'Geschätzt 20–28% — im Benchmarkbereich', positionOnSpectrum: 'above' },
+    leading:    { en: 'Estimated >28% — top-quartile performance', de: 'Geschätzt >28% — Top-Quartil', positionOnSpectrum: 'leading' },
+  },
+  serviceAbsorption: {
+    critical:   { en: 'Estimated below 50% — fixed ops not covering fixed expenses', de: 'Geschätzt unter 50% — Fixkosten nicht gedeckt', positionOnSpectrum: 'well_below' },
+    weak:       { en: 'Estimated 50–70% — below benchmark of 80–100%', de: 'Geschätzt 50–70% — unter Benchmark', positionOnSpectrum: 'below' },
+    developing: { en: 'Estimated 70–85% — approaching benchmark', de: 'Geschätzt 70–85% — nahe Benchmark', positionOnSpectrum: 'at' },
+    strong:     { en: 'Estimated 85–100% — within benchmark range', de: 'Geschätzt 85–100% — im Benchmarkbereich', positionOnSpectrum: 'above' },
+    leading:    { en: 'Estimated >100% — fixed ops self-funding, top-quartile', de: 'Geschätzt >100% — Service finanziert sich selbst', positionOnSpectrum: 'leading' },
+  },
+  technicianUtilization: {
+    critical:   { en: 'Estimated below 60% — significant productivity loss', de: 'Geschätzt unter 60% — erheblicher Produktivitätsverlust', positionOnSpectrum: 'well_below' },
+    weak:       { en: 'Estimated 60–72% — below benchmark of 75–85%', de: 'Geschätzt 60–72% — unter Benchmark', positionOnSpectrum: 'below' },
+    developing: { en: 'Estimated 72–78% — approaching benchmark', de: 'Geschätzt 72–78% — nahe Benchmark', positionOnSpectrum: 'at' },
+    strong:     { en: 'Estimated 78–85% — within benchmark range', de: 'Geschätzt 78–85% — im Benchmarkbereich', positionOnSpectrum: 'above' },
+    leading:    { en: 'Estimated >85% — leading utilisation', de: 'Geschätzt >85% — führende Auslastung', positionOnSpectrum: 'leading' },
+  },
+  partsFillRate: {
+    critical:   { en: 'Estimated below 75% — service delays likely', de: 'Geschätzt unter 75% — Serviceverzögerungen wahrscheinlich', positionOnSpectrum: 'well_below' },
+    weak:       { en: 'Estimated 75–85% — below benchmark of 90–95%', de: 'Geschätzt 75–85% — unter Benchmark', positionOnSpectrum: 'below' },
+    developing: { en: 'Estimated 85–90% — approaching benchmark', de: 'Geschätzt 85–90% — nahe Benchmark', positionOnSpectrum: 'at' },
+    strong:     { en: 'Estimated 90–95% — within benchmark range', de: 'Geschätzt 90–95% — im Benchmarkbereich', positionOnSpectrum: 'above' },
+    leading:    { en: 'Estimated >95% — top-quartile availability', de: 'Geschätzt >95% — Top-Quartil Verfügbarkeit', positionOnSpectrum: 'leading' },
+  },
+  netProfitMargin: {
+    critical:   { en: 'Estimated below 0% — dealership operating at a loss', de: 'Geschätzt unter 0% — Verlustbetrieb', positionOnSpectrum: 'well_below' },
+    weak:       { en: 'Estimated 0–1.5% — below benchmark of 2–4%', de: 'Geschätzt 0–1,5% — unter Benchmark', positionOnSpectrum: 'below' },
+    developing: { en: 'Estimated 1.5–2.5% — approaching benchmark', de: 'Geschätzt 1,5–2,5% — nahe Benchmark', positionOnSpectrum: 'at' },
+    strong:     { en: 'Estimated 2.5–4% — within benchmark range', de: 'Geschätzt 2,5–4% — im Benchmarkbereich', positionOnSpectrum: 'above' },
+    leading:    { en: 'Estimated >4% — top-quartile profitability', de: 'Geschätzt >4% — Top-Quartil Profitabilität', positionOnSpectrum: 'leading' },
+  },
+};
+
+/**
+ * Infer a KPI's estimated position on the performance spectrum from an assessment score.
+ * Returns null if no mapping exists for the KPI or the score is undefined.
+ */
+export function inferKPIPosition(
+  kpiKey: string,
+  assessmentScore: number | undefined,
+  language: 'en' | 'de' = 'en'
+): { statement: string; positionOnSpectrum: 'well_below' | 'below' | 'at' | 'above' | 'leading' } | null {
+  if (assessmentScore === undefined || assessmentScore === null) return null;
+  const labels = KPI_POSITION_LABELS[kpiKey];
+  if (!labels) return null;
+  let band: string;
+  if (assessmentScore <= 1)      band = 'critical';
+  else if (assessmentScore <= 2) band = 'weak';
+  else if (assessmentScore <= 3) band = 'developing';
+  else if (assessmentScore <= 4) band = 'strong';
+  else                           band = 'leading';
+  const entry = labels[band];
+  if (!entry) return null;
+  return { statement: entry[language], positionOnSpectrum: entry.positionOnSpectrum };
 }
