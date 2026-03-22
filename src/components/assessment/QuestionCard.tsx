@@ -1,10 +1,8 @@
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { HelpCircle, MessageSquare, Info, TrendingUp, Target, Award } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { MessageSquare, HelpCircle, Info } from "lucide-react";
 import { Question } from "@/data/questionnaire";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -28,12 +26,6 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
 
   const handleRatingClick = (rating: number) => {
     onChange(rating);
-  };
-
-  const getRatingColor = (rating: number) => {
-    if (rating <= 2) return "bg-red-500 hover:bg-red-600";
-    if (rating === 3) return "bg-yellow-500 hover:bg-yellow-600";
-    return "bg-green-500 hover:bg-green-600";
   };
 
   const getRatingText = (rating: number) => {
@@ -62,44 +54,47 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
         </div>
       </div>
 
-      {/* Rating Scale */}
+      {/* Rating Scale — Neutral Tiles */}
       {question.type === "scale" && question.scale && (
         <div className="space-y-4">
           <div className="text-center">
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-sm text-[hsl(var(--dd-muted))] mb-4">
               {t('assessment.rateFrom')} {question.scale.min} ({t('assessment.lowest')}) {t('assessment.to')} {question.scale.max} ({t('assessment.highest')})
             </p>
           </div>
 
-          {/* Rating Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
             {Array.from({ length: question.scale.max }, (_, i) => {
               const rating = i + 1;
               const isSelected = value === rating;
               const label = getRatingText(rating);
 
               return (
-                <Button
+                <button
                   key={rating}
-                  variant={isSelected ? "default" : "outline"}
+                  type="button"
                   onClick={() => handleRatingClick(rating)}
-                  className={`min-h-[80px] h-auto p-2 flex flex-col items-center justify-start gap-1 transition-all duration-200 ${
-                    isSelected ? getRatingColor(rating) : "hover:bg-muted/50"
+                  className={`rounded-lg p-3 text-center transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-[hsl(var(--dd-accent-light))] border-l-[3px] border-l-[hsl(var(--dd-accent))] border-t border-r border-b border-[hsl(var(--dd-accent-mid))]'
+                      : 'bg-white border border-[hsl(var(--dd-rule))] hover:border-[hsl(var(--dd-accent-mid))] hover:bg-[hsl(var(--dd-accent-light))]'
                   }`}
                 >
-                  <span className="text-2xl font-bold">{rating}</span>
-                  <span className="text-[10px] text-center leading-tight whitespace-normal break-words w-full overflow-visible">
+                  <span className="block text-[15px] font-semibold text-[hsl(var(--dd-ink))] mb-1">
+                    {rating}
+                  </span>
+                  <span className="block text-[11px] text-[hsl(var(--dd-muted))] leading-tight text-center">
                     {label}
                   </span>
-                </Button>
+                </button>
               );
             })}
           </div>
 
           {/* Selected Value Display */}
           {value && (
-            <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20">
-              <p className="text-sm text-foreground">
+            <div className="text-center p-3 bg-[hsl(var(--dd-accent-light))] rounded-lg border border-[hsl(var(--dd-accent-mid))]">
+              <p className="text-sm text-[hsl(var(--dd-ink))]">
                 <strong>{t('assessment.selected')}:</strong> {value} - {getRatingText(value)}
               </p>
             </div>
@@ -107,81 +102,8 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
         </div>
       )}
 
-      {/* Enhanced Context Information */}
-      {(question.purpose || question.situationAnalysis || question.linkedKPIs || question.benefits) && (
-        <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
-          <CardContent className="p-0">
-            <Collapsible>
-              <CollapsibleTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-between p-4 h-auto text-left"
-                >
-                  <div className="flex items-center gap-2">
-                    <Info className="h-4 w-4 text-primary" />
-                    <span className="font-medium text-foreground">
-                      {t('assessment.whyThisMatters')}
-                    </span>
-                  </div>
-                  <Award className="h-4 w-4 text-primary" />
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="px-4 pb-4 space-y-4">
-                {question.purpose && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Target className="h-4 w-4 text-primary" />
-                      <h4 className="font-semibold text-foreground">{t('assessment.assessmentPurpose')}</h4>
-                    </div>
-                    <p className="text-sm text-muted-foreground pl-6">{question.purpose}</p>
-                  </div>
-                )}
-                
-                {question.situationAnalysis && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-primary" />
-                      <h4 className="font-semibold text-foreground">{t('assessment.situationAnalysis')}</h4>
-                    </div>
-                    <p className="text-sm text-muted-foreground pl-6">{question.situationAnalysis}</p>
-                  </div>
-                )}
-                
-                {question.linkedKPIs && question.linkedKPIs.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Award className="h-4 w-4 text-primary" />
-                      <h4 className="font-semibold text-foreground">{t('assessment.linkedKPIs')}</h4>
-                    </div>
-                    <div className="pl-6">
-                      <div className="flex flex-wrap gap-2">
-                        {question.linkedKPIs.map((kpi, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {kpi}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {question.benefits && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Award className="h-4 w-4 text-primary" />
-                      <h4 className="font-semibold text-foreground">{t('assessment.businessBenefits')}</h4>
-                    </div>
-                    <p className="text-sm text-muted-foreground pl-6">{question.benefits}</p>
-                  </div>
-                )}
-              </CollapsibleContent>
-            </Collapsible>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Additional Features */}
-      <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
+      <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-[hsl(var(--dd-rule))]">
         <Button
           variant="ghost"
           size="sm"
@@ -189,35 +111,35 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
           className="flex items-center gap-2"
         >
           <MessageSquare className="h-4 w-4" />
-          {showNotes ? t('assessment.additionalNotes') : t('assessment.additionalNotes')}
+          {t('assessment.additionalNotes')}
         </Button>
 
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs text-[hsl(var(--dd-ghost))]">
           <HelpCircle className="h-4 w-4" />
-          <span className="text-xs text-muted-foreground flex items-center gap-1.5"><Info className="h-3 w-3" />{getWeightLabel(question.weight)}</span>
+          <span className="text-xs text-[hsl(var(--dd-ghost))] flex items-center gap-1.5">
+            <Info className="h-3 w-3" />{getWeightLabel(question.weight)}
+          </span>
         </div>
       </div>
 
       {/* Notes Section */}
       {showNotes && (
-        <Card className="border-primary/20">
-          <CardContent className="p-4">
-            <label className="block text-sm font-medium text-foreground mb-2">
-              {t('assessment.additionalNotes')}
-            </label>
-            <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder={t('assessment.placeholder.notes')}
-              rows={3}
-              maxLength={5000}
-              className="w-full"
-            />
-            <p className="text-xs text-muted-foreground text-right mt-1">
-              {5000 - (notes?.length ?? 0)} characters remaining
-            </p>
-          </CardContent>
-        </Card>
+        <div className="border border-[hsl(var(--dd-rule))] rounded-lg p-4 bg-[hsl(var(--dd-fog))]">
+          <label className="block text-sm font-medium text-foreground mb-2">
+            {t('assessment.additionalNotes')}
+          </label>
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder={t('assessment.placeholder.notes')}
+            rows={3}
+            maxLength={5000}
+            className="w-full"
+          />
+          <p className="text-xs text-[hsl(var(--dd-ghost))] text-right mt-1">
+            {5000 - (notes?.length ?? 0)} characters remaining
+          </p>
+        </div>
       )}
     </div>
   );
