@@ -632,7 +632,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
 
                     {likelyDrivers.length > 0 && (
                       <div className="mt-4">
-                        <h5 className="text-sm font-semibold mb-2">Likely Drivers</h5>
+                        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Likely Drivers</p>
                         <div className="flex flex-wrap gap-2">
                           {likelyDrivers.map((d: any, i: number) => (
                             <div key={i} className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full border text-xs">
