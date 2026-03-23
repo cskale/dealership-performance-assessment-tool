@@ -8,7 +8,6 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { FileText, RefreshCw, ArrowLeft, ClipboardList, BarChart3, Award, CheckSquare, BookOpen, AlertCircle, X } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { getMaturityLevel, getMaturityLevelKey } from "@/lib/constants";
 import { ExecutiveSummary } from "@/components/ExecutiveSummary";
 import { IndustrialKPIDashboard } from "@/components/IndustrialKPIDashboard";
 import { MaturityScoring } from "@/components/MaturityScoring";
@@ -299,14 +298,14 @@ export default function Results() {
 
           {/* Summary metric cards */}
           {(() => {
-            const maturityLabel = getMaturityLevel(overallScore, language as 'en' | 'de');
-            const maturityKey = getMaturityLevelKey(overallScore);
-            const maturityBadgeMap: Record<string, "maturity-advanced" | "maturity-developing" | "maturity-inconsistent" | "maturity-foundational"> = {
-              advanced: 'maturity-advanced',
-              mature: 'maturity-advanced',
-              developing: 'maturity-developing',
-              basic: 'maturity-foundational',
-            };
+            const maturityLabel = overallScore >= 85 ? 'Advanced' :
+                                  overallScore >= 70 ? 'Developing' :
+                                  overallScore >= 50 ? 'Inconsistent' :
+                                  overallScore >= 30 ? 'Foundational' : 'Critical';
+
+            const maturityVariant: 'default' | 'secondary' | 'destructive' =
+                                  overallScore >= 70 ? 'default' :
+                                  overallScore >= 30 ? 'secondary' : 'destructive';
             const modulesAssessed = resultsData?.scores ? Object.keys(resultsData.scores).length : 0;
             const confidenceLevel = overallScore >= 70 ? 'High' : overallScore >= 45 ? 'Medium' : 'Low';
             const confidenceColor = overallScore >= 70 ? 'text-[hsl(var(--dd-green))]' : overallScore >= 45 ? 'text-[hsl(var(--dd-amber))]' : 'text-[hsl(var(--dd-red))]';
@@ -323,14 +322,24 @@ export default function Results() {
                     <span className="text-[32px] font-semibold tracking-tight text-[hsl(var(--dd-ink))]">{animatedScore}</span>
                     <span className="text-[16px] font-normal text-[hsl(var(--dd-ghost))]">/100</span>
                   </div>
-                  <div className="flex items-end gap-1 h-7 mt-2">
-                    {[42, 55, 48, 61, 58, overallScore].map((v, i) => (
+                  <div className="mt-3 w-full">
+                    <div className="relative h-2 w-full rounded-full bg-secondary overflow-hidden">
                       <div
-                        key={i}
-                        className={`w-3 rounded-sm ${i === 5 ? 'bg-[hsl(var(--dd-accent))]' : 'bg-[hsl(var(--dd-accent-light))]'}`}
-                        style={{ height: `${Math.max(4, (v / 100) * 28)}px` }}
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{
+                          width: `${animatedScore}%`,
+                          backgroundColor: overallScore >= 85 ? 'hsl(var(--success))' :
+                                           overallScore >= 70 ? 'hsl(var(--primary))' :
+                                           overallScore >= 50 ? 'hsl(var(--warning))' :
+                                           overallScore >= 30 ? 'hsl(var(--warning))' :
+                                           'hsl(var(--destructive))'
+                        }}
                       />
-                    ))}
+                    </div>
+                    <div className="flex justify-between mt-1">
+                      <span className="text-xs text-muted-foreground">0</span>
+                      <span className="text-xs text-muted-foreground">100</span>
+                    </div>
                   </div>
                 </div>
 
@@ -338,7 +347,7 @@ export default function Results() {
                 <div className={cardClass}>
                   <div className={labelClass}>{language === 'de' ? 'Reifegrad' : 'Maturity Level'}</div>
                   <div className="text-[20px] font-semibold text-[hsl(var(--dd-ink))] mb-1.5">{maturityLabel}</div>
-                  <Badge variant={maturityBadgeMap[maturityKey] ?? 'maturity-developing'}>{maturityLabel}</Badge>
+                  <Badge variant={maturityVariant}>{maturityLabel}</Badge>
                 </div>
 
                 {/* Card 3 — Modules Assessed */}
