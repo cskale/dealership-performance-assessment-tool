@@ -494,16 +494,22 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
           </Button>
           {/* View toggle */}
           <div className="flex rounded-lg border overflow-hidden">
+            <button onClick={() => setViewMode('kanban')}
+              className={cn("px-2 py-1.5 transition-colors",
+                viewMode === 'kanban' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"
+              )} title="Board view">
+              <LayoutGrid className="h-3.5 w-3.5" />
+            </button>
             <button onClick={() => setViewMode('list')}
               className={cn("px-2 py-1.5 transition-colors",
                 viewMode === 'list' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"
-              )}>
+              )} title="List view">
               <LayoutList className="h-3.5 w-3.5" />
             </button>
             <button onClick={() => setViewMode('timeline')}
               className={cn("px-2 py-1.5 transition-colors",
                 viewMode === 'timeline' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"
-              )}>
+              )} title="Timeline view">
               <GanttChart className="h-3.5 w-3.5" />
             </button>
           </div>
