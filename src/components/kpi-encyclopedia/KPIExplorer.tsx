@@ -254,7 +254,7 @@ export function KPIExplorer({ scores }: KPIExplorerProps) {
 
       {/* Result count */}
       {(searchTerm.length >= 2 || activeDepartment !== "all") && (
-        <p className="text-xs text-muted-foreground -mt-2">
+        <p className="text-sm text-muted-foreground -mt-2">
           {resultCount} {language === 'de' ? 'KPIs gefunden' : 'KPIs found'}
         </p>
       )}
