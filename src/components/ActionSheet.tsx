@@ -616,7 +616,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                               )}
                             </div>
                             {kpi.reason && (
-                              <p className="text-sm text-muted-foreground">{kpi.reason}</p>
+                              <p className="text-xs text-muted-foreground leading-relaxed">{kpi.reason}</p>
                             )}
                           </div>
                         ))}

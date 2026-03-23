@@ -625,9 +625,84 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
         </div>
       )}
 
-      {/* Content area: List or Timeline */}
+      {/* Content area: Kanban, List, or Timeline */}
       {viewMode === 'timeline' ? (
         <TimelineView actions={filteredActions} onActionClick={openEditPanel} />
+      ) : viewMode === 'kanban' ? (
+        /* Kanban Board */
+        (() => {
+          const columns: { key: string; label: string; actions: typeof filteredActions }[] = [
+            { key: 'Open', label: 'Open', actions: filteredActions.filter(a => a.status === 'Open') },
+            { key: 'In Progress', label: 'In Progress', actions: filteredActions.filter(a => a.status === 'In Progress') },
+            { key: 'Completed', label: 'Completed', actions: filteredActions.filter(a => a.status === 'Completed') },
+          ];
+
+          if (filteredActions.length === 0) {
+            return (
+              <div className="text-center py-16 text-muted-foreground">
+                <Target className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                <p className="font-medium">No actions found</p>
+                <p className="text-sm mt-1">Generate actions from your assessment or add them manually.</p>
+              </div>
+            );
+          }
+
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 min-h-[400px]">
+              {columns.map(col => (
+                <div key={col.key} className="bg-secondary rounded-xl p-3">
+                  <div className="flex items-center justify-between mb-3 px-1">
+                    <span className="text-sm font-semibold text-foreground">{col.label}</span>
+                    <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">{col.actions.length}</span>
+                  </div>
+                  <div className="space-y-2">
+                    {col.actions.map(action => {
+                      const overdue = isOverdue(action);
+                      const priorityBorderColor = action.priority === 'critical' ? 'border-l-destructive'
+                        : action.priority === 'high' ? 'border-l-warning'
+                        : action.priority === 'medium' ? 'border-l-primary'
+                        : 'border-l-muted-foreground';
+
+                      return (
+                        <div
+                          key={action.id}
+                          onClick={() => openEditPanel(action)}
+                          className={cn(
+                            "bg-white border border-border/50 rounded-lg p-3 cursor-pointer transition-all hover:shadow-md hover:-translate-y-px border-l-[3px]",
+                            priorityBorderColor,
+                            action.status === 'Completed' && "opacity-70"
+                          )}
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-1.5">
+                            <h4 className="text-sm font-medium text-foreground line-clamp-2 flex-1">
+                              {cleanActionTitle(action.action_title)}
+                            </h4>
+                            <Badge variant="outline" className="text-[10px] flex-shrink-0 px-1.5 py-0">
+                              {action.department}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center justify-between mt-2">
+                            {action.target_completion_date ? (
+                              <span className={cn("text-xs flex items-center gap-1", overdue ? "text-destructive font-medium" : "text-muted-foreground")}>
+                                <CalendarIcon className="h-3 w-3" />
+                                {new Date(action.target_completion_date).toLocaleDateString()}
+                              </span>
+                            ) : <span />}
+                            {action.responsible_person && (
+                              <div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-medium" title={action.responsible_person}>
+                                {action.responsible_person.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })()
       ) : (
         <>
           {filteredActions.length === 0 ? (
