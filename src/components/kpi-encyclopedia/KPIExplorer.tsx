@@ -173,12 +173,12 @@ export function KPIExplorer({ scores }: KPIExplorerProps) {
         <div className="mt-4 max-w-md">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={language === 'de' ? 'KPIs durchsuchen...' : 'Search KPIs by name, formula, or keyword...'}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 h-10 rounded-lg border-border/60 bg-background"
-            />
+             <Input
+               placeholder={language === 'de' ? 'KPIs durchsuchen...' : 'Search KPIs by name, formula, or keyword...'}
+               value={searchTerm}
+               onChange={(e) => setSearchTerm(e.target.value)}
+               className="pl-9 h-11 rounded-lg border-border/60 bg-background focus-visible:ring-primary/30"
+             />
           </div>
         </div>
       </div>
@@ -254,7 +254,7 @@ export function KPIExplorer({ scores }: KPIExplorerProps) {
 
       {/* Result count */}
       {(searchTerm.length >= 2 || activeDepartment !== "all") && (
-        <p className="text-xs text-muted-foreground -mt-2">
+        <p className="text-sm text-muted-foreground -mt-2">
           {resultCount} {language === 'de' ? 'KPIs gefunden' : 'KPIs found'}
         </p>
       )}
@@ -282,7 +282,7 @@ export function KPIExplorer({ scores }: KPIExplorerProps) {
               <button
                 key={item.key}
                 onClick={() => handleSelect(item.key)}
-                className="group text-left rounded-xl border border-border/40 bg-card p-5 transition-all duration-200 hover:border-border hover:shadow-md hover:shadow-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="group text-left bg-white rounded-xl border border-border/50 p-4 transition-all duration-200 hover:border-primary/40 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {/* Department badge */}
                 <div className="flex items-center gap-2 mb-3">
@@ -299,21 +299,23 @@ export function KPIExplorer({ scores }: KPIExplorerProps) {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-sm font-semibold text-foreground leading-snug mb-1.5 group-hover:text-primary transition-colors duration-200">
+                <h3 className="text-base font-semibold text-foreground leading-snug mb-1.5 line-clamp-2 group-hover:text-primary transition-colors duration-200">
                   {highlightMatch(item.kpi.title, searchTerm)}
                 </h3>
 
-                {/* Summary — concise */}
-                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed mb-3">
+                {/* Definition excerpt */}
+                <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed mb-3 mt-2">
                   {item.kpi.executiveSummary
-                    ? highlightMatch(item.kpi.executiveSummary.slice(0, 100) + '…', searchTerm)
-                    : highlightMatch(item.kpi.definition.slice(0, 100) + '…', searchTerm)}
+                    ? highlightMatch(item.kpi.executiveSummary.slice(0, 140) + '…', searchTerm)
+                    : highlightMatch(item.kpi.definition.slice(0, 140) + '…', searchTerm)}
                 </p>
 
-                {/* Open affordance */}
-                <div className="flex items-center text-xs text-muted-foreground/50 group-hover:text-primary/70 transition-colors duration-200">
-                  <span className="mr-1">{language === 'de' ? 'Details' : 'Explore'}</span>
-                  <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+                {/* Bottom row */}
+                <div className="flex items-center justify-end">
+                  <span className="text-sm text-primary font-medium group-hover:text-primary/80 transition-colors duration-200 flex items-center gap-1">
+                    {language === 'de' ? 'Erkunden' : 'Explore'}
+                    <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </span>
                 </div>
               </button>
             );

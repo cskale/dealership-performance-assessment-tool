@@ -290,7 +290,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
       <DialogContent className="max-w-[1200px] w-[95vw] md:w-[85vw] lg:w-[80vw] max-h-[90vh] p-0 flex flex-col overflow-hidden">
         {/* Header */}
         <DialogHeader className="px-6 pt-5 pb-3 border-b flex-shrink-0">
-          <DialogTitle className="text-xl font-semibold">
+          <DialogTitle className="text-base font-semibold">
             {readOnly ? 'View Action' : mode === 'create' ? 'Create Action' : 'Edit Action'}
           </DialogTitle>
           {mode === 'edit' && action && (
@@ -596,16 +596,16 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
 
                   {/* KPI Intelligence */}
                   <div className="space-y-3">
-                    <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                       <BarChart3 className="h-4 w-4 text-primary" /> KPIs This Action Will Improve
-                    </h4>
+                    </p>
 
                     {linkedKpiDetails.length > 0 ? (
                       <div className="space-y-2">
                         {visibleKpis.map((kpi: any, i: number) => (
                           <div key={i} className="rounded-lg border p-3">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                              <span className="text-sm font-semibold text-foreground flex items-center gap-1.5">
                                 <BarChart3 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
                                 {kpi.name || kpi.title || kpi.key}
                               </span>
@@ -616,7 +616,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                               )}
                             </div>
                             {kpi.reason && (
-                              <p className="text-sm text-muted-foreground">{kpi.reason}</p>
+                              <p className="text-xs text-muted-foreground leading-relaxed">{kpi.reason}</p>
                             )}
                           </div>
                         ))}
@@ -632,7 +632,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
 
                     {likelyDrivers.length > 0 && (
                       <div className="mt-4">
-                        <h5 className="text-sm font-semibold mb-2">Likely Drivers</h5>
+                        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Likely Drivers</p>
                         <div className="flex flex-wrap gap-2">
                           {likelyDrivers.map((d: any, i: number) => (
                             <div key={i} className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full border text-xs">
@@ -648,7 +648,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
 
                     {likelyConsequences.length > 0 && (
                       <div className="mt-3">
-                        <h5 className="text-sm font-semibold mb-2">Likely Consequences</h5>
+                        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Likely Consequences</p>
                         <div className="flex flex-wrap gap-2">
                           {likelyConsequences.map((c: any, i: number) => (
                             <div key={i} className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full border text-xs">
