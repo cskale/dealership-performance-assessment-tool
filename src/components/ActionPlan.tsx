@@ -95,7 +95,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
   const [filterDepartment, setFilterDepartment] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('priority');
   const [filterOpen, setFilterOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list');
+  const [viewMode, setViewMode] = useState<'kanban' | 'list' | 'timeline'>('kanban');
   const [lastGenerated, setLastGenerated] = useState<number | null>(null);
   const [actionPage, setActionPage] = useState(0);
   const PAGE_SIZE = 50;
