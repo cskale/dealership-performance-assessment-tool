@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   CheckCircle2, Circle, Clock, Plus, Sparkles, Loader2, Pencil,
-  AlertTriangle, Target, Eye, Search, Filter, Users, X, LayoutList, GanttChart
+  AlertTriangle, Target, Eye, Search, Filter, Users, X, LayoutList, GanttChart, LayoutGrid, CalendarIcon
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
