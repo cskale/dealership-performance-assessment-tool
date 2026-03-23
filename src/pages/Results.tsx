@@ -307,7 +307,11 @@ export default function Results() {
                                   overallScore >= 70 ? 'default' :
                                   overallScore >= 30 ? 'secondary' : 'destructive';
             const modulesAssessed = resultsData?.scores ? Object.keys(resultsData.scores).length : 0;
-            const confidenceLevel = overallScore >= 70 ? 'High' : overallScore >= 45 ? 'Medium' : 'Low';
+            const confidenceLevel = overallScore >= 70
+              ? (language === 'de' ? 'Hoch' : 'High')
+              : overallScore >= 45
+              ? (language === 'de' ? 'Mittel' : 'Medium')
+              : (language === 'de' ? 'Niedrig' : 'Low');
             const confidenceColor = overallScore >= 70 ? 'text-[hsl(var(--dd-green))]' : overallScore >= 45 ? 'text-[hsl(var(--dd-amber))]' : 'text-[hsl(var(--dd-red))]';
 
             const cardClass = "bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]";
@@ -330,7 +334,6 @@ export default function Results() {
                           width: `${animatedScore}%`,
                           backgroundColor: overallScore >= 85 ? 'hsl(var(--success))' :
                                            overallScore >= 70 ? 'hsl(var(--primary))' :
-                                           overallScore >= 50 ? 'hsl(var(--warning))' :
                                            overallScore >= 30 ? 'hsl(var(--warning))' :
                                            'hsl(var(--destructive))'
                         }}
@@ -346,7 +349,6 @@ export default function Results() {
                 {/* Card 2 — Maturity Level */}
                 <div className={cardClass}>
                   <div className={labelClass}>{language === 'de' ? 'Reifegrad' : 'Maturity Level'}</div>
-                  <div className="text-[20px] font-semibold text-[hsl(var(--dd-ink))] mb-1.5">{maturityLabel}</div>
                   <Badge variant={maturityVariant}>{maturityLabel}</Badge>
                 </div>
 
@@ -364,7 +366,7 @@ export default function Results() {
                   <div className={labelClass}>{language === 'de' ? 'Bewertungskonfidenz' : 'Assessment Confidence'}</div>
                   <div className={`text-[20px] font-semibold ${confidenceColor}`}>{confidenceLevel}</div>
                   <div className="text-[11px] text-[hsl(var(--dd-ghost))] mt-1">
-                    {confidenceLevel === 'Low'
+                    {overallScore < 45
                       ? (language === 'de' ? 'Überprüfung empfohlen' : 'Review recommended')
                       : (language === 'de' ? 'Stabile Ergebnisse' : 'Stable results')}
                   </div>
