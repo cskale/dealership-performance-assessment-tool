@@ -596,9 +596,9 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
 
                   {/* KPI Intelligence */}
                   <div className="space-y-3">
-                    <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                       <BarChart3 className="h-4 w-4 text-primary" /> KPIs This Action Will Improve
-                    </h4>
+                    </p>
 
                     {linkedKpiDetails.length > 0 ? (
                       <div className="space-y-2">
