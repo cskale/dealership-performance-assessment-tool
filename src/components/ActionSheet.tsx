@@ -290,7 +290,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
       <DialogContent className="max-w-[1200px] w-[95vw] md:w-[85vw] lg:w-[80vw] max-h-[90vh] p-0 flex flex-col overflow-hidden">
         {/* Header */}
         <DialogHeader className="px-6 pt-5 pb-3 border-b flex-shrink-0">
-          <DialogTitle className="text-xl font-semibold">
+          <DialogTitle className="text-base font-semibold">
             {readOnly ? 'View Action' : mode === 'create' ? 'Create Action' : 'Edit Action'}
           </DialogTitle>
           {mode === 'edit' && action && (
