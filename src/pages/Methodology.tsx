@@ -39,7 +39,7 @@ export default function Methodology() {
 
   const stats = [
     { value: '5', label: 'Assessment modules' },
-    { value: '33+', label: 'Diagnostic questions' },
+    { value: '50', label: 'Diagnostic questions' },
     { value: '22', label: 'Action templates' },
     { value: '5', label: 'Root-cause dimensions' },
     { value: '5', label: 'Maturity levels' },
