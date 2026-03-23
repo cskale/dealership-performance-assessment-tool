@@ -70,9 +70,9 @@ function confidenceBadge(c: ConfidenceMetrics, language: string) {
     low: { en: 'Review Recommended', de: 'Überprüfung empfohlen' },
   };
   const colors: Record<string, string> = {
-    high: 'bg-emerald-100 text-emerald-800',
-    medium: 'bg-yellow-100 text-yellow-800',
-    low: 'bg-red-100 text-red-800',
+    high: 'bg-success/10 text-success',
+    medium: 'bg-warning/10 text-warning-foreground',
+    low: 'bg-destructive/10 text-destructive',
   };
   return (
     <Badge className={`${colors[c.confidence]} text-xs`}>
@@ -293,12 +293,12 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
                 const benchmark = MODULE_BENCHMARKS[dept] ?? 72;
                 const gap = score - benchmark;
                 const isAbove = gap >= 0;
-                const statusColor = score >= 75 ? 'border-green-200 bg-green-50/50'
-                  : score >= 55 ? 'border-amber-200 bg-amber-50/50'
-                  : 'border-red-200 bg-red-50/50';
-                const scoreColor = score >= 75 ? 'text-green-700'
-                  : score >= 55 ? 'text-amber-700'
-                  : 'text-red-700';
+                const statusColor = score >= 75 ? 'border-success/30 bg-success/5'
+                  : score >= 55 ? 'border-warning/30 bg-warning/5'
+                  : 'border-destructive/30 bg-destructive/5';
+                const scoreColor = score >= 75 ? 'text-success'
+                  : score >= 55 ? 'text-warning-foreground'
+                  : 'text-destructive';
                 return (
                   <div key={dept} className={`rounded-lg border p-4 text-center ${statusColor}`}>
                     <div className="text-sm text-muted-foreground font-medium mb-1">
@@ -306,7 +306,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
                     </div>
                     <div className={`text-3xl font-bold ${scoreColor}`}>{score}%</div>
                     <div className="mt-2 text-xs text-muted-foreground">
-                      <span className={isAbove ? 'text-green-600' : 'text-red-600'}>
+                      <span className={isAbove ? 'text-success' : 'text-destructive'}>
                         {isAbove ? '+' : ''}{gap} vs benchmark
                       </span>
                     </div>
@@ -330,17 +330,17 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
             <div className="space-y-3">
               {topSignals.map((signal, i) => {
                 const severityColor = signal.severity === 'HIGH'
-                  ? 'border-l-red-500 bg-red-50/30'
+                  ? 'border-l-destructive bg-destructive/5'
                   : signal.severity === 'MEDIUM'
-                  ? 'border-l-amber-500 bg-amber-50/30'
-                  : 'border-l-blue-400 bg-blue-50/30';
+                  ? 'border-l-warning bg-warning/5'
+                  : 'border-l-info bg-info/5';
                 const severityLabel = signal.severity === 'HIGH' ? 'Critical'
                   : signal.severity === 'MEDIUM' ? 'Moderate' : 'Monitor';
                 const severityBadge = signal.severity === 'HIGH'
-                  ? 'bg-red-100 text-red-700 border-red-200'
+                  ? 'bg-destructive/10 text-destructive border-destructive/20'
                   : signal.severity === 'MEDIUM'
-                  ? 'bg-amber-100 text-amber-700 border-amber-200'
-                  : 'bg-blue-100 text-blue-700 border-blue-200';
+                  ? 'bg-warning/10 text-warning-foreground border-warning/20'
+                  : 'bg-info/10 text-info border-info/20';
                 const deptName = getDepartmentName(signal.moduleKey, language);
                 const triggerCount = signal.triggeringQuestionIds?.length ?? 1;
                 return (
@@ -368,9 +368,9 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
 
       {/* SECTION 4 — Systemic Patterns (only when fired) */}
       {systemicPatterns.filter(p => p.severity === 'systemic').length > 0 && (
-        <Card className="shadow-lg border border-red-200 bg-red-50/30">
+        <Card className="shadow-lg border border-destructive/30 bg-destructive/5">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-800">
+            <CardTitle className="flex items-center gap-2 text-destructive">
               <ShieldAlert className="h-5 w-5" />
               Organisation-Wide Pattern Detected
             </CardTitle>
@@ -378,10 +378,10 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
           <CardContent>
             {systemicPatterns.filter(p => p.severity === 'systemic').map((p, i) => (
               <div key={i} className="mb-3 last:mb-0">
-                <p className="text-sm text-red-700">{p.description}</p>
+                <p className="text-body-sm text-destructive">{p.description}</p>
                 <div className="mt-2 flex flex-wrap gap-1">
                   {p.departments.map(d => (
-                    <Badge key={d} variant="outline" className="text-xs border-red-300 text-red-700">
+                    <Badge key={d} variant="outline" className="text-xs border-destructive/30 text-destructive">
                       {getDepartmentName(d, language)}
                     </Badge>
                   ))}

@@ -78,8 +78,8 @@ function isOverdue(action: ActionRecord): boolean {
 
 const STATUS_STRIPE: Record<string, string> = {
   'Open': 'bg-muted-foreground',
-  'In Progress': 'bg-amber-500',
-  'Completed': 'bg-green-500',
+  'In Progress': 'bg-warning',
+  'Completed': 'bg-success',
 };
 
 export function ActionPlan({ assessmentId }: { assessmentId?: string }) {

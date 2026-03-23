@@ -49,8 +49,8 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
     {
       level: 1,
       name: language === 'de' ? 'Basis' : 'Basic',
-      icon: <AlertCircle className="h-5 w-5 text-red-600" />,
-      color: 'bg-red-50 text-red-800 border-red-200',
+      icon: <AlertCircle className="h-5 w-5 text-destructive" />,
+      color: 'bg-destructive/10 text-destructive border-destructive/20',
       description: language === 'de' ? 'Grundlegende Prozesse vorhanden' : 'Basic processes in place',
       characteristics: [
         language === 'de' ? 'Grundlegende Prozesse vorhanden' : 'Basic processes in place',
@@ -88,8 +88,8 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
     {
       level: 4,
       name: language === 'de' ? 'Fortgeschritten' : 'Advanced',
-      icon: <Award className="h-5 w-5 text-emerald-600" />,
-      color: 'bg-green-50 text-green-800 border-green-200',
+      icon: <Award className="h-5 w-5 text-success" />,
+      color: 'bg-success/10 text-success border-success/20',
       description: language === 'de' ? 'Branchenführend' : 'Industry leading',
       characteristics: [
         language === 'de' ? 'Innovation und Best Practices' : 'Innovation and best practices',
@@ -113,7 +113,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
         'Developing': maturityLevels[1],
         'Mature': maturityLevels[2],
         'Advanced': maturityLevels[3],
-        'Inconsistent': { ...maturityLevels[1], name: language === 'de' ? 'Inkonsistent' : 'Inconsistent', icon: <ShieldQuestion className="h-5 w-5 text-amber-600" />, color: 'bg-amber-50 text-amber-800 border-amber-200' },
+        'Inconsistent': { ...maturityLevels[1], name: language === 'de' ? 'Inkonsistent' : 'Inconsistent', icon: <ShieldQuestion className="h-5 w-5 text-warning-foreground" />, color: 'bg-warning/10 text-warning-foreground border-warning/20' },
       };
 
       return {
@@ -176,16 +176,16 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
         let priorityLabel: string, priorityColor: string, priorityIcon: React.ReactNode;
         if (gap <= -30) {
           priorityLabel = language === 'de' ? 'Kritisch' : 'Critical';
-          priorityColor = 'bg-red-100 text-red-800';
-          priorityIcon = <AlertCircle className="h-3 w-3 text-red-600 inline mr-1" />;
+          priorityColor = 'bg-destructive/10 text-destructive';
+          priorityIcon = <AlertCircle className="h-3 w-3 text-destructive inline mr-1" />;
         } else if (gap <= -10) {
           priorityLabel = language === 'de' ? 'Mittel' : 'Medium';
-          priorityColor = 'bg-yellow-100 text-yellow-800';
-          priorityIcon = <TrendingUp className="h-3 w-3 text-yellow-600 inline mr-1" />;
+          priorityColor = 'bg-warning/10 text-warning-foreground';
+          priorityIcon = <TrendingUp className="h-3 w-3 text-warning-foreground inline mr-1" />;
         } else {
           priorityLabel = language === 'de' ? 'Niedrig' : 'Low';
-          priorityColor = 'bg-green-100 text-green-800';
-          priorityIcon = <CheckCircle className="h-3 w-3 text-green-600 inline mr-1" />;
+          priorityColor = 'bg-success/10 text-success';
+          priorityIcon = <CheckCircle className="h-3 w-3 text-success inline mr-1" />;
         }
         return { category: getDepartmentName(dept, language), yourScore: score, industryAvg: INDICATIVE_BENCHMARK, gap, priorityLabel, priorityColor, priorityIcon };
       })
@@ -279,12 +279,12 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
                     <TableCell className="font-medium">{row.category}</TableCell>
                     <TableCell className="text-center font-semibold">{row.yourScore}</TableCell>
                     <TableCell className="text-center text-muted-foreground">{row.industryAvg}</TableCell>
-                    <TableCell className={`text-center font-semibold ${row.gap >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                    <TableCell className={`text-center font-semibold ${row.gap >= 0 ? 'text-success' : 'text-destructive'}`}>
                       {row.gap >= 0 ? '+' : ''}{row.gap}
                     </TableCell>
                     <TableCell className="text-center">
                       {conf && (
-                        <Badge className={`text-xs ${conf.confidence === 'high' ? 'bg-emerald-100 text-emerald-800' : conf.confidence === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                        <Badge className={`text-xs ${conf.confidence === 'high' ? 'bg-success/10 text-success' : conf.confidence === 'medium' ? 'bg-warning/10 text-warning-foreground' : 'bg-destructive/10 text-destructive'}`}>
                           {conf.consistencyScore}%
                         </Badge>
                       )}

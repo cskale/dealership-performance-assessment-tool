@@ -60,9 +60,9 @@ export function OwnerLoadPanel({ open, onOpenChange, actions, onFilterByOwner, a
   const overloadedCount = ownerStats.filter(o => o.total > 6 && o.name !== 'Unassigned').length;
 
   const getBarColor = (total: number) => {
-    if (total <= 3) return 'bg-green-500';
-    if (total <= 6) return 'bg-amber-500';
-    return 'bg-red-500';
+    if (total <= 3) return 'bg-success';
+    if (total <= 6) return 'bg-warning';
+    return 'bg-destructive';
   };
 
   if (!open) return null;

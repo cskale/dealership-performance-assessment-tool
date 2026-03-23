@@ -26,22 +26,22 @@ export function SharedSectionHeader({
       container: 'mb-3',
       iconBox: 'h-7 w-7',
       icon: 'h-3.5 w-3.5',
-      title: 'text-base font-semibold',
-      subtitle: 'text-xs'
+      title: 'text-h5',
+      subtitle: 'text-caption'
     },
     md: {
       container: 'mb-4',
       iconBox: 'h-9 w-9',
       icon: 'h-4 w-4',
-      title: 'text-lg font-semibold',
-      subtitle: 'text-sm'
+      title: 'text-h5',
+      subtitle: 'text-body-sm'
     },
     lg: {
       container: 'mb-6',
       iconBox: 'h-10 w-10',
       icon: 'h-5 w-5',
-      title: 'text-xl font-bold',
-      subtitle: 'text-sm'
+      title: 'text-h4',
+      subtitle: 'text-body-sm'
     }
   };
 

@@ -12,8 +12,8 @@ interface TimelineViewProps {
 
 const STATUS_COLORS: Record<string, string> = {
   'Open': 'bg-muted-foreground/40',
-  'In Progress': 'bg-amber-500',
-  'Completed': 'bg-green-500',
+  'In Progress': 'bg-warning',
+  'Completed': 'bg-success',
 };
 
 function isOverdue(a: ActionRecord): boolean {
@@ -180,7 +180,7 @@ export function TimelineView({ actions, onActionClick }: TimelineViewProps) {
                           className={cn(
                             "absolute top-1/2 -translate-y-1/2 h-3 rounded-full",
                             overdue
-                              ? "bg-red-500 bg-[length:8px_8px]"
+                              ? "bg-destructive bg-[length:8px_8px]"
                               : STATUS_COLORS[action.status] || 'bg-muted-foreground/40'
                           )}
                           style={{

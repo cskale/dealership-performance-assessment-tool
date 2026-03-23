@@ -328,12 +328,12 @@ export default function Assessment() {
               <div className="text-center space-y-4">
                 <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
                 <div>
-                  <h3 className="text-lg font-semibold">
+                  <h3 className="text-h5">
                     {completionState === 'saving' && 'Saving Assessment...'}
                     {completionState === 'generating_actions' && 'Generating Action Plan...'}
                     {completionState === 'complete' && 'Complete!'}
                   </h3>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-body-sm text-muted-foreground mt-1">
                     {completionState === 'saving' && 'Please wait while we save your assessment results.'}
                     {completionState === 'generating_actions' && 'Analyzing responses and creating improvement actions.'}
                     {completionState === 'complete' && 'Redirecting to your results...'}
@@ -347,7 +347,7 @@ export default function Assessment() {
 
       {/* Header */}
       <div className="sticky top-0 z-10 bg-card border-b">
-        <div className="container mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
@@ -376,12 +376,12 @@ export default function Assessment() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="flex gap-6 w-full">
           {/* Left Sidebar - Sections Navigation */}
           <div className="w-80 flex-shrink-0">
             <div className="sticky top-24">
-              <Card className="border-2">
+              <Card className="border">
                 <CardHeader className="pb-4">
                   <div className="flex items-center gap-2">
                     <BarChart3 className="h-5 w-5 text-primary" />
@@ -399,9 +399,9 @@ export default function Assessment() {
                     return (
                       <Card
                         key={section.id}
-                        className={`transition-all duration-200 cursor-pointer border-2 ${
-                          isCurrentSection 
-                            ? "border-primary shadow-md bg-primary/5" 
+                        className={`transition-all duration-200 cursor-pointer border ${
+                          isCurrentSection
+                            ? "border-primary shadow-md bg-primary/5"
                             : "border-border hover:border-primary/50 hover:shadow-sm"
                         }`}
                         onClick={() => !isCompleting && handleNavigateToSection(sectionIndex, 0)}
@@ -514,7 +514,7 @@ export default function Assessment() {
       <div className="fixed bottom-6 right-6 z-40">
         <Button
           onClick={() => setShowAssistant(true)}
-          className="h-14 w-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg animate-bounce"
+          className="h-14 w-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg"
           disabled={isCompleting}
         >
           <Bot className="h-6 w-6" />

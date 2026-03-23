@@ -85,7 +85,7 @@ const Dashboard = () => {
     const status = getScoreStatus(score);
 
     return (
-      <div className="flex items-center justify-between p-4 rounded-2xl border bg-card">
+      <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
             {icon}
@@ -147,7 +147,7 @@ const Dashboard = () => {
 
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         {/* Preview banner */}
-        <div className="flex items-start gap-3 p-4 rounded-2xl border border-warning/30 bg-warning/5">
+        <div className="flex items-start gap-3 p-4 rounded-lg border border-warning/30 bg-warning/5">
           <Info className="h-4 w-4 text-warning-foreground mt-0.5 shrink-0" />
           <div>
             <p className="text-body-sm font-medium text-foreground">
@@ -258,7 +258,7 @@ const Dashboard = () => {
                 { value: '1', label: t('dashboard.needsAttention'), color: 'text-warning-foreground' },
                 { value: '€91k', label: t('dashboard.monthlyOpportunity'), color: 'text-accent-foreground' },
               ].map((stat, i) => (
-                <div key={i} className="text-center p-5 rounded-2xl bg-muted/50">
+                <div key={i} className="text-center p-5 rounded-lg bg-muted/50">
                   <div className={cn("text-metric-lg mb-1", stat.color)}>{stat.value}</div>
                   <div className="text-caption text-muted-foreground">{stat.label}</div>
                 </div>

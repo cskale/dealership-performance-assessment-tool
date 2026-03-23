@@ -30,12 +30,6 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
     onChange(rating);
   };
 
-  const getRatingColor = (rating: number) => {
-    if (rating <= 2) return "bg-red-500 hover:bg-red-600";
-    if (rating === 3) return "bg-yellow-500 hover:bg-yellow-600";
-    return "bg-green-500 hover:bg-green-600";
-  };
-
   const getRatingText = (rating: number) => {
     if (!question.scale) return "";
     return question.scale.labels[rating - 1] || "";
@@ -84,7 +78,7 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
                   variant={isSelected ? "default" : "outline"}
                   onClick={() => handleRatingClick(rating)}
                   className={`min-h-[80px] h-auto p-2 flex flex-col items-center justify-start gap-1 transition-all duration-200 ${
-                    isSelected ? getRatingColor(rating) : "hover:bg-muted/50"
+                    isSelected ? "bg-primary hover:bg-primary/90" : "hover:bg-muted/50"
                   }`}
                 >
                   <span className="text-2xl font-bold">{rating}</span>
@@ -109,7 +103,7 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
 
       {/* Enhanced Context Information */}
       {(question.purpose || question.situationAnalysis || question.linkedKPIs || question.benefits) && (
-        <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+        <Card className="border-primary/20 bg-primary/5">
           <CardContent className="p-0">
             <Collapsible>
               <CollapsibleTrigger asChild>

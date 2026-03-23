@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { MessageSquare, Save, ChevronRight, AlertCircle, StickyNote, Target, Search, BarChart3, Briefcase } from "lucide-react";
+import { MessageSquare, Save, ChevronRight, AlertCircle, StickyNote, Target, Search, BarChart3, Briefcase, Check } from "lucide-react";
 import { Question, Section } from "@/data/questionnaire";
 import { useAssessmentNotes } from "@/hooks/useAssessmentNotes";
 import { useToast } from "@/hooks/use-toast";
@@ -186,8 +186,8 @@ export function CategoryAssessment({
                           {question.category}
                         </Badge>
                         {value !== undefined && (
-                          <Badge className="text-xs h-5 bg-green-100 text-green-700 border-green-200">
-                            ✓ Answered
+                          <Badge className="text-xs h-5 bg-success/10 text-success border-success/20 flex items-center gap-1">
+                            <Check className="h-3 w-3" /> Answered
                           </Badge>
                         )}
                       </div>
@@ -241,7 +241,7 @@ export function CategoryAssessment({
 
                     {value !== undefined && (
                       <div className="flex items-center gap-1.5 mt-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-success flex-shrink-0" />
                         <span className="text-xs text-muted-foreground">Saved</span>
                       </div>
                     )}
@@ -363,7 +363,7 @@ export function CategoryAssessment({
         })}
       </div>
 
-      <Card className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-0">
+      <Card className="bg-primary text-primary-foreground border-0">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>

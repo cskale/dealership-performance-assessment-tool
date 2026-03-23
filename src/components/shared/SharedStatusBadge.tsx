@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { CheckCircle2, Circle, Clock, AlertTriangle } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type StatusType = 'open' | 'in_progress' | 'completed' | 'overdue';
 
@@ -47,6 +48,7 @@ export function SharedStatusBadge({
   size = 'sm',
   className
 }: SharedStatusBadgeProps) {
+  const { language } = useLanguage();
   // Normalize status string
   const normalizedStatus = status.toLowerCase().replace(/\s+/g, '_') as StatusType;
   const config = statusConfig[normalizedStatus] || statusConfig.open;
@@ -67,7 +69,7 @@ export function SharedStatusBadge({
       )}
     >
       {showIcon && <Icon className={cn("mr-1", size === 'sm' ? 'h-2.5 w-2.5' : 'h-3 w-3')} />}
-      {config.label.en}
+      {config.label[language as 'en' | 'de'] ?? config.label.en}
     </Badge>
   );
 }
