@@ -6,12 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   BookOpen, Video, FileText, Globe, 
-  Search, Download, ExternalLink, Clock, GraduationCap,
+  Search, Download, Clock, GraduationCap,
   FileSpreadsheet, Presentation, Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Link } from "react-router-dom";
 import { KPIExplorer } from "@/components/kpi-encyclopedia/KPIExplorer";
 
 interface UsefulResourcesProps {
