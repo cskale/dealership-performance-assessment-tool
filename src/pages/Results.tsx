@@ -276,21 +276,15 @@ export default function Results() {
 
         {/* Results Hero */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <Button variant="outline" size="sm" onClick={() => navigate('/app/dashboard')}>
-              <ArrowLeft className="h-4 w-4 mr-1.5" />
-              {t('nav.backToDashboard')}
+          <div className="flex items-center justify-end gap-2 mb-6">
+            <Button onClick={() => setShowExportModal(true)} size="sm" className="gap-1.5">
+              <FileText className="h-4 w-4" />
+              {t('results.exportPDF')}
             </Button>
-            <div className="flex items-center gap-2">
-              <Button onClick={() => setShowExportModal(true)} size="sm" className="gap-1.5">
-                <FileText className="h-4 w-4" />
-                {t('results.exportPDF')}
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleRetakeAssessment} className="gap-1.5">
-                <RefreshCw className="h-4 w-4" />
-                {t('results.retakeAssessment')}
-              </Button>
-            </div>
+            <Button variant="outline" size="sm" onClick={handleRetakeAssessment} className="gap-1.5">
+              <RefreshCw className="h-4 w-4" />
+              {t('results.retakeAssessment')}
+            </Button>
           </div>
           
           {/* Page title */}
