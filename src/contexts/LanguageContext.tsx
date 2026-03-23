@@ -270,7 +270,7 @@ const translations: Record<Language, Record<string, string>> = {
     'kpi.perYear': '/year',
     
     // Dashboard Page
-    'dashboard.title': 'Performance Dashboard',
+    'dashboard.title': 'My Dashboard',
     'dashboard.subtitle': 'Real-time analytics and insights for your dealership operations',
     'dashboard.exportPDF': 'Export PDF',
     'dashboard.exportExcel': 'Export Excel',
