@@ -479,10 +479,10 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Results Tabs
     'results.tab.executive': 'Zusammenfassung',
-    'results.tab.kpi': 'KPI-Analytik',
+    'results.tab.kpi': 'KPI-Analyse',
     'results.tab.maturity': 'Reifegrad',
     'results.tab.actionPlan': 'Aktionsplan',
-    'results.tab.resources': 'Nützliche Ressourcen',
+    'results.tab.resources': 'Ressourcen',
     
     // Executive Summary
     'executive.excellentPerformance': 'Ausgezeichnete Leistung',
