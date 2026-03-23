@@ -84,6 +84,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "access_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "peer_segmentation_keys"
+            referencedColumns: ["organization_id"]
+          },
+          {
             foreignKeyName: "access_assignments_outlet_id_fkey"
             columns: ["outlet_id"]
             isOneToOne: false
@@ -269,6 +276,73 @@ export type Database = {
           },
         ]
       }
+      answer_audit: {
+        Row: {
+          assessment_id: string
+          change_source: string
+          changed_at: string
+          changed_by: string
+          from_value: number | null
+          id: string
+          ip_address: unknown
+          notes: string | null
+          organization_id: string
+          question_id: string
+          session_id: string | null
+          to_value: number
+        }
+        Insert: {
+          assessment_id: string
+          change_source?: string
+          changed_at?: string
+          changed_by: string
+          from_value?: number | null
+          id?: string
+          ip_address?: unknown
+          notes?: string | null
+          organization_id: string
+          question_id: string
+          session_id?: string | null
+          to_value: number
+        }
+        Update: {
+          assessment_id?: string
+          change_source?: string
+          changed_at?: string
+          changed_by?: string
+          from_value?: number | null
+          id?: string
+          ip_address?: unknown
+          notes?: string | null
+          organization_id?: string
+          question_id?: string
+          session_id?: string | null
+          to_value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "answer_audit_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "answer_audit_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "answer_audit_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "peer_segmentation_keys"
+            referencedColumns: ["organization_id"]
+          },
+        ]
+      }
       assessment_notes: {
         Row: {
           assessment_id: string | null
@@ -315,17 +389,26 @@ export type Database = {
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "assessment_notes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "peer_segmentation_keys"
+            referencedColumns: ["organization_id"]
+          },
         ]
       }
       assessments: {
         Row: {
           answers: Json
+          assessment_cycle: number
           completed_at: string | null
           created_at: string
           dealership_id: string
           id: string
           organization_id: string | null
           overall_score: number | null
+          questionnaire_version: string
           scores: Json
           session_id: string
           status: string
@@ -334,12 +417,14 @@ export type Database = {
         }
         Insert: {
           answers?: Json
+          assessment_cycle?: number
           completed_at?: string | null
           created_at?: string
           dealership_id: string
           id?: string
           organization_id?: string | null
           overall_score?: number | null
+          questionnaire_version?: string
           scores?: Json
           session_id: string
           status?: string
@@ -348,12 +433,14 @@ export type Database = {
         }
         Update: {
           answers?: Json
+          assessment_cycle?: number
           completed_at?: string | null
           created_at?: string
           dealership_id?: string
           id?: string
           organization_id?: string | null
           overall_score?: number | null
+          questionnaire_version?: string
           scores?: Json
           session_id?: string
           status?: string
@@ -375,7 +462,80 @@ export type Database = {
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "assessments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "peer_segmentation_keys"
+            referencedColumns: ["organization_id"]
+          },
         ]
+      }
+      benchmark_snapshots: {
+        Row: {
+          business_model: string
+          confidence_tier: string
+          created_at: string
+          id: string
+          mean_score: number | null
+          metric_name: string
+          module_code: string
+          network_structure: string
+          p25_score: number | null
+          p50_score: number | null
+          p75_score: number | null
+          positioning: string
+          sample_count: number
+          snapshot_date: string
+          source_notes: string | null
+          source_type: string
+          std_dev: number | null
+          updated_at: string
+          volume_band: string
+        }
+        Insert: {
+          business_model: string
+          confidence_tier?: string
+          created_at?: string
+          id?: string
+          mean_score?: number | null
+          metric_name: string
+          module_code: string
+          network_structure: string
+          p25_score?: number | null
+          p50_score?: number | null
+          p75_score?: number | null
+          positioning: string
+          sample_count?: number
+          snapshot_date?: string
+          source_notes?: string | null
+          source_type?: string
+          std_dev?: number | null
+          updated_at?: string
+          volume_band: string
+        }
+        Update: {
+          business_model?: string
+          confidence_tier?: string
+          created_at?: string
+          id?: string
+          mean_score?: number | null
+          metric_name?: string
+          module_code?: string
+          network_structure?: string
+          p25_score?: number | null
+          p50_score?: number | null
+          p75_score?: number | null
+          positioning?: string
+          sample_count?: number
+          snapshot_date?: string
+          source_notes?: string | null
+          source_type?: string
+          std_dev?: number | null
+          updated_at?: string
+          volume_band?: string
+        }
+        Relationships: []
       }
       benchmarks: {
         Row: {
@@ -499,6 +659,87 @@ export type Database = {
         }
         Relationships: []
       }
+      dealer_network_memberships: {
+        Row: {
+          created_at: string
+          dealership_id: string | null
+          enrolled_at: string | null
+          expires_at: string | null
+          id: string
+          include_in_network_benchmark: boolean
+          is_active: boolean
+          network_id: string
+          organization_id: string
+          programme_tier: string | null
+          region_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dealership_id?: string | null
+          enrolled_at?: string | null
+          expires_at?: string | null
+          id?: string
+          include_in_network_benchmark?: boolean
+          is_active?: boolean
+          network_id: string
+          organization_id: string
+          programme_tier?: string | null
+          region_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dealership_id?: string | null
+          enrolled_at?: string | null
+          expires_at?: string | null
+          id?: string
+          include_in_network_benchmark?: boolean
+          is_active?: boolean
+          network_id?: string
+          organization_id?: string
+          programme_tier?: string | null
+          region_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dealer_network_memberships_dealership_id_fkey"
+            columns: ["dealership_id"]
+            isOneToOne: false
+            referencedRelation: "dealerships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dealer_network_memberships_network_id_fkey"
+            columns: ["network_id"]
+            isOneToOne: false
+            referencedRelation: "oem_networks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dealer_network_memberships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dealer_network_memberships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "peer_segmentation_keys"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "dealer_network_memberships_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "network_regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dealership_contacts: {
         Row: {
           contact_email: string | null
@@ -592,6 +833,13 @@ export type Database = {
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "dealership_invites_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "peer_segmentation_keys"
+            referencedColumns: ["organization_id"]
+          },
         ]
       }
       dealerships: {
@@ -635,6 +883,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dealerships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "peer_segmentation_keys"
+            referencedColumns: ["organization_id"]
           },
         ]
       }
@@ -741,6 +996,13 @@ export type Database = {
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "improvement_actions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "peer_segmentation_keys"
+            referencedColumns: ["organization_id"]
+          },
         ]
       }
       memberships: {
@@ -778,6 +1040,102 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memberships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "peer_segmentation_keys"
+            referencedColumns: ["organization_id"]
+          },
+        ]
+      }
+      network_regions: {
+        Row: {
+          country: string
+          created_at: string
+          id: string
+          name: string
+          network_id: string
+          region_code: string | null
+        }
+        Insert: {
+          country: string
+          created_at?: string
+          id?: string
+          name: string
+          network_id: string
+          region_code?: string | null
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          id?: string
+          name?: string
+          network_id?: string
+          region_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "network_regions_network_id_fkey"
+            columns: ["network_id"]
+            isOneToOne: false
+            referencedRelation: "oem_networks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oem_networks: {
+        Row: {
+          country_scope: string[]
+          created_at: string
+          id: string
+          name: string
+          oem_brand: string
+          owner_org_id: string | null
+          programme_code: string | null
+          settings: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          country_scope?: string[]
+          created_at?: string
+          id?: string
+          name: string
+          oem_brand: string
+          owner_org_id?: string | null
+          programme_code?: string | null
+          settings?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          country_scope?: string[]
+          created_at?: string
+          id?: string
+          name?: string
+          oem_brand?: string
+          owner_org_id?: string | null
+          programme_code?: string | null
+          settings?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oem_networks_owner_org_id_fkey"
+            columns: ["owner_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oem_networks_owner_org_id_fkey"
+            columns: ["owner_org_id"]
+            isOneToOne: false
+            referencedRelation: "peer_segmentation_keys"
+            referencedColumns: ["organization_id"]
           },
         ]
       }
@@ -968,6 +1326,13 @@ export type Database = {
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "profiles_active_organization_id_fkey"
+            columns: ["active_organization_id"]
+            isOneToOne: false
+            referencedRelation: "peer_segmentation_keys"
+            referencedColumns: ["organization_id"]
+          },
         ]
       }
       project_outlets: {
@@ -1050,6 +1415,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_sponsor_organization_id_fkey"
+            columns: ["sponsor_organization_id"]
+            isOneToOne: false
+            referencedRelation: "peer_segmentation_keys"
+            referencedColumns: ["organization_id"]
           },
         ]
       }
@@ -1165,7 +1537,20 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      peer_segmentation_keys: {
+        Row: {
+          annual_unit_sales: number | null
+          brand_tier: string | null
+          business_model: string | null
+          network_structure: string | null
+          organization_id: string | null
+          organization_name: string | null
+          peer_segment_key: string | null
+          positioning: string | null
+          volume_band: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       accept_dealership_invite: { Args: { p_token: string }; Returns: Json }

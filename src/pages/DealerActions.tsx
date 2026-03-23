@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Calendar } from 'lucide-react';
-import { AppHeader } from '@/components/AppHeader';
+
 
 interface Action {
   id: string;
@@ -167,7 +167,7 @@ export default function DealerActions() {
 
   return (
     <div className="min-h-screen bg-neutral-bg">
-      <AppHeader />
+      
       
       <main className="container mx-auto px-4 py-8 max-w-5xl">
         <div className="flex items-center justify-between mb-8">

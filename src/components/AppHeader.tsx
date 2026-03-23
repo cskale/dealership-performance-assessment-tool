@@ -39,6 +39,11 @@ export function AppHeader() {
     checkCompleted();
   }, [user]);
 
+  // Safety net: suppress header on sidebar routes
+  const sidebarRoutes = ['/app/dashboard', '/app/results', '/app/assessment', '/app/onboarding', '/account', '/actions', '/resources', '/kpi-encyclopedia'];
+  const hasSidebar = sidebarRoutes.some(r => location.pathname.startsWith(r));
+  if (hasSidebar) return null;
+
   const handleSignOut = async () => {
     await signOut();
     navigate('/', { replace: true });
@@ -49,12 +54,10 @@ export function AppHeader() {
     return user.email.substring(0, 2).toUpperCase();
   };
 
-  // Determine user role from membership
   const currentRole = userMemberships.find(
     m => m.organization_id === currentOrganization?.id
   )?.role;
 
-  // Role-aware navigation
   const getNavItems = () => {
     if (!user) {
       return [
@@ -72,7 +75,6 @@ export function AppHeader() {
       ];
     }
 
-    // Default authenticated (dealer / manager / analyst / viewer)
     const items = [
       { path: '/', label: language === 'de' ? 'Startseite' : 'Home', icon: Home },
       { path: '/app/assessment', label: language === 'de' ? 'Bewertung' : 'Assessment', icon: ClipboardList },

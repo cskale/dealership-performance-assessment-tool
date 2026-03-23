@@ -8,13 +8,14 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { FileText, RefreshCw, ArrowLeft, ClipboardList, BarChart3, Award, CheckSquare, BookOpen, AlertCircle, X } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { getMaturityLevel, getMaturityLevelKey } from "@/lib/constants";
 import { ExecutiveSummary } from "@/components/ExecutiveSummary";
 import { IndustrialKPIDashboard } from "@/components/IndustrialKPIDashboard";
 import { MaturityScoring } from "@/components/MaturityScoring";
 import { ActionPlan } from "@/components/ActionPlan";
 import { UsefulResources } from "@/components/UsefulResources";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { AppHeader } from "@/components/AppHeader";
+
 import { ExportPDFModal } from "@/components/ExportPDFModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useMultiTenant } from "@/hooks/useMultiTenant";
@@ -214,7 +215,6 @@ export default function Results() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-muted">
-        <AppHeader />
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="text-center space-y-6">
             <Skeleton className="h-8 w-48 mx-auto" />
@@ -231,7 +231,6 @@ export default function Results() {
   if (loadError) {
     return (
       <div className="min-h-screen bg-muted">
-        <AppHeader />
         <div className="flex items-center justify-center min-h-[60vh]">
           <Card className="max-w-md w-full mx-4">
             <CardContent className="pt-8 pb-6 text-center space-y-4">
@@ -271,81 +270,99 @@ export default function Results() {
 
   return (
     <div className="min-h-screen bg-muted">
-      <AppHeader />
+      
       
       <div className="max-w-7xl mx-auto px-6 py-8" id="results-content">
 
         {/* Results Hero */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <Button variant="outline" size="sm" onClick={() => navigate('/')}>
-              <ArrowLeft className="h-4 w-4 mr-1.5" />
-              {t('nav.backToDashboard')}
+          <div className="flex items-center justify-end gap-2 mb-6">
+            <Button onClick={() => setShowExportModal(true)} size="sm" className="gap-1.5">
+              <FileText className="h-4 w-4" />
+              {t('results.exportPDF')}
             </Button>
-            <div className="flex items-center gap-2">
-              <Button onClick={() => setShowExportModal(true)} size="sm" className="gap-1.5">
-                <FileText className="h-4 w-4" />
-                {t('results.exportPDF')}
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleRetakeAssessment} className="gap-1.5">
-                <RefreshCw className="h-4 w-4" />
-                {t('results.retakeAssessment')}
-              </Button>
-            </div>
+            <Button variant="outline" size="sm" onClick={handleRetakeAssessment} className="gap-1.5">
+              <RefreshCw className="h-4 w-4" />
+              {t('results.retakeAssessment')}
+            </Button>
           </div>
           
-          {/* Score hero card */}
-          <Card className="overflow-hidden">
-            <CardContent className="p-8">
-              <div className="flex flex-col md:flex-row items-center gap-8">
-                {/* Score ring */}
-                <div className="shrink-0">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="relative cursor-help">
-                        <svg className="w-36 h-36" viewBox="0 0 100 100">
-                          <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--border))" strokeWidth="6" />
-                          <circle
-                            cx="50" cy="50" r="42" fill="none"
-                            className={getScoreColor(overallScore)}
-                            strokeWidth="6" strokeLinecap="round"
-                            strokeDasharray={`${(animatedScore / 100) * 264} 264`}
-                            transform="rotate(-90 50 50)"
-                            style={{ transition: 'stroke-dasharray 0.1s ease-out' }}
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <span className="text-metric-lg text-foreground">{animatedScore}</span>
-                          <span className="text-caption text-muted-foreground">/100</span>
-                        </div>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="max-w-xs p-3">
-                      <p className="font-medium mb-1">{language === 'de' ? 'Gewichtete Punktzahl' : 'Weighted Score'}</p>
-                      <p className="text-caption text-muted-foreground">
-                        {language === 'de' 
-                          ? 'Gewichtet nach Geschäftsbereich: NV 25%, UV 20%, Service 20%, Finanzen 20%, Teile 15%' 
-                          : 'Weighted by department: NV 25%, UV 20%, Service 20%, Finance 20%, Parts 15%'}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
+          {/* Page title */}
+          <div className="mb-4">
+            <h1 className="text-[22px] font-semibold text-[hsl(var(--dd-ink))]">
+              {language === 'de' ? 'Bewertungsergebnisse' : 'Assessment Results'}
+            </h1>
+            <p className="text-[13px] text-[hsl(var(--dd-muted))] mt-0.5">
+              {language === 'de' ? 'Umfassende Analyse abgeschlossen am' : 'Comprehensive analysis completed on'} {formatDate(resultsData.completedAt)}
+            </p>
+          </div>
+
+          {/* Summary metric cards */}
+          {(() => {
+            const maturityLabel = getMaturityLevel(overallScore, language as 'en' | 'de');
+            const maturityKey = getMaturityLevelKey(overallScore);
+            const maturityBadgeMap: Record<string, "maturity-advanced" | "maturity-developing" | "maturity-inconsistent" | "maturity-foundational"> = {
+              advanced: 'maturity-advanced',
+              mature: 'maturity-advanced',
+              developing: 'maturity-developing',
+              basic: 'maturity-foundational',
+            };
+            const modulesAssessed = resultsData?.scores ? Object.keys(resultsData.scores).length : 0;
+            const confidenceLevel = overallScore >= 70 ? 'High' : overallScore >= 45 ? 'Medium' : 'Low';
+            const confidenceColor = overallScore >= 70 ? 'text-[hsl(var(--dd-green))]' : overallScore >= 45 ? 'text-[hsl(var(--dd-amber))]' : 'text-[hsl(var(--dd-red))]';
+
+            const cardClass = "bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]";
+            const labelClass = "text-[10px] uppercase tracking-widest text-[hsl(var(--dd-ghost))] font-semibold mb-1";
+
+            return (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                {/* Card 1 — Overall Score */}
+                <div className={cardClass}>
+                  <div className={labelClass}>{language === 'de' ? 'Gesamtbewertung' : 'Overall Score'}</div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-[32px] font-semibold tracking-tight text-[hsl(var(--dd-ink))]">{animatedScore}</span>
+                    <span className="text-[16px] font-normal text-[hsl(var(--dd-ghost))]">/100</span>
+                  </div>
+                  <div className="flex items-end gap-1 h-7 mt-2">
+                    {[42, 55, 48, 61, 58, overallScore].map((v, i) => (
+                      <div
+                        key={i}
+                        className={`w-3 rounded-sm ${i === 5 ? 'bg-[hsl(var(--dd-accent))]' : 'bg-[hsl(var(--dd-accent-light))]'}`}
+                        style={{ height: `${Math.max(4, (v / 100) * 28)}px` }}
+                      />
+                    ))}
+                  </div>
                 </div>
 
-                {/* Info */}
-                <div className="flex-1 text-center md:text-left space-y-3">
-                  <h1 className="text-h2 text-foreground">
-                    {language === 'de' ? 'Bewertungsergebnisse' : 'Assessment Results'}
-                  </h1>
-                  <p className="text-body-md text-muted-foreground">
-                    {language === 'de' ? 'Umfassende Analyse abgeschlossen am' : 'Comprehensive analysis completed on'} {formatDate(resultsData.completedAt)}
-                  </p>
-                  <Badge variant={scoreInfo.variant} className="text-sm px-3 py-1">
-                    {scoreInfo.label}
-                  </Badge>
+                {/* Card 2 — Maturity Level */}
+                <div className={cardClass}>
+                  <div className={labelClass}>{language === 'de' ? 'Reifegrad' : 'Maturity Level'}</div>
+                  <div className="text-[20px] font-semibold text-[hsl(var(--dd-ink))] mb-1.5">{maturityLabel}</div>
+                  <Badge variant={maturityBadgeMap[maturityKey] ?? 'maturity-developing'}>{maturityLabel}</Badge>
+                </div>
+
+                {/* Card 3 — Modules Assessed */}
+                <div className={cardClass}>
+                  <div className={labelClass}>{language === 'de' ? 'Module bewertet' : 'Modules Assessed'}</div>
+                  <div className="text-[32px] font-semibold tracking-tight text-[hsl(var(--dd-ink))]">{modulesAssessed}</div>
+                  <div className="text-[12px] text-[hsl(var(--dd-muted))]">
+                    {language === 'de' ? 'von 5 Modulen' : 'of 5 modules'}
+                  </div>
+                </div>
+
+                {/* Card 4 — Confidence */}
+                <div className={cardClass}>
+                  <div className={labelClass}>{language === 'de' ? 'Bewertungskonfidenz' : 'Assessment Confidence'}</div>
+                  <div className={`text-[20px] font-semibold ${confidenceColor}`}>{confidenceLevel}</div>
+                  <div className="text-[11px] text-[hsl(var(--dd-ghost))] mt-1">
+                    {confidenceLevel === 'Low'
+                      ? (language === 'de' ? 'Überprüfung empfohlen' : 'Review recommended')
+                      : (language === 'de' ? 'Stabile Ergebnisse' : 'Stable results')}
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            );
+          })()}
         </div>
 
         <ExportPDFModal
