@@ -6,12 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   BookOpen, Video, FileText, Globe, 
-  Search, Download, ExternalLink, Clock, GraduationCap,
+  Search, Download, Clock, GraduationCap,
   FileSpreadsheet, Presentation, Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Link } from "react-router-dom";
 import { KPIExplorer } from "@/components/kpi-encyclopedia/KPIExplorer";
 
 interface UsefulResourcesProps {
@@ -131,29 +130,6 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header with CTA */}
-      <Card className="border-primary/20 shadow-lg bg-gradient-to-r from-primary/5 to-primary/10">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl">
-            <BookOpen className="h-6 w-6 text-primary" />
-            {language === 'de' ? 'Ressourcen & Referenz' : 'Resources & Reference'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-muted-foreground">
-            {language === 'de' 
-              ? 'Kuratierte Lernressourcen und Referenzmaterialien basierend auf Ihrer Bewertung.'
-              : 'Curated learning resources and reference materials based on your assessment.'}
-          </p>
-          <Link to="/resources">
-            <Button className="gap-2">
-              <ExternalLink className="h-4 w-4" />
-              {language === 'de' ? 'Lernressourcen erkunden' : 'Explore Learning Resources'}
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
-
       {/* Three-Section Tabs */}
       <Tabs defaultValue="learning" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3 h-12">

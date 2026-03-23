@@ -135,11 +135,11 @@ const translations: Record<Language, Record<string, string>> = {
     'results.startingFresh': 'Starting fresh assessment...',
     
     // Results Tabs
-    'results.tab.executive': 'Executive Summary',
-    'results.tab.kpi': 'KPI Analytics',
-    'results.tab.maturity': 'Maturity',
+    'results.tab.executive': 'Summary',
+    'results.tab.kpi': 'KPI Analysis',
+    'results.tab.maturity': 'Maturity Level',
     'results.tab.actionPlan': 'Action Plan',
-    'results.tab.resources': 'Useful Resources',
+    'results.tab.resources': 'Resources',
     
     // Executive Summary
     'executive.excellentPerformance': 'Excellent Performance',
@@ -270,7 +270,7 @@ const translations: Record<Language, Record<string, string>> = {
     'kpi.perYear': '/year',
     
     // Dashboard Page
-    'dashboard.title': 'Performance Dashboard',
+    'dashboard.title': 'My Dashboard',
     'dashboard.subtitle': 'Real-time analytics and insights for your dealership operations',
     'dashboard.exportPDF': 'Export PDF',
     'dashboard.exportExcel': 'Export Excel',
@@ -479,10 +479,10 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Results Tabs
     'results.tab.executive': 'Zusammenfassung',
-    'results.tab.kpi': 'KPI-Analytik',
+    'results.tab.kpi': 'KPI-Analyse',
     'results.tab.maturity': 'Reifegrad',
     'results.tab.actionPlan': 'Aktionsplan',
-    'results.tab.resources': 'Nützliche Ressourcen',
+    'results.tab.resources': 'Ressourcen',
     
     // Executive Summary
     'executive.excellentPerformance': 'Ausgezeichnete Leistung',
@@ -613,7 +613,7 @@ const translations: Record<Language, Record<string, string>> = {
     'kpi.perYear': '/Jahr',
     
     // Dashboard Page
-    'dashboard.title': 'Leistungs-Dashboard',
+    'dashboard.title': 'Mein Dashboard',
     'dashboard.subtitle': 'Echtzeit-Analytik und Einblicke für Ihre Autohaus-Operationen',
     'dashboard.exportPDF': 'PDF exportieren',
     'dashboard.exportExcel': 'Excel exportieren',

@@ -39,7 +39,7 @@ export default function Methodology() {
 
   const stats = [
     { value: '5', label: 'Assessment modules' },
-    { value: '33+', label: 'Diagnostic questions' },
+    { value: '50', label: 'Diagnostic questions' },
     { value: '22', label: 'Action templates' },
     { value: '5', label: 'Root-cause dimensions' },
     { value: '5', label: 'Maturity levels' },
@@ -97,7 +97,7 @@ export default function Methodology() {
       </div>
 
       {/* ── BODY SECTIONS ── */}
-      <div className="max-w-[960px] mx-auto px-12 py-10 grid gap-8">
+      <div className="px-8 py-10 grid gap-8">
 
         {/* ── SECTION 01 ── */}
         <div className={cardClass}>
