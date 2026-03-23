@@ -605,7 +605,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                         {visibleKpis.map((kpi: any, i: number) => (
                           <div key={i} className="rounded-lg border p-3">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                              <span className="text-sm font-semibold text-foreground flex items-center gap-1.5">
                                 <BarChart3 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
                                 {kpi.name || kpi.title || kpi.key}
                               </span>
