@@ -173,12 +173,12 @@ export function KPIExplorer({ scores }: KPIExplorerProps) {
         <div className="mt-4 max-w-md">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={language === 'de' ? 'KPIs durchsuchen...' : 'Search KPIs by name, formula, or keyword...'}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 h-10 rounded-lg border-border/60 bg-background"
-            />
+             <Input
+               placeholder={language === 'de' ? 'KPIs durchsuchen...' : 'Search KPIs by name, formula, or keyword...'}
+               value={searchTerm}
+               onChange={(e) => setSearchTerm(e.target.value)}
+               className="pl-9 h-11 rounded-lg border-border/60 bg-background focus-visible:ring-primary/30"
+             />
           </div>
         </div>
       </div>
