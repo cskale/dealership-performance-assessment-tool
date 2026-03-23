@@ -135,11 +135,11 @@ const translations: Record<Language, Record<string, string>> = {
     'results.startingFresh': 'Starting fresh assessment...',
     
     // Results Tabs
-    'results.tab.executive': 'Executive Summary',
-    'results.tab.kpi': 'KPI Analytics',
-    'results.tab.maturity': 'Maturity',
+    'results.tab.executive': 'Summary',
+    'results.tab.kpi': 'KPI Analysis',
+    'results.tab.maturity': 'Maturity Level',
     'results.tab.actionPlan': 'Action Plan',
-    'results.tab.resources': 'Useful Resources',
+    'results.tab.resources': 'Resources',
     
     // Executive Summary
     'executive.excellentPerformance': 'Excellent Performance',
