@@ -298,14 +298,21 @@ export default function Results() {
 
           {/* Summary metric cards */}
           {(() => {
-            const maturityLabel = overallScore >= 85 ? 'Advanced' :
-                                  overallScore >= 70 ? 'Developing' :
-                                  overallScore >= 50 ? 'Inconsistent' :
-                                  overallScore >= 30 ? 'Foundational' : 'Critical';
+            const maturityLabel = overallScore >= 85
+              ? (language === 'de' ? 'Fortgeschritten' : 'Advanced')
+              : overallScore >= 70
+              ? (language === 'de' ? 'Entwickelnd' : 'Developing')
+              : overallScore >= 50
+              ? (language === 'de' ? 'Inkonsistent' : 'Inconsistent')
+              : overallScore >= 30
+              ? (language === 'de' ? 'Grundlegend' : 'Foundational')
+              : (language === 'de' ? 'Kritisch' : 'Critical');
 
-            const maturityVariant: 'default' | 'secondary' | 'destructive' =
-                                  overallScore >= 70 ? 'default' :
-                                  overallScore >= 30 ? 'secondary' : 'destructive';
+            const maturityBadgeVariant = overallScore >= 85 ? 'maturity-advanced' as const
+              : overallScore >= 70 ? 'maturity-developing' as const
+              : overallScore >= 50 ? 'maturity-inconsistent' as const
+              : overallScore >= 30 ? 'maturity-foundational' as const
+              : 'maturity-critical' as const;
             const modulesAssessed = resultsData?.scores ? Object.keys(resultsData.scores).length : 0;
             const confidenceLevel = overallScore >= 70 ? 'High' : overallScore >= 45 ? 'Medium' : 'Low';
             const confidenceColor = overallScore >= 70 ? 'text-[hsl(var(--dd-green))]' : overallScore >= 45 ? 'text-[hsl(var(--dd-amber))]' : 'text-[hsl(var(--dd-red))]';
