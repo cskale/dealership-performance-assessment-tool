@@ -301,7 +301,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
                   : 'text-destructive';
                 return (
                   <div key={dept} className={`rounded-lg border p-4 text-center ${statusColor}`}>
-                    <div className="text-sm text-muted-foreground font-medium mb-1">
+                    <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">
                       {getDepartmentName(dept, language)}
                     </div>
                     <div className={`text-3xl font-bold tabular-nums ${scoreColor}`}>{score}%</div>

@@ -65,7 +65,7 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
             </p>
           </div>
 
-          {/* Rating Buttons */}
+          {/* Rating Tiles — Neutral pattern per DESIGN.md §5.3 / §14 */}
           <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
             {Array.from({ length: question.scale.max }, (_, i) => {
               const rating = i + 1;
@@ -73,26 +73,30 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
               const label = getRatingText(rating);
 
               return (
-                <Button
+                <button
                   key={rating}
-                  variant={isSelected ? "default" : "outline"}
+                  type="button"
                   onClick={() => handleRatingClick(rating)}
-                  className={`min-h-[80px] h-auto p-2 flex flex-col items-center justify-start gap-1 transition-all duration-200 ${
-                    isSelected ? "bg-primary hover:bg-primary/90" : "hover:bg-muted/50"
+                  className={`min-h-[80px] h-auto p-3 flex flex-col items-center justify-start gap-1.5 rounded-[12px] transition-all duration-200 text-left ${
+                    isSelected
+                      ? "border-l-4 border-l-primary border border-primary/30 bg-primary/5"
+                      : "border border-border bg-card hover:bg-muted/20"
                   }`}
                 >
-                  <span className="text-2xl font-bold">{rating}</span>
-                  <span className="text-[10px] text-center leading-tight whitespace-normal break-words w-full overflow-visible">
+                  <span className={`text-sm font-semibold tabular-nums ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}>
+                    {rating}
+                  </span>
+                  <span className={`text-xs text-center leading-tight whitespace-normal break-words w-full ${isSelected ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
                     {label}
                   </span>
-                </Button>
+                </button>
               );
             })}
           </div>
 
           {/* Selected Value Display */}
           {value && (
-            <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20">
+            <div className="text-center p-3 bg-primary/5 rounded-lg border border-primary/20">
               <p className="text-sm text-foreground">
                 <strong>{t('assessment.selected')}:</strong> {value} - {getRatingText(value)}
               </p>
