@@ -284,7 +284,7 @@ const Account = () => {
         <h1 className="text-lg font-semibold text-foreground">Account Settings</h1>
       </div>
 
-      <div className="px-6 py-6 max-w-5xl">
+      <div className="px-6 py-6 max-w-6xl mx-auto">
         {/* Hero card */}
         <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-5 mb-5">
           <div className="flex items-center gap-4">

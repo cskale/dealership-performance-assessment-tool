@@ -1,9 +1,9 @@
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Video, BookOpen, GraduationCap, Radio, Wrench, Bookmark, BookmarkCheck, ExternalLink } from 'lucide-react';
+import { Video, BookOpen, GraduationCap, Radio, Wrench, Bookmark, BookmarkCheck, ExternalLink, Clock } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { cn } from '@/lib/utils';
 
 interface Resource {
   id: string;
@@ -25,25 +25,23 @@ interface ResourceCardProps {
   onToggleSave: (resourceId: string) => void;
 }
 
-// Uniform icon styling - subtle brand blue for all types (matches Support Materials)
 const typeConfig = {
-  video: { icon: Video, color: 'bg-brand-100 text-brand-600', label: 'Video' },
-  article: { icon: BookOpen, color: 'bg-brand-100 text-brand-600', label: 'Article' },
-  course: { icon: GraduationCap, color: 'bg-brand-100 text-brand-600', label: 'Course' },
-  webinar: { icon: Radio, color: 'bg-brand-100 text-brand-600', label: 'Webinar' },
-  tool: { icon: Wrench, color: 'bg-brand-100 text-brand-600', label: 'Tool' },
+  video: { icon: Video, label: 'Video' },
+  article: { icon: BookOpen, label: 'Article' },
+  course: { icon: GraduationCap, label: 'Course' },
+  webinar: { icon: Radio, label: 'Webinar' },
+  tool: { icon: Wrench, label: 'Tool' },
 };
 
 const difficultyConfig = {
-  beginner: { color: 'bg-emerald-100 text-emerald-700', label: 'Beginner' },
-  intermediate: { color: 'bg-amber-100 text-amber-700', label: 'Intermediate' },
-  advanced: { color: 'bg-red-100 text-red-700', label: 'Advanced' },
+  beginner: { color: 'bg-[hsl(var(--dd-green-light))] text-[hsl(var(--dd-green))]', label: 'Beginner' },
+  intermediate: { color: 'bg-[hsl(var(--dd-amber-light))] text-[hsl(var(--dd-amber))]', label: 'Intermediate' },
+  advanced: { color: 'bg-[hsl(var(--dd-red-light))] text-[hsl(var(--dd-red))]', label: 'Advanced' },
 };
 
 export function ResourceCard({ resource, isSaved, onToggleSave }: ResourceCardProps) {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const TypeIcon = typeConfig[resource.resource_type]?.icon || Video;
-  const typeStyle = typeConfig[resource.resource_type] || typeConfig.video;
   const diffStyle = resource.difficulty ? difficultyConfig[resource.difficulty] : null;
 
   const difficultyLabels: Record<string, Record<string, string>> = {
@@ -57,88 +55,87 @@ export function ResourceCard({ resource, isSaved, onToggleSave }: ResourceCardPr
   };
 
   return (
-    <Card className="group overflow-hidden hover:shadow-lg transition-shadow duration-300">
-      {/* Thumbnail */}
-      <div className="relative">
-        <AspectRatio ratio={16 / 9}>
-          <img
-            src={resource.thumbnail_url || 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400'}
-            alt={resource.title}
-            className="object-cover w-full h-full"
-          />
-        </AspectRatio>
-        {/* Type badge overlay */}
-        <div className="absolute top-3 left-3">
-          <Badge className={`${typeStyle.color} border-0 flex items-center gap-1`}>
-            <TypeIcon className="h-3 w-3" />
-            {typeLabels[language]?.[resource.resource_type] || typeStyle.label}
+    <Card className="group bg-card border-border/50 rounded-xl hover:border-primary/40 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200 hover:-translate-y-0.5">
+      <CardContent className="p-4 space-y-3">
+        {/* Top row: icon + type badge + recommended */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="p-2 rounded-lg bg-[hsl(var(--dd-accent-light))]">
+            <TypeIcon className="h-4 w-4 text-[hsl(var(--dd-accent))]" />
+          </div>
+          {resource.is_featured && (
+            <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
+              {language === 'de' ? 'Empfohlen' : 'Featured'}
+            </Badge>
+          )}
+        </div>
+
+        {/* Title */}
+        <h4 className="text-base font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+          {resource.title}
+        </h4>
+
+        {/* Description */}
+        {resource.description && (
+          <p className="text-sm text-muted-foreground line-clamp-3">{resource.description}</p>
+        )}
+
+        {/* Topics */}
+        {resource.topics.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {resource.topics.slice(0, 3).map((topic) => (
+              <Badge key={topic} variant="outline" className="text-xs">
+                {topic}
+              </Badge>
+            ))}
+          </div>
+        )}
+
+        {/* Bottom row: duration + difficulty + type */}
+        <div className="flex items-center justify-between pt-1">
+          <div className="flex items-center gap-3">
+            {resource.duration && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Clock className="h-3 w-3" />
+                {resource.duration}
+              </span>
+            )}
+            {diffStyle && resource.difficulty && (
+              <Badge className={cn("border-0 text-xs", diffStyle.color)}>
+                {difficultyLabels[language]?.[resource.difficulty] || diffStyle.label}
+              </Badge>
+            )}
+          </div>
+          <Badge variant="secondary" className="text-xs">
+            {typeLabels[language]?.[resource.resource_type] || typeConfig[resource.resource_type]?.label}
           </Badge>
         </div>
-        {resource.duration && (
-          <div className="absolute bottom-3 right-3">
-            <Badge variant="secondary" className="bg-black/70 text-white border-0">
-              {resource.duration}
-            </Badge>
-          </div>
-        )}
-      </div>
 
-      <CardContent className="p-4 space-y-3">
-        <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
-          {resource.title}
-        </h3>
-        {resource.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">
-            {resource.description}
-          </p>
-        )}
-        
-        {/* Topics */}
-        <div className="flex flex-wrap gap-1.5">
-          {resource.topics.slice(0, 3).map((topic) => (
-            <Badge key={topic} variant="outline" className="text-xs">
-              {topic}
-            </Badge>
-          ))}
+        {/* Action buttons */}
+        <div className="flex gap-2 pt-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onToggleSave(resource.id)}
+            className="flex-shrink-0 h-8 w-8 p-0"
+          >
+            {isSaved ? (
+              <BookmarkCheck className="h-4 w-4 text-primary" />
+            ) : (
+              <Bookmark className="h-4 w-4" />
+            )}
+          </Button>
+          <Button
+            size="sm"
+            className="flex-1 h-8"
+            onClick={() => window.open(resource.url, '_blank')}
+          >
+            <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+            {resource.resource_type === 'video' || resource.resource_type === 'webinar'
+              ? (language === 'de' ? 'Ansehen' : 'Watch')
+              : (language === 'de' ? 'Öffnen' : 'Open')}
+          </Button>
         </div>
-
-        {/* Difficulty */}
-        {diffStyle && resource.difficulty && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">
-              {language === 'de' ? 'Niveau:' : 'Level:'}
-            </span>
-            <Badge className={`${diffStyle.color} border-0 text-xs`}>
-              {difficultyLabels[language]?.[resource.difficulty] || diffStyle.label}
-            </Badge>
-          </div>
-        )}
       </CardContent>
-
-      <CardFooter className="p-4 pt-0 flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onToggleSave(resource.id)}
-          className="flex-shrink-0"
-        >
-          {isSaved ? (
-            <BookmarkCheck className="h-4 w-4 text-primary" />
-          ) : (
-            <Bookmark className="h-4 w-4" />
-          )}
-        </Button>
-        <Button
-          size="sm"
-          className="flex-1"
-          onClick={() => window.open(resource.url, '_blank')}
-        >
-          <ExternalLink className="h-4 w-4 mr-2" />
-          {resource.resource_type === 'video' || resource.resource_type === 'webinar'
-            ? (language === 'de' ? 'Ansehen' : 'Watch')
-            : (language === 'de' ? 'Öffnen' : 'Open')}
-        </Button>
-      </CardFooter>
     </Card>
   );
 }

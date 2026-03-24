@@ -11,10 +11,10 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   CalendarIcon, Save, X, Trash2, Lightbulb, Target,
-  ChevronDown, ChevronUp, Clock, Loader2, BarChart3
+  Clock, Loader2, BarChart3, AlertTriangle, TrendingUp, 
+  User, ArrowRight
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -77,7 +77,6 @@ interface AuditEntry {
 export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete, readOnly }: ActionSheetProps) {
   const { language } = useLanguage();
   const [activeTab, setActiveTab] = useState<'details' | 'history'>('details');
-  const [contextExpanded, setContextExpanded] = useState(true);
   const [isDirty, setIsDirty] = useState(false);
   const [showKpiAll, setShowKpiAll] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -126,7 +125,6 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
     }
   }, [action, mode, open]);
 
-  // Load history when tab is clicked
   useEffect(() => {
     if (activeTab === 'history' && !historyLoaded && action?.id) {
       loadHistory(action.id);
@@ -165,7 +163,6 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
   };
 
   const handleSave = async () => {
-    // Validate with Zod schema
     const result = actionSchema.safeParse(formData);
     if (!result.success) {
       const firstError = result.error.errors[0];
@@ -193,7 +190,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
     }
   };
 
-  // KPI intelligence from linked_kpis jsonb
+  // KPI intelligence
   const linkedKpisData = useMemo(() => {
     const data = action?.linked_kpis;
     if (!data) return [];
@@ -215,7 +212,6 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
     return [];
   }, [action?.likely_consequences]);
 
-  // Fallback to kpis_linked_to (text[]) for KPI display
   const linkedKpiDetails = useMemo(() => {
     if (linkedKpisData.length > 0) return linkedKpisData;
     const keys = formData.kpis_linked_to || [];
@@ -227,15 +223,10 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
     });
   }, [linkedKpisData, formData.kpis_linked_to, language]);
 
-  const visibleKpis = showKpiAll ? linkedKpiDetails : linkedKpiDetails.slice(0, 5);
+  const visibleKpis = showKpiAll ? linkedKpiDetails : linkedKpiDetails.slice(0, 4);
 
-  // Triage computation
-  const triageScore = computeTriageScore(
-    formData.impact_score ?? null,
-    formData.effort_score ?? null,
-    formData.urgency_score ?? null
-  );
-
+  // Triage
+  const triageScore = computeTriageScore(formData.impact_score ?? null, formData.effort_score ?? null, formData.urgency_score ?? null);
   const allScoresSet = formData.impact_score != null && formData.effort_score != null && formData.urgency_score != null;
 
   const triageBadgeLabel = triageScore != null
@@ -243,208 +234,207 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
     : null;
 
   const triageBadgeColor = triageScore != null
-    ? (triageScore >= 14 ? 'bg-destructive/10 text-destructive' : triageScore >= 10 ? 'bg-amber-500/10 text-amber-600' : triageScore >= 6 ? 'bg-blue-500/10 text-blue-600' : 'bg-muted text-muted-foreground')
+    ? (triageScore >= 14 ? 'bg-destructive/10 text-destructive' : triageScore >= 10 ? 'bg-[hsl(var(--dd-amber-light))] text-[hsl(var(--dd-amber))]' : triageScore >= 6 ? 'bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))]' : 'bg-muted text-muted-foreground')
     : '';
 
-  const quadrantLabel = allScoresSet
-    ? getQuadrantLabel(formData.impact_score!, formData.effort_score!)
-    : null;
-
-  const quadrantColor = quadrantLabel === 'Quick Win' ? 'text-green-600'
-    : quadrantLabel === 'Strategic Initiative' ? 'text-amber-600'
+  const quadrantLabel = allScoresSet ? getQuadrantLabel(formData.impact_score!, formData.effort_score!) : null;
+  const quadrantColor = quadrantLabel === 'Quick Win' ? 'text-[hsl(var(--dd-green))]'
+    : quadrantLabel === 'Strategic Initiative' ? 'text-[hsl(var(--dd-amber))]'
     : quadrantLabel === 'Low Priority' ? 'text-destructive'
     : 'text-muted-foreground';
 
   function getKpiBadgeStyle(type: string) {
     const t = (type || '').toUpperCase();
-    if (t.includes('INPUT')) return 'text-blue-700 border-blue-200 bg-transparent';
-    if (t.includes('CORE')) return 'bg-indigo-600 text-white border-indigo-600';
-    if (t.includes('OUTCOME')) return 'text-green-700 border-green-200 bg-transparent';
+    if (t.includes('INPUT')) return 'text-[hsl(var(--dd-accent))] border-[hsl(var(--dd-accent))]/20 bg-transparent';
+    if (t.includes('CORE')) return 'bg-[hsl(var(--dd-accent))] text-white border-[hsl(var(--dd-accent))]';
+    if (t.includes('OUTCOME')) return 'text-[hsl(var(--dd-green))] border-[hsl(var(--dd-green))]/20 bg-transparent';
+    if (t.includes('OPERATIONAL')) return 'text-[hsl(var(--dd-amber))] border-[hsl(var(--dd-amber))]/20 bg-transparent';
+    if (t.includes('PROCESS')) return 'text-[hsl(var(--dd-teal))] border-[hsl(var(--dd-teal))]/20 bg-transparent';
+    if (t.includes('CUSTOMER')) return 'text-[hsl(var(--dd-green))] border-[hsl(var(--dd-green))]/20 bg-[hsl(var(--dd-green-light))]';
+    if (t.includes('FINANCIAL')) return 'text-[hsl(var(--dd-amber))] border-[hsl(var(--dd-amber))]/20 bg-[hsl(var(--dd-amber-light))]';
+    if (t.includes('PRODUCTIVITY')) return 'text-[hsl(var(--dd-teal))] border-[hsl(var(--dd-teal))]/20 bg-transparent';
     return 'text-muted-foreground border-border bg-transparent';
+  }
+
+  function getDriverBadgeStyle(type: string) {
+    const t = (type || '').toUpperCase();
+    if (t.includes('PROCESS')) return 'text-[hsl(var(--dd-teal))] border-[hsl(var(--dd-teal))]/20';
+    if (t.includes('OPERATIONAL')) return 'text-[hsl(var(--dd-amber))] border-[hsl(var(--dd-amber))]/20';
+    if (t.includes('INPUT')) return 'text-[hsl(var(--dd-accent))] border-[hsl(var(--dd-accent))]/20';
+    return 'text-muted-foreground border-border';
+  }
+
+  function getConsequenceBadgeStyle(type: string) {
+    const t = (type || '').toUpperCase();
+    if (t.includes('CUSTOMER')) return 'text-[hsl(var(--dd-amber))] border-[hsl(var(--dd-amber))]/20 bg-[hsl(var(--dd-amber-light))]';
+    if (t.includes('FINANCIAL')) return 'text-destructive border-destructive/20 bg-destructive/5';
+    if (t.includes('PRODUCTIVITY')) return 'text-[hsl(var(--dd-teal))] border-[hsl(var(--dd-teal))]/20';
+    return 'text-muted-foreground border-border';
   }
 
   function formatHistoryDescription(entry: AuditEntry): string {
     const { field_name, old_value, new_value } = entry;
     if (field_name === 'created') return new_value;
-    if (field_name === 'status') return `changed Status: ${old_value || '—'} → ${new_value}`;
-    if (field_name === 'priority') return `changed Priority: ${old_value || '—'} → ${new_value}`;
-    if (field_name === 'responsible_person') return `reassigned to ${new_value}`;
-    if (field_name === 'target_completion_date') return `updated Due Date to ${new_value}`;
-    if (field_name === 'impact_score') {
-      const idx = parseInt(new_value) - 1;
-      return `set Impact to ${IMPACT_LABELS[idx] || new_value}`;
-    }
-    if (field_name === 'effort_score') {
-      const idx = parseInt(new_value) - 1;
-      return `set Effort to ${EFFORT_LABELS[idx] || new_value}`;
-    }
-    if (field_name === 'urgency_score') {
-      const idx = parseInt(new_value) - 1;
-      return `set Urgency to ${URGENCY_LABELS[idx] || new_value}`;
-    }
-    return `updated ${field_name.replace(/_/g, ' ')}`;
+    if (field_name === 'status') return `Status: ${old_value || '—'} → ${new_value}`;
+    if (field_name === 'priority') return `Priority: ${old_value || '—'} → ${new_value}`;
+    if (field_name === 'responsible_person') return `Reassigned to ${new_value}`;
+    if (field_name === 'target_completion_date') return `Due date → ${new_value}`;
+    if (field_name === 'impact_score') return `Impact → ${IMPACT_LABELS[parseInt(new_value) - 1] || new_value}`;
+    if (field_name === 'effort_score') return `Effort → ${EFFORT_LABELS[parseInt(new_value) - 1] || new_value}`;
+    if (field_name === 'urgency_score') return `Urgency → ${URGENCY_LABELS[parseInt(new_value) - 1] || new_value}`;
+    return `Updated ${field_name.replace(/_/g, ' ')}`;
   }
+
+  // Priority color helpers
+  const priorityColor = (p: string) => {
+    if (p === 'critical') return 'border-l-destructive';
+    if (p === 'high') return 'border-l-[hsl(var(--dd-amber))]';
+    if (p === 'medium') return 'border-l-[hsl(var(--dd-accent))]';
+    return 'border-l-muted-foreground';
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[1200px] w-[95vw] md:w-[85vw] lg:w-[80vw] max-h-[90vh] p-0 flex flex-col overflow-hidden">
-        {/* Header */}
-        <DialogHeader className="px-6 pt-5 pb-3 border-b flex-shrink-0">
-          <DialogTitle className="text-base font-semibold">
-            {readOnly ? 'View Action' : mode === 'create' ? 'Create Action' : 'Edit Action'}
-          </DialogTitle>
-          {mode === 'edit' && action && (
-            <div className="flex items-center gap-2 mt-1">
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs border border-border text-muted-foreground">
-                {action.department}
-              </span>
-              <Badge className={cn("text-xs",
-                action.priority === 'critical' ? 'bg-destructive/10 text-destructive border-destructive/20' :
-                action.priority === 'high' ? 'bg-orange-500/10 text-orange-600 border-orange-200' :
-                action.priority === 'medium' ? 'bg-yellow-500/10 text-yellow-600 border-yellow-200' :
-                'bg-blue-500/10 text-blue-600 border-blue-200'
-              )}>
-                {action.priority.charAt(0).toUpperCase() + action.priority.slice(1)}
-              </Badge>
+      <DialogContent className="max-w-[1100px] w-[95vw] md:w-[85vw] lg:w-[75vw] max-h-[90vh] p-0 flex flex-col overflow-hidden">
+        {/* ── HEADER ── */}
+        <DialogHeader className="px-6 pt-5 pb-0 flex-shrink-0">
+          <div className="flex items-start justify-between">
+            <div className="space-y-2">
+              <DialogTitle className="text-base font-semibold text-foreground">
+                {readOnly ? 'View Action' : mode === 'create' ? 'Create Action' : 'Edit Action'}
+              </DialogTitle>
+              {mode === 'edit' && action && (
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs font-medium">{action.department}</Badge>
+                  <Badge className={cn("text-xs border",
+                    action.priority === 'critical' ? 'bg-destructive/10 text-destructive border-destructive/20' :
+                    action.priority === 'high' ? 'bg-[hsl(var(--dd-amber-light))] text-[hsl(var(--dd-amber))] border-[hsl(var(--dd-amber))]/20' :
+                    action.priority === 'medium' ? 'bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] border-[hsl(var(--dd-accent))]/20' :
+                    'bg-muted text-muted-foreground border-border'
+                  )}>
+                    {action.priority.charAt(0).toUpperCase() + action.priority.slice(1)}
+                  </Badge>
+                  {triageBadgeLabel && (
+                    <Badge variant="outline" className={cn("text-xs", triageBadgeColor)}>{triageBadgeLabel}</Badge>
+                  )}
+                </div>
+              )}
             </div>
-          )}
-          <div className="flex gap-4 mt-2">
+          </div>
+          {/* Tab bar */}
+          <div className="flex gap-4 mt-3 border-b">
             <button
               onClick={() => setActiveTab('details')}
-              className={cn("text-sm pb-1 border-b-2 transition-colors",
-                activeTab === 'details' ? "border-primary text-primary font-medium" : "border-transparent text-muted-foreground"
+              className={cn("text-sm pb-2 border-b-2 transition-colors -mb-px",
+                activeTab === 'details' ? "border-primary text-primary font-medium" : "border-transparent text-muted-foreground hover:text-foreground"
               )}>Details</button>
             <button
               onClick={() => setActiveTab('history')}
-              className={cn("text-sm pb-1 border-b-2 transition-colors",
-                activeTab === 'history' ? "border-primary text-primary font-medium" : "border-transparent text-muted-foreground"
+              className={cn("text-sm pb-2 border-b-2 transition-colors -mb-px",
+                activeTab === 'history' ? "border-primary text-primary font-medium" : "border-transparent text-muted-foreground hover:text-foreground"
               )}>History</button>
           </div>
         </DialogHeader>
 
-        {/* Body */}
+        {/* ── BODY ── */}
         <ScrollArea className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 160px)' }}>
           {activeTab === 'details' ? (
-            <div className="px-6 py-4">
-              <div className={cn("gap-6", mode === 'edit' ? "grid grid-cols-1 lg:grid-cols-2" : "space-y-6")}>
-                {/* LEFT COLUMN — Form Fields */}
-                <div className="space-y-6">
-                  <div className="space-y-5">
-                    {/* Group 1 — Basic */}
-                    <div className="space-y-4">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="title" className="text-xs font-medium">Action Title</Label>
-                        <Input id="title" disabled={readOnly} value={formData.action_title || ''}
-                          onChange={(e) => updateField('action_title', e.target.value)} placeholder="Short, imperative action title" />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <Label htmlFor="description" className="text-xs font-medium">Description</Label>
-                        <Textarea id="description" disabled={readOnly} value={formData.action_description || ''}
-                          onChange={(e) => updateField('action_description', e.target.value)}
-                          placeholder="Describe what needs to be done" rows={4} />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Department</Label>
-                        <Select disabled={readOnly} value={formData.department || ''} onValueChange={(v) => updateField('department', v)}>
-                          <SelectTrigger><SelectValue placeholder="Select department" /></SelectTrigger>
-                          <SelectContent>
-                            {DEPARTMENTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </div>
+            <div className="px-6 py-5">
+              <div className={cn("gap-6", mode === 'edit' ? "grid grid-cols-1 lg:grid-cols-[1fr_380px]" : "space-y-5")}>
+                {/* ── LEFT: Form ── */}
+                <div className="space-y-5">
+                  {/* Title & Description */}
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="title" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Action Title</Label>
+                      <Input id="title" disabled={readOnly} value={formData.action_title || ''}
+                        onChange={(e) => updateField('action_title', e.target.value)} placeholder="Short, imperative action title" />
                     </div>
-
-                    {/* Group 2 — Triage Assessment */}
-                    <div className="space-y-3">
-                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Triage Assessment</p>
-                      <div className="bg-muted/30 rounded-lg border p-4 space-y-4">
-                        <div className="space-y-1.5">
-                          <div className="flex justify-between text-xs">
-                            <span className="font-medium">Impact</span>
-                            <span className="text-muted-foreground">
-                              {formData.impact_score != null ? IMPACT_LABELS[formData.impact_score - 1] : 'Not set'}
-                            </span>
-                          </div>
-                          <Slider disabled={readOnly} min={1} max={5} step={1}
-                            value={formData.impact_score != null ? [formData.impact_score] : []}
-                            onValueChange={([v]) => updateField('impact_score', v)} />
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <div className="flex justify-between text-xs">
-                            <span className="font-medium">Effort</span>
-                            <span className="text-muted-foreground">
-                              {formData.effort_score != null ? EFFORT_LABELS[formData.effort_score - 1] : 'Not set'}
-                            </span>
-                          </div>
-                          <Slider disabled={readOnly} min={1} max={5} step={1}
-                            value={formData.effort_score != null ? [formData.effort_score] : []}
-                            onValueChange={([v]) => updateField('effort_score', v)} />
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <div className="flex justify-between text-xs">
-                            <span className="font-medium">Urgency</span>
-                            <span className="text-muted-foreground">
-                              {formData.urgency_score != null ? URGENCY_LABELS[formData.urgency_score - 1] : 'Not set'}
-                            </span>
-                          </div>
-                          <Slider disabled={readOnly} min={1} max={5} step={1}
-                            value={formData.urgency_score != null ? [formData.urgency_score] : []}
-                            onValueChange={([v]) => updateField('urgency_score', v)} />
-                        </div>
-
-                        <div className="flex items-center justify-between pt-3 border-t">
-                          <div className="flex items-center gap-2">
-                            {triageBadgeLabel && (
-                              <Badge variant="outline" className={cn("text-xs", triageBadgeColor)}>{triageBadgeLabel}</Badge>
-                            )}
-                            {triageScore != null && (
-                              <span className="text-xs text-muted-foreground">Score: {triageScore}</span>
-                            )}
-                          </div>
-                          {quadrantLabel && (
-                            <span className={cn("text-xs font-medium", quadrantColor)}>{quadrantLabel}</span>
-                          )}
-                        </div>
-
-                        {allScoresSet ? (
-                          <div className="relative w-[200px] h-[200px] mx-auto">
-                            <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-green-50 dark:bg-green-950/20 rounded-tl-lg" />
-                            <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-amber-50 dark:bg-amber-950/20 rounded-tr-lg" />
-                            <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-slate-50 dark:bg-slate-950/20 rounded-bl-lg" />
-                            <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-red-50 dark:bg-red-950/20 rounded-br-lg" />
-                            <span className="absolute top-1 left-1 text-[9px] text-green-600">Quick Win</span>
-                            <span className="absolute top-1 right-1 text-[9px] text-amber-600 text-right">Strategic Initiative</span>
-                            <span className="absolute bottom-1 left-1 text-[9px] text-muted-foreground">Maintenance</span>
-                            <span className="absolute bottom-1 right-1 text-[9px] text-destructive text-right">Low Priority</span>
-                            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border" />
-                            <div className="absolute top-1/2 left-0 right-0 h-px bg-border" />
-                            <div
-                              className="absolute w-3.5 h-3.5 rounded-full bg-primary shadow-lg transition-all duration-300 ring-2 ring-primary/30"
-                              style={{
-                                left: `${((formData.effort_score! - 1) / 4) * 100}%`,
-                                bottom: `${((formData.impact_score! - 1) / 4) * 100}%`,
-                                transform: 'translate(-50%, 50%)',
-                              }}
-                            />
-                          </div>
-                        ) : (
-                          <p className="text-xs text-muted-foreground italic text-center py-4">
-                            Set all three triage scores to see quadrant.
-                          </p>
-                        )}
-                      </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="description" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Description</Label>
+                      <Textarea id="description" disabled={readOnly} value={formData.action_description || ''}
+                        onChange={(e) => updateField('action_description', e.target.value)}
+                        placeholder="Describe what needs to be done" rows={3} />
                     </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Department</Label>
+                      <Select disabled={readOnly} value={formData.department || ''} onValueChange={(v) => updateField('department', v)}>
+                        <SelectTrigger><SelectValue placeholder="Select department" /></SelectTrigger>
+                        <SelectContent>
+                          {DEPARTMENTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
 
-                    {/* Group 3 — Ownership & Timeline */}
-                    <div className="space-y-4">
-                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Ownership & Timeline</p>
+                  <Separator />
 
+                  {/* Triage Assessment — compact */}
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Triage Assessment</p>
+                    <div className="bg-secondary/50 rounded-xl border border-border/50 p-4 space-y-3">
+                      {[
+                        { label: 'Impact', value: formData.impact_score, labels: IMPACT_LABELS, field: 'impact_score' },
+                        { label: 'Effort', value: formData.effort_score, labels: EFFORT_LABELS, field: 'effort_score' },
+                        { label: 'Urgency', value: formData.urgency_score, labels: URGENCY_LABELS, field: 'urgency_score' },
+                      ].map(item => (
+                        <div key={item.field} className="space-y-1">
+                          <div className="flex justify-between text-xs">
+                            <span className="font-medium text-foreground">{item.label}</span>
+                            <span className="text-muted-foreground">
+                              {item.value != null ? item.labels[item.value - 1] : 'Not set'}
+                            </span>
+                          </div>
+                          <Slider disabled={readOnly} min={1} max={5} step={1}
+                            value={item.value != null ? [item.value] : []}
+                            onValueChange={([v]) => updateField(item.field, v)} />
+                        </div>
+                      ))}
+
+                      {/* Triage result row */}
+                      <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                        <div className="flex items-center gap-2">
+                          {triageBadgeLabel && <Badge variant="outline" className={cn("text-xs", triageBadgeColor)}>{triageBadgeLabel}</Badge>}
+                          {triageScore != null && <span className="text-xs text-muted-foreground">Score: {triageScore}</span>}
+                        </div>
+                        {quadrantLabel && <span className={cn("text-xs font-medium", quadrantColor)}>{quadrantLabel}</span>}
+                      </div>
+
+                      {/* Mini quadrant */}
+                      {allScoresSet && (
+                        <div className="relative w-[160px] h-[160px] mx-auto mt-2">
+                          <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-[hsl(var(--dd-green-light))] rounded-tl-lg" />
+                          <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-[hsl(var(--dd-amber-light))] rounded-tr-lg" />
+                          <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-secondary rounded-bl-lg" />
+                          <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-destructive/5 rounded-br-lg" />
+                          <span className="absolute top-0.5 left-1 text-[8px] text-[hsl(var(--dd-green))]">Quick Win</span>
+                          <span className="absolute top-0.5 right-1 text-[8px] text-[hsl(var(--dd-amber))] text-right">Strategic</span>
+                          <span className="absolute bottom-0.5 left-1 text-[8px] text-muted-foreground">Maintenance</span>
+                          <span className="absolute bottom-0.5 right-1 text-[8px] text-destructive text-right">Low Priority</span>
+                          <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border" />
+                          <div className="absolute top-1/2 left-0 right-0 h-px bg-border" />
+                          <div
+                            className="absolute w-3 h-3 rounded-full bg-primary shadow-lg ring-2 ring-primary/30 transition-all"
+                            style={{
+                              left: `${((formData.effort_score! - 1) / 4) * 100}%`,
+                              bottom: `${((formData.impact_score! - 1) / 4) * 100}%`,
+                              transform: 'translate(-50%, 50%)',
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Ownership & Timeline */}
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Ownership & Timeline</p>
+
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Priority</Label>
+                        <Label className="text-xs font-medium text-muted-foreground">Priority</Label>
                         <div className="flex rounded-lg border overflow-hidden">
                           {(['critical', 'high', 'medium', 'low'] as const).map(p => (
                             <button key={p} disabled={readOnly}
@@ -459,7 +449,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                       </div>
 
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Status</Label>
+                        <Label className="text-xs font-medium text-muted-foreground">Status</Label>
                         <div className="flex rounded-lg border overflow-hidden">
                           {(['Open', 'In Progress', 'Completed'] as const).map(s => (
                             <button key={s} disabled={readOnly}
@@ -472,11 +462,13 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                           ))}
                         </div>
                       </div>
+                    </div>
 
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Responsible Person</Label>
+                        <Label className="text-xs font-medium text-muted-foreground">Responsible Person</Label>
                         <Select disabled={readOnly} value={formData.responsible_person || ''} onValueChange={(v) => updateField('responsible_person', v)}>
-                          <SelectTrigger><SelectValue placeholder="Assign owner" /></SelectTrigger>
+                          <SelectTrigger className="h-9"><SelectValue placeholder="Assign owner" /></SelectTrigger>
                           <SelectContent>
                             {RESPONSIBLE_PERSONS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                           </SelectContent>
@@ -484,12 +476,12 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                       </div>
 
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Target Completion Date</Label>
+                        <Label className="text-xs font-medium text-muted-foreground">Target Date</Label>
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button variant="outline" disabled={readOnly}
-                              className={cn("w-full justify-start text-left font-normal", !formData.target_completion_date && "text-muted-foreground")}>
-                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              className={cn("w-full h-9 justify-start text-left font-normal text-sm", !formData.target_completion_date && "text-muted-foreground")}>
+                              <CalendarIcon className="mr-2 h-3.5 w-3.5" />
                               {formData.target_completion_date ? format(new Date(formData.target_completion_date), "PPP") : "Pick a date"}
                             </Button>
                           </PopoverTrigger>
@@ -502,143 +494,115 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                         </Popover>
                       </div>
                     </div>
+                  </div>
 
-                    {/* Group 4 — Support Required */}
-                    <div className="space-y-3">
-                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Support Required</p>
-                      <div className="flex flex-wrap gap-2">
-                        {SUPPORT_OPTIONS.map(s => (
-                          <button key={s} disabled={readOnly}
-                            onClick={() => toggleSupport(s)}
-                            className={cn("px-3 py-1 rounded-full text-xs border transition-colors",
-                              (formData.support_required_from || []).includes(s)
-                                ? "bg-primary text-primary-foreground border-primary"
-                                : "border-border text-muted-foreground hover:bg-muted"
-                            )}>
-                            {s}
-                          </button>
-                        ))}
-                      </div>
+                  {/* Support Required */}
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Support Required</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {SUPPORT_OPTIONS.map(s => (
+                        <button key={s} disabled={readOnly}
+                          onClick={() => toggleSupport(s)}
+                          className={cn("px-2.5 py-1 rounded-full text-xs border transition-colors",
+                            (formData.support_required_from || []).includes(s)
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "border-border text-muted-foreground hover:bg-muted"
+                          )}>
+                          {s}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
 
-                {/* RIGHT COLUMN — Context Intelligence & KPI (edit mode) / inline (create mode) */}
-                <div className="space-y-6">
-                  {/* Context Intelligence */}
-                  {mode === 'edit' && (
-                    <Collapsible open={contextExpanded} onOpenChange={setContextExpanded}>
-                      <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-5">
-                        <CollapsibleTrigger className="flex items-center justify-between w-full">
-                          <span className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-400">
-                            <Lightbulb className="h-4 w-4" /> Context Intelligence
-                          </span>
-                          {contextExpanded ? <ChevronUp className="h-4 w-4 text-blue-600" /> : <ChevronDown className="h-4 w-4 text-blue-600" />}
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="mt-4 space-y-4">
+                {/* ── RIGHT: Intelligence Panel ── */}
+                {mode === 'edit' && (
+                  <div className="space-y-4">
+                    {/* Context Intelligence Card */}
+                    {(action?.action_context || action?.business_impact || action?.recommendation || action?.expected_benefit) && (
+                      <div className="rounded-xl border border-[hsl(var(--dd-accent))]/20 bg-[hsl(var(--dd-accent-light))] p-4 space-y-3">
+                        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--dd-accent))]">
+                          <Lightbulb className="h-3.5 w-3.5" /> Context Intelligence
+                        </div>
+
+                        {action?.action_context && (
                           <div>
-                            <p className="text-[10px] uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2 font-semibold">
-                              Why This Action Matters
-                            </p>
-                            {action?.action_context ? (
-                              <p className="text-sm text-foreground leading-relaxed">{action.action_context}</p>
-                            ) : (
-                              <p className="text-sm text-muted-foreground italic">No rationale available. Regenerate this action to populate full business context.</p>
-                            )}
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Why This Matters</p>
+                            <p className="text-sm text-foreground leading-relaxed">{action.action_context}</p>
                           </div>
+                        )}
 
-                          <Separator className="bg-blue-200 dark:bg-blue-800" />
-
+                        {action?.business_impact && (
                           <div>
-                            <p className="text-[10px] uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2 font-semibold">
-                              Business Impact
-                            </p>
-                            {action?.business_impact ? (
-                              <p className="text-sm text-foreground leading-relaxed">{action.business_impact}</p>
-                            ) : (
-                              <p className="text-sm text-muted-foreground italic">No business impact data available.</p>
-                            )}
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Business Impact</p>
+                            <p className="text-sm text-foreground leading-relaxed">{action.business_impact}</p>
                           </div>
+                        )}
 
-                          <Separator className="bg-blue-200 dark:bg-blue-800" />
+                        {action?.recommendation && (
+                          <div className="bg-[hsl(var(--dd-amber-light))] rounded-lg p-3">
+                            <p className="text-[10px] uppercase tracking-wider text-[hsl(var(--dd-amber))] font-semibold mb-1">Recommendation</p>
+                            <p className="text-sm text-foreground leading-relaxed">{action.recommendation}</p>
+                          </div>
+                        )}
 
+                        {action?.expected_benefit && (
                           <div>
-                            <p className="text-[10px] uppercase tracking-widest text-amber-700 dark:text-amber-400 mb-2 font-semibold">
-                              Our Recommendation
-                            </p>
-                            <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3">
-                              {action?.recommendation ? (
-                                <p className="text-sm text-foreground leading-relaxed">{action.recommendation}</p>
-                              ) : (
-                                <p className="text-sm text-muted-foreground italic">No recommendation available.</p>
-                              )}
-                            </div>
+                            <p className="text-[10px] uppercase tracking-wider text-[hsl(var(--dd-green))] font-semibold mb-1">Expected Benefit</p>
+                            <p className="text-sm text-foreground leading-relaxed">{action.expected_benefit}</p>
                           </div>
-
-                          <Separator className="bg-blue-200 dark:bg-blue-800" />
-
-                          <div>
-                            <p className="text-[10px] uppercase tracking-widest text-green-700 dark:text-green-400 mb-2 font-semibold">
-                              Expected Benefit
-                            </p>
-                            {action?.expected_benefit ? (
-                              <p className="text-sm text-foreground leading-relaxed">{action.expected_benefit}</p>
-                            ) : (
-                              <p className="text-sm text-muted-foreground italic">No expected benefit data available.</p>
-                            )}
-                          </div>
-                        </CollapsibleContent>
-                      </div>
-                    </Collapsible>
-                  )}
-
-                  <Separator />
-
-                  {/* KPI Intelligence */}
-                  <div className="space-y-3">
-                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                      <BarChart3 className="h-4 w-4 text-primary" /> KPIs This Action Will Improve
-                    </p>
-
-                    {linkedKpiDetails.length > 0 ? (
-                      <div className="space-y-2">
-                        {visibleKpis.map((kpi: any, i: number) => (
-                          <div key={i} className="rounded-lg border p-3">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-                                <BarChart3 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-                                {kpi.name || kpi.title || kpi.key}
-                              </span>
-                              {kpi.type && (
-                                <Badge variant="outline" className={cn("text-[10px]", getKpiBadgeStyle(kpi.type))}>
-                                  {kpi.type}
-                                </Badge>
-                              )}
-                            </div>
-                            {kpi.reason && (
-                              <p className="text-xs text-muted-foreground leading-relaxed">{kpi.reason}</p>
-                            )}
-                          </div>
-                        ))}
-                        {linkedKpiDetails.length > 5 && !showKpiAll && (
-                          <Button variant="ghost" size="sm" onClick={() => setShowKpiAll(true)} className="text-xs">
-                            + {linkedKpiDetails.length - 5} more
-                          </Button>
                         )}
                       </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground italic">No KPI linkage configured.</p>
                     )}
 
+                    {/* KPI Intelligence */}
+                    {linkedKpiDetails.length > 0 && (
+                      <div className="rounded-xl border border-border/50 bg-card p-4 space-y-3">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                          <BarChart3 className="h-3.5 w-3.5 text-primary" /> KPIs This Action Will Improve
+                        </p>
+                        <div className="space-y-2">
+                          {visibleKpis.map((kpi: any, i: number) => (
+                            <div key={i} className="rounded-lg border border-border/50 p-3 bg-background">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                                  <BarChart3 className="h-3 w-3 text-primary flex-shrink-0" />
+                                  {kpi.name || kpi.title || kpi.key}
+                                </span>
+                                {kpi.type && (
+                                  <Badge variant="outline" className={cn("text-[10px] font-medium", getKpiBadgeStyle(kpi.type))}>
+                                    {kpi.type}
+                                  </Badge>
+                                )}
+                              </div>
+                              {kpi.reason && (
+                                <p className="text-xs text-muted-foreground leading-relaxed ml-[18px]">{kpi.reason}</p>
+                              )}
+                            </div>
+                          ))}
+                          {linkedKpiDetails.length > 4 && !showKpiAll && (
+                            <Button variant="ghost" size="sm" onClick={() => setShowKpiAll(true)} className="text-xs w-full">
+                              + {linkedKpiDetails.length - 4} more KPIs
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Likely Drivers */}
                     {likelyDrivers.length > 0 && (
-                      <div className="mt-4">
-                        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Likely Drivers</p>
-                        <div className="flex flex-wrap gap-2">
+                      <div className="rounded-xl border border-border/50 bg-card p-4 space-y-2">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                          <AlertTriangle className="h-3.5 w-3.5 text-[hsl(var(--dd-amber))]" /> Likely Drivers
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
                           {likelyDrivers.map((d: any, i: number) => (
-                            <div key={i} className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full border text-xs">
-                              <span>{typeof d === 'string' ? d : d.name || d.label}</span>
+                            <div key={i} className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs",
+                              typeof d === 'object' && d.type ? getDriverBadgeStyle(d.type) : 'border-border text-muted-foreground'
+                            )}>
+                              <span className="text-foreground">{typeof d === 'string' ? d : d.name || d.label}</span>
                               {typeof d === 'object' && d.type && (
-                                <Badge variant="outline" className="text-[9px] px-1 py-0">{d.type}</Badge>
+                                <span className="text-[9px] font-medium opacity-70">{d.type}</span>
                               )}
                             </div>
                           ))}
@@ -646,15 +610,20 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                       </div>
                     )}
 
+                    {/* Likely Consequences */}
                     {likelyConsequences.length > 0 && (
-                      <div className="mt-3">
-                        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Likely Consequences</p>
-                        <div className="flex flex-wrap gap-2">
+                      <div className="rounded-xl border border-border/50 bg-card p-4 space-y-2">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                          <TrendingUp className="h-3.5 w-3.5 text-destructive" /> Likely Consequences
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
                           {likelyConsequences.map((c: any, i: number) => (
-                            <div key={i} className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full border text-xs">
-                              <span>{typeof c === 'string' ? c : c.name || c.label}</span>
+                            <div key={i} className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs",
+                              typeof c === 'object' && c.type ? getConsequenceBadgeStyle(c.type) : 'border-border text-muted-foreground'
+                            )}>
+                              <span className="text-foreground">{typeof c === 'string' ? c : c.name || c.label}</span>
                               {typeof c === 'object' && c.type && (
-                                <Badge variant="outline" className="text-[9px] px-1 py-0 text-destructive border-destructive/20">{c.type}</Badge>
+                                <span className="text-[9px] font-medium opacity-70">{c.type}</span>
                               )}
                             </div>
                           ))}
@@ -662,12 +631,12 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                       </div>
                     )}
                   </div>
-                </div>
+                )}
               </div>
             </div>
           ) : (
-            /* History Tab */
-            <div className="px-6 py-4">
+            /* ── HISTORY TAB ── */
+            <div className="px-6 py-5">
               {historyLoading ? (
                 <div className="flex items-center justify-center py-16">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -680,16 +649,14 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                   <p className="text-sm text-muted-foreground">No history yet.</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {historyEntries.map(entry => (
-                    <div key={entry.id} className="flex items-start gap-3">
+                    <div key={entry.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
                       <div className="h-7 w-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-semibold flex-shrink-0 mt-0.5">
                         {entry.changed_by?.slice(0, 2).toUpperCase() || '??'}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-muted-foreground">
-                          {formatHistoryDescription(entry)}
-                        </p>
+                        <p className="text-sm text-foreground">{formatHistoryDescription(entry)}</p>
                       </div>
                       <span className="text-xs text-muted-foreground flex-shrink-0">
                         {formatDistanceToNow(new Date(entry.changed_at), { addSuffix: true })}
@@ -702,19 +669,20 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
           )}
         </ScrollArea>
 
-        {/* Sticky Footer */}
+        {/* ── FOOTER ── */}
         {!readOnly && (
-          <div className="flex gap-2 px-6 py-4 border-t bg-card flex-shrink-0">
+          <div className="flex items-center gap-2 px-6 py-3 border-t bg-card flex-shrink-0">
             {mode === 'edit' && onDelete && action && (
-              <Button variant="destructive" size="sm" onClick={() => { onDelete(action.id); onOpenChange(false); }} className="mr-auto">
-                🗑 Delete
+              <Button variant="destructive" size="sm" onClick={() => { onDelete(action.id); onOpenChange(false); }} className="mr-auto gap-1.5">
+                <Trash2 className="h-3.5 w-3.5" /> Delete
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={handleClose}>
-              × Cancel
+            <div className="flex-1" />
+            <Button variant="outline" size="sm" onClick={handleClose} className="gap-1.5">
+              <X className="h-3.5 w-3.5" /> Cancel
             </Button>
-            <Button size="sm" onClick={handleSave} disabled={saving}>
-              {saving && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+            <Button size="sm" onClick={handleSave} disabled={saving} className="gap-1.5">
+              {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
               {mode === 'create' ? 'Create' : 'Save'}
             </Button>
           </div>
