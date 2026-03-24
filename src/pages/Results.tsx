@@ -372,8 +372,8 @@ export default function Results() {
                 {/* Card 4 — Confidence */}
                 <div className={cardClass}>
                   <div className={labelClass}>{language === 'de' ? 'Bewertungskonfidenz' : 'Assessment Confidence'}</div>
-                  <div className={`text-[20px] font-semibold ${confidenceColor}`}>{confidenceLevel}</div>
-                  <div className="text-[11px] text-[hsl(var(--dd-ghost))] mt-1">
+                  <div className={`text-h4 ${confidenceColor}`}>{confidenceLevel}</div>
+                  <div className="text-caption text-muted-foreground mt-1">
                     {overallScore < 45
                       ? (language === 'de' ? 'Überprüfung empfohlen' : 'Review recommended')
                       : (language === 'de' ? 'Stabile Ergebnisse' : 'Stable results')}
