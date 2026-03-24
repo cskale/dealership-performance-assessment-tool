@@ -24,7 +24,7 @@ interface MaturityScoringProps {
 }
 
 interface MaturityLevel {
-  level: 1 | 2 | 3 | 4;
+  level: 1 | 2 | 3 | 4 | 5;
   name: string;
   icon: React.ReactNode;
   color: string;
