@@ -155,10 +155,10 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
   const overallMaturityLevel = useMemo(() => {
     const m: Record<string, MaturityLevel> = {
       'Basic': maturityLevels[0],
-      'Developing': maturityLevels[1],
-      'Mature': maturityLevels[2],
-      'Advanced': maturityLevels[3],
       'Inconsistent': maturityLevels[1],
+      'Developing': maturityLevels[2],
+      'Mature': maturityLevels[3],
+      'Advanced': maturityLevels[4],
     };
     return m[overallMaturity.level] || maturityLevels[0];
   }, [overallMaturity, maturityLevels]);
