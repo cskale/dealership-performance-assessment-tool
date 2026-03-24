@@ -1,6 +1,5 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { CheckCircle2, Circle, Clock, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 type StatusType = 'open' | 'in_progress' | 'completed' | 'overdue';
@@ -14,33 +13,33 @@ interface SharedStatusBadgeProps {
 
 const statusConfig: Record<StatusType, { 
   label: { en: string; de: string }; 
-  icon: typeof Circle;
+  dotColor: string;
   classes: string;
 }> = {
   open: {
     label: { en: 'Open', de: 'Offen' },
-    icon: Circle,
+    dotColor: 'bg-muted-foreground',
     classes: 'bg-muted text-muted-foreground border-border'
   },
   in_progress: {
     label: { en: 'In Progress', de: 'In Bearbeitung' },
-    icon: Clock,
-    classes: 'bg-info/10 text-info border-info/30'
+    dotColor: 'bg-info',
+    classes: 'bg-info/10 text-info border-info/20'
   },
   completed: {
     label: { en: 'Completed', de: 'Abgeschlossen' },
-    icon: CheckCircle2,
-    classes: 'bg-success/10 text-success border-success/30'
+    dotColor: 'bg-success',
+    classes: 'bg-success/10 text-success border-success/20'
   },
   overdue: {
     label: { en: 'Overdue', de: 'Überfällig' },
-    icon: AlertTriangle,
-    classes: 'bg-destructive/10 text-destructive border-destructive/30'
+    dotColor: 'bg-destructive',
+    classes: 'bg-destructive/10 text-destructive border-destructive/20'
   }
 };
 
 /**
- * SharedStatusBadge - Unified status badge pattern
+ * SharedStatusBadge — §5.8 spec: status dot + rounded-full pill
  */
 export function SharedStatusBadge({
   status,
@@ -49,26 +48,21 @@ export function SharedStatusBadge({
   className
 }: SharedStatusBadgeProps) {
   const { language } = useLanguage();
-  // Normalize status string
   const normalizedStatus = status.toLowerCase().replace(/\s+/g, '_') as StatusType;
   const config = statusConfig[normalizedStatus] || statusConfig.open;
-  const Icon = config.icon;
-
-  const sizeClasses = size === 'sm' 
-    ? 'text-[10px] px-1.5 py-0'
-    : 'text-xs px-2 py-0.5';
 
   return (
     <Badge
       variant="outline"
       className={cn(
-        "font-medium border",
-        sizeClasses,
+        "rounded-full px-2.5 py-0.5 text-xs font-medium border inline-flex items-center gap-1.5",
         config.classes,
         className
       )}
     >
-      {showIcon && <Icon className={cn("mr-1", size === 'sm' ? 'h-2.5 w-2.5' : 'h-3 w-3')} />}
+      {showIcon && (
+        <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", config.dotColor)} />
+      )}
       {config.label[language as 'en' | 'de'] ?? config.label.en}
     </Badge>
   );
