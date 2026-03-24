@@ -231,10 +231,6 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
                       </button>
                     );
                   })}
-                </div>
-                    );
-                  })}
-                </div>
               )}
             </CardContent>
           </Card>
