@@ -44,7 +44,8 @@ export function HeroSection({ hasCompletedAssessment }: HeroSectionProps) {
       <div className="relative z-10 max-w-5xl mx-auto px-4 text-center animate-fade-in">
         {/* Badge */}
         <Badge className="mb-6 px-4 py-2 text-sm font-medium bg-white/20 text-white border-white/30 backdrop-blur-sm hover:bg-white/30">
-          {t.badge}
+          <FlaskConical className="h-4 w-4 mr-1.5 inline-block" />
+          {t.badge.replace('🔬 ', '')}
         </Badge>
 
         {/* Main headline */}
