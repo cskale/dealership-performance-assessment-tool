@@ -139,7 +139,7 @@ export function ExportPDFModal({ open, onOpenChange, exportData }: ExportPDFModa
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-5 py-4">
+        <div className="space-y-4 py-3 overflow-y-auto max-h-[60vh]">
           {/* Language indicator */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
