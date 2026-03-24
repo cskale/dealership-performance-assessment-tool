@@ -136,7 +136,7 @@ export const questionnaire: Questionnaire = {
           text: "How would customers rate their overall satisfaction with your new vehicle sales experience?",
           description: "Based on customer surveys, feedback forms, and post-purchase reviews",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["Poor (1-2)", "Fair (3-4)", "Good (5-6)", "Very Good (7-8)", "Excellent (9-10)"] },
+          scale: { min: 1, max: 5, labels: ["<55 NPS", "55–65 NPS", "66–74 NPS", "75–84 NPS", ">84 NPS"] },
           weight: 1.3,
           category: "satisfaction",
           purpose: "Measures customer experience quality during the sales process, which directly impacts repeat business, referrals, and brand reputation.",
@@ -150,7 +150,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Measures customer experience quality during the sales process, which directly impacts repeat business, referrals, and brand reputation.",
               situationAnalysis: "Customer satisfaction is a leading indicator of future sales performance, customer loyalty, and word-of-mouth marketing effectiveness.",
               benefits: "High customer satisfaction leads to increased referrals, repeat customers, positive online reviews, and reduced marketing costs through organic growth.",
-              scaleLabels: ["Poor (1-2)", "Fair (3-4)", "Good (5-6)", "Very Good (7-8)", "Excellent (9-10)"]
+              scaleLabels: ["<55 NPS", "55–65 NPS", "66–74 NPS", "75–84 NPS", ">84 NPS"]
             },
             de: {
               text: "Wie würden Kunden ihre Gesamtzufriedenheit mit Ihrem Neuwagenverkaufserlebnis bewerten?",
@@ -158,7 +158,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Misst die Qualität der Kundenerfahrung während des Verkaufsprozesses, die sich direkt auf Folgegeschäfte, Empfehlungen und Markenreputation auswirkt.",
               situationAnalysis: "Die Kundenzufriedenheit ist ein führender Indikator für zukünftige Verkaufsleistung, Kundenloyalität und Effektivität des Mund-zu-Mund-Marketings.",
               benefits: "Hohe Kundenzufriedenheit führt zu mehr Empfehlungen, wiederkehrenden Kunden, positiven Online-Bewertungen und reduzierten Marketingkosten durch organisches Wachstum.",
-              scaleLabels: ["Schlecht (1-2)", "Ausreichend (3-4)", "Gut (5-6)", "Sehr gut (7-8)", "Ausgezeichnet (9-10)"]
+              scaleLabels: ["<55 NPS", "55–65 NPS", "66–74 NPS", "75–84 NPS", ">84 NPS"]
             }
           }
         },
@@ -375,7 +375,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Bewertet die Fähigkeit Ihres Teams, Technologie für das Kundenbeziehungsmanagement und die Optimierung des Verkaufsprozesses zu nutzen.",
               situationAnalysis: "Effektive CRM-Nutzung zeigt einen systematischen Ansatz für das Kundenmanagement, verbesserte Follow-up-Prozesse und datengesteuerte Entscheidungsfindung.",
               benefits: "Bessere CRM-Nutzung verbessert die Lead-Konvertierung, stärkt Kundenbeziehungen, erhöht das Folgegeschäft und liefert wertvolle Erkenntnisse für Wachstum.",
-              scaleLabels: ["Schlecht", "Ausreichend", "Gut", "Sehr gut", "Ausgezeichnet"]
+              scaleLabels: ["Kein CRM, <30% erfasst", "30–60% erfasst, keine Auto.", "Meiste erfasst, kaum Auto.", "Konst. Nutzung, Auto-Follow-ups", "Volle Adoption, Pipeline-Mgmt."]
             }
           }
         }
@@ -502,7 +502,7 @@ export const questionnaire: Questionnaire = {
           text: "How would you rate the quality and effectiveness of your online used vehicle listings?",
           description: "Consider photo quality, description accuracy, pricing transparency, and response time",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["Poor", "Fair", "Good", "Very Good", "Excellent"] },
+          scale: { min: 1, max: 5, labels: ["≤4 photos, no price", "5-8 photos, priced", "9-15 photos, spec", "16-20 photos, video", ">20 photos+video+chat"] },
           weight: 1.1,
           category: "digital",
           purpose: "Assesses digital marketing effectiveness for used vehicles, crucial in today's online-driven car shopping environment.",
@@ -513,12 +513,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How would you rate the quality and effectiveness of your online used vehicle listings?",
               description: "Consider photo quality, description accuracy, pricing transparency, and response time",
-              scaleLabels: ["Poor", "Fair", "Good", "Very Good", "Excellent"]
+              scaleLabels: ["≤4 photos, no price", "5-8 photos, priced", "9-15 photos, spec", "16-20 photos, video", ">20 photos+video+chat"]
             },
             de: {
               text: "Wie würden Sie die Qualität und Wirksamkeit Ihrer Online-Gebrauchtwagen-Inserate bewerten?",
               description: "Berücksichtigen Sie Fotoqualität, Beschreibungsgenauigkeit, Preistransparenz und Reaktionszeit",
-              scaleLabels: ["Schlecht", "Ausreichend", "Gut", "Sehr gut", "Ausgezeichnet"]
+              scaleLabels: ["≤4 Fotos, kein Preis", "5–8 Fotos, bepreist", "9–15 Fotos, Vollspec.", "16–20 Fotos, Video", ">20 Fotos+Video+Chat"]
             }
           }
         },
@@ -552,7 +552,7 @@ export const questionnaire: Questionnaire = {
           text: "How do customers rate their overall satisfaction with your used vehicle purchase experience?",
           description: "Based on post-purchase surveys and feedback within 30 days of sale",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["Poor (1-2)", "Fair (3-4)", "Good (5-6)", "Very Good (7-8)", "Excellent (9-10)"] },
+          scale: { min: 1, max: 5, labels: ["<55 NPS", "55–65 NPS", "66–74 NPS", "75–84 NPS", ">84 NPS"] },
           weight: 1.3,
           category: "satisfaction",
           purpose: "Evaluates customer experience quality for used vehicle sales, impacting reputation, referrals, and repeat business.",
@@ -563,12 +563,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How do customers rate their overall satisfaction with your used vehicle purchase experience?",
               description: "Based on post-purchase surveys and feedback within 30 days of sale",
-              scaleLabels: ["Poor (1-2)", "Fair (3-4)", "Good (5-6)", "Very Good (7-8)", "Excellent (9-10)"]
+              scaleLabels: ["<55 NPS", "55–65 NPS", "66–74 NPS", "75–84 NPS", ">84 NPS"]
             },
             de: {
               text: "Wie bewerten Kunden ihre Gesamtzufriedenheit mit Ihrem Gebrauchtwagenkauferlebnis?",
               description: "Basierend auf Umfragen und Feedback nach dem Kauf innerhalb von 30 Tagen nach dem Verkauf",
-              scaleLabels: ["Schlecht (1-2)", "Ausreichend (3-4)", "Gut (5-6)", "Sehr gut (7-8)", "Ausgezeichnet (9-10)"]
+              scaleLabels: ["<55 NPS", "55–65 NPS", "66–74 NPS", "75–84 NPS", ">84 NPS"]
             }
           }
         },
@@ -643,7 +643,7 @@ export const questionnaire: Questionnaire = {
             de: {
               text: "Wie effektiv ist Ihre Strategie zur Verwaltung von Fahrzeugen, die länger als 60 Tage unverkauft bleiben?",
               description: "Beschreiben Sie Ihren Ansatz zur Reduzierung alter Bestände und Preisanpassungen",
-              scaleLabels: ["Keine Strategie", "Reaktiv", "Basisplan", "Guter Plan", "Ausgezeichneter Plan"]
+              scaleLabels: ["Kein Prozess, Fahrzeuge altern", "Reaktiv, nur Preissenkungen", "30-Tage-Prüfung, Basisanpassung", "21-Tage-Prüfung, 45-Tage-Regel", "Echtzeit-Tracking, Auto-Preisanpassung"]
             }
           }
         }
@@ -770,7 +770,7 @@ export const questionnaire: Questionnaire = {
           text: "How do customers rate their overall experience with your service department?",
           description: "Based on post-service surveys and satisfaction ratings",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["Poor (1-2)", "Fair (3-4)", "Good (5-6)", "Very Good (7-8)", "Excellent (9-10)"] },
+          scale: { min: 1, max: 5, labels: ["<55 NPS", "55–65 NPS", "66–74 NPS", "75–84 NPS", ">84 NPS"] },
           weight: 1.5,
           category: "satisfaction",
           purpose: "Measures overall service experience quality, crucial for customer retention and referral generation.",
@@ -781,12 +781,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How do customers rate their overall experience with your service department?",
               description: "Based on post-service surveys and satisfaction ratings",
-              scaleLabels: ["Poor (1-2)", "Fair (3-4)", "Good (5-6)", "Very Good (7-8)", "Excellent (9-10)"]
+              scaleLabels: ["<55 NPS", "55–65 NPS", "66–74 NPS", "75–84 NPS", ">84 NPS"]
             },
             de: {
               text: "Wie bewerten Kunden ihre Gesamterfahrung mit Ihrer Serviceabteilung?",
               description: "Basierend auf Umfragen und Zufriedenheitsbewertungen nach dem Service",
-              scaleLabels: ["Schlecht (1-2)", "Ausreichend (3-4)", "Gut (5-6)", "Sehr gut (7-8)", "Ausgezeichnet (9-10)"]
+              scaleLabels: ["<55 NPS", "55–65 NPS", "66–74 NPS", "75–84 NPS", ">84 NPS"]
             }
           }
         },
@@ -945,7 +945,7 @@ export const questionnaire: Questionnaire = {
           text: "How would you rate the efficiency and throughput of your express or quick service lane?",
           description: "Consider wait times, service speed, and customer satisfaction for quick service",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["Poor", "Fair", "Good", "Very Good", "Excellent"] },
+          scale: { min: 1, max: 5, labels: [">75 min avg wait", "60-75 min avg wait", "45-60 min avg wait", "30-45 min avg wait", "<30 min avg wait"] },
           weight: 1.1,
           category: "express",
           purpose: "Evaluates quick service operations efficiency, important for customer convenience and service department productivity.",
@@ -956,12 +956,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How would you rate the efficiency and throughput of your express or quick service lane?",
               description: "Consider wait times, service speed, and customer satisfaction for quick service",
-              scaleLabels: ["Poor", "Fair", "Good", "Very Good", "Excellent"]
+              scaleLabels: [">75 min avg wait", "60-75 min avg wait", "45-60 min avg wait", "30-45 min avg wait", "<30 min avg wait"]
             },
             de: {
               text: "Wie würden Sie die Effizienz und den Durchsatz Ihrer Express- oder Schnellservice-Spur bewerten?",
               description: "Berücksichtigen Sie Wartezeiten, Servicegeschwindigkeit und Kundenzufriedenheit für Schnellservice",
-              scaleLabels: ["Schlecht", "Ausreichend", "Gut", "Sehr gut", "Ausgezeichnet"]
+              scaleLabels: [">75 Min. Wartezeit", "60–75 Min. Warten", "45–60 Min. Warten", "30–45 Min. Warten", "<30 Min. Wartezeit"]
             }
           }
         }
@@ -1113,7 +1113,7 @@ export const questionnaire: Questionnaire = {
           text: "How would you rate your success in selling parts to external customers such as independent shops?",
           description: "Evaluate your wholesale and retail parts business outside of internal service",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["Poor", "Fair", "Good", "Very Good", "Excellent"] },
+          scale: { min: 1, max: 5, labels: ["<5% wholesale share", "5-10% wholesale", "11-20% wholesale", "21-30% wholesale", ">30% wholesale"] },
           weight: 1.1,
           category: "wholesale",
           purpose: "Assesses market expansion opportunities and additional revenue generation from parts inventory.",
@@ -1124,12 +1124,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How would you rate your success in selling parts to external customers such as independent shops?",
               description: "Evaluate your wholesale and retail parts business outside of internal service",
-              scaleLabels: ["Poor", "Fair", "Good", "Very Good", "Excellent"]
+              scaleLabels: ["<5% wholesale share", "5-10% wholesale", "11-20% wholesale", "21-30% wholesale", ">30% wholesale"]
             },
             de: {
               text: "Wie würden Sie Ihren Erfolg beim Verkauf von Teilen an externe Kunden wie freie Werkstätten bewerten?",
               description: "Bewerten Sie Ihr Großhandels- und Einzelhandelsteilegeschäft außerhalb des internen Service",
-              scaleLabels: ["Schlecht", "Ausreichend", "Gut", "Sehr gut", "Ausgezeichnet"]
+              scaleLabels: ["<5% Großhandel-Anteil", "5–10% Großhandel", "11–20% Großhandel", "21–30% Großhandel", ">30% Großhandel"]
             }
           }
         },
@@ -1163,7 +1163,7 @@ export const questionnaire: Questionnaire = {
           text: "How effectively can you source and obtain urgently needed parts that are not in stock?",
           description: "Rate your emergency sourcing capabilities for critical customer needs",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["Poor", "Fair", "Good", "Very Good", "Excellent"] },
+          scale: { min: 1, max: 5, labels: [">5 days to source", "3-5 days to source", "1-2 days to source", "Same day sourced", "<4 hrs from network"] },
           weight: 1.1,
           category: "emergency",
           purpose: "Evaluates supply chain relationships and problem-solving capabilities, crucial for customer service excellence.",
@@ -1174,12 +1174,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How effectively can you source and obtain urgently needed parts that are not in stock?",
               description: "Rate your emergency sourcing capabilities for critical customer needs",
-              scaleLabels: ["Poor", "Fair", "Good", "Very Good", "Excellent"]
+              scaleLabels: [">5 days to source", "3-5 days to source", "1-2 days to source", "Same day sourced", "<4 hrs from network"]
             },
             de: {
               text: "Wie effektiv können Sie dringend benötigte Teile beschaffen, die nicht auf Lager sind?",
               description: "Bewerten Sie Ihre Notfallbeschaffungsfähigkeiten für kritische Kundenbedürfnisse",
-              scaleLabels: ["Schlecht", "Ausreichend", "Gut", "Sehr gut", "Ausgezeichnet"]
+              scaleLabels: [">5 Tage Beschaffung", "3–5 Tage Beschaffung", "1–2 Tage Beschaffung", "Gleichtag beschafft", "<4 Std. aus Netzwerk"]
             }
           }
         },
@@ -1213,7 +1213,7 @@ export const questionnaire: Questionnaire = {
           text: "How strong are your relationships and communication with your parts suppliers and vendors?",
           description: "Consider pricing, delivery reliability, and support quality",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["Poor", "Fair", "Good", "Very Good", "Excellent"] },
+          scale: { min: 1, max: 5, labels: ["<80% on-time", "80-85% on-time", "86-91% on-time", "92-96% on-time", ">96% on-time"] },
           weight: 1.1,
           category: "vendor",
           purpose: "Evaluates supply chain management effectiveness, impacting costs, availability, and service quality.",
@@ -1224,12 +1224,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How strong are your relationships and communication with your parts suppliers and vendors?",
               description: "Consider pricing, delivery reliability, and support quality",
-              scaleLabels: ["Poor", "Fair", "Good", "Very Good", "Excellent"]
+              scaleLabels: ["<80% on-time", "80-85% on-time", "86-91% on-time", "92-96% on-time", ">96% on-time"]
             },
             de: {
               text: "Wie stark sind Ihre Beziehungen und Kommunikation mit Ihren Teilelieferanten und Anbietern?",
               description: "Berücksichtigen Sie Preisgestaltung, Lieferzuverlässigkeit und Supportqualität",
-              scaleLabels: ["Schlecht", "Ausreichend", "Gut", "Sehr gut", "Ausgezeichnet"]
+              scaleLabels: ["<80% pünktlich", "80–85% pünktlich", "86–91% pünktlich", "92–96% pünktlich", ">96% pünktlich"]
             }
           }
         }
@@ -1272,7 +1272,7 @@ export const questionnaire: Questionnaire = {
             de: {
               text: "Wie würden Sie den Rentabilitätstrend Ihres Autohauses in den letzten 12 Monaten beschreiben?",
               description: "Berücksichtigen Sie Nettogewinnwachstum, Stabilität oder Rückgangsmuster",
-              scaleLabels: ["Rückläufig", "Stabil/Niedrig", "Moderat", "Gut", "Ausgezeichnet"]
+              scaleLabels: ["Nettoverlust >20% ggü. VJ", "Rückgang 0–20%, kein Plan", "Stabil, 1–2% Nettomarge", "Wachsend, 2–4% Marge", ">4% Nettomarge, steigend"]
             }
           }
         },
@@ -1297,7 +1297,7 @@ export const questionnaire: Questionnaire = {
             de: {
               text: "Wie konsistent und vorhersehbar ist der monatliche Cashflow Ihres Autohauses?",
               description: "Bewerten Sie die Stabilität der Geldzu- und -abflüsse",
-              scaleLabels: ["Schlecht", "Ausreichend", "Gut", "Sehr gut", "Ausgezeichnet"]
+              scaleLabels: ["Engpässe, Löhne gefährdet", "Angespannt, wenig Puffer", "Ausreichend, Ziele erfüllt", ">45 Tage Betriebsreserven", "Stark, Investitionspuffer"]
             }
           }
         },
@@ -1306,7 +1306,7 @@ export const questionnaire: Questionnaire = {
           text: "How effectively do you manage your floor plan financing to minimize interest costs?",
           description: "Consider inventory turn rate relative to floor plan terms and payment timing",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["Poor", "Fair", "Good", "Very Good", "Excellent"] },
+          scale: { min: 1, max: 5, labels: [">75 days avg stock", "60-75 days avg", "45-60 days avg", "30-45 days avg", "<30 days avg"] },
           weight: 1.5,
           category: "floorplan",
           purpose: "Evaluates inventory financing efficiency, directly impacting profitability and cash management.",
@@ -1317,12 +1317,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How effectively do you manage your floor plan financing to minimize interest costs?",
               description: "Consider inventory turn rate relative to floor plan terms and payment timing",
-              scaleLabels: ["Poor", "Fair", "Good", "Very Good", "Excellent"]
+              scaleLabels: [">75 days avg stock", "60-75 days avg", "45-60 days avg", "30-45 days avg", "<30 days avg"]
             },
             de: {
               text: "Wie effektiv verwalten Sie Ihre Bestandsfinanzierung, um Zinskosten zu minimieren?",
               description: "Berücksichtigen Sie die Umschlagshäufigkeit im Verhältnis zu den Finanzierungsbedingungen und Zahlungszeitpunkten",
-              scaleLabels: ["Schlecht", "Ausreichend", "Gut", "Sehr gut", "Ausgezeichnet"]
+              scaleLabels: [">75 Tage Ø Bestand", "60–75 Tage", "45–60 Tage", "30–45 Tage", "<30 Tage Ø Bestand"]
             }
           }
         },
@@ -1331,7 +1331,7 @@ export const questionnaire: Questionnaire = {
           text: "How effectively does your dealership control and manage operational expenses?",
           description: "Consider cost monitoring, budget adherence, and expense reduction initiatives",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["Poor", "Fair", "Good", "Very Good", "Excellent"] },
+          scale: { min: 1, max: 5, labels: [">90% expense ratio", "80-90% expenses", "70-80% expenses", "60-70% expenses", "<60% expense ratio"] },
           weight: 1.6,
           category: "costs",
           purpose: "Measures operational efficiency and expense management, crucial for maintaining profitability and competitiveness.",
@@ -1342,12 +1342,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How effectively does your dealership control and manage operational expenses?",
               description: "Consider cost monitoring, budget adherence, and expense reduction initiatives",
-              scaleLabels: ["Poor", "Fair", "Good", "Very Good", "Excellent"]
+              scaleLabels: [">90% expense ratio", "80-90% expenses", "70-80% expenses", "60-70% expenses", "<60% expense ratio"]
             },
             de: {
               text: "Wie effektiv kontrolliert und verwaltet Ihr Autohaus die Betriebskosten?",
               description: "Berücksichtigen Sie Kostenüberwachung, Budgeteinhaltung und Kostensenkungsinitiativen",
-              scaleLabels: ["Schlecht", "Ausreichend", "Gut", "Sehr gut", "Ausgezeichnet"]
+              scaleLabels: [">90% Kostenquote", "80–90% Kosten", "70–80% Kosten", "60–70% Kosten", "<60% Kostenquote"]
             }
           }
         },
@@ -1381,7 +1381,7 @@ export const questionnaire: Questionnaire = {
           text: "What return are you achieving on your technology and equipment investments?",
           description: "Consider DMS, CRM, service equipment, and digital marketing tools",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["Poor", "Fair", "Good", "Very Good", "Excellent"] },
+          scale: { min: 1, max: 5, labels: ["<30% systems used", "30-50% systems", "51-70% systems", "71-85% systems", ">85% all systems"] },
           weight: 1.2,
           category: "technology",
           purpose: "Assesses technology investment effectiveness and digital transformation success, crucial for future competitiveness.",
@@ -1392,12 +1392,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "What return are you achieving on your technology and equipment investments?",
               description: "Consider DMS, CRM, service equipment, and digital marketing tools",
-              scaleLabels: ["Poor", "Fair", "Good", "Very Good", "Excellent"]
+              scaleLabels: ["<30% systems used", "30-50% systems", "51-70% systems", "71-85% systems", ">85% all systems"]
             },
             de: {
               text: "Welche Rendite erzielen Sie bei Ihren Technologie- und Geräteinvestitionen?",
               description: "Berücksichtigen Sie DMS, CRM, Servicegeräte und digitale Marketing-Tools",
-              scaleLabels: ["Schlecht", "Ausreichend", "Gut", "Sehr gut", "Ausgezeichnet"]
+              scaleLabels: ["<30% Systeme genutzt", "30–50% Systeme", "51–70% Systeme", "71–85% Systeme", ">85% alle Systeme"]
             }
           }
         },
@@ -1406,7 +1406,7 @@ export const questionnaire: Questionnaire = {
           text: "How efficiently are you utilizing your showroom floor space and service bay capacity?",
           description: "Consider revenue per square foot and bay utilization rates",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["Poor", "Fair", "Good", "Very Good", "Excellent"] },
+          scale: { min: 1, max: 5, labels: ["<50% bay occupancy", "50-65% bays", "66-75% bays", "76-85% bays", ">85% bay occupancy"] },
           weight: 1.3,
           category: "facility",
           purpose: "Evaluates physical asset utilization and operational design effectiveness, impacting productivity and costs.",
@@ -1417,12 +1417,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How efficiently are you utilizing your showroom floor space and service bay capacity?",
               description: "Consider revenue per square foot and bay utilization rates",
-              scaleLabels: ["Poor", "Fair", "Good", "Very Good", "Excellent"]
+              scaleLabels: ["<50% bay occupancy", "50-65% bays", "66-75% bays", "76-85% bays", ">85% bay occupancy"]
             },
             de: {
               text: "Wie effizient nutzen Sie Ihre Ausstellungsraumfläche und Servicebucht-Kapazität?",
               description: "Berücksichtigen Sie den Umsatz pro Quadratmeter und die Buchtauslastung",
-              scaleLabels: ["Schlecht", "Ausreichend", "Gut", "Sehr gut", "Ausgezeichnet"]
+              scaleLabels: ["<50% Buchtbelegung", "50–65% Buchten", "66–75% Buchten", "76–85% Buchten", ">85% Buchtbelegung"]
             }
           }
         },
@@ -1431,7 +1431,7 @@ export const questionnaire: Questionnaire = {
           text: "How well do you maintain and leverage your customer database for marketing and retention?",
           description: "Consider data quality, segmentation capabilities, and utilization for targeted campaigns",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["Poor", "Fair", "Good", "Very Good", "Excellent"] },
+          scale: { min: 1, max: 5, labels: ["<40% records usable", "40-60% records", "61-75% records", "76-88% records", ">88% clean+segmented"] },
           weight: 1.1,
           category: "data",
           purpose: "Assesses data asset quality and utilization effectiveness, crucial for customer relationship management and business intelligence.",
@@ -1442,12 +1442,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How well do you maintain and leverage your customer database for marketing and retention?",
               description: "Consider data quality, segmentation capabilities, and utilization for targeted campaigns",
-              scaleLabels: ["Poor", "Fair", "Good", "Very Good", "Excellent"]
+              scaleLabels: ["<40% records usable", "40-60% records", "61-75% records", "76-88% records", ">88% clean+segmented"]
             },
             de: {
               text: "Wie gut pflegen und nutzen Sie Ihre Kundendatenbank für Marketing und Kundenbindung?",
               description: "Berücksichtigen Sie Datenqualität, Segmentierungsfähigkeiten und Nutzung für zielgerichtete Kampagnen",
-              scaleLabels: ["Schlecht", "Ausreichend", "Gut", "Sehr gut", "Ausgezeichnet"]
+              scaleLabels: ["<40% Datensätze nutzbar", "40–60% nutzbar", "61–75% nutzbar", "76–88% nutzbar", ">88% bereinigt+segmentiert"]
             }
           }
         }
