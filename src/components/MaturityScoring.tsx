@@ -353,7 +353,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
                     <span className="flex-shrink-0 w-28 truncate">{d.department}</span>
                     <Progress value={d.score} className="flex-1 h-2 min-w-[60px]" />
                     <span className="flex-shrink-0 text-xs w-20 text-right">
-                      {d.enhanced.level === 'Inconsistent' ? (language === 'de' ? 'Inkonsistent' : 'Inconsistent') : d.level.name}
+                      {d.level.name}
                     </span>
                   </div>
                 ))}
