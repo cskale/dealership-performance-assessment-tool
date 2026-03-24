@@ -123,10 +123,10 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
       // Map enhanced level to our MaturityLevel objects
       const levelMap: Record<string, MaturityLevel> = {
         'Basic': maturityLevels[0],
-        'Developing': maturityLevels[1],
-        'Mature': maturityLevels[2],
-        'Advanced': maturityLevels[3],
-        'Inconsistent': { ...maturityLevels[1], name: language === 'de' ? 'Inkonsistent' : 'Inconsistent', icon: <ShieldQuestion className="h-5 w-5 text-warning-foreground" />, color: 'bg-warning/10 text-warning-foreground border-warning/20' },
+        'Inconsistent': maturityLevels[1],
+        'Developing': maturityLevels[2],
+        'Mature': maturityLevels[3],
+        'Advanced': maturityLevels[4],
       };
 
       return {
