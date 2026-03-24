@@ -126,7 +126,7 @@ export const SmartAssistant: React.FC<SmartAssistantProps> = ({
             <div className="bg-muted/50 p-3 rounded-lg border">
               <div className="flex items-center gap-2 mb-2">
                 <BarChart className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium">Current Scores</span>
+                <span className="text-h5">Current Scores</span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 {Object.entries(scores).map(([section, score]) => (
