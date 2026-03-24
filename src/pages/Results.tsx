@@ -288,10 +288,10 @@ export default function Results() {
           
           {/* Page title */}
           <div className="mb-4">
-            <h1 className="text-[22px] font-semibold text-[hsl(var(--dd-ink))]">
+            <h1 className="text-h3 text-foreground">
               {language === 'de' ? 'Bewertungsergebnisse' : 'Assessment Results'}
             </h1>
-            <p className="text-[13px] text-[hsl(var(--dd-muted))] mt-0.5">
+            <p className="text-body-sm text-muted-foreground mt-0.5">
               {language === 'de' ? 'Umfassende Analyse abgeschlossen am' : 'Comprehensive analysis completed on'} {formatDate(resultsData.completedAt)}
             </p>
           </div>
