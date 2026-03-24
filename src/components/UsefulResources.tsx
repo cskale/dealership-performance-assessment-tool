@@ -231,6 +231,7 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
                       </button>
                     );
                   })}
+                </div>
               )}
             </CardContent>
           </Card>
