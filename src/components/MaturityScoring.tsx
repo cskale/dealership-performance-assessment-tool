@@ -24,7 +24,7 @@ interface MaturityScoringProps {
 }
 
 interface MaturityLevel {
-  level: 1 | 2 | 3 | 4;
+  level: 1 | 2 | 3 | 4 | 5;
   name: string;
   icon: React.ReactNode;
   color: string;
@@ -61,10 +61,23 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
     },
     {
       level: 2,
+      name: language === 'de' ? 'Inkonsistent' : 'Inconsistent',
+      icon: <ShieldQuestion className="h-5 w-5 text-warning-foreground" />,
+      color: 'bg-warning/10 text-warning-foreground border-warning/20',
+      description: language === 'de' ? 'Uneinheitliche Leistung zwischen Abteilungen' : 'Uneven performance across departments',
+      characteristics: [
+        language === 'de' ? 'Hohe Varianz zwischen Bereichen' : 'High variance across areas',
+        language === 'de' ? 'Einige Stärken, einige Lücken' : 'Some strengths, some gaps',
+        language === 'de' ? 'Standardisierung fehlt' : 'Standardization lacking',
+        language === 'de' ? 'Fokus auf Konsistenz nötig' : 'Focus on consistency needed'
+      ]
+    },
+    {
+      level: 3,
       name: language === 'de' ? 'Entwickelnd' : 'Developing',
       icon: <TrendingUp className="h-5 w-5 text-orange-600" />,
       color: 'bg-orange-50 text-orange-800 border-orange-200',
-      description: language === 'de' ? 'Prozesse werden standardisiert' : 'Processes being standardized',
+      description: language === 'de' ? 'Prozesse werden etabliert. Fokus auf Konsistenz.' : 'Processes are being established. Focus on consistency.',
       characteristics: [
         language === 'de' ? 'Strukturierte Prozesse' : 'Structured processes',
         language === 'de' ? 'Regelmäßige Datenanalyse' : 'Regular data analysis',
@@ -73,7 +86,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
       ]
     },
     {
-      level: 3,
+      level: 4,
       name: language === 'de' ? 'Ausgereift' : 'Mature',
       icon: <CheckCircle className="h-5 w-5 text-blue-600" />,
       color: 'bg-blue-50 text-blue-800 border-blue-200',
@@ -86,7 +99,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
       ]
     },
     {
-      level: 4,
+      level: 5,
       name: language === 'de' ? 'Fortgeschritten' : 'Advanced',
       icon: <Award className="h-5 w-5 text-success" />,
       color: 'bg-success/10 text-success border-success/20',
@@ -110,10 +123,10 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
       // Map enhanced level to our MaturityLevel objects
       const levelMap: Record<string, MaturityLevel> = {
         'Basic': maturityLevels[0],
-        'Developing': maturityLevels[1],
-        'Mature': maturityLevels[2],
-        'Advanced': maturityLevels[3],
-        'Inconsistent': { ...maturityLevels[1], name: language === 'de' ? 'Inkonsistent' : 'Inconsistent', icon: <ShieldQuestion className="h-5 w-5 text-warning-foreground" />, color: 'bg-warning/10 text-warning-foreground border-warning/20' },
+        'Inconsistent': maturityLevels[1],
+        'Developing': maturityLevels[2],
+        'Mature': maturityLevels[3],
+        'Advanced': maturityLevels[4],
       };
 
       return {
@@ -142,10 +155,10 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
   const overallMaturityLevel = useMemo(() => {
     const m: Record<string, MaturityLevel> = {
       'Basic': maturityLevels[0],
-      'Developing': maturityLevels[1],
-      'Mature': maturityLevels[2],
-      'Advanced': maturityLevels[3],
       'Inconsistent': maturityLevels[1],
+      'Developing': maturityLevels[2],
+      'Mature': maturityLevels[3],
+      'Advanced': maturityLevels[4],
     };
     return m[overallMaturity.level] || maturityLevels[0];
   }, [overallMaturity, maturityLevels]);
@@ -312,7 +325,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
             <span className="text-3xl">{overallMaturityLevel.icon}</span>
             <div>
               <CardTitle className="text-xl font-bold">
-                {language === 'de' ? 'Reifestufe' : 'Maturity Level'}: {overallMaturity.level === 'Inconsistent' ? (language === 'de' ? 'Inkonsistent' : 'Inconsistent') : overallMaturityLevel.name}
+                {language === 'de' ? 'Reifestufe' : 'Maturity Level'}: {overallMaturityLevel.name}
               </CardTitle>
               <p className="text-sm opacity-80 mt-1">{overallMaturity.reason}</p>
             </div>
@@ -340,7 +353,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
                     <span className="flex-shrink-0 w-28 truncate">{d.department}</span>
                     <Progress value={d.score} className="flex-1 h-2 min-w-[60px]" />
                     <span className="flex-shrink-0 text-xs w-20 text-right">
-                      {d.enhanced.level === 'Inconsistent' ? (language === 'de' ? 'Inkonsistent' : 'Inconsistent') : d.level.name}
+                      {d.level.name}
                     </span>
                   </div>
                 ))}
