@@ -332,7 +332,7 @@ const Account = () => {
 
         {/* Horizontal Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="h-10 bg-white border border-[hsl(var(--dd-rule))] w-full justify-start gap-0 rounded-xl mb-5 px-1">
+          <TabsList className="h-10 bg-white border border-[hsl(var(--dd-rule))] w-full justify-evenly gap-0 rounded-xl mb-5 px-1">
             <TabsTrigger value="profile" className="gap-1.5 text-xs"><User className="h-3.5 w-3.5" />Edit Profile</TabsTrigger>
             <TabsTrigger value="organization" className="gap-1.5 text-xs"><Building2 className="h-3.5 w-3.5" />Organization</TabsTrigger>
             {canManageTeam && <TabsTrigger value="team" className="gap-1.5 text-xs"><Users className="h-3.5 w-3.5" />Team</TabsTrigger>}

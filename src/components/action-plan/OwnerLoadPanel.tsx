@@ -75,14 +75,19 @@ export function OwnerLoadPanel({ open, onOpenChange, actions, onFilterByOwner, a
         onClick={() => onOpenChange(false)}
       />
 
-      {/* Panel */}
+      {/* Panel — centered dialog */}
       <div
         className={cn(
-          "fixed top-0 right-0 h-full z-50 bg-background border-l shadow-2xl flex flex-col",
-          "w-full sm:w-[380px]",
-          "animate-in slide-in-from-right duration-300"
+          "fixed inset-0 z-50 flex items-center justify-center p-4"
         )}
       >
+        <div
+          className={cn(
+            "bg-background border border-border rounded-xl shadow-2xl flex flex-col",
+            "w-full max-w-md max-h-[80vh]",
+            "animate-in fade-in-0 zoom-in-95 duration-200"
+          )}
+        >
         {/* Header - sticky */}
         <div className="px-5 pt-5 pb-4 border-b flex-shrink-0">
           <div className="flex items-center justify-between mb-1">
@@ -157,6 +162,7 @@ export function OwnerLoadPanel({ open, onOpenChange, actions, onFilterByOwner, a
             </Badge>
           </div>
         )}
+        </div>
       </div>
     </>
   );

@@ -128,7 +128,7 @@ export function ExportPDFModal({ open, onOpenChange, exportData }: ExportPDFModa
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
@@ -139,7 +139,7 @@ export function ExportPDFModal({ open, onOpenChange, exportData }: ExportPDFModa
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-5 py-4">
+        <div className="space-y-4 py-3 overflow-y-auto max-h-[60vh]">
           {/* Language indicator */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
