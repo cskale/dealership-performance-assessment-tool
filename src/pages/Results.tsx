@@ -330,8 +330,8 @@ export default function Results() {
                 <div className={cardClass}>
                   <div className={labelClass}>{language === 'de' ? 'Gesamtbewertung' : 'Overall Score'}</div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-[32px] font-semibold tracking-tight text-[hsl(var(--dd-ink))]">{animatedScore}</span>
-                    <span className="text-[16px] font-normal text-[hsl(var(--dd-ghost))]">/100</span>
+                    <span className="text-metric-lg text-foreground">{animatedScore}</span>
+                    <span className="text-body-md font-normal text-muted-foreground">/100</span>
                   </div>
                   <div className="mt-3 w-full">
                     <div className="relative h-2 w-full rounded-full bg-secondary overflow-hidden">
