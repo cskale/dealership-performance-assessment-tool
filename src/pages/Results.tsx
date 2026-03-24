@@ -321,7 +321,7 @@ export default function Results() {
               : (language === 'de' ? 'Niedrig' : 'Low');
             const confidenceColor = overallScore >= 70 ? 'text-[hsl(var(--dd-green))]' : overallScore >= 45 ? 'text-[hsl(var(--dd-amber))]' : 'text-[hsl(var(--dd-red))]';
 
-            const cardClass = "bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]";
+            const cardClass = "bg-card border border-border rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]";
             const labelClass = "text-caption uppercase tracking-widest text-muted-foreground font-semibold mb-1";
 
             return (
