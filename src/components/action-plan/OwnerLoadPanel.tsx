@@ -162,6 +162,7 @@ export function OwnerLoadPanel({ open, onOpenChange, actions, onFilterByOwner, a
             </Badge>
           </div>
         )}
+        </div>
       </div>
     </>
   );
