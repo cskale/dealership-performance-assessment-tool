@@ -322,7 +322,7 @@ export default function Results() {
             const confidenceColor = overallScore >= 70 ? 'text-[hsl(var(--dd-green))]' : overallScore >= 45 ? 'text-[hsl(var(--dd-amber))]' : 'text-[hsl(var(--dd-red))]';
 
             const cardClass = "bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]";
-            const labelClass = "text-[10px] uppercase tracking-widest text-[hsl(var(--dd-ghost))] font-semibold mb-1";
+            const labelClass = "text-caption uppercase tracking-widest text-muted-foreground font-semibold mb-1";
 
             return (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
