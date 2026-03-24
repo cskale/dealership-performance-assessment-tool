@@ -288,10 +288,10 @@ export default function Results() {
           
           {/* Page title */}
           <div className="mb-4">
-            <h1 className="text-[22px] font-semibold text-[hsl(var(--dd-ink))]">
+            <h1 className="text-h3 text-foreground">
               {language === 'de' ? 'Bewertungsergebnisse' : 'Assessment Results'}
             </h1>
-            <p className="text-[13px] text-[hsl(var(--dd-muted))] mt-0.5">
+            <p className="text-body-sm text-muted-foreground mt-0.5">
               {language === 'de' ? 'Umfassende Analyse abgeschlossen am' : 'Comprehensive analysis completed on'} {formatDate(resultsData.completedAt)}
             </p>
           </div>
@@ -321,8 +321,8 @@ export default function Results() {
               : (language === 'de' ? 'Niedrig' : 'Low');
             const confidenceColor = overallScore >= 70 ? 'text-[hsl(var(--dd-green))]' : overallScore >= 45 ? 'text-[hsl(var(--dd-amber))]' : 'text-[hsl(var(--dd-red))]';
 
-            const cardClass = "bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]";
-            const labelClass = "text-[10px] uppercase tracking-widest text-[hsl(var(--dd-ghost))] font-semibold mb-1";
+            const cardClass = "bg-card border border-border rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]";
+            const labelClass = "text-caption uppercase tracking-widest text-muted-foreground font-semibold mb-1";
 
             return (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -330,8 +330,8 @@ export default function Results() {
                 <div className={cardClass}>
                   <div className={labelClass}>{language === 'de' ? 'Gesamtbewertung' : 'Overall Score'}</div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-[32px] font-semibold tracking-tight text-[hsl(var(--dd-ink))]">{animatedScore}</span>
-                    <span className="text-[16px] font-normal text-[hsl(var(--dd-ghost))]">/100</span>
+                    <span className="text-metric-lg text-foreground">{animatedScore}</span>
+                    <span className="text-body-md font-normal text-muted-foreground">/100</span>
                   </div>
                   <div className="mt-3 w-full">
                     <div className="relative h-2 w-full rounded-full bg-secondary overflow-hidden">
@@ -356,15 +356,15 @@ export default function Results() {
                 {/* Card 2 — Maturity Level */}
                 <div className={cardClass}>
                   <div className={labelClass}>{language === 'de' ? 'Reifegrad' : 'Maturity Level'}</div>
-                  <div className="text-[20px] font-semibold text-[hsl(var(--dd-ink))] mb-1.5">{maturityLabel}</div>
+                  <div className="text-h4 text-foreground mb-1.5">{maturityLabel}</div>
                   <Badge variant={maturityBadgeVariant}>{maturityLabel}</Badge>
                 </div>
 
                 {/* Card 3 — Modules Assessed */}
                 <div className={cardClass}>
                   <div className={labelClass}>{language === 'de' ? 'Module bewertet' : 'Modules Assessed'}</div>
-                  <div className="text-[32px] font-semibold tracking-tight text-[hsl(var(--dd-ink))]">{modulesAssessed}</div>
-                  <div className="text-[12px] text-[hsl(var(--dd-muted))]">
+                  <div className="text-metric-lg text-foreground">{modulesAssessed}</div>
+                  <div className="text-caption text-muted-foreground">
                     {language === 'de' ? 'von 5 Modulen' : 'of 5 modules'}
                   </div>
                 </div>
@@ -372,8 +372,8 @@ export default function Results() {
                 {/* Card 4 — Confidence */}
                 <div className={cardClass}>
                   <div className={labelClass}>{language === 'de' ? 'Bewertungskonfidenz' : 'Assessment Confidence'}</div>
-                  <div className={`text-[20px] font-semibold ${confidenceColor}`}>{confidenceLevel}</div>
-                  <div className="text-[11px] text-[hsl(var(--dd-ghost))] mt-1">
+                  <div className={`text-h4 ${confidenceColor}`}>{confidenceLevel}</div>
+                  <div className="text-caption text-muted-foreground mt-1">
                     {overallScore < 45
                       ? (language === 'de' ? 'Überprüfung empfohlen' : 'Review recommended')
                       : (language === 'de' ? 'Stabile Ergebnisse' : 'Stable results')}

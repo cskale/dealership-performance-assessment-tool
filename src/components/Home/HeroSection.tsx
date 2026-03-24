@@ -33,18 +33,19 @@ export function HeroSection({ hasCompletedAssessment }: HeroSectionProps) {
   const t = content[language as keyof typeof content] || content.en;
 
   return (
-    <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-purple-600 via-purple-700 to-blue-600">
-      {/* Animated background elements */}
+    <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-[hsl(var(--brand-700))] via-[hsl(var(--brand-600))] to-[hsl(var(--brand-500))]">
+      {/* Background elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-[hsl(var(--brand-400))] rounded-full mix-blend-multiply filter blur-3xl opacity-20" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[hsl(var(--brand-300))] rounded-full mix-blend-multiply filter blur-3xl opacity-15" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[hsl(var(--brand-400))] rounded-full mix-blend-multiply filter blur-3xl opacity-10" />
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 text-center animate-fade-in">
         {/* Badge */}
         <Badge className="mb-6 px-4 py-2 text-sm font-medium bg-white/20 text-white border-white/30 backdrop-blur-sm hover:bg-white/30">
-          {t.badge}
+          <FlaskConical className="h-4 w-4 mr-1.5 inline-block" />
+          {t.badge.replace('🔬 ', '')}
         </Badge>
 
         {/* Main headline */}
@@ -62,7 +63,7 @@ export function HeroSection({ hasCompletedAssessment }: HeroSectionProps) {
           <Link to="/app/assessment">
             <Button 
               size="lg" 
-              className="h-14 px-8 text-lg font-semibold bg-white text-purple-700 hover:bg-white/90 hover:scale-105 transition-all duration-200 shadow-xl"
+              className="h-14 px-8 text-lg font-semibold bg-white text-primary hover:bg-white/90 hover:scale-105 transition-all duration-200 shadow-xl"
             >
               <ArrowRight className="h-5 w-5 mr-2" />
               {t.startButton}

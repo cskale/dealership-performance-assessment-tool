@@ -126,7 +126,7 @@ export const SmartAssistant: React.FC<SmartAssistantProps> = ({
             <div className="bg-muted/50 p-3 rounded-lg border">
               <div className="flex items-center gap-2 mb-2">
                 <BarChart className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium">Current Scores</span>
+                <span className="text-h5">Current Scores</span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 {Object.entries(scores).map(([section, score]) => (
@@ -142,7 +142,7 @@ export const SmartAssistant: React.FC<SmartAssistantProps> = ({
           {/* Progress Message */}
           <div className="flex items-start gap-2">
             <TrendingUp className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-body-md text-muted-foreground">
               {getProgressMessage()}
             </p>
           </div>
@@ -151,7 +151,7 @@ export const SmartAssistant: React.FC<SmartAssistantProps> = ({
           {guidance && (
             <div className="flex items-start gap-2">
               <HelpCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-              <p className="text-sm">{guidance}</p>
+              <p className="text-body-md">{guidance}</p>
             </div>
           )}
 
@@ -160,11 +160,11 @@ export const SmartAssistant: React.FC<SmartAssistantProps> = ({
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Lightbulb className="h-4 w-4 text-amber-500" />
-                <span className="text-sm font-medium">Tips:</span>
+                <span className="text-h5">Tips</span>
               </div>
               <ul className="space-y-1 ml-6">
                 {tips.map((tip, index) => (
-                  <li key={index} className="text-xs text-muted-foreground list-disc">
+                  <li key={index} className="text-body-sm text-muted-foreground list-disc">
                     {tip}
                   </li>
                 ))}

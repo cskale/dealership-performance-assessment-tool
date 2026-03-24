@@ -170,7 +170,7 @@ const Dashboard = () => {
         {/* New Vehicle Sales */}
         <section className="space-y-4">
           <SectionHeader 
-            icon={<Car className="h-5 w-5 text-primary" />}
+            icon={<Car className="h-4 w-4 text-primary" />}
             title={t('kpi.section.newVehicle')}
             score={72}
           />
@@ -185,7 +185,7 @@ const Dashboard = () => {
         {/* Used Vehicle Sales */}
         <section className="space-y-4">
           <SectionHeader 
-            icon={<RotateCw className="h-5 w-5 text-primary" />}
+            icon={<RotateCw className="h-4 w-4 text-primary" />}
             title={t('kpi.section.usedVehicle')}
             score={68}
           />
@@ -200,7 +200,7 @@ const Dashboard = () => {
         {/* Service */}
         <section className="space-y-4">
           <SectionHeader 
-            icon={<Wrench className="h-5 w-5 text-primary" />}
+            icon={<Wrench className="h-4 w-4 text-primary" />}
             title={t('kpi.section.service')}
             score={81}
           />
