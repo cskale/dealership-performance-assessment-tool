@@ -356,7 +356,7 @@ export default function Results() {
                 {/* Card 2 — Maturity Level */}
                 <div className={cardClass}>
                   <div className={labelClass}>{language === 'de' ? 'Reifegrad' : 'Maturity Level'}</div>
-                  <div className="text-[20px] font-semibold text-[hsl(var(--dd-ink))] mb-1.5">{maturityLabel}</div>
+                  <div className="text-h4 text-foreground mb-1.5">{maturityLabel}</div>
                   <Badge variant={maturityBadgeVariant}>{maturityLabel}</Badge>
                 </div>
 
