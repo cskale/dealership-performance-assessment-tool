@@ -197,17 +197,18 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
                     const Icon = getTypeIcon(resource.type);
                     const isPrioritized = improvementAreas.includes(resource.department);
                     return (
-                      <Card 
-                        key={resource.id} 
+                      <button
+                        key={resource.id}
                         className={cn(
-                          "hover:border-primary/50 transition-all cursor-pointer hover:shadow-md",
-                          isPrioritized && "ring-2 ring-primary/20"
+                          "group text-left bg-card rounded-xl border border-border/50 p-4 transition-all duration-200",
+                          "hover:border-primary/40 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] hover:-translate-y-0.5",
+                          isPrioritized && "ring-1 ring-primary/20"
                         )}
                       >
-                        <CardContent className="p-4 space-y-3">
+                        <div className="space-y-3">
                           <div className="flex items-start justify-between gap-2">
-                            <div className="p-2 rounded-lg bg-brand-100">
-                              <Icon className="h-4 w-4 text-brand-600" />
+                            <div className="p-2 rounded-lg bg-[hsl(var(--dd-accent-light))]">
+                              <Icon className="h-4 w-4 text-[hsl(var(--dd-accent))]" />
                             </div>
                             {isPrioritized && (
                               <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
@@ -216,18 +217,18 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
                             )}
                           </div>
                           <div>
-                            <h4 className="font-medium text-sm line-clamp-2">{resource.title}</h4>
-                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{resource.description}</p>
+                            <h4 className="text-base font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">{resource.title}</h4>
+                            <p className="text-sm text-muted-foreground mt-1 line-clamp-3">{resource.description}</p>
                           </div>
-                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
                             <span className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
                               {resource.duration}
                             </span>
                             <Badge variant="secondary" className="text-xs">{resource.type}</Badge>
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </button>
                     );
                   })}
                 </div>

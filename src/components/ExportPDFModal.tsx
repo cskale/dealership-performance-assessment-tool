@@ -181,41 +181,35 @@ export function ExportPDFModal({ open, onOpenChange, exportData }: ExportPDFModa
           </div>
         </div>
 
-        <DialogFooter className="flex-col sm:flex-row gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pdfGenerating || xlsxGenerating}>
+        <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pdfGenerating || xlsxGenerating} className="sm:order-1">
             Cancel
           </Button>
           <Button
             variant="outline"
             onClick={handleDownloadExcel}
             disabled={xlsxGenerating || !exportData}
-            className="flex items-center gap-2"
+            className="gap-2 sm:order-2"
           >
             {xlsxGenerating ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <FileSpreadsheet className="h-4 w-4" />
             )}
-            {xlsxGenerating ? t('common.generating') : t('common.exportExcel')}
+            Export to Excel
           </Button>
-          <Button onClick={handleGenerate} disabled={pdfGenerating || !exportData}>
+          <Button onClick={handleGenerate} disabled={pdfGenerating || !exportData} className="gap-2 sm:order-3">
             {pdfGenerating ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                {t('common.generatingPdf')}
-              </>
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <>
-                <FileText className="h-4 w-4 mr-2" />
-                {t('common.downloadPdf')}
-              </>
+              <FileText className="h-4 w-4" />
             )}
+            {pdfGenerating ? 'Generating...' : 'Download PDF Report'}
           </Button>
         </DialogFooter>
 
-        <p className="text-xs text-muted-foreground text-center mt-2">
-          PDF generation may take 5–15 seconds for full reports. Please keep this window
-          open until the download begins.
+        <p className="text-xs text-muted-foreground text-center mt-1">
+          PDF generation may take 5–15 seconds for full reports.
         </p>
       </DialogContent>
     </Dialog>
