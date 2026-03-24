@@ -304,7 +304,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
                     <div className="text-sm text-muted-foreground font-medium mb-1">
                       {getDepartmentName(dept, language)}
                     </div>
-                    <div className={`text-3xl font-bold ${scoreColor}`}>{score}%</div>
+                    <div className={`text-3xl font-bold tabular-nums ${scoreColor}`}>{score}%</div>
                     <div className="mt-2 text-xs text-muted-foreground">
                       <span className={isAbove ? 'text-success' : 'text-destructive'}>
                         {isAbove ? '+' : ''}{gap} vs benchmark
