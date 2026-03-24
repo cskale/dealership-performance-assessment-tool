@@ -325,7 +325,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
             <span className="text-3xl">{overallMaturityLevel.icon}</span>
             <div>
               <CardTitle className="text-xl font-bold">
-                {language === 'de' ? 'Reifestufe' : 'Maturity Level'}: {overallMaturity.level === 'Inconsistent' ? (language === 'de' ? 'Inkonsistent' : 'Inconsistent') : overallMaturityLevel.name}
+                {language === 'de' ? 'Reifestufe' : 'Maturity Level'}: {overallMaturityLevel.name}
               </CardTitle>
               <p className="text-sm opacity-80 mt-1">{overallMaturity.reason}</p>
             </div>
