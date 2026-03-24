@@ -142,7 +142,7 @@ export const SmartAssistant: React.FC<SmartAssistantProps> = ({
           {/* Progress Message */}
           <div className="flex items-start gap-2">
             <TrendingUp className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-body-md text-muted-foreground">
               {getProgressMessage()}
             </p>
           </div>
