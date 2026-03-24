@@ -282,7 +282,7 @@ export function KPIExplorer({ scores }: KPIExplorerProps) {
               <button
                 key={item.key}
                 onClick={() => handleSelect(item.key)}
-                className="group text-left bg-white rounded-xl border border-border/50 p-4 transition-all duration-200 hover:border-primary/40 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="group text-left bg-card rounded-xl border border-border/50 p-4 transition-all duration-200 hover:border-primary/40 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {/* Department badge */}
                 <div className="flex items-center gap-2 mb-3">
