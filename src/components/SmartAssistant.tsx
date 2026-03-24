@@ -160,7 +160,7 @@ export const SmartAssistant: React.FC<SmartAssistantProps> = ({
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Lightbulb className="h-4 w-4 text-amber-500" />
-                <span className="text-sm font-medium">Tips:</span>
+                <span className="text-h5">Tips</span>
               </div>
               <ul className="space-y-1 ml-6">
                 {tips.map((tip, index) => (
