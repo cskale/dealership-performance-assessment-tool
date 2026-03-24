@@ -1,85 +1,79 @@
 
 
-## Implementable DESIGN.md Tasks (UI Components Only)
+## Further UX/UI Improvements — DESIGN.md Compliance Audit
 
-Based on cross-referencing DESIGN.md specifications against the current codebase, here are tasks that can be implemented without touching Claude Code-owned files.
+After reviewing the codebase against DESIGN.md, here are the remaining violations that can be fixed without touching Claude Code-owned files.
 
 ---
 
-### Task 1: QuestionCard — Neutral Tile Pattern (§5.3, §14 Anti-Pattern Fix)
+### Task 1: HeroSection — Remove anti-patterns (§14, §2.5, §7.2)
 
-**File:** `src/components/assessment/QuestionCard.tsx`
+**File:** `src/components/Home/HeroSection.tsx`
 
-**Current state:** Answer options render as `<Button>` components with full primary-colored backgrounds when selected. This is the #1 anti-pattern listed in DESIGN.md §14: "Red/yellow/green coloured answer buttons → Anchoring bias."
-
-**Target state per DESIGN.md:**
-- Unselected: `border border-border bg-white hover:bg-muted/20`, plain tile with score number + label
-- Selected: `border-l-4 border-l-primary border border-primary/30 bg-primary/5`, label in `text-body-md font-medium`, score in `text-label text-primary`
-- No colored backgrounds on unselected tiles — color appears only on the selected tile's left border
+**Violations:**
+- Purple gradient background (`from-purple-600 via-purple-700 to-blue-600`) — §14 explicitly bans "Purple gradients on white" as a SaaS cliche
+- Emoji in badge text (`🔬`) — §14 bans "Emoji in component UI"
+- `animate-pulse` on background blobs — §7.2 bans bounce/spin/pulse on non-loading elements
+- CTA button uses `text-purple-700` — should use brand tokens
 
 **Changes:**
-- Replace the `<Button>` grid with `<button>` tiles using the neutral/selected pattern
-- Remove `text-2xl font-bold` score number — use `text-body-md` for label, `text-label` for score
-- Selected value display below can stay but should use `bg-primary/5` not `bg-primary/10`
+- Replace purple gradient with brand-blue gradient (`from-[hsl(var(--brand-700))] to-[hsl(var(--brand-500))]`)
+- Replace emoji with Lucide `FlaskConical` icon (already imported but unused)
+- Remove `animate-pulse` from background blobs, use static opacity
+- CTA button text color: `text-primary` instead of `text-purple-700`
 
 ---
 
-### Task 2: SharedStatusBadge — Match §5.8 Spec
+### Task 2: KPIExplorer heading — Use type scale (§3.2)
 
-**File:** `src/components/shared/SharedStatusBadge.tsx`
+**File:** `src/components/kpi-encyclopedia/KPIExplorer.tsx`
 
-**Current state:** Uses custom size classes (`text-[10px] px-1.5 py-0`), no status dot.
+**Violation:** Heading uses raw `text-xl sm:text-2xl font-bold` instead of design system class.
 
-**Target per DESIGN.md §5.8:**
-- Always: `rounded-full px-2.5 py-0.5 text-label inline-flex items-center gap-1.5`
-- Status dot: `w-1.5 h-1.5 rounded-full bg-current` before the label text
-- Colors: Done=`bg-success/10 text-success border-success/20`, Partial=`bg-warning/10`, Pending=`bg-info/10`, Blocked=`bg-destructive/10`
-
-**Changes:**
-- Update size classes to match spec
-- Add a colored status dot circle before the text label
-- Remove the Lucide icon option (or keep as fallback) — the dot is the primary indicator
+**Change:** Replace with `text-h3` (24px/32px bold) which is the correct class for card/section headings.
 
 ---
 
-### Task 3: SharedEmptyState — Match §12 Spec
+### Task 3: Dashboard icon sizes — Match §8.2
 
-**File:** `src/components/shared/SharedEmptyState.tsx`
+**File:** `src/pages/Dashboard.tsx`
 
-**Current state:** Icon in a small 12×12 box, heading uses `text-sm`, description uses `text-xs`. Undersized relative to spec.
+**Violation:** Section header icons use `h-5 w-5` (20px). §8.2 specifies card headers should use `size-4` (16px).
 
-**Target per DESIGN.md §12:**
-- Icon: `size-8` (32px), `neutral-400` color — not in a box
-- Headline: `.text-h4` (20px bold)
-- Description: `.text-body-md text-muted-foreground`
-- CTA button slot (already exists as `action` prop)
-
-**Changes:**
-- Increase icon to `h-8 w-8 text-muted-foreground` without the surrounding box
-- Heading → `text-h4`
-- Description → `text-body-md text-muted-foreground max-w-md`
+**Change:** Update `SectionHeader` icon container and the icons passed to it from `h-5 w-5` to `h-4 w-4`.
 
 ---
 
-### Task 4: Typography Audit on ExecutiveSummary
+### Task 4: Results page typography — Use design system classes
 
-**File:** `src/components/ExecutiveSummary.tsx`
+**File:** `src/pages/Results.tsx`
 
-Quick audit to replace raw Tailwind sizes with design system utility classes where mismatched:
-- Score numbers should use `.text-metric-lg` with `tabular-nums`
-- Department labels should use `.text-label uppercase tracking-wider`
-- Section headings inside the panel should max at `.text-h3`
+**Violations:**
+- Score card uses raw `text-[32px] font-semibold` instead of `.text-metric-lg`
+- Label uses raw `text-[10px] uppercase` instead of `.text-caption`
+- Page title uses raw `text-[22px]` instead of `.text-h3`
+
+**Changes:** Replace raw sizing with design system utility classes (`text-metric-lg`, `text-caption`, `text-h3`).
+
+---
+
+### Task 5: SmartAssistant dialog — Typography alignment
+
+**File:** `src/components/SmartAssistant.tsx`
+
+Quick pass to ensure dialog content uses `text-body-md` for tips and `text-h5` for section labels instead of raw sizes.
 
 ---
 
 ### Summary
 
-| # | Component | DESIGN.md Section | Scope |
-|---|-----------|------------------|-------|
-| 1 | QuestionCard | §5.3, §14 | Replace colored buttons with neutral tiles + left-border selection |
-| 2 | SharedStatusBadge | §5.8 | Status dot, rounded-full, correct sizing |
-| 3 | SharedEmptyState | §12 | Larger icon/heading per spec |
-| 4 | ExecutiveSummary | §3.2, §3.3 | Typography class alignment |
+| # | File | Issue | DESIGN.md Section |
+|---|------|-------|-------------------|
+| 1 | HeroSection | Purple gradient, emoji, pulse animation | §14, §2.5, §7.2 |
+| 2 | KPIExplorer | Raw heading sizes | §3.2 |
+| 3 | Dashboard | Oversized icons | §8.2 |
+| 4 | Results.tsx | Raw typography on score cards | §3.2, §3.3 |
+| 5 | SmartAssistant | Raw text sizes | §3.2 |
 
-All changes are purely visual styling within `src/components/`. No data logic, routing, or Claude Code-owned files are touched.
+All changes are visual styling only. No data logic, routing, or Claude Code-owned files are modified.
 
