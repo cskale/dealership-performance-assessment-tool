@@ -1,5 +1,6 @@
 import type { Question, Section } from '@/data/questionnaire';
 import type { SignalCode } from '@/data/signalTypes';
+import { BusinessModel, isSectionSuppressed } from '@/lib/moduleGating';
 
 // Fixed category weights (must sum to 1.0)
 export const CATEGORY_WEIGHTS = {
@@ -401,4 +402,51 @@ export function getDepartmentWeight(department: string): number {
 
 export function getWeightPercentage(department: string): string {
   return `${Math.round(getDepartmentWeight(department) * 100)}%`;
+}
+
+export function getAdjustedCategoryWeights(
+  businessModel: BusinessModel
+): Record<string, number> {
+  // Map section IDs to their CATEGORY_WEIGHTS keys
+  const SECTION_TO_WEIGHT_KEY: Record<string, string> = {
+    'new-vehicle-sales': 'newVehicleSales',
+    'used-vehicle-sales': 'usedVehicleSales',
+    'service-performance': 'servicePerformance',
+    'parts-inventory': 'partsInventory',
+    'financial-operations': 'financialOperations'
+  };
+
+  if (!businessModel) return { ...CATEGORY_WEIGHTS };
+
+  // Find suppressed sections and their weights
+  const suppressedKeys: string[] = [];
+  let suppressedWeight = 0;
+
+  for (const [sectionId, weightKey] of Object.entries(SECTION_TO_WEIGHT_KEY)) {
+    const { suppressed } = isSectionSuppressed(sectionId, businessModel);
+    if (suppressed) {
+      suppressedKeys.push(weightKey);
+      suppressedWeight += (CATEGORY_WEIGHTS as Record<string, number>)[weightKey] || 0;
+    }
+  }
+
+  if (suppressedKeys.length === 0) return { ...CATEGORY_WEIGHTS };
+
+  // Redistribute suppressed weight proportionally among active sections
+  const activeKeys = Object.keys(CATEGORY_WEIGHTS).filter(k => !suppressedKeys.includes(k));
+  const totalActiveWeight = activeKeys.reduce(
+    (sum, k) => sum + (CATEGORY_WEIGHTS as Record<string, number>)[k], 0
+  );
+
+  const adjusted: Record<string, number> = {};
+  for (const key of Object.keys(CATEGORY_WEIGHTS)) {
+    if (suppressedKeys.includes(key)) {
+      adjusted[key] = 0;
+    } else {
+      const original = (CATEGORY_WEIGHTS as Record<string, number>)[key];
+      adjusted[key] = original + (suppressedWeight * (original / totalActiveWeight));
+    }
+  }
+
+  return adjusted;
 }

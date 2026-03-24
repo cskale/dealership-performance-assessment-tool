@@ -41,6 +41,7 @@ export interface Section {
   icon: string;
   questions: Question[];
   translations?: Record<Language, SectionTranslation>;
+  applicableModels?: string[];
 }
 
 export interface Questionnaire {

@@ -15,6 +15,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAutoActionGeneration } from "@/hooks/useAutoActionGeneration";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
+import { useMultiTenant } from "@/hooks/useMultiTenant";
+import { getActiveSections, getSuppressedSectionCount, BusinessModel } from "@/lib/moduleGating";
 
 type CompletionState = 'idle' | 'saving' | 'generating_actions' | 'complete' | 'error';
 
@@ -39,6 +41,8 @@ export default function Assessment() {
   
   const { generateActions, isEnabled: autoActionsEnabled } = useAutoActionGeneration();
   const { status: onboardingStatus, context: onboardingContext } = useOnboarding();
+  const { currentOrganization } = useMultiTenant();
+  const businessModel = (currentOrganization as any)?.business_model as BusinessModel ?? null;
 
   // Redirect to onboarding if not complete
   useEffect(() => {
@@ -47,10 +51,10 @@ export default function Assessment() {
     }
   }, [onboardingStatus, navigate]);
 
-  // Get translated sections
+  // Get translated sections (filtered by business model)
   const translatedSections = useMemo(() => {
-    return questionnaire.sections.map(section => getTranslatedSection(section, language));
-  }, [language]);
+    return getActiveSections(questionnaire.sections, businessModel).map(section => getTranslatedSection(section, language));
+  }, [language, businessModel]);
 
   const totalQuestions = translatedSections.reduce((sum, section) => sum + section.questions.length, 0);
   const answeredQuestions = Object.keys(answers).length;
@@ -377,6 +381,17 @@ export default function Assessment() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
+        {(() => {
+          const suppressedCount = getSuppressedSectionCount(questionnaire.sections, businessModel);
+          const modelLabel = businessModel?.toUpperCase() ?? '';
+          if (suppressedCount === 0 || !businessModel) return null;
+          return (
+            <div className="mb-4 px-4 py-3 bg-muted border border-border rounded-md text-sm text-muted-foreground">
+              {suppressedCount} section{suppressedCount > 1 ? 's are' : ' is'} not shown based on your business model ({modelLabel}). You can update this in{' '}
+              <a href="/account" className="underline text-foreground">Settings</a>.
+            </div>
+          );
+        })()}
         <div className="flex gap-6 w-full">
           {/* Left Sidebar - Sections Navigation */}
           <div className="w-80 flex-shrink-0">
