@@ -185,7 +185,7 @@ const Dashboard = () => {
         {/* Used Vehicle Sales */}
         <section className="space-y-4">
           <SectionHeader 
-            icon={<RotateCw className="h-5 w-5 text-primary" />}
+            icon={<RotateCw className="h-4 w-4 text-primary" />}
             title={t('kpi.section.usedVehicle')}
             score={68}
           />
