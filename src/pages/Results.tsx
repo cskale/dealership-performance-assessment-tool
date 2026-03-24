@@ -363,8 +363,8 @@ export default function Results() {
                 {/* Card 3 — Modules Assessed */}
                 <div className={cardClass}>
                   <div className={labelClass}>{language === 'de' ? 'Module bewertet' : 'Modules Assessed'}</div>
-                  <div className="text-[32px] font-semibold tracking-tight text-[hsl(var(--dd-ink))]">{modulesAssessed}</div>
-                  <div className="text-[12px] text-[hsl(var(--dd-muted))]">
+                  <div className="text-metric-lg text-foreground">{modulesAssessed}</div>
+                  <div className="text-caption text-muted-foreground">
                     {language === 'de' ? 'von 5 Modulen' : 'of 5 modules'}
                   </div>
                 </div>

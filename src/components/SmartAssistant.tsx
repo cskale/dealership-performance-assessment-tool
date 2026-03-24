@@ -164,7 +164,7 @@ export const SmartAssistant: React.FC<SmartAssistantProps> = ({
               </div>
               <ul className="space-y-1 ml-6">
                 {tips.map((tip, index) => (
-                  <li key={index} className="text-xs text-muted-foreground list-disc">
+                  <li key={index} className="text-body-sm text-muted-foreground list-disc">
                     {tip}
                   </li>
                 ))}

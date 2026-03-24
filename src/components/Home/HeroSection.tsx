@@ -63,7 +63,7 @@ export function HeroSection({ hasCompletedAssessment }: HeroSectionProps) {
           <Link to="/app/assessment">
             <Button 
               size="lg" 
-              className="h-14 px-8 text-lg font-semibold bg-white text-purple-700 hover:bg-white/90 hover:scale-105 transition-all duration-200 shadow-xl"
+              className="h-14 px-8 text-lg font-semibold bg-white text-primary hover:bg-white/90 hover:scale-105 transition-all duration-200 shadow-xl"
             >
               <ArrowRight className="h-5 w-5 mr-2" />
               {t.startButton}

@@ -158,7 +158,7 @@ export function KPIExplorer({ scores }: KPIExplorerProps) {
             <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
               <BookOpen className="h-4.5 w-4.5 text-primary" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+            <h2 className="text-h3 text-foreground">
               {language === 'de' ? 'KPI-Enzyklopädie' : 'KPI Encyclopedia'}
             </h2>
           </div>

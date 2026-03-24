@@ -200,7 +200,7 @@ const Dashboard = () => {
         {/* Service */}
         <section className="space-y-4">
           <SectionHeader 
-            icon={<Wrench className="h-5 w-5 text-primary" />}
+            icon={<Wrench className="h-4 w-4 text-primary" />}
             title={t('kpi.section.service')}
             score={81}
           />
