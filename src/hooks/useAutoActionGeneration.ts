@@ -97,7 +97,8 @@ export function useAutoActionGeneration() {
   const generateActions = useCallback(async (
     assessmentId: string,
     answers: Record<string, number>,
-    organizationId: string
+    organizationId: string,
+    businessModel?: string
   ): Promise<AutoActionResult> => {
     // Check feature flag
     if (!ENABLE_AUTO_ACTIONS) {
@@ -169,7 +170,7 @@ export function useAutoActionGeneration() {
       };
 
       // Generate actions using deterministic signal engine
-      const actions = generateActionsFromAssessment(answers, questionWeights, config);
+      const actions = generateActionsFromAssessment(answers, questionWeights, config, undefined, businessModel);
 
       if (actions.length === 0) {
         if (import.meta.env.DEV) {

@@ -476,10 +476,12 @@ export function generateActionsFromAssessment(
   answers: Record<string, number>,
   questionWeights: Record<string, number>,
   config: SignalEngineConfig = DEFAULT_CONFIG,
-  questionLinkedKPIs?: Record<string, string[]>
+  questionLinkedKPIs?: Record<string, string[]>,
+  businessModel?: string
 ): InstantiatedAction[] {
-  const signals = generateSignals(answers, questionWeights, config, questionLinkedKPIs);
-  return instantiateActions(signals, 10, config);
+  const effectiveConfig = businessModel ? { ...config, businessModel } : config;
+  const signals = generateSignals(answers, questionWeights, effectiveConfig, questionLinkedKPIs);
+  return instantiateActions(signals, 10, effectiveConfig);
 }
 
 /**

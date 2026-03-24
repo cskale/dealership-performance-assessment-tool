@@ -204,7 +204,8 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
       for (const section of questionnaire.sections) {
         for (const question of section.questions) questionWeights[question.id] = question.weight;
       }
-      const generatedActions = generateActionsFromAssessment(assessment.answers as Record<string, number>, questionWeights);
+      const bm = (currentOrganization as any)?.business_model as string | undefined;
+      const generatedActions = generateActionsFromAssessment(assessment.answers as Record<string, number>, questionWeights, undefined, undefined, bm);
       if (generatedActions.length === 0) { toast.success('No critical improvement areas found.'); setGenerating(false); return; }
       const actionsWithOrg = formatActionsForDatabaseInsert(generatedActions, user.id, targetAssessmentId!, currentOrganization?.id || '');
 

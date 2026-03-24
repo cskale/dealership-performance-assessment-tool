@@ -408,6 +408,13 @@ export const useAssessmentData = () => {
 
     if (!profile?.active_organization_id) throw new Error('No organization context');
 
+    const { data: orgData } = await supabase
+      .from('organizations')
+      .select('business_model')
+      .eq('id', profile.active_organization_id)
+      .single();
+    const businessModel = (orgData as any)?.business_model as string | undefined;
+
     // Build question weight map from questionnaire
     const questionWeights: Record<string, number> = {};
     for (const section of questionnaire.sections) {
@@ -424,7 +431,7 @@ export const useAssessmentData = () => {
       .single();
 
     const answers = (assessmentData?.answers as Record<string, number>) || {};
-    const actions = generateActionsFromAssessment(answers, questionWeights);
+    const actions = generateActionsFromAssessment(answers, questionWeights, undefined, undefined, businessModel);
     const dbActions = formatActionsForDatabaseInsert(actions, user.id, assessmentId, profile.active_organization_id);
 
     if (dbActions.length === 0) return [];

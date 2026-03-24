@@ -239,7 +239,8 @@ export default function Assessment() {
           actionResult = await generateActions(
             realAssessmentId,  // Real DB-generated UUID
             answers,
-            onboardingContext.organizationId
+            onboardingContext.organizationId,
+            businessModel ?? undefined
           );
           
           if (actionResult.success && actionResult.actionsGenerated > 0) {

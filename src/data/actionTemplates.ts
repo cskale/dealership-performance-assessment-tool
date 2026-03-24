@@ -75,6 +75,7 @@ export const ACTION_TEMPLATES: ActionTemplate[] = [
     defaultOwnerRole: 'Sales Manager',
     defaultTimeframeDays: 21,
     defaultPriority: 'HIGH',
+    relevantBusinessModels: ['sales_only', '2s', '3s', '4s'],
     implementationSteps: [
       { text: 'Analyze current pricing patterns and identify inconsistencies', primaryRole: 'Sales Manager' },
       { text: 'Define pricing tiers and discount authority levels', primaryRole: 'Sales Manager' },
@@ -234,6 +235,7 @@ export const ACTION_TEMPLATES: ActionTemplate[] = [
     defaultOwnerRole: 'Sales Manager',
     defaultTimeframeDays: 7,
     defaultPriority: 'HIGH',
+    relevantBusinessModels: ['sales_only', '2s', '3s', '4s'],
     implementationSteps: [
       { text: 'Define standard follow-up timeline (e.g., 15 min, 2 hr, 24 hr)', primaryRole: 'Sales Manager' },
       { text: 'Configure CRM alerts and task automation', primaryRole: 'IT Manager' },
@@ -536,6 +538,7 @@ export const ACTION_TEMPLATES: ActionTemplate[] = [
     defaultOwnerRole: 'Service Manager',
     defaultTimeframeDays: 21,
     defaultPriority: 'HIGH',
+    relevantBusinessModels: ['service_only', '2s', '3s', '4s'],
     implementationSteps: [
       { text: 'Analyze current appointment lead times', primaryRole: 'Service Manager' },
       { text: 'Review bay utilization by hour/day', primaryRole: 'Workshop Controller' },
@@ -619,6 +622,7 @@ export const ACTION_TEMPLATES: ActionTemplate[] = [
     defaultOwnerRole: 'Marketing Manager',
     defaultTimeframeDays: 30,
     defaultPriority: 'MEDIUM',
+    relevantBusinessModels: ['sales_only', '2s', '3s', '4s'],
     implementationSteps: [
       { text: 'Audit current digital presence and performance', primaryRole: 'Marketing Manager' },
       { text: 'Optimize website for lead capture', primaryRole: 'Marketing Manager' },
@@ -759,6 +763,7 @@ export const ACTION_TEMPLATES: ActionTemplate[] = [
     defaultOwnerRole: 'Used Vehicle Manager',
     defaultTimeframeDays: 14,
     defaultPriority: 'HIGH',
+    relevantBusinessModels: ['sales_only', '2s', '3s', '4s'],
     implementationSteps: [
       { text: 'Define aging policy with price reduction triggers', primaryRole: 'Used Vehicle Manager' },
       { text: 'Implement daily aged inventory review', primaryRole: 'Used Vehicle Manager' },
