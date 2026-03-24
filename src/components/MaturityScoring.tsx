@@ -61,10 +61,23 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
     },
     {
       level: 2,
+      name: language === 'de' ? 'Inkonsistent' : 'Inconsistent',
+      icon: <ShieldQuestion className="h-5 w-5 text-warning-foreground" />,
+      color: 'bg-warning/10 text-warning-foreground border-warning/20',
+      description: language === 'de' ? 'Uneinheitliche Leistung zwischen Abteilungen' : 'Uneven performance across departments',
+      characteristics: [
+        language === 'de' ? 'Hohe Varianz zwischen Bereichen' : 'High variance across areas',
+        language === 'de' ? 'Einige Stärken, einige Lücken' : 'Some strengths, some gaps',
+        language === 'de' ? 'Standardisierung fehlt' : 'Standardization lacking',
+        language === 'de' ? 'Fokus auf Konsistenz nötig' : 'Focus on consistency needed'
+      ]
+    },
+    {
+      level: 3,
       name: language === 'de' ? 'Entwickelnd' : 'Developing',
       icon: <TrendingUp className="h-5 w-5 text-orange-600" />,
       color: 'bg-orange-50 text-orange-800 border-orange-200',
-      description: language === 'de' ? 'Prozesse werden standardisiert' : 'Processes being standardized',
+      description: language === 'de' ? 'Prozesse werden etabliert. Fokus auf Konsistenz.' : 'Processes are being established. Focus on consistency.',
       characteristics: [
         language === 'de' ? 'Strukturierte Prozesse' : 'Structured processes',
         language === 'de' ? 'Regelmäßige Datenanalyse' : 'Regular data analysis',
@@ -73,7 +86,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
       ]
     },
     {
-      level: 3,
+      level: 4,
       name: language === 'de' ? 'Ausgereift' : 'Mature',
       icon: <CheckCircle className="h-5 w-5 text-blue-600" />,
       color: 'bg-blue-50 text-blue-800 border-blue-200',
@@ -86,7 +99,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
       ]
     },
     {
-      level: 4,
+      level: 5,
       name: language === 'de' ? 'Fortgeschritten' : 'Advanced',
       icon: <Award className="h-5 w-5 text-success" />,
       color: 'bg-success/10 text-success border-success/20',
