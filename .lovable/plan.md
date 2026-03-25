@@ -1,42 +1,49 @@
 
 
-## Landing Page Animation & Engagement Upgrade
+## Verification Summary
 
-**Goal:** Transform the static white landing page into an engaging, interactive experience — no new packages, no external animation libraries, fully enterprise-appropriate.
-
-### Changes (2 files only)
-
-**`src/pages/Index.tsx`** and **`src/components/landing/ProductSneakPeek.tsx`**
-
----
-
-### 1. Scroll-triggered reveal animations
-- Sections fade up (`opacity 0→1`, `translateY 16px→0`) as they enter viewport
-- Uses native `IntersectionObserver` — no library
-- Staggered delays per element (e.g., proof pillar cards reveal left-to-right)
-
-### 2. Animated counters on Metrics Trust Bar
-- Numbers count up from 0 to target value when scrolled into view
-- Uses `requestAnimationFrame` — no library
-- Replace "355KB KPI Definitions Library" with "111 KPIs Tracked"
-
-### 3. Enhanced hover interactions
-- Cards lift slightly on hover (`-translate-y-0.5`, `shadow-elevated`)
-- Pipeline steps get `hover:shadow-soft`
-- Smooth `transition-all duration-300`
-
-### 4. Hero product card sequential reveal
-- The 3 mini-panels animate in one after another (200ms stagger)
-
-### 5. Pipeline connector animation
-- `ChevronRight` arrows fade in following the card stagger sequence
+- **Landing file:** `src/pages/Index.tsx`
+- **ProductSneakPeek:** Confirmed present at `src/components/landing/ProductSneakPeek.tsx`
+- **Hero right column (A):** `<div className="mt-12 lg:mt-0">` — line 152, no inline style
+- **Sneak Peek wrapper (B):** `<section ref={section.ref} className="bg-background py-20 px-6 lg:px-8">` — line 65 of ProductSneakPeek.tsx, no inline style
+- **Proof Pillars wrapper (C):** `<section className="bg-background py-20 px-6 lg:px-8">` — line 288, no inline style
+- **Closing CTA wrapper (D):** `<section className="bg-foreground">` — line 342, no inline style
+- **VERIFICATION 4 CONFIRMED** — inline styles only, no global CSS modifications
 
 ---
 
-### What stays the same
-- All copy, structure, sections 1–7 layout unchanged
-- No new npm packages
-- No framer-motion or GSAP
-- No changes to `tailwind.config.ts`, `index.css`, or `src/components/ui/`
-- No Claude Code-owned files touched
+## Plan: Four Background Polish Changes
+
+### Change A — Hero right column dot grid
+**File:** `src/pages/Index.tsx` line 152
+Add inline style to `<div className="mt-12 lg:mt-0">`:
+```
+style={{ backgroundImage: 'radial-gradient(circle, #e2e8f0 1px, transparent 1px)', backgroundSize: '20px 20px' }}
+```
+
+### Change B — Sneak Peek ruled lines
+**File:** `src/components/landing/ProductSneakPeek.tsx` line 65
+Add inline style to the outer `<section>` (merge with existing ref):
+```
+style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 39px, #f1f5f9 39px, #f1f5f9 40px)' }}
+```
+
+### Change C — Proof Pillars tone shift
+**File:** `src/pages/Index.tsx` line 288
+Replace `bg-background` with `bg-slate-50` in the section className.
+
+### Change D — Closing CTA inverted dot grid
+**File:** `src/pages/Index.tsx` line 342
+Add inline style to `<section className="bg-foreground">`:
+```
+style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)', backgroundSize: '24px 24px' }}
+```
+
+### Files modified
+| File | Lines changed |
+|---|---|
+| `src/pages/Index.tsx` | 3 lines (152, 288, 342) |
+| `src/components/landing/ProductSneakPeek.tsx` | 1 line (65) |
+
+No new files. No layout/copy/logic changes. No global CSS touched.
 
