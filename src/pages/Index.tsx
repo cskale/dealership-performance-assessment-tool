@@ -149,7 +149,7 @@ const Index = () => {
 
             {/* Right column — product preview card with sequential reveal */}
             <Reveal delay={200}>
-              <div className="mt-12 lg:mt-0">
+              <div className="mt-12 lg:mt-0" style={{ backgroundImage: 'radial-gradient(circle, #e2e8f0 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
                 <div className="bg-white border border-border rounded-xl shadow-card p-6 hover:shadow-lg transition-shadow duration-300">
                   {/* Mini-panel 1: Department score */}
                   <Reveal delay={300}>
