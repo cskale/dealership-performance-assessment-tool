@@ -55,11 +55,10 @@ const PIPELINE_STEPS = [
 ];
 
 const METRICS = [
-  { value: 5, label: "Departments Assessed" },
-  { value: 111, label: "KPIs Tracked" },
-  { value: 27, label: "Tiered Action Templates" },
-  { value: 22, label: "Signal Codes" },
-  { value: 18, label: "Fields per Action Record" },
+  { value: 5, suffix: "", label: "Departments\nfully assessed", sub: "NVS · UVS · Service · Finance · Parts" },
+  { value: 100, suffix: "+", label: "Assessment\nquestions", sub: "Weighted, scored 1–5 per item" },
+  { value: 3, suffix: "", label: "Maturity\nbands", sub: "Foundational · Developing · Optimising" },
+  { value: 18, suffix: "", label: "Audit fields\nper action", sub: "Full traceability to source question" },
 ];
 
 const PROOF_PILLARS = [
