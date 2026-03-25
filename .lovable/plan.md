@@ -1,49 +1,37 @@
 
 
-## Verification Summary
+## Revised Plan: Dark-Light-Dark Colour Rhythm
 
-- **Landing file:** `src/pages/Index.tsx`
-- **ProductSneakPeek:** Confirmed present at `src/components/landing/ProductSneakPeek.tsx`
-- **Hero right column (A):** `<div className="mt-12 lg:mt-0">` — line 152, no inline style
-- **Sneak Peek wrapper (B):** `<section ref={section.ref} className="bg-background py-20 px-6 lg:px-8">` — line 65 of ProductSneakPeek.tsx, no inline style
-- **Proof Pillars wrapper (C):** `<section className="bg-background py-20 px-6 lg:px-8">` — line 288, no inline style
-- **Closing CTA wrapper (D):** `<section className="bg-foreground">` — line 342, no inline style
-- **VERIFICATION 4 CONFIRMED** — inline styles only, no global CSS modifications
+Same as the approved plan with **one modification**: Change 5 keeps the existing metrics content exactly as-is.
 
 ---
 
-## Plan: Four Background Polish Changes
+### Change 5 — Metrics Bar: Dark navy background only (content unchanged)
 
-### Change A — Hero right column dot grid
-**File:** `src/pages/Index.tsx` line 152
-Add inline style to `<div className="mt-12 lg:mt-0">`:
-```
-style={{ backgroundImage: 'radial-gradient(circle, #e2e8f0 1px, transparent 1px)', backgroundSize: '20px 20px' }}
-```
+**Target:** Lines 317–337
 
-### Change B — Sneak Peek ruled lines
-**File:** `src/components/landing/ProductSneakPeek.tsx` line 65
-Add inline style to the outer `<section>` (merge with existing ref):
-```
-style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 39px, #f1f5f9 39px, #f1f5f9 40px)' }}
-```
+**What changes:**
+- Section wrapper: remove `bg-white border-y border-border`, add inline style `backgroundColor: '#0A0F1E'` + dot grid
+- Border separators: `lg:border-border` → `lg:border-white/10`
+- Number text: `text-foreground` → `text-white`
+- Label text: `text-muted-foreground` → `text-white/60`
 
-### Change C — Proof Pillars tone shift
-**File:** `src/pages/Index.tsx` line 288
-Replace `bg-background` with `bg-slate-50` in the section className.
+**What stays exactly the same:**
+- All 5 metrics: 5 (Departments Assessed), 111 (KPIs Tracked), 27 (Tiered Action Templates), 22 (Signal Codes), 18 (Fields per Action Record)
+- Grid layout, AnimatedCounter, scroll-reveal animation
+- METRICS constant array — zero edits
 
-### Change D — Closing CTA inverted dot grid
-**File:** `src/pages/Index.tsx` line 342
-Add inline style to `<section className="bg-foreground">`:
-```
-style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)', backgroundSize: '24px 24px' }}
-```
+### All other changes (1, 2, 3, 4, 6, 7) remain identical to the approved plan
 
-### Files modified
-| File | Lines changed |
-|---|---|
-| `src/pages/Index.tsx` | 3 lines (152, 288, 342) |
-| `src/components/landing/ProductSneakPeek.tsx` | 1 line (65) |
+| Change | Target | Summary |
+|--------|--------|---------|
+| 1 | Hero section | Dark navy #0A0F1E + crosshatch grid + all text → white |
+| 2 | Pipeline | Pure white (already correct) |
+| 3 | Sneak Peek | backgroundColor: #F0F4F8, remove ruled lines |
+| 4 | Proof Pillars | bg-slate-50 → bg-white |
+| 5 | Metrics Bar | Dark navy background only — keep all 5 existing metrics |
+| 6 | Closing CTA | backgroundColor: #0A0F1E, merge dot grid |
+| 7 | Hero headline | "Diagnose. Prioritise. Improve." + new subline |
 
-No new files. No layout/copy/logic changes. No global CSS touched.
+**Files:** `src/pages/Index.tsx`, `src/components/landing/ProductSneakPeek.tsx`
 
