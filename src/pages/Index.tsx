@@ -4,7 +4,8 @@ import { HomeHeader } from "@/components/Navigation/HomeHeader";
 import { Footer } from "@/components/Home/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, TrendingUp, Shield, Lock } from "lucide-react";
+import { ArrowRight, TrendingUp, Shield, Lock, ChevronRight } from "lucide-react";
+import ProductSneakPeek from "@/components/landing/ProductSneakPeek";
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -116,14 +117,21 @@ const Index = () => {
         </div>
       </section>
 
-      {/* SECTION 3 — Pipeline Visual */}
+      {/* SECTION 3 — Pipeline Visual (Animated) */}
       <section className="bg-white border-y border-border">
+        <style>{`
+          @keyframes fadeUpIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
           <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-8 text-center">
             THE ENGINE
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {/* Desktop: flex row with arrows */}
+          <div className="hidden lg:flex items-start justify-between gap-2">
             {[
               { step: "01", title: "Assessment Answers", desc: "Questions scored 1–5 per item" },
               { step: "02", title: "Scoring Engine", desc: "Weighted scores + section aggregation" },
@@ -131,8 +139,44 @@ const Index = () => {
               { step: "04", title: "Template Lookup", desc: "Tiered → KPI-specific → Generic fallback" },
               { step: "05", title: "Context Intelligence", desc: "Enrich with drivers, impact, effort" },
               { step: "06", title: "Action Plan", desc: "Prioritised, owner-assigned, auditable" },
-            ].map((s) => (
-              <div key={s.step} className="bg-white border border-border rounded-lg p-4 text-center">
+            ].map((s, i) => (
+              <div key={s.step} className="flex items-center gap-2 flex-1 min-w-0">
+                <div
+                  className="flex-1 bg-white border border-border rounded-lg p-4 text-center hover:border-brand-500 transition-all duration-200"
+                  style={{
+                    opacity: 0,
+                    transform: 'translateY(8px)',
+                    animation: `fadeUpIn 500ms ease-out ${i * 150}ms forwards`,
+                  }}
+                >
+                  <p className="text-xs font-mono text-muted-foreground/50 mb-2">{s.step}</p>
+                  <p className="text-sm font-semibold text-foreground">{s.title}</p>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{s.desc}</p>
+                </div>
+                {i < 5 && <ChevronRight size={14} className="text-muted-foreground/30 flex-shrink-0" />}
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile/Tablet: grid without arrows */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 lg:hidden">
+            {[
+              { step: "01", title: "Assessment Answers", desc: "Questions scored 1–5 per item" },
+              { step: "02", title: "Scoring Engine", desc: "Weighted scores + section aggregation" },
+              { step: "03", title: "Signal Engine", desc: "Detect weak scores, group into signals" },
+              { step: "04", title: "Template Lookup", desc: "Tiered → KPI-specific → Generic fallback" },
+              { step: "05", title: "Context Intelligence", desc: "Enrich with drivers, impact, effort" },
+              { step: "06", title: "Action Plan", desc: "Prioritised, owner-assigned, auditable" },
+            ].map((s, i) => (
+              <div
+                key={s.step}
+                className="bg-white border border-border rounded-lg p-4 text-center hover:border-brand-500 transition-all duration-200"
+                style={{
+                  opacity: 0,
+                  transform: 'translateY(8px)',
+                  animation: `fadeUpIn 500ms ease-out ${i * 150}ms forwards`,
+                }}
+              >
                 <p className="text-xs font-mono text-muted-foreground/50 mb-2">{s.step}</p>
                 <p className="text-sm font-semibold text-foreground">{s.title}</p>
                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{s.desc}</p>
@@ -145,6 +189,9 @@ const Index = () => {
           </p>
         </div>
       </section>
+
+      {/* SECTION 3b — Product Sneak Peek */}
+      <ProductSneakPeek />
 
       {/* SECTION 4 — Three Proof Pillars */}
       <section className="bg-background py-20 px-6 lg:px-8">
