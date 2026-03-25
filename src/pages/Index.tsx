@@ -149,7 +149,7 @@ const Index = () => {
 
             {/* Right column — product preview card with sequential reveal */}
             <Reveal delay={200}>
-              <div className="mt-12 lg:mt-0">
+              <div className="mt-12 lg:mt-0" style={{ backgroundImage: 'radial-gradient(circle, #e2e8f0 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
                 <div className="bg-white border border-border rounded-xl shadow-card p-6 hover:shadow-lg transition-shadow duration-300">
                   {/* Mini-panel 1: Department score */}
                   <Reveal delay={300}>
@@ -285,7 +285,7 @@ const Index = () => {
       <ProductSneakPeek />
 
       {/* SECTION 4 — Three Proof Pillars */}
-      <section className="bg-background py-20 px-6 lg:px-8">
+      <section className="bg-slate-50 py-20 px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <Reveal>
             <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">
@@ -339,7 +339,7 @@ const Index = () => {
 
       {/* SECTION 6 — Closing CTA Strip */}
       <Reveal>
-        <section className="bg-foreground">
+        <section className="bg-foreground" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
           <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16 text-center">
             <p className="text-xs font-semibold uppercase tracking-widest text-white/40 mb-4">
               READY TO DEPLOY
