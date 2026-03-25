@@ -13,7 +13,7 @@ export default function Methodology() {
     document.title = 'Methodology — Dealer Diagnostic';
   }, []);
 
-  const cardClass = "bg-white border border-[hsl(var(--dd-rule))] rounded-2xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.06)]";
+  const cardClass = "bg-white border border-[hsl(var(--dd-rule))] rounded-2xl overflow-hidden shadow-md";
   const detailCardClass = "bg-[hsl(var(--dd-fog))] border border-[hsl(var(--dd-rule))] rounded-xl p-4";
   const detailLabelClass = "text-[11px] font-semibold uppercase tracking-wider text-[hsl(var(--dd-ghost))] mb-1.5";
   const detailContentClass = "text-[13px] text-[hsl(var(--dd-ink))] leading-[1.55]";
@@ -40,9 +40,9 @@ export default function Methodology() {
   const stats = [
     { value: '5', label: 'Assessment modules' },
     { value: '50', label: 'Diagnostic questions' },
-    { value: '22', label: 'Action templates' },
+    { value: '3', label: 'Maturity bands' },
+    { value: '18', label: 'Audit fields per action' },
     { value: '5', label: 'Root-cause dimensions' },
-    { value: '5', label: 'Maturity levels' },
   ];
 
   return (
@@ -58,10 +58,14 @@ export default function Methodology() {
       </div>
 
       {/* ── HERO ── */}
-      <div className="bg-[hsl(var(--dd-midnight))] px-12 py-14 relative overflow-hidden">
-        {/* Decorative blob */}
-        <div className="absolute top-[-80px] right-[-80px] w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(26,86,232,0.15)_0%,transparent_70%)] pointer-events-none" />
-
+      <div
+        className="px-12 py-14 relative overflow-hidden"
+        style={{
+          backgroundColor: '#0A0F1E',
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)`,
+          backgroundSize: '40px 40px',
+        }}
+      >
         <div className="max-w-[960px] mx-auto relative">
           {/* Eyebrow */}
           <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[hsl(221,82%,65%)] mb-3">
@@ -70,8 +74,8 @@ export default function Methodology() {
           </div>
 
           {/* Title */}
-          <h1 className="font-display text-[36px] text-white leading-[1.15] tracking-tight mb-4 max-w-[560px]">
-            How the assessment <em className="italic text-white/60">works</em>
+          <h1 className="font-black text-[36px] text-white leading-[1.15] tracking-tight mb-4 max-w-[560px]">
+            How the assessment works
           </h1>
 
           {/* Intro */}
@@ -99,11 +103,11 @@ export default function Methodology() {
       {/* ── BODY SECTIONS ── */}
       <div className="px-8 py-10 grid gap-8">
 
-        {/* ── SECTION 01 ── */}
+        {/* ── SECTION 01 — Structure ── */}
         <div className={cardClass}>
           <div className="p-8">
             <div className="grid grid-cols-[auto_1fr] items-center mb-6">
-              <span className="text-[48px] font-display text-[hsl(var(--dd-rule))] leading-none mr-6 select-none">01</span>
+              <span className="text-[48px] font-black text-[hsl(var(--dd-rule))] leading-none mr-6 select-none">01</span>
               <div>
                 <div className={sectionLabelClass}>Structure</div>
                 <h2 className={sectionTitleClass}>Assessment architecture & module weighting</h2>
@@ -156,11 +160,11 @@ export default function Methodology() {
           </div>
         </div>
 
-        {/* ── SECTION 02 ── */}
+        {/* ── SECTION 02 — Intelligence ── */}
         <div className={cardClass}>
           <div className="p-8">
             <div className="grid grid-cols-[auto_1fr] items-center mb-6">
-              <span className="text-[48px] font-display text-[hsl(var(--dd-rule))] leading-none mr-6 select-none">02</span>
+              <span className="text-[48px] font-black text-[hsl(var(--dd-rule))] leading-none mr-6 select-none">02</span>
               <div>
                 <div className={sectionLabelClass}>Intelligence</div>
                 <h2 className={sectionTitleClass}>Deterministic signal engine & root-cause diagnostics</h2>
@@ -194,8 +198,20 @@ export default function Methodology() {
                 <div className={detailContentClass}>Five ratio-pair rules detect contradictions — NVS productivity, service utilisation vs CSI, parts blocking service, profit-cash disconnect, hidden dead stock.</div>
               </div>
               <div className={detailCardClass}>
-                <div className={detailLabelClass}>Triage scoring</div>
-                <div className={detailContentClass}>Formula-driven. Impact = f(module weight, score gap, downstream KPI count). Urgency escalates for low scores and stale assessments.</div>
+                <div className={detailLabelClass}>Score threshold</div>
+                <div className={detailContentClass}>Every answered question is evaluated against a weak score threshold of ≤ 3 out of 5. Questions scoring 4 or 5 are skipped — unless the ceiling signal pass logic applies. This threshold is consistent across all departments and all business models.</div>
+              </div>
+              <div className={detailCardClass}>
+                <div className={detailLabelClass}>Severity escalation</div>
+                <div className={detailContentClass}>Signals are not treated as isolated flags. When 3 or more questions trigger the same signal code, the escalateSeverity() function upgrades its severity automatically: LOW → MEDIUM · MEDIUM → HIGH. A single HIGH-weight question scoring ≤ 2 fires HIGH severity immediately, without needing 3 triggers.</div>
+              </div>
+              <div className={detailCardClass}>
+                <div className={detailLabelClass}>Ceiling signal pass</div>
+                <div className={detailContentClass}>Dealers are not penalised for strong performance. When a question scores 4 out of 5 on a high-weight item (weight ≥ 1.2) inside a module where the section score is ≥ 65, the engine fires a soft PROCESS_NOT_STANDARDISED signal. This generates a targeted excellence action — not a gap-closure action. Maximum one ceiling signal fires per module.</div>
+              </div>
+              <div className={detailCardClass}>
+                <div className={detailLabelClass}>Audit trail depth</div>
+                <div className={detailContentClass}>Every action is written to the database as an 18-field record — including the full array of triggering question IDs, signal code, score band, business model, template tier used, 9 context intelligence fields, and a link to the originating assessment. No information is discarded between question and action.</div>
               </div>
               <div className={detailCardClass}>
                 <div className={detailLabelClass}>Confidence intervals</div>
@@ -205,11 +221,86 @@ export default function Methodology() {
           </div>
         </div>
 
-        {/* ── SECTION 03 ── */}
+        {/* ── SECTION 03 — Templates (NEW) ── */}
         <div className={cardClass}>
           <div className="p-8">
             <div className="grid grid-cols-[auto_1fr] items-center mb-6">
-              <span className="text-[48px] font-display text-[hsl(var(--dd-rule))] leading-none mr-6 select-none">03</span>
+              <span className="text-[48px] font-black text-[hsl(var(--dd-rule))] leading-none mr-6 select-none">03</span>
+              <div>
+                <div className={sectionLabelClass}>Templates</div>
+                <h2 className={sectionTitleClass}>Three-tier template selection & score-band gating</h2>
+              </div>
+            </div>
+
+            <p className={bodyClass}>
+              Every signal resolves to an action through a three-tier template lookup. The most contextually precise template always wins — generic actions only fire when no specific match is found. Within each tier, score-band gating ensures a dealer at 38% and a dealer at 72% with the same weak signal receive different, maturity-appropriate actions.
+            </p>
+
+            {/* Template tiers */}
+            <div className="grid gap-3 mt-6">
+              {[
+                {
+                  tier: '1',
+                  priority: 'Highest priority',
+                  label: 'Tiered Templates',
+                  detail: 'Business-model-aware templates covering all 5 departments. If a tiered match is found — it fires. Generic lookup is skipped entirely.',
+                },
+                {
+                  tier: '2',
+                  priority: '',
+                  label: 'KPI-Specific Templates',
+                  detail: 'Used when Tier 1 finds no match. Selected when the signal carries linked KPI keys that overlap with a template\'s KPI set.',
+                },
+                {
+                  tier: '3',
+                  priority: 'Fallback',
+                  label: 'Generic Templates',
+                  detail: 'Activated only when Tiers 1 and 2 produce nothing. Ensures every signal receives an action of last resort.',
+                },
+              ].map((t) => (
+                <div key={t.tier} className={`${detailCardClass} flex items-start gap-4`}>
+                  <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[hsl(var(--dd-accent))]/10 text-[hsl(var(--dd-accent))] flex items-center justify-center text-[13px] font-bold">
+                    {t.tier}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[13px] font-semibold text-[hsl(var(--dd-ink))]">{t.label}</span>
+                      {t.priority && (
+                        <span className="text-[10px] uppercase tracking-wider font-semibold text-[hsl(var(--dd-ghost))]">— {t.priority}</span>
+                      )}
+                    </div>
+                    <div className={detailContentClass}>{t.detail}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Score band cards */}
+            <div className="grid grid-cols-3 gap-3 mt-5">
+              <div className="bg-[hsl(var(--dd-red-light))] border border-[#fca5a5] rounded-xl p-4">
+                <div className="text-[13px] font-semibold text-[hsl(0,60%,35%)] mb-1">Foundational</div>
+                <div className="text-[11px] font-mono text-[hsl(0,40%,35%)] mb-2">Section score ≤ 45</div>
+                <div className="text-[12px] text-[hsl(0,40%,35%)] leading-relaxed">Basic process establishment and gap-closure actions</div>
+              </div>
+              <div className="bg-[hsl(var(--dd-amber-light))] border border-[#fcd34d] rounded-xl p-4">
+                <div className="text-[13px] font-semibold text-[hsl(38,70%,28%)] mb-1">Developing</div>
+                <div className="text-[11px] font-mono text-[hsl(38,50%,30%)] mb-2">Section score 46–69</div>
+                <div className="text-[12px] text-[hsl(38,50%,30%)] leading-relaxed">Process optimisation and KPI ownership actions</div>
+              </div>
+              <div className="bg-[hsl(var(--dd-green-light))] border border-[#6ee7b7] rounded-xl p-4">
+                <div className="text-[13px] font-semibold text-[hsl(160,60%,22%)] mb-1">Optimising</div>
+                <div className="text-[11px] font-mono text-[hsl(160,40%,30%)] mb-2">Section score ≥ 70</div>
+                <div className="text-[12px] text-[hsl(160,40%,30%)] leading-relaxed">Ceiling-gap and competitive-advantage actions</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── SECTION 04 — Benchmarks (renumbered from 03) ── */}
+        <div className={cardClass}>
+          <div className="p-8">
+            <div className="grid grid-cols-[auto_1fr] items-center mb-6">
+              <span className="text-[48px] font-black text-[hsl(var(--dd-rule))] leading-none mr-6 select-none">04</span>
               <div>
                 <div className={sectionLabelClass}>Benchmarks</div>
                 <h2 className={sectionTitleClass}>Benchmark framework & peer segmentation</h2>
@@ -253,48 +344,6 @@ export default function Methodology() {
               <div className="flex-1 bg-[hsl(var(--dd-red-light))] border border-[#fca5a5] rounded-xl p-4">
                 <div className="text-[11px] font-semibold text-[hsl(0,60%,35%)] mb-1">Low confidence</div>
                 <div className="text-[12px] text-[hsl(0,40%,35%)] leading-relaxed">σ &gt; 1.4. Results should not be shared externally without coach validation.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── SECTION 04 ── */}
-        <div className={cardClass}>
-          <div className="p-8">
-            <div className="grid grid-cols-[auto_1fr] items-center mb-6">
-              <span className="text-[48px] font-display text-[hsl(var(--dd-rule))] leading-none mr-6 select-none">04</span>
-              <div>
-                <div className={sectionLabelClass}>Scoring</div>
-                <h2 className={sectionTitleClass}>Five-level maturity model with sub-category guards</h2>
-              </div>
-            </div>
-
-            <p className={bodyClass}>
-              A high overall score does not guarantee a high maturity level if sub-categories fall below minimum thresholds. This prevents one exceptional department masking systemic weakness elsewhere.
-            </p>
-
-            {/* Maturity rows */}
-            <div className="divide-y divide-[hsl(var(--dd-fog))] mt-6">
-              {[
-                { variant: 'maturity-advanced' as const, label: 'Advanced', desc: 'Score ≥ 85 AND no sub-category below 60. Ceiling analysis active.', range: '≥ 85' },
-                { variant: 'maturity-developing' as const, label: 'Developing', desc: 'Score 70–84. Good foundations with identifiable improvement areas.', range: '70–84' },
-                { variant: 'maturity-inconsistent' as const, label: 'Inconsistent', desc: 'Score 50–69, OR score ≥ 70 with σ > 1.4 detected across sub-categories.', range: '50–69' },
-                { variant: 'maturity-foundational' as const, label: 'Foundational', desc: 'Score 30–49. Core operational gaps. Coach visit recommended.', range: '30–49' },
-                { variant: 'maturity-critical' as const, label: 'Critical', desc: 'Score below 30. Immediate intervention. OEM escalation triggered if network active.', range: '< 30' },
-              ].map((level) => (
-                <div key={level.label} className="grid grid-cols-[120px_1fr_auto] items-center gap-4 py-3">
-                  <Badge variant={level.variant}>{level.label}</Badge>
-                  <span className="text-[13px] text-[hsl(var(--dd-muted))]">{level.desc}</span>
-                  <span className="text-[12px] font-mono text-[hsl(var(--dd-ghost))]">{level.range}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Guard condition detail */}
-            <div className={`${detailCardClass} mt-5`}>
-              <div className={detailLabelClass}>Sub-category guard condition</div>
-              <div className={detailContentClass}>
-                Advanced maturity requires overall ≥ 85 AND no individual sub-category below 60. A dealer scoring 87 overall but 42 in Parts is classified as Developing. This guard prevents high-performing departments masking critical failures elsewhere.
               </div>
             </div>
           </div>
