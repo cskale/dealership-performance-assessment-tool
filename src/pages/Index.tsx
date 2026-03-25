@@ -4,7 +4,8 @@ import { HomeHeader } from "@/components/Navigation/HomeHeader";
 import { Footer } from "@/components/Home/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, TrendingUp, Shield, Lock } from "lucide-react";
+import { ArrowRight, TrendingUp, Shield, Lock, ChevronRight } from "lucide-react";
+import ProductSneakPeek from "@/components/landing/ProductSneakPeek";
 
 const Index = () => {
   const { user, loading } = useAuth();
