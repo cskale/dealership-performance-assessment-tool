@@ -1,4 +1,24 @@
+import { useState, useEffect, useRef } from "react";
 import { User, Clock, TrendingDown } from "lucide-react";
+
+/* ── Scroll-reveal hook ──────────────────────────── */
+function useScrollReveal(threshold = 0.15) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { threshold }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+
+  return { ref, visible };
+}
 
 const DEPARTMENTS = [
   { code: 'NVS', name: 'New Vehicle Sales', score: 74, status: 'Optimising' as const, barColor: 'bg-emerald-400' },
@@ -39,25 +59,42 @@ function PanelHeader({ label, chip }: { label: string; chip: string }) {
 }
 
 export default function ProductSneakPeek() {
+  const section = useScrollReveal(0.1);
+
   return (
-    <section className="bg-background py-20 px-6 lg:px-8">
+    <section ref={section.ref} className="bg-background py-20 px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">
-          INSIDE THE PLATFORM
-        </p>
-        <h2 className="text-3xl font-bold text-foreground max-w-2xl leading-tight mt-2">
-          Three views. One coherent diagnostic programme.
-        </h2>
-        <p className="mt-3 text-base text-muted-foreground max-w-xl">
-          From department score to prioritised action plan — every step visible, every decision auditable.
-        </p>
+        <div
+          style={{
+            opacity: section.visible ? 1 : 0,
+            transform: section.visible ? 'translateY(0)' : 'translateY(16px)',
+            transition: 'opacity 600ms ease-out, transform 600ms ease-out',
+          }}
+        >
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">
+            INSIDE THE PLATFORM
+          </p>
+          <h2 className="text-3xl font-bold text-foreground max-w-2xl leading-tight mt-2">
+            Three views. One coherent diagnostic programme.
+          </h2>
+          <p className="mt-3 text-base text-muted-foreground max-w-xl">
+            From department score to prioritised action plan — every step visible, every decision auditable.
+          </p>
+        </div>
 
         {/* Three Panel Cards */}
         <div className="grid lg:grid-cols-3 gap-6 mt-12">
 
           {/* PANEL 1 — Department Score Overview */}
-          <div className="bg-white border border-border rounded-xl shadow-card overflow-hidden">
+          <div
+            className="bg-white border border-border rounded-xl shadow-card overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+            style={{
+              opacity: section.visible ? 1 : 0,
+              transform: section.visible ? 'translateY(0)' : 'translateY(16px)',
+              transition: 'opacity 600ms ease-out 100ms, transform 600ms ease-out 100ms, box-shadow 300ms, translate 300ms',
+            }}
+          >
             <PanelHeader label="DEPARTMENT SCORES" chip="5 Departments" />
             <div className="px-5 py-4 space-y-4">
               {DEPARTMENTS.map((dept) => (
@@ -79,7 +116,14 @@ export default function ProductSneakPeek() {
           </div>
 
           {/* PANEL 2 — Signal & Action Detail */}
-          <div className="bg-white border border-border rounded-xl shadow-card overflow-hidden">
+          <div
+            className="bg-white border border-border rounded-xl shadow-card overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+            style={{
+              opacity: section.visible ? 1 : 0,
+              transform: section.visible ? 'translateY(0)' : 'translateY(16px)',
+              transition: 'opacity 600ms ease-out 250ms, transform 600ms ease-out 250ms, box-shadow 300ms, translate 300ms',
+            }}
+          >
             <PanelHeader label="SIGNAL → ACTION" chip="Parts Department" />
             <div className="px-5 py-4">
               {/* Signal block */}
@@ -126,7 +170,14 @@ export default function ProductSneakPeek() {
           </div>
 
           {/* PANEL 3 — Audit Trail View */}
-          <div className="bg-white border border-border rounded-xl shadow-card overflow-hidden">
+          <div
+            className="bg-white border border-border rounded-xl shadow-card overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+            style={{
+              opacity: section.visible ? 1 : 0,
+              transform: section.visible ? 'translateY(0)' : 'translateY(16px)',
+              transition: 'opacity 600ms ease-out 400ms, transform 600ms ease-out 400ms, box-shadow 300ms, translate 300ms',
+            }}
+          >
             <PanelHeader label="AUDIT TRAIL" chip="Full traceability" />
             <div className="px-5 py-4">
               <div className="border-l-2 border-border ml-1">
