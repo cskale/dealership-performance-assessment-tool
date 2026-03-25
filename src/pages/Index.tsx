@@ -230,7 +230,7 @@ const Index = () => {
                 <ArrowRight className="ml-1" />
               </Link>
             </Button>
-            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10" size="lg" asChild>
+            <Button variant="ghost" className="border border-white/20 text-white hover:bg-white/10 hover:text-white" size="lg" asChild>
               <Link to="/methodology">View Methodology</Link>
             </Button>
           </div>
