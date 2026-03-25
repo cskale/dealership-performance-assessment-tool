@@ -114,7 +114,7 @@ const Index = () => {
             {/* Left column — copy */}
             <Reveal>
               <div>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest bg-white/10 text-white border border-white/20">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest bg-white/15 text-white border border-white/30">
                   Dealer Diagnostic &amp; Performance Platform
                 </span>
 
