@@ -339,7 +339,7 @@ const Index = () => {
 
       {/* SECTION 6 — Closing CTA Strip */}
       <Reveal>
-        <section className="bg-foreground">
+        <section className="bg-foreground" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
           <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16 text-center">
             <p className="text-xs font-semibold uppercase tracking-widest text-white/40 mb-4">
               READY TO DEPLOY
