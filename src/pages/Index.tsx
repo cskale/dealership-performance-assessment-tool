@@ -56,7 +56,7 @@ const PIPELINE_STEPS = [
 
 const METRICS = [
   { value: 5, suffix: "", label: "Departments\nfully assessed", sub: "NVS · UVS · Service · Finance · Parts" },
-  { value: 100, suffix: "+", label: "Assessment\nquestions", sub: "Weighted, scored 1–5 per item" },
+  { value: 100, suffix: "+", label: "KPIs\nTracked", sub: "Weighted, scored 1–5 per item" },
   { value: 3, suffix: "", label: "Maturity\nbands", sub: "Foundational · Developing · Optimising" },
   { value: 18, suffix: "", label: "Audit fields\nper action", sub: "Full traceability to source question" },
 ];
