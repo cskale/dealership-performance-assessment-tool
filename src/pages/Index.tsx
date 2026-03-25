@@ -285,7 +285,7 @@ const Index = () => {
       <ProductSneakPeek />
 
       {/* SECTION 4 — Three Proof Pillars */}
-      <section className="bg-background py-20 px-6 lg:px-8">
+      <section className="bg-slate-50 py-20 px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <Reveal>
             <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">
