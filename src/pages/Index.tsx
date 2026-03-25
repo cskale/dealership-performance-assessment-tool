@@ -268,7 +268,7 @@ const Index = () => {
                   transition: `opacity 500ms ease-out ${i * 100}ms, transform 500ms ease-out ${i * 100}ms`,
                 }}
               >
-                <p className="text-xs font-mono text-muted-foreground/50 mb-2">{s.step}</p>
+                <p className="text-xs font-mono text-muted-foreground/50 mb-2" style={{ fontVariantNumeric: 'normal' }}>{s.step}</p>
                 <p className="text-sm font-semibold text-foreground">{s.title}</p>
                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{s.desc}</p>
               </div>
