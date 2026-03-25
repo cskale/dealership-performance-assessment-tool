@@ -55,11 +55,10 @@ const PIPELINE_STEPS = [
 ];
 
 const METRICS = [
-  { value: 5, label: "Departments Assessed" },
-  { value: 111, label: "KPIs Tracked" },
-  { value: 27, label: "Tiered Action Templates" },
-  { value: 22, label: "Signal Codes" },
-  { value: 18, label: "Fields per Action Record" },
+  { value: 5, suffix: "", label: "Departments\nfully assessed", sub: "NVS · UVS · Service · Finance · Parts" },
+  { value: 100, suffix: "+", label: "Assessment\nquestions", sub: "Weighted, scored 1–5 per item" },
+  { value: 3, suffix: "", label: "Maturity\nbands", sub: "Foundational · Developing · Optimising" },
+  { value: 18, suffix: "", label: "Audit fields\nper action", sub: "Full traceability to source question" },
 ];
 
 const PROOF_PILLARS = [
@@ -115,7 +114,7 @@ const Index = () => {
             {/* Left column — copy */}
             <Reveal>
               <div>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest bg-white/10 text-white border border-white/20">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest bg-white/15 text-white border border-white/30">
                   Dealer Diagnostic &amp; Performance Platform
                 </span>
 
@@ -239,7 +238,7 @@ const Index = () => {
                     transition: `opacity 500ms ease-out ${i * 150}ms, transform 500ms ease-out ${i * 150}ms`,
                   }}
                 >
-                  <p className="text-xs font-mono text-muted-foreground/50 mb-2">{s.step}</p>
+                  <p className="text-xs font-mono text-muted-foreground/50 mb-2" style={{ fontVariantNumeric: 'normal' }}>{s.step}</p>
                   <p className="text-sm font-semibold text-foreground">{s.title}</p>
                   <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{s.desc}</p>
                 </div>
@@ -269,7 +268,7 @@ const Index = () => {
                   transition: `opacity 500ms ease-out ${i * 100}ms, transform 500ms ease-out ${i * 100}ms`,
                 }}
               >
-                <p className="text-xs font-mono text-muted-foreground/50 mb-2">{s.step}</p>
+                <p className="text-xs font-mono text-muted-foreground/50 mb-2" style={{ fontVariantNumeric: 'normal' }}>{s.step}</p>
                 <p className="text-sm font-semibold text-foreground">{s.title}</p>
                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{s.desc}</p>
               </div>
@@ -305,8 +304,8 @@ const Index = () => {
           <div className="lg:grid-cols-3 grid gap-8 mt-12">
             {PROOF_PILLARS.map((card, i) => (
               <Reveal key={card.title} delay={i * 150}>
-                <div className="bg-white border border-border rounded-xl p-6 shadow-card hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 h-full">
-                  <div className="w-9 h-9 rounded-lg bg-brand-500/10 flex items-center justify-center mb-4">
+                <div className="bg-white border border-border rounded-xl p-6 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 h-full">
+                  <div className="w-9 h-9 rounded-lg bg-brand-500/15 flex items-center justify-center mb-4">
                     <card.icon className="size-5 text-brand-500" />
                   </div>
                   <h3 className="text-base font-semibold text-foreground">{card.title}</h3>
@@ -327,22 +326,26 @@ const Index = () => {
           backgroundSize: '24px 24px',
         }}
       >
-        <div ref={metricsSection.ref} className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
-          <div className="grid grid-cols-2 lg:flex lg:flex-wrap lg:justify-between gap-8">
+        <div ref={metricsSection.ref} className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
+          <p className="text-center text-xs uppercase tracking-widest text-white/30 mb-12">
+            BUILT TO SCALE ACROSS YOUR DEALER NETWORK
+          </p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0">
             {METRICS.map((m, i) => (
               <div
                 key={m.label}
-                className={i > 0 ? "lg:border-l lg:border-white/10 lg:pl-8" : ""}
+                className={`text-center lg:text-left${i > 0 ? " lg:border-l lg:border-white/10 lg:pl-10" : ""}`}
                 style={{
                   opacity: metricsSection.visible ? 1 : 0,
                   transform: metricsSection.visible ? 'translateY(0)' : 'translateY(12px)',
                   transition: `opacity 500ms ease-out ${i * 100}ms, transform 500ms ease-out ${i * 100}ms`,
                 }}
               >
-                <p className="text-3xl font-bold text-white tabular-nums">
-                  {metricsSection.visible ? <AnimatedCounter end={m.value} duration={1500} /> : "0"}
+                <p className="text-6xl lg:text-7xl font-black text-white leading-none tracking-tight">
+                  {metricsSection.visible ? <AnimatedCounter end={m.value} duration={1500} suffix={m.suffix} /> : "0"}
                 </p>
-                <p className="text-xs uppercase tracking-wider text-white/60 mt-1">{m.label}</p>
+                <p className="text-sm font-semibold text-white/70 mt-3 leading-snug whitespace-pre-line">{m.label}</p>
+                <p className="text-xs text-white/35 mt-1.5 leading-relaxed">{m.sub}</p>
               </div>
             ))}
           </div>
