@@ -304,8 +304,8 @@ const Index = () => {
           <div className="lg:grid-cols-3 grid gap-8 mt-12">
             {PROOF_PILLARS.map((card, i) => (
               <Reveal key={card.title} delay={i * 150}>
-                <div className="bg-white border border-border rounded-xl p-6 shadow-card hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 h-full">
-                  <div className="w-9 h-9 rounded-lg bg-brand-500/10 flex items-center justify-center mb-4">
+                <div className="bg-white border border-border rounded-xl p-6 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 h-full">
+                  <div className="w-9 h-9 rounded-lg bg-brand-500/15 flex items-center justify-center mb-4">
                     <card.icon className="size-5 text-brand-500" />
                   </div>
                   <h3 className="text-base font-semibold text-foreground">{card.title}</h3>
