@@ -326,22 +326,26 @@ const Index = () => {
           backgroundSize: '24px 24px',
         }}
       >
-        <div ref={metricsSection.ref} className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
-          <div className="grid grid-cols-2 lg:flex lg:flex-wrap lg:justify-between gap-8">
+        <div ref={metricsSection.ref} className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
+          <p className="text-center text-xs uppercase tracking-widest text-white/30 mb-12">
+            BUILT TO SCALE ACROSS YOUR DEALER NETWORK
+          </p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0">
             {METRICS.map((m, i) => (
               <div
                 key={m.label}
-                className={i > 0 ? "lg:border-l lg:border-white/10 lg:pl-8" : ""}
+                className={`text-center lg:text-left${i > 0 ? " lg:border-l lg:border-white/10 lg:pl-10" : ""}`}
                 style={{
                   opacity: metricsSection.visible ? 1 : 0,
                   transform: metricsSection.visible ? 'translateY(0)' : 'translateY(12px)',
                   transition: `opacity 500ms ease-out ${i * 100}ms, transform 500ms ease-out ${i * 100}ms`,
                 }}
               >
-                <p className="text-3xl font-bold text-white tabular-nums">
-                  {metricsSection.visible ? <AnimatedCounter end={m.value} duration={1500} /> : "0"}
+                <p className="text-6xl lg:text-7xl font-black text-white leading-none tracking-tight">
+                  {metricsSection.visible ? <AnimatedCounter end={m.value} duration={1500} suffix={m.suffix} /> : "0"}
                 </p>
-                <p className="text-xs uppercase tracking-wider text-white/60 mt-1">{m.label}</p>
+                <p className="text-sm font-semibold text-white/70 mt-3 leading-snug whitespace-pre-line">{m.label}</p>
+                <p className="text-xs text-white/35 mt-1.5 leading-relaxed">{m.sub}</p>
               </div>
             ))}
           </div>
