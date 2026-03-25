@@ -213,10 +213,6 @@ export default function Methodology() {
                 <div className={detailLabelClass}>Audit trail depth</div>
                 <div className={detailContentClass}>Every action is written to the database as an 18-field record — including the full array of triggering question IDs, signal code, score band, business model, template tier used, 9 context intelligence fields, and a link to the originating assessment. No information is discarded between question and action.</div>
               </div>
-              <div className={detailCardClass}>
-                <div className={detailLabelClass}>Confidence intervals</div>
-                <div className={detailContentClass}>σ &lt; 0.8 = High, 0.8–1.4 = Medium, &gt; 1.4 = Low. Low-confidence assessments trigger coach review flag.</div>
-              </div>
             </div>
           </div>
         </div>
