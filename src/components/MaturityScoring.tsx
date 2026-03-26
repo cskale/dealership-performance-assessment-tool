@@ -248,7 +248,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
           <div className="h-[400px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={radarData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
-                <PolarGrid stroke="#e5e7eb" />
+                <PolarGrid stroke="#e5e7eb" strokeDasharray="3 3" />
                 <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: '#6b7280' }} />
                 <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fontSize: 10, fill: '#9ca3af' }} />
                 <Radar name={language === 'de' ? 'Indikative Benchmark (75%) ⓘ' : 'Indicative Benchmark (75%) ⓘ'} dataKey="benchmark" stroke="#9ca3af" fill="#9ca3af" fillOpacity={0.15} strokeWidth={2} strokeDasharray="5 5" />
