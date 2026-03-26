@@ -215,7 +215,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
   return (
     <div className="space-y-6">
       {/* Radar Chart */}
-      <Card className="shadow-lg">
+      <Card className="shadow-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             {language === 'de' ? 'Leistungsradar' : 'Performance Radar'}
