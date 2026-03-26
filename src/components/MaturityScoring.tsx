@@ -364,7 +364,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
       </Card>
 
       {/* Roadmap */}
-      <Card className="bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200">
+      <Card className="bg-muted border border-border">
         <CardHeader>
           <CardTitle className="text-slate-800 flex items-center gap-2">
             <Zap className="h-5 w-5" />
