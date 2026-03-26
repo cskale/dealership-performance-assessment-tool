@@ -286,19 +286,19 @@ const Account = () => {
 
       <div className="px-6 py-6 max-w-6xl mx-auto">
         {/* Hero card */}
-        <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-5 mb-5">
+        <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-6 mb-5">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-[hsl(var(--dd-accent))] text-white flex items-center justify-center text-xl font-medium shrink-0">
+            <div className="w-20 h-20 rounded-full bg-[hsl(var(--dd-accent))] text-white flex items-center justify-center text-2xl font-medium shrink-0">
               {getInitials(displayName || user.email || '')}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-lg font-medium text-foreground">{displayName || user.email}</div>
+              <div className="text-xl font-semibold text-foreground">{displayName || user.email}</div>
               <div className="text-sm text-muted-foreground mt-0.5">
-                {currentMembership?.role} · {user.email}
+                {(currentMembership?.role || 'member').charAt(0).toUpperCase() + (currentMembership?.role || 'member').slice(1)} · {user.email}
               </div>
               <div className="flex gap-1.5 mt-2 flex-wrap">
                 <span className="bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] text-xs px-2.5 py-0.5 rounded-full font-medium">
-                  {currentMembership?.role || 'member'}
+                  {(currentMembership?.role || 'member').charAt(0).toUpperCase() + (currentMembership?.role || 'member').slice(1)}
                 </span>
                 {user.email_confirmed_at && (
                   <span className="bg-[hsl(var(--dd-green-light))] text-[hsl(var(--dd-green))] text-xs px-2.5 py-0.5 rounded-full font-medium">
@@ -324,7 +324,7 @@ const Account = () => {
             { label: 'Organizations', value: String(organizations.length) },
           ].map(card => (
             <div key={card.label} className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-3">
-              <div className="text-xl font-medium text-foreground">{card.value}</div>
+              <div className="text-2xl font-semibold text-foreground">{card.value}</div>
               <div className="text-[11px] text-muted-foreground mt-0.5">{card.label}</div>
             </div>
           ))}

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -30,6 +30,13 @@ interface OwnerStats {
 }
 
 export function OwnerLoadPanel({ open, onOpenChange, actions, onFilterByOwner, activeOwnerFilter }: OwnerLoadPanelProps) {
+  useEffect(() => {
+    if (open) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = prev; };
+    }
+  }, [open]);
   const ownerStats = useMemo(() => {
     const map = new Map<string, OwnerStats>();
 
