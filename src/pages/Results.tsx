@@ -426,7 +426,7 @@ export default function Results() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="executive" className="space-y-6 animate-fade-in">
+          <TabsContent value="executive" className="space-y-6 animate-fade-in" style={{ willChange: 'opacity, transform' }}>
             <ErrorBoundary fallbackTitle={language === 'de' ? 'Zusammenfassung nicht verfügbar' : 'Summary unavailable'}>
               <ExecutiveSummary
                 overallScore={overallScore}
