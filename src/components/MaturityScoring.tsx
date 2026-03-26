@@ -319,7 +319,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
       </Card>
 
       {/* Overall Maturity */}
-      <Card className={`border-2 shadow-lg ${overallMaturityLevel.color}`}>
+      <Card className={`border-2 shadow-card ${overallMaturityLevel.color}`}>
         <CardHeader>
           <div className="flex items-center gap-3">
             <span className="text-3xl">{overallMaturityLevel.icon}</span>
