@@ -384,7 +384,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
                     <div className="font-bold">{level.name}</div>
                     <div className="text-muted-foreground">{count} {language === 'de' ? 'Bereiche' : 'depts'}</div>
                   </div>
-                  {index < maturityLevels.length - 1 && <div className="hidden md:block w-8 h-0.5 bg-gray-300 mx-2" />}
+                  {index < maturityLevels.length - 1 && <div className="hidden md:block w-8 h-0.5 bg-border mx-2" />}
                 </div>
               );
             })}

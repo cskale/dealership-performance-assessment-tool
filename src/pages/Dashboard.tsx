@@ -217,10 +217,16 @@ const Dashboard = () => {
             score={81}
           />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard title={t('kpi.monthlyRevenue')} value="€178K" benchmark="€185K" change={-3.8} status="on-track" />
-            <KPICard title={t('kpi.laborEfficiency')} value="85%" benchmark="78%" change={9.0} status="excellent" />
-            <KPICard title={t('kpi.customerRetention')} value="76%" benchmark="72%" change={5.6} status="excellent" />
-            <KPICard title={t('kpi.averageRO')} value="€268" benchmark="€245" change={9.4} status="excellent" />
+            {[
+              { title: t('kpi.monthlyRevenue'), value: "€178K", benchmark: "€185K", change: -3.8, status: 'on-track' as const },
+              { title: t('kpi.laborEfficiency'), value: "85%", benchmark: "78%", change: 9.0, status: 'excellent' as const },
+              { title: t('kpi.customerRetention'), value: "76%", benchmark: "72%", change: 5.6, status: 'excellent' as const },
+              { title: t('kpi.averageRO'), value: "€268", benchmark: "€245", change: 9.4, status: 'excellent' as const },
+            ].map((kpi, i) => (
+              <div key={i} className="opacity-0 animate-fade-in" style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'forwards' }}>
+                <KPICard {...kpi} />
+              </div>
+            ))}
           </div>
         </section>
 
