@@ -85,7 +85,7 @@ const Dashboard = () => {
     const status = getScoreStatus(score);
 
     return (
-      <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+      <div className="flex items-center justify-between p-4 rounded-lg rounded-t-lg border bg-card border-t-4" style={{ borderTopColor: title.includes('New') || title.includes('Neufahr') ? '#2563eb' : title.includes('Used') || title.includes('Gebraucht') ? '#7c3aed' : title.includes('Service') || title.includes('Aftersales') ? '#0891b2' : 'hsl(var(--border))' }}>
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
             {icon}
