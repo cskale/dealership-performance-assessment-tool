@@ -366,7 +366,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
       {/* Roadmap */}
       <Card className="bg-muted border border-border">
         <CardHeader>
-          <CardTitle className="text-slate-800 flex items-center gap-2">
+          <CardTitle className="text-foreground flex items-center gap-2">
             <Zap className="h-5 w-5" />
             {language === 'de' ? 'Entwicklungs-Roadmap' : 'Development Roadmap'}
           </CardTitle>
