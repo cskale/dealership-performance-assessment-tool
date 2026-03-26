@@ -252,7 +252,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
                 <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: '#6b7280' }} />
                 <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fontSize: 10, fill: '#9ca3af' }} />
                 <Radar name={language === 'de' ? 'Indikative Benchmark (75%) ⓘ' : 'Indicative Benchmark (75%) ⓘ'} dataKey="benchmark" stroke="#9ca3af" fill="#9ca3af" fillOpacity={0.15} strokeWidth={2} strokeDasharray="5 5" />
-                <Radar name={language === 'de' ? 'Ihre Bewertung' : 'Your Score'} dataKey="score" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.4} strokeWidth={3} />
+                <Radar name={language === 'de' ? 'Ihre Bewertung' : 'Your Score'} dataKey="score" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.2} strokeWidth={3} />
                 <Legend />
               </RadarChart>
             </ResponsiveContainer>
