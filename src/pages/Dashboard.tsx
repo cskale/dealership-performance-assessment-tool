@@ -85,7 +85,7 @@ const Dashboard = () => {
     const status = getScoreStatus(score);
 
     return (
-      <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+      <div className="flex items-center justify-between p-4 rounded-lg rounded-t-lg border bg-card border-t-4" style={{ borderTopColor: title.includes('New') || title.includes('Neufahr') ? '#2563eb' : title.includes('Used') || title.includes('Gebraucht') ? '#7c3aed' : title.includes('Service') || title.includes('Aftersales') ? '#0891b2' : 'hsl(var(--border))' }}>
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
             {icon}
@@ -175,10 +175,16 @@ const Dashboard = () => {
             score={72}
           />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard title={t('kpi.monthlyRevenue')} value="€385K" benchmark="€420K" change={-8.3} status="needs-focus" />
-            <KPICard title={t('kpi.averageMargin')} value="9.1%" benchmark="9.2%" change={-1.1} status="on-track" />
-            <KPICard title={t('kpi.customerSatisfaction')} value="87%" benchmark="84%" change={3.6} status="excellent" />
-            <KPICard title={t('kpi.leadConversion')} value="24%" benchmark="23%" change={4.3} status="excellent" />
+            {[
+              { title: t('kpi.monthlyRevenue'), value: "€385K", benchmark: "€420K", change: -8.3, status: 'needs-focus' as const },
+              { title: t('kpi.averageMargin'), value: "9.1%", benchmark: "9.2%", change: -1.1, status: 'on-track' as const },
+              { title: t('kpi.customerSatisfaction'), value: "87%", benchmark: "84%", change: 3.6, status: 'excellent' as const },
+              { title: t('kpi.leadConversion'), value: "24%", benchmark: "23%", change: 4.3, status: 'excellent' as const },
+            ].map((kpi, i) => (
+              <div key={i} className="opacity-0 animate-fade-in" style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'forwards' }}>
+                <KPICard {...kpi} />
+              </div>
+            ))}
           </div>
         </section>
 
@@ -190,10 +196,16 @@ const Dashboard = () => {
             score={68}
           />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard title={t('kpi.monthlyRevenue')} value="€245K" benchmark="€290K" change={-15.5} status="needs-focus" />
-            <KPICard title={t('kpi.averageMargin')} value="14.2%" benchmark="15.8%" change={-10.1} status="needs-focus" />
-            <KPICard title={t('kpi.turnoverRate')} value="7.8x" benchmark="8.5x" change={-8.2} status="on-track" unit={t('kpi.perYear')} />
-            <KPICard title={t('kpi.customerSatisfaction')} value="83%" benchmark="81%" change={2.5} status="excellent" />
+            {[
+              { title: t('kpi.monthlyRevenue'), value: "€245K", benchmark: "€290K", change: -15.5, status: 'needs-focus' as const },
+              { title: t('kpi.averageMargin'), value: "14.2%", benchmark: "15.8%", change: -10.1, status: 'needs-focus' as const },
+              { title: t('kpi.turnoverRate'), value: "7.8x", benchmark: "8.5x", change: -8.2, status: 'on-track' as const, unit: t('kpi.perYear') },
+              { title: t('kpi.customerSatisfaction'), value: "83%", benchmark: "81%", change: 2.5, status: 'excellent' as const },
+            ].map((kpi, i) => (
+              <div key={i} className="opacity-0 animate-fade-in" style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'forwards' }}>
+                <KPICard {...kpi} />
+              </div>
+            ))}
           </div>
         </section>
 
@@ -205,10 +217,16 @@ const Dashboard = () => {
             score={81}
           />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard title={t('kpi.monthlyRevenue')} value="€178K" benchmark="€185K" change={-3.8} status="on-track" />
-            <KPICard title={t('kpi.laborEfficiency')} value="85%" benchmark="78%" change={9.0} status="excellent" />
-            <KPICard title={t('kpi.customerRetention')} value="76%" benchmark="72%" change={5.6} status="excellent" />
-            <KPICard title={t('kpi.averageRO')} value="€268" benchmark="€245" change={9.4} status="excellent" />
+            {[
+              { title: t('kpi.monthlyRevenue'), value: "€178K", benchmark: "€185K", change: -3.8, status: 'on-track' as const },
+              { title: t('kpi.laborEfficiency'), value: "85%", benchmark: "78%", change: 9.0, status: 'excellent' as const },
+              { title: t('kpi.customerRetention'), value: "76%", benchmark: "72%", change: 5.6, status: 'excellent' as const },
+              { title: t('kpi.averageRO'), value: "€268", benchmark: "€245", change: 9.4, status: 'excellent' as const },
+            ].map((kpi, i) => (
+              <div key={i} className="opacity-0 animate-fade-in" style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'forwards' }}>
+                <KPICard {...kpi} />
+              </div>
+            ))}
           </div>
         </section>
 

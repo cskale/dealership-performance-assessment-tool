@@ -215,7 +215,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
   return (
     <div className="space-y-6">
       {/* Radar Chart */}
-      <Card className="shadow-lg">
+      <Card className="shadow-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             {language === 'de' ? 'Leistungsradar' : 'Performance Radar'}
@@ -248,11 +248,11 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
           <div className="h-[400px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={radarData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
-                <PolarGrid stroke="#e5e7eb" />
+                <PolarGrid stroke="#e5e7eb" strokeDasharray="3 3" />
                 <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: '#6b7280' }} />
                 <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fontSize: 10, fill: '#9ca3af' }} />
                 <Radar name={language === 'de' ? 'Indikative Benchmark (75%) ⓘ' : 'Indicative Benchmark (75%) ⓘ'} dataKey="benchmark" stroke="#9ca3af" fill="#9ca3af" fillOpacity={0.15} strokeWidth={2} strokeDasharray="5 5" />
-                <Radar name={language === 'de' ? 'Ihre Bewertung' : 'Your Score'} dataKey="score" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.4} strokeWidth={3} />
+                <Radar name={language === 'de' ? 'Ihre Bewertung' : 'Your Score'} dataKey="score" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.2} strokeWidth={3} />
                 <Legend />
               </RadarChart>
             </ResponsiveContainer>
@@ -261,7 +261,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
       </Card>
 
       {/* Gap Analysis Table */}
-      <Card className="shadow-lg">
+      <Card className="shadow-card">
         <CardHeader>
           <CardTitle>{language === 'de' ? 'Lückenanalyse' : 'Performance Gap Analysis'}</CardTitle>
           <p className="text-sm text-muted-foreground">
@@ -319,7 +319,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
       </Card>
 
       {/* Overall Maturity */}
-      <Card className={`border-2 shadow-lg ${overallMaturityLevel.color}`}>
+      <Card className={`border-2 shadow-card ${overallMaturityLevel.color}`}>
         <CardHeader>
           <div className="flex items-center gap-3">
             <span className="text-3xl">{overallMaturityLevel.icon}</span>
@@ -364,9 +364,9 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
       </Card>
 
       {/* Roadmap */}
-      <Card className="bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200">
+      <Card className="bg-muted border border-border">
         <CardHeader>
-          <CardTitle className="text-slate-800 flex items-center gap-2">
+          <CardTitle className="text-foreground flex items-center gap-2">
             <Zap className="h-5 w-5" />
             {language === 'de' ? 'Entwicklungs-Roadmap' : 'Development Roadmap'}
           </CardTitle>
@@ -384,7 +384,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
                     <div className="font-bold">{level.name}</div>
                     <div className="text-muted-foreground">{count} {language === 'de' ? 'Bereiche' : 'depts'}</div>
                   </div>
-                  {index < maturityLevels.length - 1 && <div className="hidden md:block w-8 h-0.5 bg-gray-300 mx-2" />}
+                  {index < maturityLevels.length - 1 && <div className="hidden md:block w-8 h-0.5 bg-border mx-2" />}
                 </div>
               );
             })}

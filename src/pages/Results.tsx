@@ -321,47 +321,59 @@ export default function Results() {
               : (language === 'de' ? 'Niedrig' : 'Low');
             const confidenceColor = overallScore >= 70 ? 'text-[hsl(var(--dd-green))]' : overallScore >= 45 ? 'text-[hsl(var(--dd-amber))]' : 'text-[hsl(var(--dd-red))]';
 
-            const cardClass = "bg-card border border-border rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]";
+            const cardBase = "bg-card border border-border rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]";
             const labelClass = "text-caption uppercase tracking-widest text-muted-foreground font-semibold mb-1";
+
+            // SVG Score Ring constants
+            const ringSize = 120;
+            const strokeWidth = 8;
+            const radius = (ringSize - strokeWidth) / 2;
+            const circumference = 2 * Math.PI * radius;
+            const scoreOffset = circumference - (circumference * animatedScore) / 100;
+            const ringColor = overallScore >= 85 ? 'hsl(var(--success))'
+              : overallScore >= 70 ? 'hsl(var(--primary))'
+              : overallScore >= 30 ? 'hsl(var(--warning))'
+              : 'hsl(var(--destructive))';
 
             return (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                {/* Card 1 — Overall Score */}
-                <div className={cardClass}>
-                  <div className={labelClass}>{language === 'de' ? 'Gesamtbewertung' : 'Overall Score'}</div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-metric-lg text-foreground">{animatedScore}</span>
-                    <span className="text-body-md font-normal text-muted-foreground">/100</span>
-                  </div>
-                  <div className="mt-3 w-full">
-                    <div className="relative h-2 w-full rounded-full bg-secondary overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{
-                          width: `${animatedScore}%`,
-                          backgroundColor: overallScore >= 85 ? 'hsl(var(--success))' :
-                                           overallScore >= 70 ? 'hsl(var(--primary))' :
-                                           overallScore >= 30 ? 'hsl(var(--warning))' :
-                                           'hsl(var(--destructive))'
-                        }}
+                {/* Card 1 — Overall Score with SVG Ring */}
+                <div className={cn(cardBase, "col-span-2 flex items-center gap-6 opacity-0 animate-fade-in")} style={{ animationDelay: '0ms', animationFillMode: 'forwards' }}>
+                  <div className="relative flex-shrink-0" style={{ width: ringSize, height: ringSize }}>
+                    <svg width={ringSize} height={ringSize} className="-rotate-90">
+                      <circle
+                        cx={ringSize / 2} cy={ringSize / 2} r={radius}
+                        fill="none" stroke="hsl(var(--muted))" strokeWidth={strokeWidth}
                       />
+                      <circle
+                        cx={ringSize / 2} cy={ringSize / 2} r={radius}
+                        fill="none" stroke={ringColor} strokeWidth={strokeWidth}
+                        strokeLinecap="round"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={scoreOffset}
+                        style={{ transition: 'stroke-dashoffset 0.3s ease-out' }}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-metric-lg text-foreground">{animatedScore}</span>
+                      <span className="text-caption text-muted-foreground">/100</span>
                     </div>
-                    <div className="flex justify-between mt-1">
-                      <span className="text-xs text-muted-foreground">0</span>
-                      <span className="text-xs text-muted-foreground">100</span>
-                    </div>
+                  </div>
+                  <div>
+                    <div className={labelClass}>{language === 'de' ? 'Gesamtbewertung' : 'Overall Score'}</div>
+                    <Badge variant={scoreInfo.variant} className="mt-1">{scoreInfo.label}</Badge>
                   </div>
                 </div>
 
                 {/* Card 2 — Maturity Level */}
-                <div className={cardClass}>
+                <div className={cn(cardBase, "opacity-0 animate-fade-in")} style={{ animationDelay: '50ms', animationFillMode: 'forwards' }}>
                   <div className={labelClass}>{language === 'de' ? 'Reifegrad' : 'Maturity Level'}</div>
                   <div className="text-h4 text-foreground mb-1.5">{maturityLabel}</div>
                   <Badge variant={maturityBadgeVariant}>{maturityLabel}</Badge>
                 </div>
 
                 {/* Card 3 — Modules Assessed */}
-                <div className={cardClass}>
+                <div className={cn(cardBase, "opacity-0 animate-fade-in")} style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
                   <div className={labelClass}>{language === 'de' ? 'Module bewertet' : 'Modules Assessed'}</div>
                   <div className="text-metric-lg text-foreground">{modulesAssessed}</div>
                   <div className="text-caption text-muted-foreground">
@@ -370,7 +382,7 @@ export default function Results() {
                 </div>
 
                 {/* Card 4 — Confidence */}
-                <div className={cardClass}>
+                <div className={cn(cardBase, "opacity-0 animate-fade-in")} style={{ animationDelay: '150ms', animationFillMode: 'forwards' }}>
                   <div className={labelClass}>{language === 'de' ? 'Bewertungskonfidenz' : 'Assessment Confidence'}</div>
                   <div className={`text-h4 ${confidenceColor}`}>{confidenceLevel}</div>
                   <div className="text-caption text-muted-foreground mt-1">
@@ -414,7 +426,7 @@ export default function Results() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="executive" className="space-y-6 animate-fade-in">
+          <TabsContent value="executive" className="space-y-6 animate-fade-in" style={{ willChange: 'opacity, transform' }}>
             <ErrorBoundary fallbackTitle={language === 'de' ? 'Zusammenfassung nicht verfügbar' : 'Summary unavailable'}>
               <ExecutiveSummary
                 overallScore={overallScore}
