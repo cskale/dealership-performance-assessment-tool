@@ -261,7 +261,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
       </Card>
 
       {/* Gap Analysis Table */}
-      <Card className="shadow-lg">
+      <Card className="shadow-card">
         <CardHeader>
           <CardTitle>{language === 'de' ? 'Lückenanalyse' : 'Performance Gap Analysis'}</CardTitle>
           <p className="text-sm text-muted-foreground">
