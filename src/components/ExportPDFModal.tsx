@@ -181,7 +181,7 @@ export function ExportPDFModal({ open, onOpenChange, exportData }: ExportPDFModa
           </div>
         </div>
 
-        <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-2">
+        <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-2 flex-wrap">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pdfGenerating || xlsxGenerating} className="sm:order-1">
             Cancel
           </Button>
