@@ -324,7 +324,7 @@ const Account = () => {
             { label: 'Organizations', value: String(organizations.length) },
           ].map(card => (
             <div key={card.label} className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-3">
-              <div className="text-xl font-medium text-foreground">{card.value}</div>
+              <div className="text-2xl font-semibold text-foreground">{card.value}</div>
               <div className="text-[11px] text-muted-foreground mt-0.5">{card.label}</div>
             </div>
           ))}

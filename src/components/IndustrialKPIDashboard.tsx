@@ -249,41 +249,6 @@ export function IndustrialKPIDashboard({
         );
       })}
 
-      {/* Strategic Recommendations */}
-      <Card className="bg-warning/10 border-2 border-warning/40">
-        <CardHeader>
-          <CardTitle className="text-xl text-warning-foreground flex items-center gap-2">
-            <Target className="h-5 w-5" />
-            {language === 'de' ? 'Strategische Empfehlungen' : 'Strategic Recommendations'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="text-sm text-warning-foreground/90 space-y-2">
-            {Object.entries(scores)
-              .filter(([_, score]) => score < 70) // Below mature threshold
-              .slice(0, 3)
-              .map(([sectionId, score]) => (
-                <li key={sectionId} className="flex items-start gap-2">
-                  <span className="text-warning-foreground/70 mt-0.5">•</span>
-                  <span>
-                    {language === 'de' ? 'Fokus auf Verbesserung von' : 'Focus on improving'} <strong>{getSectionTitle(sectionId)}</strong> ({score}%) {language === 'de' ? 'durch gezielte Schulung und Prozessoptimierung' : 'through targeted training and process optimization'}
-                  </span>
-                </li>
-              ))
-            }
-            {Object.values(scores).every(score => score >= 70) && ( // All above mature threshold
-              <li className="flex items-start gap-2">
-                <span className="text-success">•</span>
-                <span>
-                  {language === 'de'
-                    ? 'Hervorragende Leistung in allen Bereichen! Konzentrieren Sie sich auf die Aufrechterhaltung der Exzellenz und erkunden Sie neue Wachstumschancen.'
-                    : 'Excellent performance across all areas! Focus on maintaining excellence and exploring new growth opportunities.'}
-                </span>
-              </li>
-            )}
-          </ul>
-        </CardContent>
-      </Card>
     </div>
   );
 }
