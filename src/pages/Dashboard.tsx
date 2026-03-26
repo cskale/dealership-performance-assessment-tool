@@ -196,10 +196,16 @@ const Dashboard = () => {
             score={68}
           />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard title={t('kpi.monthlyRevenue')} value="€245K" benchmark="€290K" change={-15.5} status="needs-focus" />
-            <KPICard title={t('kpi.averageMargin')} value="14.2%" benchmark="15.8%" change={-10.1} status="needs-focus" />
-            <KPICard title={t('kpi.turnoverRate')} value="7.8x" benchmark="8.5x" change={-8.2} status="on-track" unit={t('kpi.perYear')} />
-            <KPICard title={t('kpi.customerSatisfaction')} value="83%" benchmark="81%" change={2.5} status="excellent" />
+            {[
+              { title: t('kpi.monthlyRevenue'), value: "€245K", benchmark: "€290K", change: -15.5, status: 'needs-focus' as const },
+              { title: t('kpi.averageMargin'), value: "14.2%", benchmark: "15.8%", change: -10.1, status: 'needs-focus' as const },
+              { title: t('kpi.turnoverRate'), value: "7.8x", benchmark: "8.5x", change: -8.2, status: 'on-track' as const, unit: t('kpi.perYear') },
+              { title: t('kpi.customerSatisfaction'), value: "83%", benchmark: "81%", change: 2.5, status: 'excellent' as const },
+            ].map((kpi, i) => (
+              <div key={i} className="opacity-0 animate-fade-in" style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'forwards' }}>
+                <KPICard {...kpi} />
+              </div>
+            ))}
           </div>
         </section>
 
