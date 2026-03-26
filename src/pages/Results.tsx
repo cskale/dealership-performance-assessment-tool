@@ -325,8 +325,8 @@ export default function Results() {
             const labelClass = "text-caption uppercase tracking-widest text-muted-foreground font-semibold mb-1";
 
             // SVG Score Ring constants
-            const ringSize = 120;
-            const strokeWidth = 8;
+            const ringSize = 80;
+            const strokeWidth = 6;
             const radius = (ringSize - strokeWidth) / 2;
             const circumference = 2 * Math.PI * radius;
             const scoreOffset = circumference - (circumference * animatedScore) / 100;
@@ -338,8 +338,8 @@ export default function Results() {
             return (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 {/* Card 1 — Overall Score with SVG Ring */}
-                <div className={cn(cardBase, "col-span-2 flex items-center gap-6 opacity-0 animate-fade-in")} style={{ animationDelay: '0ms', animationFillMode: 'forwards' }}>
-                  <div className="relative flex-shrink-0" style={{ width: ringSize, height: ringSize }}>
+                <div className={cn(cardBase, "flex flex-col items-center text-center opacity-0 animate-fade-in")} style={{ animationDelay: '0ms', animationFillMode: 'forwards' }}>
+                  <div className="relative flex-shrink-0 mb-2" style={{ width: ringSize, height: ringSize }}>
                     <svg width={ringSize} height={ringSize} className="-rotate-90">
                       <circle
                         cx={ringSize / 2} cy={ringSize / 2} r={radius}
@@ -355,14 +355,12 @@ export default function Results() {
                       />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-metric-lg text-foreground">{animatedScore}</span>
-                      <span className="text-caption text-muted-foreground">/100</span>
+                      <span className="text-h4 font-bold text-foreground">{animatedScore}</span>
+                      <span className="text-[10px] text-muted-foreground">/100</span>
                     </div>
                   </div>
-                  <div>
-                    <div className={labelClass}>{language === 'de' ? 'Gesamtbewertung' : 'Overall Score'}</div>
-                    <Badge variant={scoreInfo.variant} className="mt-1">{scoreInfo.label}</Badge>
-                  </div>
+                  <div className={labelClass}>{language === 'de' ? 'Gesamtbewertung' : 'Overall Score'}</div>
+                  <Badge variant={scoreInfo.variant} className="mt-1">{scoreInfo.label}</Badge>
                 </div>
 
                 {/* Card 2 — Maturity Level */}
