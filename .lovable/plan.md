@@ -1,63 +1,65 @@
 
 
-## Production Bug Fixes — 8 Issues
+## Plan: UX/UI Refinements — DESIGN.md Compliance Fixes
 
-### Constraint check
+Both resources (ui-ux-pro-max-skill and 21st.dev) are useful as design intelligence references but cannot be installed directly into Lovable. However, several of their recommended patterns for **Enterprise SaaS / B2B dashboards** — specifically "Data-Dense Dashboard", "Executive Dashboard", and "Dimensional Layering" styles — align perfectly with what DESIGN.md already specifies but is **not yet implemented** in code.
 
-Per the collaborative development boundary, these files are **read-only** and cannot be modified by this agent:
-- `src/components/ActionPlan.tsx` — blocks Issue 5 (color legend) and Issue 6 (generate button removal)
-- `src/pages/Assessment.tsx` — blocks Issue 7 (sidebar → horizontal strip)
-
-These 3 issues must be handled by Claude Code. The remaining **5 fixes** can proceed now.
+The highest-impact improvements are features your own design system defines but the codebase does not render yet. Here are the concrete changes:
 
 ---
 
 ### Files to modify
 
-| # | File | Issue |
-|---|---|---|
-| 1–2 | `src/pages/Account.tsx` | Profile polish + tag casing |
-| 3 | `src/components/IndustrialKPIDashboard.tsx` | Remove yellow Strategic Recommendations box |
-| 4 | `src/components/action-plan/OwnerLoadPanel.tsx` | Fix scroll leak on Owner Workload panel |
-| 8 | `src/components/ExportPDFModal.tsx` | Fix clipped Export PDF modal |
+| File | Change |
+|---|---|
+| `src/pages/Results.tsx` | Replace flat progress bar with SVG score ring (DESIGN.md §5.1); add staggered card entrance animations (§7.2) |
+| `src/pages/Dashboard.tsx` | Add 4px department-colour top borders to section headers (§5.2); staggered KPI card animations |
+| `src/components/MaturityScoring.tsx` | Fix radar chart styling: dashed grid, 20% fill opacity, shadow-card (§6.3); fix roadmap gradient anti-pattern |
 
 ---
 
-### Fix 1 & 2 — Profile polish + consistent tag casing (`Account.tsx`)
+### Change 1 — SVG Score Ring on Results Page
 
-**Tag casing (line 301):** The role badge renders `{currentMembership?.role || 'member'}` raw from the database (lowercase "owner"). Fix by capitalizing: replace with a helper that does `role.charAt(0).toUpperCase() + role.slice(1)`.
+**DESIGN.md §5.1 specifies this. Current code uses a flat `<div>` progress bar (lines 336-353).**
 
-Apply the same capitalisation to line 297 (`{currentMembership?.role} · {user.email}`).
+Replace the Overall Score card's flat bar with an inline SVG circular ring:
+- 120px diameter, `stroke-width: 8`, `neutral-200` track circle
+- Score arc coloured by score band (success/warning/destructive)
+- `stroke-dashoffset` animates once on mount via a `useState` + `useEffect` with `requestAnimationFrame` (300ms ease-out)
+- Score number centred inside the ring using `text-metric-lg`
+- Label below: `text-label uppercase tracking-wider`
+- Make this card `col-span-2` on `md:grid-cols-4` to establish visual hierarchy
 
-**Profile polish:**
-- Avatar: increase from `w-16 h-16` → `w-20 h-20`, text from `text-xl` → `text-2xl`
-- Name: increase from `text-lg` → `text-xl font-semibold`
-- Stats cards: increase value text from `text-xl` → `text-2xl font-semibold`
-- Hero card padding: `p-5` → `p-6`
+### Change 2 — Staggered Card Entrance Animations
 
-### Fix 3 — Remove Strategic Recommendations (`IndustrialKPIDashboard.tsx`)
+**DESIGN.md §7.2 permits staggered reveals: 50ms increments, max 5 cards.**
 
-Delete lines 252–286 (the entire `Card` with `bg-warning/10` that renders the yellow "Strategic Recommendations" box). The content is generic filler and illegible due to poor contrast.
+Results page (lines 328-383): Add `opacity-0 animate-fade-in` with inline `style={{ animationDelay: '${i * 50}ms', animationFillMode: 'forwards' }}` to each of the 4 summary metric cards.
 
-### Fix 4 — Owner Workload scroll fix (`OwnerLoadPanel.tsx`)
+Dashboard page: Same treatment on the 4 KPI cards within each department section (delays 0/50/100/150ms).
 
-Add a `useEffect` that sets `document.body.style.overflow = 'hidden'` when `open` is true and restores it on close/unmount. This prevents the background page from scrolling while the modal is open.
+### Change 3 — Department Colour Top Borders on Dashboard
 
-Add `import { useEffect }` alongside the existing `useMemo` import.
+**DESIGN.md §5.2 specifies a 4px top border in department colour. Current `SectionHeader` has none (line 88).**
 
-### Fix 8 — Export PDF modal clipping (`ExportPDFModal.tsx`)
+Add `border-t-4 rounded-t-lg` with inline `style={{ borderTopColor: '#2563eb' }}` (NVS), `#7c3aed` (UVS), `#0891b2` (SVC) to each section's container card.
 
-**Line 131:** Change `sm:max-w-md overflow-hidden` → `sm:max-w-lg` (remove `overflow-hidden`, widen the dialog).
+### Change 4 — Radar Chart & Roadmap Styling Fixes
 
-**Line 184:** Add `flex-wrap` to `DialogFooter` so buttons wrap on narrow screens instead of being clipped.
+**DESIGN.md §6.3 specifies dashed grid, 20% fill opacity, 11px axis labels.**
+
+In `MaturityScoring.tsx`:
+- `PolarGrid`: add `strokeDasharray="3 3"` (currently missing)
+- "Your Score" `Radar`: change `fillOpacity={0.4}` → `fillOpacity={0.2}`
+- All 3 `Card` components: change `shadow-lg` → `shadow-card`
+- Roadmap card (line ~370): replace `bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200` with `bg-muted border border-border` (hardcoded greys are an anti-pattern per §2.5)
 
 ---
 
-### Blocked issues (require Claude Code)
+### Technical notes
 
-| Issue | File | Action needed |
-|---|---|---|
-| 5 — Color legend | `ActionPlan.tsx` | Add priority color legend row below toolbar |
-| 6 — Generate button | `ActionPlan.tsx` | Remove manual "Generate Actions" button and related dialog |
-| 7 — Assessment sidebar | `Assessment.tsx` | Replace sidebar with horizontal section strip |
+- Zero new packages — all inline SVG, CSS animations, existing Recharts props
+- No changes to `tailwind.config.ts`, `index.css`, or `src/components/ui/`
+- All animations are mount-only per §7.2 (no re-render triggers)
+- The SVG ring reuses the existing `animatedScore` state already in Results.tsx
 
