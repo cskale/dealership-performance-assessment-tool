@@ -11,7 +11,6 @@ import { getDepartmentName } from "@/lib/departmentNames";
 import { DepartmentHeatmap } from "@/components/results/DepartmentHeatmap";
 import { CausalChainDiagram } from "@/components/results/CausalChainDiagram";
 import { CeilingInsightsPanel } from "@/components/results/CeilingInsightsPanel";
-import { getDepartmentName } from "@/lib/departmentNames";
 import {
   CATEGORY_WEIGHTS,
   DEPARTMENT_TO_CATEGORY,
