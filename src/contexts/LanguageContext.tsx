@@ -792,6 +792,31 @@ const translations: Record<Language, Record<string, string>> = {
     'coach.noAssessments': 'Keine Bewertungen gefunden',
     'coach.latestAssessment': 'Letzte Bewertung',
     'coach.status': 'Status',
+
+    // Results — KPI Matrix Heatmap
+    'results.kpiMatrix.title': 'Abteilungs-KPI-Matrix',
+    'results.kpiMatrix.noData': 'Keine KPI-Daten verfügbar',
+    'results.kpiMatrix.score': 'Bewertung',
+    'results.kpiMatrix.legend': 'Legende',
+    'results.kpiMatrix.aboveBenchmark': 'Über Benchmark',
+    'results.kpiMatrix.atBenchmark': 'Im Benchmark',
+    'results.kpiMatrix.belowBenchmark': 'Unter Benchmark',
+
+    // Results — Causal Chain
+    'results.causalChain.title': 'Ursachenanalyse',
+    'results.causalChain.noChains': 'Keine abteilungsübergreifenden Ursachenketten erkannt. Alle Abteilungen arbeiten unabhängig.',
+    'results.causalChain.viewAll': 'Alle Ketten anzeigen',
+    'results.causalChain.showLess': 'Weniger anzeigen',
+    'results.causalChain.sharedCause': 'Gemeinsame Ursache',
+    'results.causalChain.rootCause': 'Ursache',
+
+    // Results — Ceiling Insights
+    'results.ceiling.title': 'Exzellenzlücken — Weg ins Top-Quartil',
+    'results.ceiling.noInsights': 'Alle Abteilungen optimieren. Keine unmittelbaren Optimierungsmöglichkeiten erkannt.',
+    'results.ceiling.viewAll': 'Alle Erkenntnisse anzeigen',
+    'results.ceiling.showLess': 'Weniger anzeigen',
+    'results.ceiling.badge': 'Optimierungschance',
+    'results.ceiling.currentScore': 'Aktuelle Bewertung',
   }
 };
 
