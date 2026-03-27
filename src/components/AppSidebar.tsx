@@ -2,9 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
+import { useActiveRole } from '@/hooks/useActiveRole';
 import {
   BarChart3, Building2, Plus, ClipboardList, CheckSquare,
-  BookOpen, FileText, LogOut, Database,
+  BookOpen, FileText, LogOut, Database, Globe, Users,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
