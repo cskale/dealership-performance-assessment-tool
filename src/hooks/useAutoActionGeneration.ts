@@ -170,7 +170,7 @@ export function useAutoActionGeneration() {
       };
 
       // Generate actions using deterministic signal engine
-      const actions = generateActionsFromAssessment(answers, questionWeights, config, undefined, businessModel);
+      const { actions } = generateActionsFromAssessment(answers, questionWeights, config, undefined, businessModel);
 
       if (actions.length === 0) {
         if (import.meta.env.DEV) {

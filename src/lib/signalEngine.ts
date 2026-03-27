@@ -22,6 +22,7 @@ import {
 } from '@/data/actionTemplatesTiered';
 import { generateContextIntelligence } from '@/lib/contextIntelligence';
 import { KPI_DEFINITIONS } from '@/lib/kpiDefinitions';
+import { evaluateCrossValidations, type CrossValidationFinding } from '@/data/crossValidationRules';
 
 export interface SignalEngineConfig {
   enableAutoActions: boolean;
@@ -53,11 +54,28 @@ export interface InstantiatedAction {
   linkedKPIs?: string[];
 }
 
+export interface AssessmentResult {
+  signals: GeneratedSignal[];
+  actions: InstantiatedAction[];
+  crossValidationAlerts: CrossValidationFinding[];
+}
+
 const DEFAULT_CONFIG: SignalEngineConfig = {
   enableAutoActions: true,
   weakScoreThreshold: 3,
   criticalScoreThreshold: 2
 };
+
+/**
+ * Map a numeric department score to its score band.
+ * Returns null for scores ≥85 (ceiling territory — handled separately).
+ */
+export function getScoreBand(score: number): 'foundational' | 'developing' | 'optimising' | null {
+  if (score <= 45) return 'foundational';
+  if (score >= 46 && score <= 69) return 'developing';
+  if (score >= 70 && score <= 84) return 'optimising';
+  return null; // score ≥85 = ceiling signal, handled separately
+}
 
 /**
  * Determine severity based on score and question weight
@@ -271,26 +289,27 @@ export function generateSignals(
 }
 
 /**
- * Find the best matching template for a signal, preferring KPI-specific over generic
+ * Find the best matching template for a signal, preferring KPI-specific over generic.
+ * departmentScore, if provided, overrides sectionScores for band selection on this signal.
  */
 function selectTemplates(
   signal: GeneratedSignal,
   usedTemplateIds: Set<string>,
   maxForSignal: number,
-  config: SignalEngineConfig = DEFAULT_CONFIG
+  config: SignalEngineConfig = DEFAULT_CONFIG,
+  departmentScore?: number
 ): ActionTemplate[] {
   const selected: ActionTemplate[] = [];
+
+  // Resolve the effective score for this signal: explicit departmentScore wins over sectionScores
+  const effectiveScore = departmentScore ?? (config.sectionScores ?? {})[signal.moduleKey] ?? 50;
+  const derivedBand = getScoreBand(effectiveScore);
 
   const checkFilters = (template: ActionTemplate): boolean => {
     // Filter by score band if template has one specified
     if (template.scoreBand) {
-      const sectionScores = config.sectionScores ?? {};
-      const moduleScore = sectionScores[signal.moduleKey] ?? 50;
-      const activeBand: 'foundational' | 'developing' | 'optimising' =
-        moduleScore <= 45 ? 'foundational'
-        : moduleScore <= 69 ? 'developing'
-        : 'optimising';
-      if (template.scoreBand !== activeBand) return false;
+      // If derivedBand is null (score ≥85) treat as no band restriction — fall through to unbanded
+      if (derivedBand !== null && template.scoreBand !== derivedBand) return false;
     }
 
     // Filter by business model relevance
@@ -298,6 +317,19 @@ function selectTemplates(
       const dealerBM = config.businessModel ?? '4s';
       if (!template.relevantBusinessModels.includes(dealerBM as any)) return false;
     }
+
+    return true;
+  };
+
+  // Emergency catch-all filter: skips both band AND business-model restrictions.
+  // Used only when all standard passes return zero results — guarantees at least one
+  // template is surfaced even when no unbanded+matched template exists.
+  const checkFiltersRelaxed = (template: ActionTemplate): boolean => {
+    // Skip banded templates entirely (they didn't match above) — only allow unbanded
+    if (template.scoreBand !== undefined) return false;
+
+    // Intentionally omit business-model check — this is a last-resort fallback
+    // that must ignore model restrictions to prevent a zero-result degenerate case.
 
     return true;
   };
@@ -352,6 +384,20 @@ function selectTemplates(
     }
   }
 
+  // Pass 4: Emergency fallback — if all passes returned nothing, take any unbanded template
+  // ignoring business model restriction (prevents zero-result degenerate case)
+  if (selected.length === 0) {
+    const allTemplates = getTemplatesForSignal(signal.signalCode as Exclude<SignalCode, 'NONE'>);
+    for (const template of allTemplates) {
+      if (selected.length >= maxForSignal) break;
+      if (usedTemplateIds.has(template.templateId)) continue;
+      if (!checkFiltersRelaxed(template)) continue;
+
+      selected.push(template);
+      usedTemplateIds.add(template.templateId);
+    }
+  }
+
   return selected;
 }
 
@@ -394,12 +440,15 @@ function resolveTieredCode(moduleKey: string, signalCode: string): TieredSignalC
 }
 
 /**
- * Instantiate actions from signals with KPI-aware template selection
+ * Instantiate actions from signals with KPI-aware template selection.
+ * departmentScore, when provided for a specific signal's module, overrides
+ * sectionScores for band selection on that signal.
  */
 export function instantiateActions(
   signals: GeneratedSignal[],
   maxActions: number = 10,
-  config: SignalEngineConfig = DEFAULT_CONFIG
+  config: SignalEngineConfig = DEFAULT_CONFIG,
+  departmentScore?: number
 ): InstantiatedAction[] {
   const actions: InstantiatedAction[] = [];
   const usedTemplateIds = new Set<string>();
@@ -411,7 +460,8 @@ export function instantiateActions(
     // ── Tiered template lookup (takes priority over generic ACTION_TEMPLATES) ──
     const tieredCode = resolveTieredCode(signal.moduleKey, signal.signalCode);
     if (tieredCode !== null) {
-      const sectionScore = config.sectionScores?.[signal.moduleKey] ?? 50;
+      // Explicit departmentScore wins over sectionScores for band resolution
+      const sectionScore = departmentScore ?? config.sectionScores?.[signal.moduleKey] ?? 50;
       const tieredTemplate = getTieredTemplate(tieredCode, sectionScore);
       if (!tieredTemplate) continue; // no template for this band — skip signal
 
@@ -444,7 +494,7 @@ export function instantiateActions(
     const remaining = maxActions - actions.length;
     const limit = Math.min(maxForSignal, remaining);
 
-    const templates = selectTemplates(signal, usedTemplateIds, limit, config);
+    const templates = selectTemplates(signal, usedTemplateIds, limit, config, departmentScore);
 
     for (const template of templates) {
       const priority = severityToPriority(signal.severity);
@@ -470,18 +520,27 @@ export function instantiateActions(
 }
 
 /**
- * Main entry point: Generate actions from assessment answers
+ * Main entry point: Generate actions from assessment answers.
+ * departmentScore — optional override for band selection on a single-module context.
+ *   When supplied, it takes precedence over sectionScores for band resolution in
+ *   both instantiateActions() and selectTemplates().
  */
 export function generateActionsFromAssessment(
   answers: Record<string, number>,
   questionWeights: Record<string, number>,
   config: SignalEngineConfig = DEFAULT_CONFIG,
   questionLinkedKPIs?: Record<string, string[]>,
-  businessModel?: string
-): InstantiatedAction[] {
+  businessModel?: string,
+  // departmentScore: optional override for single-module context; if provided,
+  // applies the same band to all signals — pass undefined for multi-module assessments
+  // (per-module scores from config.sectionScores are used instead)
+  departmentScore?: number
+): AssessmentResult {
   const effectiveConfig = businessModel ? { ...config, businessModel } : config;
   const signals = generateSignals(answers, questionWeights, effectiveConfig, questionLinkedKPIs);
-  return instantiateActions(signals, 10, effectiveConfig);
+  const actions = instantiateActions(signals, 10, effectiveConfig, departmentScore);
+  const crossValidationAlerts = evaluateCrossValidations(answers);
+  return { signals, actions, crossValidationAlerts };
 }
 
 /**

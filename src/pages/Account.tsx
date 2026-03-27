@@ -38,7 +38,7 @@ const ROLES_MATRIX = [
   { permission: 'Export PDF reports',         owner: true,  admin: true,  member: true,  viewer: true  },
   { permission: 'Manage organization',        owner: true,  admin: true,  member: false, viewer: false },
   { permission: 'Edit organization settings', owner: true,  admin: true,  member: false, viewer: false },
-  { permission: 'Invite members',             owner: true,  admin: true,  member: true,  viewer: false },
+  { permission: 'Invite members',             owner: true,  admin: true,  member: false, viewer: false },
   { permission: 'Assign coaches',             owner: true,  admin: true,  member: false, viewer: false },
   { permission: 'Delete records',             owner: true,  admin: true,  member: false, viewer: false },
   { permission: 'Delete organization',        owner: true,  admin: false, member: false, viewer: false },

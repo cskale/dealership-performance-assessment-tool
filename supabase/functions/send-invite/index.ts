@@ -69,11 +69,11 @@ serve(async (req) => {
     }
 
     const { data: membership } = await supabaseAdmin.from('memberships').select('role').eq('user_id', user.id).eq('organization_id', organization_id).eq('is_active', true).single()
-    if (!membership || !['owner', 'admin', 'manager'].includes(membership.role)) {
+    if (!membership || !['owner', 'admin'].includes(membership.role)) {
       return new Response(JSON.stringify({ error: 'Insufficient permissions' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    const validRoles = ['owner', 'admin', 'manager', 'analyst', 'viewer']
+    const validRoles = ['owner', 'admin', 'member', 'viewer']
     const inviteRole = role && validRoles.includes(role) ? role : 'viewer'
 
     const { data: existingInvite } = await supabaseAdmin.from('dealership_invites').select('id, token').eq('dealership_id', dealership_id).eq('invited_email', normalizedEmail).eq('status', 'pending').maybeSingle()

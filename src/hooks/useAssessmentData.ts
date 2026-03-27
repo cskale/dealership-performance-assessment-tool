@@ -431,7 +431,7 @@ export const useAssessmentData = () => {
       .single();
 
     const answers = (assessmentData?.answers as Record<string, number>) || {};
-    const actions = generateActionsFromAssessment(answers, questionWeights, undefined, undefined, businessModel);
+    const { actions } = generateActionsFromAssessment(answers, questionWeights, undefined, undefined, businessModel);
     const dbActions = formatActionsForDatabaseInsert(actions, user.id, assessmentId, profile.active_organization_id);
 
     if (dbActions.length === 0) return [];

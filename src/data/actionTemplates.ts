@@ -176,7 +176,7 @@ export const ACTION_TEMPLATES: ActionTemplate[] = [
     defaultPriority: 'HIGH',
     linkedKPIs: ['daysInInventory', 'usedCarInventoryTurn'],
     rootCauseDimension: 'process',
-    relevantBusinessModels: ['3s', '4s'],
+    relevantBusinessModels: ['2s', '3s', '4s'],
     implementationSteps: [
       { text: 'Implement automated repricing protocols at 15-day intervals based on market comparison', primaryRole: 'Used Vehicle Manager' },
       { text: 'Establish hard action triggers: 45 days (review), 60 days (aggressive repricing), 90 days (wholesale evaluation)', primaryRole: 'Used Vehicle Manager' },
@@ -471,6 +471,24 @@ export const ACTION_TEMPLATES: ActionTemplate[] = [
       { text: 'Set a monthly KPI review as a standing agenda item in management meetings', primaryRole: 'General Manager' },
     ]
   },
+  // KPI_NOT_DEFINED — Optimising (score 70–84)
+  {
+    templateId: 'ACT-KND-OPT',
+    signalCode: 'KPI_NOT_DEFINED',
+    scoreBand: 'optimising',
+    title: 'Refine KPI framework with benchmarks and predictive metrics',
+    description: 'KPIs are defined and reviewed, but the framework can be sharpened by introducing OEM benchmarks, leading indicators, and trend-based target-setting.',
+    defaultOwnerRole: 'General Manager',
+    defaultTimeframeDays: 30,
+    defaultPriority: 'MEDIUM',
+    implementationSteps: [
+      { text: 'Review current KPI set — retire any metric no one acts on; add leading indicators for each department', primaryRole: 'General Manager' },
+      { text: 'Source OEM or industry benchmark data for each KPI and set top-quartile stretch targets', primaryRole: 'Finance Director' },
+      { text: 'Build a trend view for each KPI — 6-month rolling — so teams see direction, not just a snapshot', primaryRole: 'Operations Manager' },
+      { text: 'Link KPI performance directly to management incentive calculations', primaryRole: 'General Manager' },
+      { text: 'Present KPI dashboard in every monthly leadership review with variance commentary', primaryRole: 'General Manager' },
+    ]
+  },
 
   // =====================================================
   // KPI_NOT_REVIEWED Templates (Generic)
@@ -500,6 +518,7 @@ export const ACTION_TEMPLATES: ActionTemplate[] = [
     defaultOwnerRole: 'Customer Experience Manager',
     defaultTimeframeDays: 14,
     defaultPriority: 'MEDIUM',
+    relevantBusinessModels: ['service_only', '2s', '3s', '4s'],
     implementationSteps: [
       { text: 'Review current CSI data collection methods', primaryRole: 'Customer Experience Manager' },
       { text: 'Implement post-transaction survey automation', primaryRole: 'IT Manager' },
@@ -562,7 +581,7 @@ export const ACTION_TEMPLATES: ActionTemplate[] = [
     defaultPriority: 'HIGH',
     linkedKPIs: ['appointmentShowRate', 'unitsSoldPerExec'],
     rootCauseDimension: 'process',
-    relevantBusinessModels: ['service_only', '2s', '3s', '4s'],
+    relevantBusinessModels: ['sales_only', '2s', '3s', '4s'],
     implementationSteps: [
       { text: 'Implement multi-touchpoint confirmation sequence (at booking, 48hrs, 24hrs, 2hrs prior)', primaryRole: 'BDC Manager' },
       { text: 'Use multiple channels (email, SMS, phone, video message)', primaryRole: 'BDC Manager' },
@@ -583,7 +602,7 @@ export const ACTION_TEMPLATES: ActionTemplate[] = [
     defaultPriority: 'HIGH',
     linkedKPIs: ['unitsSoldPerExec', 'revenuePerExec'],
     rootCauseDimension: 'structure',
-    relevantBusinessModels: ['service_only', '2s', '3s', '4s'],
+    relevantBusinessModels: ['sales_only', '2s', '3s', '4s'],
     implementationSteps: [
       { text: 'Implement BDC to handle appointment setting, freeing sales team for closing', primaryRole: 'General Manager' },
       { text: 'Optimize staffing levels and schedules to match traffic patterns', primaryRole: 'Operations Manager' },
@@ -605,6 +624,7 @@ export const ACTION_TEMPLATES: ActionTemplate[] = [
     defaultOwnerRole: 'IT Manager',
     defaultTimeframeDays: 30,
     defaultPriority: 'MEDIUM',
+    relevantBusinessModels: ['sales_only', '2s', '3s', '4s'],
     implementationSteps: [
       { text: 'Audit current CRM usage and feature adoption', primaryRole: 'IT Manager' },
       { text: 'Identify underutilized features with high value', primaryRole: 'IT Manager' },
@@ -668,6 +688,24 @@ export const ACTION_TEMPLATES: ActionTemplate[] = [
       { text: 'Assign department tech champions — peer trainers who support colleagues day-to-day', primaryRole: 'Department Manager' },
       { text: 'Build technology adoption into weekly team meetings — show weekly usage stats to the team', primaryRole: 'Department Manager' },
       { text: 'Review tool subscription ROI quarterly — cancel tools below 70% adoption after 90 days', primaryRole: 'Finance Director' },
+    ]
+  },
+  // TOOL_UNDERUTILISED — Optimising (score 70–84)
+  {
+    templateId: 'ACT-TUU-OPT',
+    signalCode: 'TOOL_UNDERUTILISED',
+    scoreBand: 'optimising',
+    title: 'Optimise technology integration and extract marginal gains',
+    description: 'Core tools are adopted. The next step is deeper integration between platforms, automating manual handoffs, and using analytics to identify untapped capability.',
+    defaultOwnerRole: 'Operations Manager',
+    defaultTimeframeDays: 45,
+    defaultPriority: 'MEDIUM',
+    implementationSteps: [
+      { text: 'Map all data flows between CRM, DMS, and any reporting tools — identify manual handoffs that can be automated', primaryRole: 'IT Manager' },
+      { text: 'Enable any native integrations or APIs between core platforms to eliminate duplicate data entry', primaryRole: 'IT Manager' },
+      { text: 'Review reporting capabilities of each tool and build consolidated dashboards for management', primaryRole: 'Operations Manager' },
+      { text: 'Identify 3 workflows where AI or automation could save time (e.g., automated follow-up, inventory alerts)', primaryRole: 'General Manager' },
+      { text: 'Benchmark your technology stack against peers — attend OEM or industry events to identify capability gaps', primaryRole: 'General Manager' },
     ]
   },
 

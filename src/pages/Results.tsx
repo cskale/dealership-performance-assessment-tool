@@ -21,6 +21,7 @@ import { useMultiTenant } from "@/hooks/useMultiTenant";
 import { supabase } from "@/integrations/supabase/client";
 import type { PDFExportData } from "@/lib/pdfReportGenerator";
 import { calculateWeightedScore, CATEGORY_WEIGHTS } from "@/lib/scoringEngine";
+import { generateCeilingInsights } from "@/lib/ceilingAnalysis";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { cn } from "@/lib/utils";
 
@@ -125,6 +126,15 @@ export default function Results() {
     if (!resultsData?.scores) return 0;
     return calculateWeightedScore(resultsData.scores);
   }, [resultsData?.scores]);
+
+  // TODO CC-12: ceilingInsights ready — render in Results UI (next session)
+  const ceilingInsights = useMemo(() => {
+    if (!resultsData?.answers || !resultsData?.scores) return [];
+    return generateCeilingInsights(
+      resultsData.answers as Record<string, number>,
+      resultsData.scores as Record<string, number>
+    );
+  }, [resultsData]);
 
   useEffect(() => {
     if (overallScore > 0 && !isLoading) {

@@ -21,6 +21,7 @@ interface PendingInvite {
   token: string;
 }
 
+// owner role is not assignable via invite — ownership transfer is handled separately
 const ROLE_OPTIONS = [
   { value: 'viewer', label: 'Viewer' },
   { value: 'member', label: 'Member' },
@@ -41,7 +42,7 @@ export function InviteTeamMembers() {
   const currentMembership = userMemberships.find(
     m => m.organization_id === currentOrganization?.id
   );
-  const canInvite = currentMembership && ['owner', 'admin', 'member'].includes(currentMembership.role);
+  const canInvite = currentMembership && ['owner', 'admin'].includes(currentMembership.role);
 
   useEffect(() => {
     if (canInvite && currentOrganization) {

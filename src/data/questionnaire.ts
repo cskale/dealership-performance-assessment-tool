@@ -75,7 +75,7 @@ export const questionnaire: Questionnaire = {
           text: "How many new vehicles does your dealership sell on average per month?",
           description: "Consider your sales volume over the last 12 months to provide an accurate assessment",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<20 units", "21-50 units", "51-100 units", "101-200 units", ">200 units"] },
+          scale: { min: 1, max: 5, labels: ["<4 units/month", "4–6 units/month", "7–9 units/month", "10–12 units/month", ">12 units/month"] },
           weight: 1.2,
           category: "volume",
           purpose: "Measures your dealership's scale and market presence in new vehicle sales, which directly correlates with revenue potential and operational efficiency.",
@@ -89,7 +89,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Measures your dealership's scale and market presence in new vehicle sales, which directly correlates with revenue potential and operational efficiency.",
               situationAnalysis: "Higher volume indicates stronger market position, better inventory management, and more consistent customer flow. It helps identify if you're maximizing your market opportunity.",
               benefits: "Optimizing sales volume leads to better economies of scale, stronger manufacturer relationships, increased negotiating power, and higher overall profitability.",
-              scaleLabels: ["<20 units", "21-50 units", "51-100 units", "101-200 units", ">200 units"]
+              scaleLabels: ["<4 units/month", "4–6 units/month", "7–9 units/month", "10–12 units/month", ">12 units/month"]
             },
             de: {
               text: "Wie viele Neuwagen verkauft Ihr Autohaus durchschnittlich pro Monat?",
@@ -97,7 +97,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Misst die Größe und Marktpräsenz Ihres Autohauses im Neuwagenverkauf, was direkt mit dem Umsatzpotenzial und der betrieblichen Effizienz korreliert.",
               situationAnalysis: "Höheres Volumen deutet auf eine stärkere Marktposition, besseres Bestandsmanagement und konstanteren Kundenstrom hin. Es hilft zu erkennen, ob Sie Ihre Marktchancen maximieren.",
               benefits: "Die Optimierung des Verkaufsvolumens führt zu besseren Skaleneffekten, stärkeren Herstellerbeziehungen, erhöhter Verhandlungsmacht und höherer Gesamtrentabilität.",
-              scaleLabels: ["<20 Einheiten", "21-50 Einheiten", "51-100 Einheiten", "101-200 Einheiten", ">200 Einheiten"]
+              scaleLabels: ["<4 Einheiten/Monat", "4–6 Einheiten/Monat", "7–9 Einheiten/Monat", "10–12 Einheiten/Monat", ">12 Einheiten/Monat"]
             }
           }
         },
@@ -106,7 +106,7 @@ export const questionnaire: Questionnaire = {
           text: "What percentage of your sales leads successfully convert into actual vehicle purchases?",
           description: "Calculate the ratio of completed sales to total qualified leads received",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<10%", "10-15%", "16-20%", "21-25%", ">25%"] },
+          scale: { min: 1, max: 5, labels: ["<10%", "10–15%", "16–22%", "23–30%", ">30%"] },
           weight: 1.5,
           category: "conversion",
           purpose: "Evaluates sales team effectiveness and the quality of your sales process from lead generation to final purchase decision.",
@@ -120,7 +120,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Evaluates sales team effectiveness and the quality of your sales process from lead generation to final purchase decision.",
               situationAnalysis: "Low closing ratios indicate potential issues in sales training, lead quality, pricing strategy, or customer experience that need immediate attention.",
               benefits: "Improving closing ratios directly increases revenue without additional marketing spend, reduces customer acquisition costs, and maximizes the ROI of your lead generation efforts.",
-              scaleLabels: ["<10%", "10-15%", "16-20%", "21-25%", ">25%"]
+              scaleLabels: ["<10%", "10–15%", "16–22%", "23–30%", ">30%"]
             },
             de: {
               text: "Welcher Prozentsatz Ihrer Verkaufsleads wird erfolgreich in tatsächliche Fahrzeugkäufe umgewandelt?",
@@ -128,7 +128,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Bewertet die Effektivität des Verkaufsteams und die Qualität Ihres Verkaufsprozesses von der Lead-Generierung bis zur endgültigen Kaufentscheidung.",
               situationAnalysis: "Niedrige Abschlussquoten weisen auf potenzielle Probleme bei der Verkaufsschulung, Lead-Qualität, Preisstrategie oder Kundenerfahrung hin, die sofortige Aufmerksamkeit erfordern.",
               benefits: "Die Verbesserung der Abschlussquoten erhöht direkt den Umsatz ohne zusätzliche Marketingausgaben, senkt die Kundenakquisitionskosten und maximiert den ROI Ihrer Lead-Generierungsbemühungen.",
-              scaleLabels: ["<10%", "10-15%", "16-20%", "21-25%", ">25%"]
+              scaleLabels: ["<10%", "10–15%", "16–22%", "23–30%", ">30%"]
             }
           }
         },
@@ -137,7 +137,7 @@ export const questionnaire: Questionnaire = {
           text: "How would customers rate their overall satisfaction with your new vehicle sales experience?",
           description: "Based on customer surveys, feedback forms, and post-purchase reviews",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<55 NPS", "55–65 NPS", "66–74 NPS", "75–84 NPS", ">84 NPS"] },
+          scale: { min: 1, max: 5, labels: ["<20%", "20–30%", "31–40%", "41–55%", ">55%"] },
           weight: 1.3,
           category: "satisfaction",
           purpose: "Measures customer experience quality during the sales process, which directly impacts repeat business, referrals, and brand reputation.",
@@ -151,7 +151,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Measures customer experience quality during the sales process, which directly impacts repeat business, referrals, and brand reputation.",
               situationAnalysis: "Customer satisfaction is a leading indicator of future sales performance, customer loyalty, and word-of-mouth marketing effectiveness.",
               benefits: "High customer satisfaction leads to increased referrals, repeat customers, positive online reviews, and reduced marketing costs through organic growth.",
-              scaleLabels: ["<55 NPS", "55–65 NPS", "66–74 NPS", "75–84 NPS", ">84 NPS"]
+              scaleLabels: ["<20%", "20–30%", "31–40%", "41–55%", ">55%"]
             },
             de: {
               text: "Wie würden Kunden ihre Gesamtzufriedenheit mit Ihrem Neuwagenverkaufserlebnis bewerten?",
@@ -159,7 +159,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Misst die Qualität der Kundenerfahrung während des Verkaufsprozesses, die sich direkt auf Folgegeschäfte, Empfehlungen und Markenreputation auswirkt.",
               situationAnalysis: "Die Kundenzufriedenheit ist ein führender Indikator für zukünftige Verkaufsleistung, Kundenloyalität und Effektivität des Mund-zu-Mund-Marketings.",
               benefits: "Hohe Kundenzufriedenheit führt zu mehr Empfehlungen, wiederkehrenden Kunden, positiven Online-Bewertungen und reduzierten Marketingkosten durch organisches Wachstum.",
-              scaleLabels: ["<55 NPS", "55–65 NPS", "66–74 NPS", "75–84 NPS", ">84 NPS"]
+              scaleLabels: ["<20%", "20–30%", "31–40%", "41–55%", ">55%"]
             }
           }
         },
@@ -292,7 +292,7 @@ export const questionnaire: Questionnaire = {
           text: "How many times per year does your new vehicle inventory completely turn over?",
           description: "Calculate annual sales divided by average inventory value",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<6 times/year", "6-8 times/year", "9-11 times/year", "12-15 times/year", ">15 times/year"] },
+          scale: { min: 1, max: 5, labels: ["<70 points", "70–75 points", "76–82 points", "83–89 points", "≥90 points"] },
           weight: 1.3,
           category: "inventory",
           purpose: "Measures inventory management efficiency and demand forecasting accuracy, directly impacting cash flow and carrying costs.",
@@ -306,7 +306,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Measures inventory management efficiency and demand forecasting accuracy, directly impacting cash flow and carrying costs.",
               situationAnalysis: "Fast inventory turnover indicates good demand planning, effective pricing, and strong sales execution.",
               benefits: "Optimizing inventory turnover improves cash flow, reduces interest expenses, minimizes obsolescence risk, and increases profitability.",
-              scaleLabels: ["<6 times/year", "6-8 times/year", "9-11 times/year", "12-15 times/year", ">15 times/year"]
+              scaleLabels: ["<70 points", "70–75 points", "76–82 points", "83–89 points", "≥90 points"]
             },
             de: {
               text: "Wie oft pro Jahr wechselt Ihr Neuwagenbestand vollständig?",
@@ -314,7 +314,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Misst die Effizienz der Lagerverwaltung und die Genauigkeit der Bedarfsprognose, die sich direkt auf den Cashflow und die Lagerkosten auswirken.",
               situationAnalysis: "Schneller Lagerumschlag zeigt gute Bedarfsplanung, effektive Preisgestaltung und starke Verkaufsausführung.",
               benefits: "Die Optimierung des Lagerumschlags verbessert den Cashflow, reduziert Zinsaufwendungen, minimiert das Veralterungsrisiko und erhöht die Rentabilität.",
-              scaleLabels: ["<6 mal/Jahr", "6-8 mal/Jahr", "9-11 mal/Jahr", "12-15 mal/Jahr", ">15 mal/Jahr"]
+              scaleLabels: ["<70 Punkte", "70–75 Punkte", "76–82 Punkte", "83–89 Punkte", "≥90 Punkte"]
             }
           }
         },
@@ -323,7 +323,7 @@ export const questionnaire: Questionnaire = {
           text: "What percentage of your new vehicle customers purchase finance and insurance products?",
           description: "Include loans, leases, extended warranties, and protection packages",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<40%", "40-55%", "56-70%", "71-85%", ">85%"] },
+          scale: { min: 1, max: 5, labels: ["No pipeline tracking", "Informal tracking", "Basic pipeline review monthly", "Structured weekly review", "Daily managed pipeline with forecast"] },
           weight: 1.2,
           category: "financial",
           purpose: "Evaluates the effectiveness of your F&I department in adding value and generating additional revenue per transaction.",
@@ -337,7 +337,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Evaluates the effectiveness of your F&I department in adding value and generating additional revenue per transaction.",
               situationAnalysis: "High F&I penetration indicates strong customer relationship building and effective product presentation skills.",
               benefits: "Increasing F&I penetration significantly boosts per-unit profitability, enhances customer protection, and creates recurring revenue streams.",
-              scaleLabels: ["<40%", "40-55%", "56-70%", "71-85%", ">85%"]
+              scaleLabels: ["No pipeline tracking", "Informal tracking", "Basic pipeline review monthly", "Structured weekly review", "Daily managed pipeline with forecast"]
             },
             de: {
               text: "Welcher Prozentsatz Ihrer Neuwagenkunden kauft Finanz- und Versicherungsprodukte?",
@@ -345,7 +345,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Bewertet die Wirksamkeit Ihrer F&I-Abteilung bei der Wertschöpfung und Generierung zusätzlicher Einnahmen pro Transaktion.",
               situationAnalysis: "Hohe F&I-Durchdringung zeigt starken Aufbau von Kundenbeziehungen und effektive Produktpräsentationsfähigkeiten.",
               benefits: "Die Erhöhung der F&I-Durchdringung steigert die Rentabilität pro Einheit erheblich, verbessert den Kundenschutz und schafft wiederkehrende Einnahmequellen.",
-              scaleLabels: ["<40%", "40-55%", "56-70%", "71-85%", ">85%"]
+              scaleLabels: ["Kein Pipeline-Tracking", "Informelles Tracking", "Monatliche Pipeline-Überprüfung", "Strukturiertes wöchentliches Review", "Täglich geführte Pipeline mit Prognose"]
             }
           }
         },
@@ -403,7 +403,7 @@ export const questionnaire: Questionnaire = {
           text: "On average, how many days do used vehicles remain in your inventory before being sold?",
           description: "Calculate the average days from acquisition to sale completion",
           type: "scale",
-          scale: { min: 1, max: 5, labels: [">60 days", "46-60 days", "31-45 days", "21-30 days", "<21 days"] },
+          scale: { min: 1, max: 5, labels: [">90 days avg", "61–90 days", "46–60 days", "31–45 days", "≤30 days avg"] },
           weight: 1.4,
           category: "turnover",
           purpose: "Measures the efficiency of your used vehicle operations and pricing strategy, directly impacting profitability and cash flow.",
@@ -414,12 +414,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "On average, how many days do used vehicles remain in your inventory before being sold?",
               description: "Calculate the average days from acquisition to sale completion",
-              scaleLabels: [">60 days", "46-60 days", "31-45 days", "21-30 days", "<21 days"]
+              scaleLabels: [">90 days avg", "61–90 days", "46–60 days", "31–45 days", "≤30 days avg"]
             },
             de: {
               text: "Wie viele Tage verbleiben Gebrauchtwagen durchschnittlich in Ihrem Bestand, bevor sie verkauft werden?",
               description: "Berechnen Sie die durchschnittlichen Tage vom Ankauf bis zum Verkaufsabschluss",
-              scaleLabels: [">60 Tage", "46-60 Tage", "31-45 Tage", "21-30 Tage", "<21 Tage"]
+              scaleLabels: [">90 Tage Ø", "61–90 Tage", "46–60 Tage", "31–45 Tage", "≤30 Tage Ø"]
             }
           }
         },
@@ -428,7 +428,7 @@ export const questionnaire: Questionnaire = {
           text: "What is the average gross profit margin your dealership achieves on used vehicle sales?",
           description: "Calculate the profit per unit after reconditioning and acquisition costs",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<$1,500", "$1,500-$2,500", "$2,500-$3,500", "$3,500-$4,500", ">$4,500"] },
+          scale: { min: 1, max: 5, labels: [">14 days avg", "11–14 days", "8–10 days", "5–7 days", "≤4 days avg"] },
           weight: 1.5,
           category: "profitability",
           purpose: "Evaluates pricing strategy effectiveness and market positioning for used vehicles, crucial for overall dealership profitability.",
@@ -439,12 +439,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "What is the average gross profit margin your dealership achieves on used vehicle sales?",
               description: "Calculate the profit per unit after reconditioning and acquisition costs",
-              scaleLabels: ["<€1,500", "€1,500-€2,500", "€2,500-€3,500", "€3,500-€4,500", ">€4,500"]
+              scaleLabels: [">14 days avg", "11–14 days", "8–10 days", "5–7 days", "≤4 days avg"]
             },
             de: {
               text: "Welche durchschnittliche Bruttogewinnmarge erzielt Ihr Autohaus beim Gebrauchtwagenverkauf?",
               description: "Berechnen Sie den Gewinn pro Einheit nach Aufbereitungs- und Anschaffungskosten",
-              scaleLabels: ["<€1.500", "€1.500-€2.500", "€2.500-€3.500", "€3.500-€4.500", ">€4.500"]
+              scaleLabels: [">14 Tage Ø", "11–14 Tage", "8–10 Tage", "5–7 Tage", "≤4 Tage Ø"]
             }
           }
         },
@@ -478,7 +478,7 @@ export const questionnaire: Questionnaire = {
           text: "What is your average cost per vehicle for reconditioning and preparing used vehicles for sale?",
           description: "Include mechanical repairs, detailing, and cosmetic improvements",
           type: "scale",
-          scale: { min: 1, max: 5, labels: [">$2,000", "$1,500-$2,000", "$1,000-$1,499", "$500-$999", "<$500"] },
+          scale: { min: 1, max: 5, labels: ["<30%", "30–40%", "41–55%", "56–70%", ">70%"] },
           weight: 1.3,
           category: "costs",
           purpose: "Evaluates operational efficiency in vehicle preparation and cost management, directly affecting unit profitability.",
@@ -489,12 +489,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "What is your average cost per vehicle for reconditioning and preparing used vehicles for sale?",
               description: "Include mechanical repairs, detailing, and cosmetic improvements",
-              scaleLabels: [">€2,000", "€1,500-€2,000", "€1,000-€1,499", "€500-€999", "<€500"]
+              scaleLabels: ["<30%", "30–40%", "41–55%", "56–70%", ">70%"]
             },
             de: {
               text: "Was sind Ihre durchschnittlichen Kosten pro Fahrzeug für die Aufbereitung und Verkaufsvorbereitung von Gebrauchtwagen?",
               description: "Einschließlich mechanischer Reparaturen, Aufbereitung und kosmetischer Verbesserungen",
-              scaleLabels: [">€2.000", "€1.500-€2.000", "€1.000-€1.499", "€500-€999", "<€500"]
+              scaleLabels: ["<30%", "30–40%", "41–55%", "56–70%", ">70%"]
             }
           }
         },
@@ -503,7 +503,7 @@ export const questionnaire: Questionnaire = {
           text: "How would you rate the quality and effectiveness of your online used vehicle listings?",
           description: "Consider photo quality, description accuracy, pricing transparency, and response time",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["≤4 photos, no price", "5-8 photos, priced", "9-15 photos, spec", "16-20 photos, video", ">20 photos+video+chat"] },
+          scale: { min: 1, max: 5, labels: ["<10%", "10–20%", "21–35%", "36–50%", ">50%"] },
           weight: 1.1,
           category: "digital",
           purpose: "Assesses digital marketing effectiveness for used vehicles, crucial in today's online-driven car shopping environment.",
@@ -514,12 +514,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How would you rate the quality and effectiveness of your online used vehicle listings?",
               description: "Consider photo quality, description accuracy, pricing transparency, and response time",
-              scaleLabels: ["≤4 photos, no price", "5-8 photos, priced", "9-15 photos, spec", "16-20 photos, video", ">20 photos+video+chat"]
+              scaleLabels: ["<10%", "10–20%", "21–35%", "36–50%", ">50%"]
             },
             de: {
               text: "Wie würden Sie die Qualität und Wirksamkeit Ihrer Online-Gebrauchtwagen-Inserate bewerten?",
               description: "Berücksichtigen Sie Fotoqualität, Beschreibungsgenauigkeit, Preistransparenz und Reaktionszeit",
-              scaleLabels: ["≤4 Fotos, kein Preis", "5–8 Fotos, bepreist", "9–15 Fotos, Vollspec.", "16–20 Fotos, Video", ">20 Fotos+Video+Chat"]
+              scaleLabels: ["<10%", "10–20%", "21–35%", "36–50%", ">50%"]
             }
           }
         },
@@ -528,7 +528,7 @@ export const questionnaire: Questionnaire = {
           text: "What percentage of vehicles you purchase at auctions turn out to be profitable after resale?",
           description: "Track which auction purchases result in positive margins",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<60%", "60-70%", "71-80%", "81-90%", ">90%"] },
+          scale: { min: 1, max: 5, labels: ["<€500", "€500–€800", "€801–€1,100", "€1,101–€1,500", ">€1,500"] },
           weight: 1.2,
           category: "sourcing",
           purpose: "Measures procurement efficiency and market knowledge in wholesale acquisition, affecting inventory quality and profitability.",
@@ -539,12 +539,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "What percentage of vehicles you purchase at auctions turn out to be profitable after resale?",
               description: "Track which auction purchases result in positive margins",
-              scaleLabels: ["<60%", "60-70%", "71-80%", "81-90%", ">90%"]
+              scaleLabels: ["<€500", "€500–€800", "€801–€1,100", "€1,101–€1,500", ">€1,500"]
             },
             de: {
               text: "Welcher Prozentsatz der von Ihnen auf Auktionen gekauften Fahrzeuge erweist sich nach dem Weiterverkauf als profitabel?",
               description: "Verfolgen Sie, welche Auktionskäufe zu positiven Margen führen",
-              scaleLabels: ["<60%", "60-70%", "71-80%", "81-90%", ">90%"]
+              scaleLabels: ["<500 €", "500–800 €", "801–1.100 €", "1.101–1.500 €", ">1.500 €"]
             }
           }
         },
@@ -553,7 +553,7 @@ export const questionnaire: Questionnaire = {
           text: "How do customers rate their overall satisfaction with your used vehicle purchase experience?",
           description: "Based on post-purchase surveys and feedback within 30 days of sale",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<55 NPS", "55–65 NPS", "66–74 NPS", "75–84 NPS", ">84 NPS"] },
+          scale: { min: 1, max: 5, labels: ["No structured process", "Listings updated monthly", "Updated weekly, basic photos", "Updated within 48h, quality photos", "Real-time updates, professional media"] },
           weight: 1.3,
           category: "satisfaction",
           purpose: "Evaluates customer experience quality for used vehicle sales, impacting reputation, referrals, and repeat business.",
@@ -564,12 +564,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How do customers rate their overall satisfaction with your used vehicle purchase experience?",
               description: "Based on post-purchase surveys and feedback within 30 days of sale",
-              scaleLabels: ["<55 NPS", "55–65 NPS", "66–74 NPS", "75–84 NPS", ">84 NPS"]
+              scaleLabels: ["No structured process", "Listings updated monthly", "Updated weekly, basic photos", "Updated within 48h, quality photos", "Real-time updates, professional media"]
             },
             de: {
               text: "Wie bewerten Kunden ihre Gesamtzufriedenheit mit Ihrem Gebrauchtwagenkauferlebnis?",
               description: "Basierend auf Umfragen und Feedback nach dem Kauf innerhalb von 30 Tagen nach dem Verkauf",
-              scaleLabels: ["<55 NPS", "55–65 NPS", "66–74 NPS", "75–84 NPS", ">84 NPS"]
+              scaleLabels: ["Kein strukturierter Prozess", "Listings monatlich aktualisiert", "Wöchentlich aktualisiert, einfache Fotos", "Aktualisierung innerhalb 48h, qualitativ", "Echtzeit-Updates, professionelle Medien"]
             }
           }
         },
@@ -578,7 +578,7 @@ export const questionnaire: Questionnaire = {
           text: "What percentage of used vehicle buyers purchase extended warranties or service contracts?",
           description: "Include all protection products offered at point of sale",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<20%", "20-35%", "36-50%", "51-65%", ">65%"] },
+          scale: { min: 1, max: 5, labels: ["100% auction dependent", "Mainly auction, some trade-in", "Balanced auction and trade-in", "Trade-in dominant, selective auction", "Diversified: trade-in, fleet, direct buy"] },
           weight: 1.1,
           category: "penetration",
           purpose: "Measures ability to add value and generate additional revenue while providing customer protection on used vehicle sales.",
@@ -589,12 +589,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "What percentage of used vehicle buyers purchase extended warranties or service contracts?",
               description: "Include all protection products offered at point of sale",
-              scaleLabels: ["<20%", "20-35%", "36-50%", "51-65%", ">65%"]
+              scaleLabels: ["100% auction dependent", "Mainly auction, some trade-in", "Balanced auction and trade-in", "Trade-in dominant, selective auction", "Diversified: trade-in, fleet, direct buy"]
             },
             de: {
               text: "Welcher Prozentsatz der Gebrauchtwagenkäufer erwirbt erweiterte Garantien oder Serviceverträge?",
               description: "Einschließlich aller am Verkaufsort angebotenen Schutzprodukte",
-              scaleLabels: ["<20%", "20-35%", "36-50%", "51-65%", ">65%"]
+              scaleLabels: ["100% Auktionsabhängig", "Vorw. Auktion, etwas Inzahlungnahme", "Ausgewogene Mischung", "Inzahlungnahme dominant, selektive Auktion", "Diversifiziert: Inzahlung, Flotte, Direktkauf"]
             }
           }
         },
@@ -603,7 +603,7 @@ export const questionnaire: Questionnaire = {
           text: "How does your used vehicle pricing compare to similar vehicles in your local market?",
           description: "Consider pricing relative to competitors within a 50-mile radius",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["Above market", "Slightly above", "At market", "Slightly below", "Below market"] },
+          scale: { min: 1, max: 5, labels: ["No digital presence", "Basic listing only", "Multi-platform with photos", "Targeted campaigns with data", "Full digital funnel with retargeting"] },
           weight: 1.2,
           category: "pricing",
           purpose: "Evaluates market positioning and pricing strategy effectiveness in the competitive used vehicle marketplace.",
@@ -614,12 +614,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How does your used vehicle pricing compare to similar vehicles in your local market?",
               description: "Consider pricing relative to competitors within a 50-mile radius",
-              scaleLabels: ["Above market", "Slightly above", "At market", "Slightly below", "Below market"]
+              scaleLabels: ["No digital presence", "Basic listing only", "Multi-platform with photos", "Targeted campaigns with data", "Full digital funnel with retargeting"]
             },
             de: {
               text: "Wie vergleicht sich Ihre Gebrauchtwagenpreisgestaltung mit ähnlichen Fahrzeugen in Ihrem lokalen Markt?",
               description: "Berücksichtigen Sie die Preisgestaltung im Vergleich zu Wettbewerbern im Umkreis von 80 km",
-              scaleLabels: ["Über dem Markt", "Leicht darüber", "Am Markt", "Leicht darunter", "Unter dem Markt"]
+              scaleLabels: ["Keine digitale Präsenz", "Nur Basis-Listing", "Multi-Plattform mit Fotos", "Gezielte Kampagnen mit Daten", "Vollständiger digitaler Funnel mit Retargeting"]
             }
           }
         },
@@ -671,7 +671,7 @@ export const questionnaire: Questionnaire = {
           text: "What percentage of your technicians' available hours are spent on billable, productive work?",
           description: "Calculate productive labor hours divided by total available hours",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<60%", "60-70%", "71-80%", "81-90%", ">90%"] },
+          scale: { min: 1, max: 5, labels: ["<60%", "60–70%", "71–80%", "81–89%", "≥90%"] },
           weight: 1.5,
           category: "efficiency",
           purpose: "Measures how effectively your service department utilizes technician time, directly impacting profitability and customer satisfaction.",
@@ -682,12 +682,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "What percentage of your technicians' available hours are spent on billable, productive work?",
               description: "Calculate productive labor hours divided by total available hours",
-              scaleLabels: ["<60%", "60-70%", "71-80%", "81-90%", ">90%"]
+              scaleLabels: ["<60%", "60–70%", "71–80%", "81–89%", "≥90%"]
             },
             de: {
               text: "Welcher Prozentsatz der verfügbaren Stunden Ihrer Techniker wird für abrechenbare, produktive Arbeit aufgewendet?",
               description: "Berechnen Sie produktive Arbeitsstunden geteilt durch die gesamten verfügbaren Stunden",
-              scaleLabels: ["<60%", "60-70%", "71-80%", "81-90%", ">90%"]
+              scaleLabels: ["<60%", "60–70%", "71–80%", "81–89%", "≥90%"]
             }
           }
         },
@@ -696,7 +696,7 @@ export const questionnaire: Questionnaire = {
           text: "What percentage of your posted labor rate do you actually realize on customer-pay work?",
           description: "Compare effective labor rate to your posted door rate",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<80%", "80-85%", "86-90%", "91-95%", ">95%"] },
+          scale: { min: 1, max: 5, labels: ["<75%", "75–80%", "81–86%", "87–92%", ">92%"] },
           weight: 1.4,
           category: "pricing",
           purpose: "Evaluates pricing strategy effectiveness and market positioning for service labor, crucial for service department profitability.",
@@ -707,12 +707,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "What percentage of your posted labor rate do you actually realize on customer-pay work?",
               description: "Compare effective labor rate to your posted door rate",
-              scaleLabels: ["<80%", "80-85%", "86-90%", "91-95%", ">95%"]
+              scaleLabels: ["<75%", "75–80%", "81–86%", "87–92%", ">92%"]
             },
             de: {
               text: "Welchen Prozentsatz Ihres veröffentlichten Arbeitssatzes realisieren Sie tatsächlich bei Kundenarbeiten?",
               description: "Vergleichen Sie den effektiven Arbeitssatz mit Ihrem veröffentlichten Stundensatz",
-              scaleLabels: ["<80%", "80-85%", "86-90%", "91-95%", ">95%"]
+              scaleLabels: ["<75%", "75–80%", "81–86%", "87–92%", ">92%"]
             }
           }
         },
@@ -746,7 +746,7 @@ export const questionnaire: Questionnaire = {
           text: "What percentage of repairs are completed correctly on the first visit without requiring a return?",
           description: "Track comebacks and repeat repairs for the same issue",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<75%", "75-80%", "81-85%", "86-92%", ">92%"] },
+          scale: { min: 1, max: 5, labels: ["<10%", "10–18%", "19–27%", "28–36%", ">36%"] },
           weight: 1.4,
           category: "quality",
           purpose: "Evaluates service quality and diagnostic accuracy, impacting customer trust, efficiency, and profitability.",
@@ -757,12 +757,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "What percentage of repairs are completed correctly on the first visit without requiring a return?",
               description: "Track comebacks and repeat repairs for the same issue",
-              scaleLabels: ["<75%", "75-80%", "81-85%", "86-92%", ">92%"]
+              scaleLabels: ["<10%", "10–18%", "19–27%", "28–36%", ">36%"]
             },
             de: {
               text: "Welcher Prozentsatz der Reparaturen wird beim ersten Besuch korrekt abgeschlossen, ohne dass eine Rückkehr erforderlich ist?",
               description: "Verfolgen Sie Rückkehrer und wiederholte Reparaturen für dasselbe Problem",
-              scaleLabels: ["<75%", "75-80%", "81-85%", "86-92%", ">92%"]
+              scaleLabels: ["<10%", "10–18%", "19–27%", "28–36%", ">36%"]
             }
           }
         },
@@ -796,7 +796,7 @@ export const questionnaire: Questionnaire = {
           text: "What percentage of your warranty claims are successfully approved and reimbursed by the manufacturer?",
           description: "Track warranty claim submission success rate",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<85%", "85-90%", "91-94%", "95-97%", ">97%"] },
+          scale: { min: 1, max: 5, labels: ["<45%", "45–55%", "56–65%", "66–75%", ">75%"] },
           weight: 1.2,
           category: "warranty",
           purpose: "Evaluates administrative efficiency and process compliance, directly impacting service department profitability.",
@@ -807,12 +807,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "What percentage of your warranty claims are successfully approved and reimbursed by the manufacturer?",
               description: "Track warranty claim submission success rate",
-              scaleLabels: ["<85%", "85-90%", "91-94%", "95-97%", ">97%"]
+              scaleLabels: ["<45%", "45–55%", "56–65%", "66–75%", ">75%"]
             },
             de: {
               text: "Welcher Prozentsatz Ihrer Garantieansprüche wird erfolgreich genehmigt und vom Hersteller erstattet?",
               description: "Verfolgen Sie die Erfolgsquote bei der Einreichung von Garantieansprüchen",
-              scaleLabels: ["<85%", "85-90%", "91-94%", "95-97%", ">97%"]
+              scaleLabels: ["<45%", "45–55%", "56–65%", "66–75%", ">75%"]
             }
           }
         },
@@ -821,7 +821,7 @@ export const questionnaire: Questionnaire = {
           text: "What percentage of your technicians hold current ASE certifications or equivalent manufacturer credentials?",
           description: "Count certified technicians as a percentage of total technical staff",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<50%", "50-65%", "66-80%", "81-90%", ">90%"] },
+          scale: { min: 1, max: 5, labels: [">10 days avg", "7–10 days", "4–6 days", "2–3 days", "Next-day availability"] },
           weight: 1.1,
           category: "certification",
           purpose: "Assesses technical competency and professional development investment, impacting service quality and customer confidence.",
@@ -832,12 +832,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "What percentage of your technicians hold current ASE certifications or equivalent manufacturer credentials?",
               description: "Count certified technicians as a percentage of total technical staff",
-              scaleLabels: ["<50%", "50-65%", "66-80%", "81-90%", ">90%"]
+              scaleLabels: [">10 days avg", "7–10 days", "4–6 days", "2–3 days", "Next-day availability"]
             },
             de: {
               text: "Welcher Prozentsatz Ihrer Techniker verfügt über aktuelle ASE-Zertifizierungen oder gleichwertige Herstellerzertifikate?",
               description: "Zählen Sie zertifizierte Techniker als Prozentsatz des gesamten technischen Personals",
-              scaleLabels: ["<50%", "50-65%", "66-80%", "81-90%", ">90%"]
+              scaleLabels: [">10 Tage Ø", "7–10 Tage", "4–6 Tage", "2–3 Tage", "Verfügbarkeit am nächsten Tag"]
             }
           }
         },
@@ -846,7 +846,7 @@ export const questionnaire: Questionnaire = {
           text: "What percentage of your service customers return for additional service within 12 months?",
           description: "Track repeat customer visits excluding warranty-required service",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<40%", "40-50%", "51-60%", "61-70%", ">70%"] },
+          scale: { min: 1, max: 5, labels: [">8%", "6–8%", "4–5%", "2–3%", "<2%"] },
           weight: 1.3,
           category: "retention",
           purpose: "Measures customer loyalty and service experience quality, crucial for long-term revenue and profitability.",
@@ -857,12 +857,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "What percentage of your service customers return for additional service within 12 months?",
               description: "Track repeat customer visits excluding warranty-required service",
-              scaleLabels: ["<40%", "40-50%", "51-60%", "61-70%", ">70%"]
+              scaleLabels: [">8%", "6–8%", "4–5%", "2–3%", "<2%"]
             },
             de: {
               text: "Welcher Prozentsatz Ihrer Servicekunden kehrt innerhalb von 12 Monaten für zusätzlichen Service zurück?",
               description: "Verfolgen Sie wiederholte Kundenbesuche ohne garantiebedingte Services",
-              scaleLabels: ["<40%", "40-50%", "51-60%", "61-70%", ">70%"]
+              scaleLabels: [">8%", "6–8%", "4–5%", "2–3%", "<2%"]
             }
           }
         },
@@ -871,7 +871,7 @@ export const questionnaire: Questionnaire = {
           text: "When a technician needs a part, how often is it immediately available in your parts inventory?",
           description: "Track parts availability for service work orders",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<85%", "85-90%", "91-94%", "95-97%", ">97%"] },
+          scale: { min: 1, max: 5, labels: ["No mobility offer", "<20% of bookings", "20–40% of bookings", "41–65% of bookings", ">65% of bookings"] },
           weight: 1.2,
           category: "parts",
           purpose: "Evaluates inventory management effectiveness and customer convenience, impacting service efficiency and satisfaction.",
@@ -882,12 +882,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "When a technician needs a part, how often is it immediately available in your parts inventory?",
               description: "Track parts availability for service work orders",
-              scaleLabels: ["<85%", "85-90%", "91-94%", "95-97%", ">97%"]
+              scaleLabels: ["No mobility offer", "<20% of bookings", "20–40% of bookings", "41–65% of bookings", ">65% of bookings"]
             },
             de: {
               text: "Wenn ein Techniker ein Teil benötigt, wie oft ist es sofort in Ihrem Teilelager verfügbar?",
               description: "Verfolgen Sie die Teileverfügbarkeit für Service-Arbeitsaufträge",
-              scaleLabels: ["<85%", "85-90%", "91-94%", "95-97%", ">97%"]
+              scaleLabels: ["Kein Mobilitätsangebot", "<20% der Buchungen", "20–40% der Buchungen", "41–65% der Buchungen", ">65% der Buchungen"]
             }
           }
         },
@@ -946,7 +946,7 @@ export const questionnaire: Questionnaire = {
           text: "How would you rate the efficiency and throughput of your express or quick service lane?",
           description: "Consider wait times, service speed, and customer satisfaction for quick service",
           type: "scale",
-          scale: { min: 1, max: 5, labels: [">75 min avg wait", "60-75 min avg wait", "45-60 min avg wait", "30-45 min avg wait", "<30 min avg wait"] },
+          scale: { min: 1, max: 5, labels: ["No digital process", "Email updates only", "SMS updates on request", "Proactive SMS/app updates", "Full digital journey with video"] },
           weight: 1.1,
           category: "express",
           purpose: "Evaluates quick service operations efficiency, important for customer convenience and service department productivity.",
@@ -957,12 +957,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How would you rate the efficiency and throughput of your express or quick service lane?",
               description: "Consider wait times, service speed, and customer satisfaction for quick service",
-              scaleLabels: [">75 min avg wait", "60-75 min avg wait", "45-60 min avg wait", "30-45 min avg wait", "<30 min avg wait"]
+              scaleLabels: ["No digital process", "Email updates only", "SMS updates on request", "Proactive SMS/app updates", "Full digital journey with video"]
             },
             de: {
               text: "Wie würden Sie die Effizienz und den Durchsatz Ihrer Express- oder Schnellservice-Spur bewerten?",
               description: "Berücksichtigen Sie Wartezeiten, Servicegeschwindigkeit und Kundenzufriedenheit für Schnellservice",
-              scaleLabels: [">75 Min. Wartezeit", "60–75 Min. Warten", "45–60 Min. Warten", "30–45 Min. Warten", "<30 Min. Wartezeit"]
+              scaleLabels: ["Kein digitaler Prozess", "Nur E-Mail-Updates", "SMS-Updates auf Anfrage", "Proaktive SMS/App-Updates", "Vollständige digitale Journey mit Video"]
             }
           }
         }
@@ -989,7 +989,7 @@ export const questionnaire: Questionnaire = {
           text: "How many times per year does your entire parts inventory turn over through sales?",
           description: "Calculate annual parts sales divided by average inventory value",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<4 times", "4-5 times", "6-7 times", "8-10 times", ">10 times"] },
+          scale: { min: 1, max: 5, labels: ["<80%", "80–85%", "86–90%", "91–95%", ">95%"] },
           weight: 1.5,
           category: "turnover",
           purpose: "Measures inventory management efficiency and demand forecasting accuracy, directly impacting cash flow and profitability.",
@@ -1000,12 +1000,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How many times per year does your entire parts inventory turn over through sales?",
               description: "Calculate annual parts sales divided by average inventory value",
-              scaleLabels: ["<4 times", "4-5 times", "6-7 times", "8-10 times", ">10 times"]
+              scaleLabels: ["<80%", "80–85%", "86–90%", "91–95%", ">95%"]
             },
             de: {
               text: "Wie oft pro Jahr wechselt Ihr gesamter Teilebestand durch Verkäufe?",
               description: "Berechnen Sie die jährlichen Teileverkäufe geteilt durch den durchschnittlichen Lagerwert",
-              scaleLabels: ["<4 mal", "4-5 mal", "6-7 mal", "8-10 mal", ">10 mal"]
+              scaleLabels: ["<80%", "80–85%", "86–90%", "91–95%", ">95%"]
             }
           }
         },
@@ -1014,7 +1014,7 @@ export const questionnaire: Questionnaire = {
           text: "What percentage of parts requests can you fulfill immediately from your on-hand stock?",
           description: "Track first-time fill rate for both customer and internal service requests",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<80%", "80-85%", "86-90%", "91-95%", ">95%"] },
+          scale: { min: 1, max: 5, labels: ["<4× per year", "4–5× per year", "6–7× per year", "8–9× per year", "≥10× per year"] },
           weight: 1.4,
           category: "availability",
           purpose: "Evaluates inventory planning effectiveness and customer service capability, impacting service efficiency and satisfaction.",
@@ -1025,12 +1025,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "What percentage of parts requests can you fulfill immediately from your on-hand stock?",
               description: "Track first-time fill rate for both customer and internal service requests",
-              scaleLabels: ["<80%", "80-85%", "86-90%", "91-95%", ">95%"]
+              scaleLabels: ["<4× per year", "4–5× per year", "6–7× per year", "8–9× per year", "≥10× per year"]
             },
             de: {
               text: "Welchen Prozentsatz der Teileanfragen können Sie sofort aus Ihrem Lagerbestand erfüllen?",
               description: "Verfolgen Sie die Ersterfüllungsrate für Kunden- und interne Serviceanfragen",
-              scaleLabels: ["<80%", "80-85%", "86-90%", "91-95%", ">95%"]
+              scaleLabels: ["<4× pro Jahr", "4–5× pro Jahr", "6–7× pro Jahr", "8–9× pro Jahr", "≥10× pro Jahr"]
             }
           }
         },
@@ -1039,7 +1039,7 @@ export const questionnaire: Questionnaire = {
           text: "What is the average gross profit margin you achieve on parts sales across all channels?",
           description: "Calculate total parts gross profit as a percentage of parts revenue",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<25%", "25-30%", "31-35%", "36-40%", ">40%"] },
+          scale: { min: 1, max: 5, labels: ["No daily order", "3–4× per week", "5× per week, informal", "Daily, structured process", "Daily with auto-replenishment"] },
           weight: 1.5,
           category: "profitability",
           purpose: "Evaluates pricing strategy effectiveness and market positioning for parts, crucial for parts department profitability.",
@@ -1050,12 +1050,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "What is the average gross profit margin you achieve on parts sales across all channels?",
               description: "Calculate total parts gross profit as a percentage of parts revenue",
-              scaleLabels: ["<25%", "25-30%", "31-35%", "36-40%", ">40%"]
+              scaleLabels: ["No daily order", "3–4× per week", "5× per week, informal", "Daily, structured process", "Daily with auto-replenishment"]
             },
             de: {
               text: "Wie hoch ist die durchschnittliche Bruttogewinnmarge, die Sie bei Teileverkäufen über alle Kanäle erzielen?",
               description: "Berechnen Sie den gesamten Teile-Bruttogewinn als Prozentsatz des Teileumsatzes",
-              scaleLabels: ["<25%", "25-30%", "31-35%", "36-40%", ">40%"]
+              scaleLabels: ["Keine tägliche Bestellung", "3–4× pro Woche", "5× pro Woche, informell", "Täglich, strukturierter Prozess", "Täglich mit automatischer Nachbestellung"]
             }
           }
         },
@@ -1139,7 +1139,7 @@ export const questionnaire: Questionnaire = {
           text: "What percentage of parts sold are returned due to ordering errors or incorrect parts?",
           description: "Track return rate attributed to dealership mistakes",
           type: "scale",
-          scale: { min: 1, max: 5, labels: [">10%", "6-10%", "3-5%", "1-2%", "<1%"] },
+          scale: { min: 1, max: 5, labels: [">6%", "4–6%", "2–3%", "1–2%", "<1%"] },
           weight: 1.2,
           category: "returns",
           purpose: "Measures process quality and accuracy, impacting profitability and customer satisfaction.",
@@ -1150,12 +1150,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "What percentage of parts sold are returned due to ordering errors or incorrect parts?",
               description: "Track return rate attributed to dealership mistakes",
-              scaleLabels: [">10%", "6-10%", "3-5%", "1-2%", "<1%"]
+              scaleLabels: [">6%", "4–6%", "2–3%", "1–2%", "<1%"]
             },
             de: {
               text: "Welcher Prozentsatz der verkauften Teile wird aufgrund von Bestellfehlern oder falschen Teilen zurückgegeben?",
               description: "Verfolgen Sie die Rückgabequote, die auf Fehler des Autohauses zurückzuführen ist",
-              scaleLabels: [">10%", "6-10%", "3-5%", "1-2%", "<1%"]
+              scaleLabels: [">6%", "4–6%", "2–3%", "1–2%", "<1%"]
             }
           }
         },
@@ -1164,7 +1164,7 @@ export const questionnaire: Questionnaire = {
           text: "How effectively can you source and obtain urgently needed parts that are not in stock?",
           description: "Rate your emergency sourcing capabilities for critical customer needs",
           type: "scale",
-          scale: { min: 1, max: 5, labels: [">5 days to source", "3-5 days to source", "1-2 days to source", "Same day sourced", "<4 hrs from network"] },
+          scale: { min: 1, max: 5, labels: ["No VOR process", "Ad hoc escalation", "Identified but no SLA", "SLA defined, inconsistent", "Formal VOR SLA <4h, tracked"] },
           weight: 1.1,
           category: "emergency",
           purpose: "Evaluates supply chain relationships and problem-solving capabilities, crucial for customer service excellence.",
@@ -1175,12 +1175,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How effectively can you source and obtain urgently needed parts that are not in stock?",
               description: "Rate your emergency sourcing capabilities for critical customer needs",
-              scaleLabels: [">5 days to source", "3-5 days to source", "1-2 days to source", "Same day sourced", "<4 hrs from network"]
+              scaleLabels: ["No VOR process", "Ad hoc escalation", "Identified but no SLA", "SLA defined, inconsistent", "Formal VOR SLA <4h, tracked"]
             },
             de: {
               text: "Wie effektiv können Sie dringend benötigte Teile beschaffen, die nicht auf Lager sind?",
               description: "Bewerten Sie Ihre Notfallbeschaffungsfähigkeiten für kritische Kundenbedürfnisse",
-              scaleLabels: [">5 Tage Beschaffung", "3–5 Tage Beschaffung", "1–2 Tage Beschaffung", "Gleichtag beschafft", "<4 Std. aus Netzwerk"]
+              scaleLabels: ["Kein VOR-Prozess", "Ad-hoc-Eskalation", "Identifiziert, kein SLA", "SLA definiert, inkonsistent", "Formaler VOR-SLA <4h, nachverfolgt"]
             }
           }
         },
@@ -1189,7 +1189,7 @@ export const questionnaire: Questionnaire = {
           text: "How long does it typically take to process and fulfill a standard parts counter request?",
           description: "Measure time from customer request to parts in hand",
           type: "scale",
-          scale: { min: 1, max: 5, labels: [">10 min", "6-10 min", "3-5 min", "1-2 min", "<1 min"] },
+          scale: { min: 1, max: 5, labels: [">60 min avg", "45–60 min", "30–44 min", "15–29 min", "<15 min avg"] },
           weight: 1.0,
           category: "efficiency",
           purpose: "Measures operational efficiency and customer service speed, impacting customer satisfaction and productivity.",
@@ -1200,12 +1200,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How long does it typically take to process and fulfill a standard parts counter request?",
               description: "Measure time from customer request to parts in hand",
-              scaleLabels: [">10 min", "6-10 min", "3-5 min", "1-2 min", "<1 min"]
+              scaleLabels: [">60 min avg", "45–60 min", "30–44 min", "15–29 min", "<15 min avg"]
             },
             de: {
               text: "Wie lange dauert es typischerweise, eine Standard-Teilethekennanfrage zu bearbeiten und zu erfüllen?",
               description: "Messen Sie die Zeit von der Kundenanfrage bis zu den Teilen in der Hand",
-              scaleLabels: [">10 Min", "6-10 Min", "3-5 Min", "1-2 Min", "<1 Min"]
+              scaleLabels: [">60 Min. Ø", "45–60 Min.", "30–44 Min.", "15–29 Min.", "<15 Min. Ø"]
             }
           }
         },
@@ -1214,7 +1214,7 @@ export const questionnaire: Questionnaire = {
           text: "How strong are your relationships and communication with your parts suppliers and vendors?",
           description: "Consider pricing, delivery reliability, and support quality",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<80% on-time", "80-85% on-time", "86-91% on-time", "92-96% on-time", ">96% on-time"] },
+          scale: { min: 1, max: 5, labels: ["No pricing control", "Informal discounting", "Partial list price adherence", "Structured pricing, some exceptions", "Full list price discipline with approval workflow"] },
           weight: 1.1,
           category: "vendor",
           purpose: "Evaluates supply chain management effectiveness, impacting costs, availability, and service quality.",
@@ -1225,12 +1225,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How strong are your relationships and communication with your parts suppliers and vendors?",
               description: "Consider pricing, delivery reliability, and support quality",
-              scaleLabels: ["<80% on-time", "80-85% on-time", "86-91% on-time", "92-96% on-time", ">96% on-time"]
+              scaleLabels: ["No pricing control", "Informal discounting", "Partial list price adherence", "Structured pricing, some exceptions", "Full list price discipline with approval workflow"]
             },
             de: {
               text: "Wie stark sind Ihre Beziehungen und Kommunikation mit Ihren Teilelieferanten und Anbietern?",
               description: "Berücksichtigen Sie Preisgestaltung, Lieferzuverlässigkeit und Supportqualität",
-              scaleLabels: ["<80% pünktlich", "80–85% pünktlich", "86–91% pünktlich", "92–96% pünktlich", ">96% pünktlich"]
+              scaleLabels: ["Keine Preiskontrolle", "Informelle Rabatte", "Teilweise Listenpreiseinhaltung", "Strukturierte Preise, Ausnahmen möglich", "Volle Listenpreisdisziplin mit Genehmigungsworkflow"]
             }
           }
         }
@@ -1307,7 +1307,7 @@ export const questionnaire: Questionnaire = {
           text: "How effectively do you manage your floor plan financing to minimize interest costs?",
           description: "Consider inventory turn rate relative to floor plan terms and payment timing",
           type: "scale",
-          scale: { min: 1, max: 5, labels: [">75 days avg stock", "60-75 days avg", "45-60 days avg", "30-45 days avg", "<30 days avg"] },
+          scale: { min: 1, max: 5, labels: [">75 days", "61–75 days", "46–60 days", "31–45 days", "≤30 days"] },
           weight: 1.5,
           category: "floorplan",
           purpose: "Evaluates inventory financing efficiency, directly impacting profitability and cash management.",
@@ -1318,12 +1318,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How effectively do you manage your floor plan financing to minimize interest costs?",
               description: "Consider inventory turn rate relative to floor plan terms and payment timing",
-              scaleLabels: [">75 days avg stock", "60-75 days avg", "45-60 days avg", "30-45 days avg", "<30 days avg"]
+              scaleLabels: [">75 days", "61–75 days", "46–60 days", "31–45 days", "≤30 days"]
             },
             de: {
               text: "Wie effektiv verwalten Sie Ihre Bestandsfinanzierung, um Zinskosten zu minimieren?",
               description: "Berücksichtigen Sie die Umschlagshäufigkeit im Verhältnis zu den Finanzierungsbedingungen und Zahlungszeitpunkten",
-              scaleLabels: [">75 Tage Ø Bestand", "60–75 Tage", "45–60 Tage", "30–45 Tage", "<30 Tage Ø Bestand"]
+              scaleLabels: [">75 Tage", "61–75 Tage", "46–60 Tage", "31–45 Tage", "≤30 Tage"]
             }
           }
         },
@@ -1332,7 +1332,7 @@ export const questionnaire: Questionnaire = {
           text: "How effectively does your dealership control and manage operational expenses?",
           description: "Consider cost monitoring, budget adherence, and expense reduction initiatives",
           type: "scale",
-          scale: { min: 1, max: 5, labels: [">90% expense ratio", "80-90% expenses", "70-80% expenses", "60-70% expenses", "<60% expense ratio"] },
+          scale: { min: 1, max: 5, labels: ["<60%", "60–70%", "71–80%", "81–94%", "≥95%"] },
           weight: 1.6,
           category: "costs",
           purpose: "Measures operational efficiency and expense management, crucial for maintaining profitability and competitiveness.",
@@ -1343,12 +1343,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How effectively does your dealership control and manage operational expenses?",
               description: "Consider cost monitoring, budget adherence, and expense reduction initiatives",
-              scaleLabels: [">90% expense ratio", "80-90% expenses", "70-80% expenses", "60-70% expenses", "<60% expense ratio"]
+              scaleLabels: ["<60%", "60–70%", "71–80%", "81–94%", "≥95%"]
             },
             de: {
               text: "Wie effektiv kontrolliert und verwaltet Ihr Autohaus die Betriebskosten?",
               description: "Berücksichtigen Sie Kostenüberwachung, Budgeteinhaltung und Kostensenkungsinitiativen",
-              scaleLabels: [">90% Kostenquote", "80–90% Kosten", "70–80% Kosten", "60–70% Kosten", "<60% Kostenquote"]
+              scaleLabels: ["<60%", "60–70%", "71–80%", "81–94%", "≥95%"]
             }
           }
         },
@@ -1382,7 +1382,7 @@ export const questionnaire: Questionnaire = {
           text: "What return are you achieving on your technology and equipment investments?",
           description: "Consider DMS, CRM, service equipment, and digital marketing tools",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<30% systems used", "30-50% systems", "51-70% systems", "71-85% systems", ">85% all systems"] },
+          scale: { min: 1, max: 5, labels: ["<0.5%", "0.5–1%", "1.1–1.8%", "1.9–2.5%", ">2.5%"] },
           weight: 1.2,
           category: "technology",
           purpose: "Assesses technology investment effectiveness and digital transformation success, crucial for future competitiveness.",
@@ -1393,12 +1393,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "What return are you achieving on your technology and equipment investments?",
               description: "Consider DMS, CRM, service equipment, and digital marketing tools",
-              scaleLabels: ["<30% systems used", "30-50% systems", "51-70% systems", "71-85% systems", ">85% all systems"]
+              scaleLabels: ["<0.5%", "0.5–1%", "1.1–1.8%", "1.9–2.5%", ">2.5%"]
             },
             de: {
               text: "Welche Rendite erzielen Sie bei Ihren Technologie- und Geräteinvestitionen?",
               description: "Berücksichtigen Sie DMS, CRM, Servicegeräte und digitale Marketing-Tools",
-              scaleLabels: ["<30% Systeme genutzt", "30–50% Systeme", "51–70% Systeme", "71–85% Systeme", ">85% alle Systeme"]
+              scaleLabels: ["<0,5%", "0,5–1%", "1,1–1,8%", "1,9–2,5%", ">2,5%"]
             }
           }
         },
@@ -1407,7 +1407,7 @@ export const questionnaire: Questionnaire = {
           text: "How efficiently are you utilizing your showroom floor space and service bay capacity?",
           description: "Consider revenue per square foot and bay utilization rates",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<50% bay occupancy", "50-65% bays", "66-75% bays", "76-85% bays", ">85% bay occupancy"] },
+          scale: { min: 1, max: 5, labels: ["<50% of target", "50–65%", "66–79%", "80–94%", "≥95%"] },
           weight: 1.3,
           category: "facility",
           purpose: "Evaluates physical asset utilization and operational design effectiveness, impacting productivity and costs.",
@@ -1418,12 +1418,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How efficiently are you utilizing your showroom floor space and service bay capacity?",
               description: "Consider revenue per square foot and bay utilization rates",
-              scaleLabels: ["<50% bay occupancy", "50-65% bays", "66-75% bays", "76-85% bays", ">85% bay occupancy"]
+              scaleLabels: ["<50% of target", "50–65%", "66–79%", "80–94%", "≥95%"]
             },
             de: {
               text: "Wie effizient nutzen Sie Ihre Ausstellungsraumfläche und Servicebucht-Kapazität?",
               description: "Berücksichtigen Sie den Umsatz pro Quadratmeter und die Buchtauslastung",
-              scaleLabels: ["<50% Buchtbelegung", "50–65% Buchten", "66–75% Buchten", "76–85% Buchten", ">85% Buchtbelegung"]
+              scaleLabels: ["<50% des Ziels", "50–65%", "66–79%", "80–94%", "≥95%"]
             }
           }
         },
@@ -1432,7 +1432,7 @@ export const questionnaire: Questionnaire = {
           text: "How well do you maintain and leverage your customer database for marketing and retention?",
           description: "Consider data quality, segmentation capabilities, and utilization for targeted campaigns",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<40% records usable", "40-60% records", "61-75% records", "76-88% records", ">88% clean+segmented"] },
+          scale: { min: 1, max: 5, labels: [">30 days avg", "21–30 days", "14–20 days", "8–13 days", "≤7 days avg"] },
           weight: 1.1,
           category: "data",
           purpose: "Assesses data asset quality and utilization effectiveness, crucial for customer relationship management and business intelligence.",
@@ -1443,12 +1443,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How well do you maintain and leverage your customer database for marketing and retention?",
               description: "Consider data quality, segmentation capabilities, and utilization for targeted campaigns",
-              scaleLabels: ["<40% records usable", "40-60% records", "61-75% records", "76-88% records", ">88% clean+segmented"]
+              scaleLabels: [">30 days avg", "21–30 days", "14–20 days", "8–13 days", "≤7 days avg"]
             },
             de: {
               text: "Wie gut pflegen und nutzen Sie Ihre Kundendatenbank für Marketing und Kundenbindung?",
               description: "Berücksichtigen Sie Datenqualität, Segmentierungsfähigkeiten und Nutzung für zielgerichtete Kampagnen",
-              scaleLabels: ["<40% Datensätze nutzbar", "40–60% nutzbar", "61–75% nutzbar", "76–88% nutzbar", ">88% bereinigt+segmentiert"]
+              scaleLabels: [">30 Tage Ø", "21–30 Tage", "14–20 Tage", "8–13 Tage", "≤7 Tage Ø"]
             }
           }
         }
