@@ -1,65 +1,144 @@
 
 
-## Plan: UX/UI Refinements — DESIGN.md Compliance Fixes
+## Plan: OEM Admin & Coach Dashboards with Role-Based Routing
 
-Both resources (ui-ux-pro-max-skill and 21st.dev) are useful as design intelligence references but cannot be installed directly into Lovable. However, several of their recommended patterns for **Enterprise SaaS / B2B dashboards** — specifically "Data-Dense Dashboard", "Executive Dashboard", and "Dimensional Layering" styles — align perfectly with what DESIGN.md already specifies but is **not yet implemented** in code.
+### Architecture Decision
 
-The highest-impact improvements are features your own design system defines but the codebase does not render yet. Here are the concrete changes:
+The `profiles.actor_type` enum (`dealer | coach | oem | internal`) already exists in the database and is the correct discriminator for dashboard routing. The `useActiveRole` hook currently maps membership roles to UX personas but does not read `actor_type`. We need to extend it to also expose `actor_type`, then use that for routing.
+
+**No new DB roles are created.** We use the existing `actor_type` field on profiles.
 
 ---
 
-### Files to modify
+### Files to Create
+
+| File | Purpose |
+|---|---|
+| `src/pages/OemDashboard.tsx` | OEM Admin dashboard with network selector, leaderboard, summary cards |
+| `src/pages/CoachDashboard.tsx` | Coach dashboard with assigned dealers grid, score trend chart |
+
+### Files to Modify
 
 | File | Change |
 |---|---|
-| `src/pages/Results.tsx` | Replace flat progress bar with SVG score ring (DESIGN.md §5.1); add staggered card entrance animations (§7.2) |
-| `src/pages/Dashboard.tsx` | Add 4px department-colour top borders to section headers (§5.2); staggered KPI card animations |
-| `src/components/MaturityScoring.tsx` | Fix radar chart styling: dashed grid, 20% fill opacity, shadow-card (§6.3); fix roadmap gradient anti-pattern |
+| `src/hooks/useActiveRole.tsx` | Add `actorType` field (reads `profiles.actor_type`) |
+| `src/components/AppSidebar.tsx` | Add conditional nav items for OEM/Coach dashboards based on `actorType` |
+| `src/App.tsx` | Add routes `/app/oem-dashboard` and `/app/coach-dashboard` |
+| `src/contexts/LanguageContext.tsx` | Add i18n keys for all new strings |
+| `src/i18n/en.json` | Add i18n keys (nav + dashboard labels) |
+| `src/i18n/de.json` | Add German translations |
 
 ---
 
-### Change 1 — SVG Score Ring on Results Page
+### Change 1 — Extend `useActiveRole` with `actorType`
 
-**DESIGN.md §5.1 specifies this. Current code uses a flat `<div>` progress bar (lines 336-353).**
+Add `actorType: 'dealer' | 'coach' | 'oem' | 'internal' | null` to the return type. Read it from the existing `profiles` query (already fetches profile, just add `actor_type` to the select). No new DB queries needed.
 
-Replace the Overall Score card's flat bar with an inline SVG circular ring:
-- 120px diameter, `stroke-width: 8`, `neutral-200` track circle
-- Score arc coloured by score band (success/warning/destructive)
-- `stroke-dashoffset` animates once on mount via a `useState` + `useEffect` with `requestAnimationFrame` (300ms ease-out)
-- Score number centred inside the ring using `text-metric-lg`
-- Label below: `text-label uppercase tracking-wider`
-- Make this card `col-span-2` on `md:grid-cols-4` to establish visual hierarchy
+### Change 2 — i18n Keys
 
-### Change 2 — Staggered Card Entrance Animations
+Add to both `en.json` and `de.json`, and to the `LanguageContext.tsx` translations object:
 
-**DESIGN.md §7.2 permits staggered reveals: 50ms increments, max 5 cards.**
+```
+nav.oemDashboard: "OEM Dashboard" / "OEM-Dashboard"
+nav.coachDashboard: "Coach Dashboard" / "Coach-Dashboard"
+oem.title: "Network Overview" / "Netzwerkübersicht"
+oem.totalDealers: "Total Dealers" / "Gesamtzahl Händler"
+oem.avgScore: "Average Score" / "Durchschnittliche Bewertung"
+oem.highestScore: "Highest Score" / "Höchste Bewertung"
+oem.lowestScore: "Lowest Score" / "Niedrigste Bewertung"
+oem.leaderboard: "Dealer Leaderboard" / "Händler-Rangliste"
+oem.rank: "Rank" / "Rang"
+oem.dealerName: "Dealer" / "Händler"
+oem.latestScore: "Latest Score" / "Letzte Bewertung"
+oem.previousScore: "Previous Score" / "Vorherige Bewertung"
+oem.trend: "Trend" / "Trend"
+oem.benchmarkBand: "Band" / "Band"
+oem.selectNetwork: "Select Network" / "Netzwerk auswählen"
+oem.noNetworks: "No network memberships found" / "Keine Netzwerkmitgliedschaften"
+oem.noAssessments: "No assessments yet" / "Noch keine Bewertungen"
+coach.title: "Assigned Dealers" / "Zugewiesene Händler"
+coach.sortByScore: "By Score" / "Nach Bewertung"
+coach.sortByName: "By Name" / "Nach Name"
+coach.filterAll: "All" / "Alle"
+coach.filterCompleted: "Completed" / "Abgeschlossen"
+coach.filterInProgress: "In Progress" / "In Bearbeitung"
+coach.scoreTrend: "Score Trend" / "Bewertungsverlauf"
+coach.selectDealers: "Select dealers to compare" / "Händler zum Vergleichen auswählen"
+coach.noAssignments: "No assigned dealers" / "Keine zugewiesenen Händler"
+coach.noAssessments: "No assessments found" / "Keine Bewertungen gefunden"
+```
 
-Results page (lines 328-383): Add `opacity-0 animate-fade-in` with inline `style={{ animationDelay: '${i * 50}ms', animationFillMode: 'forwards' }}` to each of the 4 summary metric cards.
+### Change 3 — `AppSidebar.tsx` Navigation
 
-Dashboard page: Same treatment on the 4 KPI cards within each department section (delays 0/50/100/150ms).
+In the `sections` array, conditionally add items based on `actorType` from `useActiveRole`:
+- If `actorType === 'oem'`: Add "OEM Dashboard" (`/app/oem-dashboard`) to Overview section with `Globe` icon
+- If `actorType === 'coach'`: Add "Coach Dashboard" (`/app/coach-dashboard`) to Overview section with `Users` icon
+- Both still see existing nav items (Dashboard, Assessment, etc.)
 
-### Change 3 — Department Colour Top Borders on Dashboard
+### Change 4 — `App.tsx` Routes
 
-**DESIGN.md §5.2 specifies a 4px top border in department colour. Current `SectionHeader` has none (line 88).**
+Add inside the `/app/*` Routes block:
+```tsx
+<Route path="oem-dashboard" element={<OemDashboard />} />
+<Route path="coach-dashboard" element={<CoachDashboard />} />
+```
 
-Add `border-t-4 rounded-t-lg` with inline `style={{ borderTopColor: '#2563eb' }}` (NVS), `#7c3aed` (UVS), `#0891b2` (SVC) to each section's container card.
+Both are already behind `<ProtectedRoute>`. Access control is handled within each page component by checking `actorType` and redirecting if unauthorized.
 
-### Change 4 — Radar Chart & Roadmap Styling Fixes
+### Change 5 — `OemDashboard.tsx`
 
-**DESIGN.md §6.3 specifies dashed grid, 20% fill opacity, 11px axis labels.**
+**Guard:** If `actorType !== 'oem'`, render `<Navigate to="/app/dashboard" />`.
 
-In `MaturityScoring.tsx`:
-- `PolarGrid`: add `strokeDasharray="3 3"` (currently missing)
-- "Your Score" `Radar`: change `fillOpacity={0.4}` → `fillOpacity={0.2}`
-- All 3 `Card` components: change `shadow-lg` → `shadow-card`
-- Roadmap card (line ~370): replace `bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200` with `bg-muted border border-border` (hardcoded greys are an anti-pattern per §2.5)
+**Data flow:**
+1. Fetch `oem_networks` where `owner_org_id = currentOrganization.id`
+2. On network select, fetch `dealer_network_memberships` with joined `dealerships(name, id, location)`
+3. For each dealer, fetch latest 2 `assessments` (for current + previous score, trend calc)
+
+**Layout:**
+- Network `Select` dropdown at top
+- 4-card summary grid (`grid-cols-2 md:grid-cols-4`): Total Dealers, Avg Score, Highest, Lowest
+- Leaderboard `Table` below with columns: Rank, Dealer Name, Latest Score, Previous Score, Trend (↑↓→), Band
+- Rank 1-3: subtle gold/silver/bronze left border (4px)
+- Row hover: `hover:bg-muted/50`
+- Score badges colored by band (DESIGN.md §2.3)
+- Staggered card animations per §7.2
+
+**Mobile:** Table wrapped in `overflow-x-auto`, cards stack to `grid-cols-2`
+
+**Error states:** Empty state components for no networks, no assessments, query errors
+
+### Change 6 — `CoachDashboard.tsx`
+
+**Guard:** If `actorType !== 'coach'`, render `<Navigate to="/app/dashboard" />`.
+
+**Data flow:**
+1. Fetch `coach_dealership_assignments` where `coach_user_id = user.id` and `is_active = true`, joined with `dealerships(name, id, location, brand)`
+2. For each assigned dealer, fetch latest `assessments` (status, overall_score, created_at)
+
+**Section 1 — Assigned Dealers Grid:**
+- `grid-cols-1 md:grid-cols-2 lg:grid-cols-3` Card layout
+- Each card: Dealer name (CardTitle), brand badge, latest score (colored badge), assessment date, status badge
+- Sort toggle: By Score / By Name (two buttons)
+- Status filter: All / In Progress / Completed (Select dropdown)
+- Card click: navigate to `/app/results/{assessmentId}`
+
+**Section 2 — Score Trend Chart:**
+- Multi-select dropdown to pick 1-3 dealers
+- Recharts `LineChart` (already in bundle): X = assessment date, Y = overall score
+- One line per dealer with department colors from DESIGN.md §2.4
+- Tooltip with exact score + date
+- Only render when dealers are selected
+
+**Error states:** Empty state for no assignments, no assessments
 
 ---
 
-### Technical notes
+### Technical Notes
 
-- Zero new packages — all inline SVG, CSS animations, existing Recharts props
-- No changes to `tailwind.config.ts`, `index.css`, or `src/components/ui/`
-- All animations are mount-only per §7.2 (no re-render triggers)
-- The SVG ring reuses the existing `animatedScore` state already in Results.tsx
+- Zero new npm packages — Recharts already in bundle
+- All text through i18n — zero hardcoded strings
+- TypeScript strict — use `Tables<'oem_networks'>` etc. from types.ts
+- No modifications to restricted files (ActionPlan.tsx, Assessment.tsx, scoringEngine.ts, etc.)
+- Department colors from DESIGN.md §2.4, score bands from §2.3
+- Staggered animations per §7.2 (50ms increments, max 5 cards)
 
