@@ -37,6 +37,7 @@ export function useActiveRole(): ActiveRoleData {
   const { user } = useAuth();
   const [uxRole, setUXRole] = useState<ActiveUXRole>(null);
   const [membershipRole, setMembershipRole] = useState<MembershipRole | null>(null);
+  const [actorType, setActorType] = useState<ActorType>(null);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [dealerId, setDealerId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,6 +46,7 @@ export function useActiveRole(): ActiveRoleData {
     if (!user) {
       setUXRole(null);
       setMembershipRole(null);
+      setActorType(null);
       setOrganizationId(null);
       setDealerId(null);
       setLoading(false);
