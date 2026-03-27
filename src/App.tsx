@@ -17,6 +17,8 @@ import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import AcceptInvite from "./pages/AcceptInvite";
 import KPIEncyclopediaPage from "./pages/KPIEncyclopediaPage";
+import OemDashboard from "./pages/OemDashboard";
+import CoachDashboard from "./pages/CoachDashboard";
 import { AuthProvider } from "@/hooks/useAuth";
 import { MultiTenantProvider } from "@/hooks/useMultiTenant";
 import { RoleProvider } from "@/contexts/RoleContext";
