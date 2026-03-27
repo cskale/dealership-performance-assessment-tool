@@ -733,6 +733,40 @@ const translations: Record<Language, Record<string, string>> = {
     'common.language': 'Sprache',
     'common.english': 'Englisch',
     'common.german': 'Deutsch',
+
+    // OEM Dashboard
+    'nav.oemDashboard': 'OEM-Dashboard',
+    'nav.coachDashboard': 'Coach-Dashboard',
+    'oem.title': 'Netzwerkübersicht',
+    'oem.totalDealers': 'Gesamtzahl Händler',
+    'oem.avgScore': 'Durchschnittliche Bewertung',
+    'oem.highestScore': 'Höchste Bewertung',
+    'oem.lowestScore': 'Niedrigste Bewertung',
+    'oem.leaderboard': 'Händler-Rangliste',
+    'oem.rank': 'Rang',
+    'oem.dealerName': 'Händler',
+    'oem.latestScore': 'Letzte Bewertung',
+    'oem.previousScore': 'Vorherige Bewertung',
+    'oem.trend': 'Trend',
+    'oem.benchmarkBand': 'Band',
+    'oem.selectNetwork': 'Netzwerk auswählen',
+    'oem.noNetworks': 'Keine Netzwerkmitgliedschaften',
+    'oem.noAssessments': 'Noch keine Bewertungen',
+    'oem.loadError': 'Daten konnten nicht geladen werden',
+
+    // Coach Dashboard
+    'coach.title': 'Zugewiesene Händler',
+    'coach.sortByScore': 'Nach Bewertung',
+    'coach.sortByName': 'Nach Name',
+    'coach.filterAll': 'Alle',
+    'coach.filterCompleted': 'Abgeschlossen',
+    'coach.filterInProgress': 'In Bearbeitung',
+    'coach.scoreTrend': 'Bewertungsverlauf',
+    'coach.selectDealers': 'Händler zum Vergleichen auswählen',
+    'coach.noAssignments': 'Keine zugewiesenen Händler',
+    'coach.noAssessments': 'Keine Bewertungen gefunden',
+    'coach.latestAssessment': 'Letzte Bewertung',
+    'coach.status': 'Status',
   }
 };
 
