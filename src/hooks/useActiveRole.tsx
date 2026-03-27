@@ -58,12 +58,13 @@ export function useActiveRole(): ActiveRoleData {
       try {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('active_organization_id')
+          .select('active_organization_id, actor_type')
           .eq('user_id', user.id)
           .maybeSingle();
 
         const activeOrgId = profile?.active_organization_id ?? null;
         setOrganizationId(activeOrgId);
+        setActorType((profile?.actor_type as ActorType) ?? null);
 
         if (!activeOrgId) {
           setUXRole(null);
