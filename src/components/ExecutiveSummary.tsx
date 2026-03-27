@@ -401,42 +401,8 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
         </Card>
       )}
 
-      {/* SECTION 5 — Excellence Gaps (only for high scorers) */}
-      {ceilingInsights.length > 0 && (
-        <Card className="shadow-lg border">
-          <CardHeader>
-            <CardTitle className="text-base font-semibold text-foreground">
-              Excellence Gaps — Path to Top Quartile
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {ceilingInsights.map((insight, i) => {
-                const prefix = insight.questionId.split('-')[0];
-                const deptKey = PREFIX_TO_DEPT[prefix] ?? 'new-vehicle-sales';
-                const deptLabel = getDepartmentName(deptKey, language);
-                return (
-                  <div key={i} className="border rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-sm font-semibold text-foreground">{deptLabel}</span>
-                      <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">
-                        Above Average
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-                      {insight.bestInClassDescription}
-                    </p>
-                    <div className="flex items-start gap-2 bg-blue-50/50 rounded-md p-3">
-                      <span className="text-primary font-bold mt-0.5">→</span>
-                      <p className="text-sm text-foreground">{insight.nextLevelAction}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* SECTION 5 — Excellence Gaps (upgraded) */}
+      <CeilingInsightsPanel insights={ceilingInsights} />
 
     </div>
   );
