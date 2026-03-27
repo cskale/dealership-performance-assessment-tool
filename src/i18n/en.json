@@ -6,7 +6,9 @@
     "actions": "Action Plan",
     "dashboard": "Dashboard",
     "account": "Account",
-    "signIn": "Sign In"
+    "signIn": "Sign In",
+    "oemDashboard": "OEM Dashboard",
+    "coachDashboard": "Coach Dashboard"
   },
   "common": {
     "save": "Save",
@@ -41,5 +43,37 @@
     "indicativeLabel": "Indicative Benchmark (75%) ⓘ",
     "tooltip": "This benchmark represents an indicative average based on European automotive retail network observations. It is not statistically validated. For brand-specific benchmarks, contact your OEM program manager.",
     "footnote": "* Benchmark is indicative. Segmented benchmarks by brand tier and market type available in enterprise configuration."
+  },
+  "oem": {
+    "title": "Network Overview",
+    "totalDealers": "Total Dealers",
+    "avgScore": "Average Score",
+    "highestScore": "Highest Score",
+    "lowestScore": "Lowest Score",
+    "leaderboard": "Dealer Leaderboard",
+    "rank": "Rank",
+    "dealerName": "Dealer",
+    "latestScore": "Latest Score",
+    "previousScore": "Previous Score",
+    "trend": "Trend",
+    "benchmarkBand": "Band",
+    "selectNetwork": "Select Network",
+    "noNetworks": "No network memberships found",
+    "noAssessments": "No assessments yet",
+    "loadError": "Unable to load data"
+  },
+  "coach": {
+    "title": "Assigned Dealers",
+    "sortByScore": "By Score",
+    "sortByName": "By Name",
+    "filterAll": "All",
+    "filterCompleted": "Completed",
+    "filterInProgress": "In Progress",
+    "scoreTrend": "Score Trend",
+    "selectDealers": "Select dealers to compare",
+    "noAssignments": "No assigned dealers",
+    "noAssessments": "No assessments found",
+    "latestAssessment": "Latest Assessment",
+    "status": "Status"
   }
 }

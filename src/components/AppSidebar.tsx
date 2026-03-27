@@ -2,9 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
+import { useActiveRole } from '@/hooks/useActiveRole';
 import {
   BarChart3, Building2, Plus, ClipboardList, CheckSquare,
-  BookOpen, FileText, LogOut, Database,
+  BookOpen, FileText, LogOut, Database, Globe, Users,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -12,6 +13,7 @@ import { cn } from '@/lib/utils';
 export function AppSidebar() {
   const { user, signOut } = useAuth();
   const { userMemberships, currentOrganization } = useMultiTenant();
+  const { actorType } = useActiveRole();
   const location = useLocation();
   const [completedCount, setCompletedCount] = useState(0);
   const [collapsed, setCollapsed] = useState(false);
@@ -93,6 +95,8 @@ export function AppSidebar() {
       label: 'Overview',
       items: [
         { path: '/app/dashboard', label: 'Dashboard', icon: BarChart3 },
+        ...(actorType === 'oem' ? [{ path: '/app/oem-dashboard', label: 'OEM Dashboard', icon: Globe }] : []),
+        ...(actorType === 'coach' ? [{ path: '/app/coach-dashboard', label: 'Coach Dashboard', icon: Users }] : []),
         { path: '/account', label: 'My Dealership', icon: Building2 },
       ],
     },

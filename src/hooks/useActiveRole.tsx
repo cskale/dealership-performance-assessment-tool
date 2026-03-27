@@ -17,10 +17,12 @@ import { useAuth } from './useAuth';
 
 export type ActiveUXRole = 'coach' | 'dealer' | null;
 export type MembershipRole = 'owner' | 'admin' | 'member' | 'viewer';
+export type ActorType = 'dealer' | 'coach' | 'oem' | 'internal' | null;
 
 interface ActiveRoleData {
   uxRole: ActiveUXRole;
   membershipRole: MembershipRole | null;
+  actorType: ActorType;
   organizationId: string | null;
   dealerId: string | null;
   loading: boolean;
@@ -35,6 +37,7 @@ export function useActiveRole(): ActiveRoleData {
   const { user } = useAuth();
   const [uxRole, setUXRole] = useState<ActiveUXRole>(null);
   const [membershipRole, setMembershipRole] = useState<MembershipRole | null>(null);
+  const [actorType, setActorType] = useState<ActorType>(null);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [dealerId, setDealerId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,6 +46,7 @@ export function useActiveRole(): ActiveRoleData {
     if (!user) {
       setUXRole(null);
       setMembershipRole(null);
+      setActorType(null);
       setOrganizationId(null);
       setDealerId(null);
       setLoading(false);
@@ -54,12 +58,13 @@ export function useActiveRole(): ActiveRoleData {
       try {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('active_organization_id')
+          .select('active_organization_id, actor_type')
           .eq('user_id', user.id)
           .maybeSingle();
 
         const activeOrgId = profile?.active_organization_id ?? null;
         setOrganizationId(activeOrgId);
+        setActorType((profile?.actor_type as ActorType) ?? null);
 
         if (!activeOrgId) {
           setUXRole(null);
@@ -109,5 +114,5 @@ export function useActiveRole(): ActiveRoleData {
     fetchRole();
   }, [user]);
 
-  return { uxRole, membershipRole, organizationId, dealerId, loading };
+  return { uxRole, membershipRole, actorType, organizationId, dealerId, loading };
 }
