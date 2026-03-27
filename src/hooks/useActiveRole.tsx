@@ -114,5 +114,5 @@ export function useActiveRole(): ActiveRoleData {
     fetchRole();
   }, [user]);
 
-  return { uxRole, membershipRole, organizationId, dealerId, loading };
+  return { uxRole, membershipRole, actorType, organizationId, dealerId, loading };
 }
