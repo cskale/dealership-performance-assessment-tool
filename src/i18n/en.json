@@ -75,5 +75,32 @@
     "noAssessments": "No assessments found",
     "latestAssessment": "Latest Assessment",
     "status": "Status"
+  },
+  "results": {
+    "kpiMatrix": {
+      "title": "Department KPI Matrix",
+      "noData": "No KPI data available",
+      "score": "Score",
+      "legend": "Legend",
+      "aboveBenchmark": "Above Benchmark",
+      "atBenchmark": "At Benchmark",
+      "belowBenchmark": "Below Benchmark"
+    },
+    "causalChain": {
+      "title": "Root-Cause Analysis",
+      "noChains": "No cross-department causal chains detected.",
+      "viewAll": "View all chains",
+      "showLess": "Show less",
+      "sharedCause": "Shared root cause",
+      "rootCause": "Root cause"
+    },
+    "ceiling": {
+      "title": "Excellence Gaps — Path to Top Quartile",
+      "noInsights": "All departments optimising. No immediate opportunities identified.",
+      "viewAll": "View all insights",
+      "showLess": "Show less",
+      "badge": "Optimisation Opportunity",
+      "currentScore": "Current score"
+    }
   }
 }

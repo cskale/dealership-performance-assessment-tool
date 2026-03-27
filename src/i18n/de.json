@@ -75,5 +75,32 @@
     "noAssessments": "Keine Bewertungen gefunden",
     "latestAssessment": "Letzte Bewertung",
     "status": "Status"
+  },
+  "results": {
+    "kpiMatrix": {
+      "title": "Abteilungs-KPI-Matrix",
+      "noData": "Keine KPI-Daten verfügbar",
+      "score": "Bewertung",
+      "legend": "Legende",
+      "aboveBenchmark": "Über Benchmark",
+      "atBenchmark": "Im Benchmark",
+      "belowBenchmark": "Unter Benchmark"
+    },
+    "causalChain": {
+      "title": "Ursachenanalyse",
+      "noChains": "Keine abteilungsübergreifenden Ursachenketten erkannt.",
+      "viewAll": "Alle Ketten anzeigen",
+      "showLess": "Weniger anzeigen",
+      "sharedCause": "Gemeinsame Ursache",
+      "rootCause": "Ursache"
+    },
+    "ceiling": {
+      "title": "Exzellenzlücken — Weg ins Top-Quartil",
+      "noInsights": "Alle Abteilungen optimieren. Keine Optimierungsmöglichkeiten erkannt.",
+      "viewAll": "Alle Erkenntnisse anzeigen",
+      "showLess": "Weniger anzeigen",
+      "badge": "Optimierungschance",
+      "currentScore": "Aktuelle Bewertung"
+    }
   }
 }
