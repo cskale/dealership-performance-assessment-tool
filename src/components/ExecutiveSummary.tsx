@@ -281,6 +281,12 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
         </Card>
       )}
 
+      {/* SECTION 1B — Department KPI Heatmap */}
+      <DepartmentHeatmap scores={scores} answers={answers as Record<string, number>} />
+
+      {/* SECTION 1C — Causal Chain Diagram */}
+      <CausalChainDiagram signals={topSignals} />
+
       {/* SECTION 2 — Department Score Cards */}
       <Card className="shadow-lg border">
         <CardHeader>
