@@ -17,10 +17,12 @@ import { useAuth } from './useAuth';
 
 export type ActiveUXRole = 'coach' | 'dealer' | null;
 export type MembershipRole = 'owner' | 'admin' | 'member' | 'viewer';
+export type ActorType = 'dealer' | 'coach' | 'oem' | 'internal' | null;
 
 interface ActiveRoleData {
   uxRole: ActiveUXRole;
   membershipRole: MembershipRole | null;
+  actorType: ActorType;
   organizationId: string | null;
   dealerId: string | null;
   loading: boolean;

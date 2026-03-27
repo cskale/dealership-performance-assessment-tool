@@ -6,7 +6,9 @@
     "actions": "Maßnahmenplan",
     "dashboard": "Dashboard",
     "account": "Konto",
-    "signIn": "Anmelden"
+    "signIn": "Anmelden",
+    "oemDashboard": "OEM-Dashboard",
+    "coachDashboard": "Coach-Dashboard"
   },
   "common": {
     "save": "Speichern",
@@ -41,5 +43,37 @@
     "indicativeLabel": "Indikative Benchmark (75%) ⓘ",
     "tooltip": "Diese Benchmark basiert auf indikativen Durchschnittswerten europäischer Automobilhändlernetzwerke. Sie ist nicht statistisch validiert. Für markenspezifische Benchmarks wenden Sie sich an Ihren OEM-Programmmanager.",
     "footnote": "* Benchmark ist indikativ. Segmentierte Benchmarks nach Markenklasse und Markttyp in der Enterprise-Konfiguration verfügbar."
+  },
+  "oem": {
+    "title": "Netzwerkübersicht",
+    "totalDealers": "Gesamtzahl Händler",
+    "avgScore": "Durchschnittliche Bewertung",
+    "highestScore": "Höchste Bewertung",
+    "lowestScore": "Niedrigste Bewertung",
+    "leaderboard": "Händler-Rangliste",
+    "rank": "Rang",
+    "dealerName": "Händler",
+    "latestScore": "Letzte Bewertung",
+    "previousScore": "Vorherige Bewertung",
+    "trend": "Trend",
+    "benchmarkBand": "Band",
+    "selectNetwork": "Netzwerk auswählen",
+    "noNetworks": "Keine Netzwerkmitgliedschaften",
+    "noAssessments": "Noch keine Bewertungen",
+    "loadError": "Daten konnten nicht geladen werden"
+  },
+  "coach": {
+    "title": "Zugewiesene Händler",
+    "sortByScore": "Nach Bewertung",
+    "sortByName": "Nach Name",
+    "filterAll": "Alle",
+    "filterCompleted": "Abgeschlossen",
+    "filterInProgress": "In Bearbeitung",
+    "scoreTrend": "Bewertungsverlauf",
+    "selectDealers": "Händler zum Vergleichen auswählen",
+    "noAssignments": "Keine zugewiesenen Händler",
+    "noAssessments": "Keine Bewertungen gefunden",
+    "latestAssessment": "Letzte Bewertung",
+    "status": "Status"
   }
 }
