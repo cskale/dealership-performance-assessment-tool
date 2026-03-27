@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 export function AppSidebar() {
   const { user, signOut } = useAuth();
   const { userMemberships, currentOrganization } = useMultiTenant();
+  const { actorType } = useActiveRole();
   const location = useLocation();
   const [completedCount, setCompletedCount] = useState(0);
   const [collapsed, setCollapsed] = useState(false);
