@@ -9,6 +9,36 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
 
 ---
 
+## [Sprint 3] — 27 March 2026
+**Theme: Engine wiring, role unification, and Results UI polish**
+**Lovable credits used: ~4 · Claude Code commits: 1 (24a8219)**
+
+### Architecture
+
+- **refactor** Role enum unified across invite surface — `send-invite` Edge Function `validRoles` and `InviteTeamMembers.tsx` `canInvite` guard both aligned to 4-role enum (`owner/admin/member/viewer`). `Account.tsx` permissions table corrected: `member` role can no longer invite. *(item 01 partial · `24a8219`)*
+
+### Diagnostic Engine (Claude Code)
+
+- **feat** Cross-validation wired — `evaluateCrossValidations()` now called inside `generateActionsFromAssessment()`; `crossValidationAlerts` included in `AssessmentResult` return type. Five cross-validation rules are live in the engine. *(item 04 · `24a8219`)*
+
+- **feat** Score-band template selection — `getScoreBand()` helper added to `signalEngine.ts`. Band-aware filtering (`foundational` / `developing` / `optimising`) with graceful fallback applied in `selectTemplates()`. `departmentScore` threaded through `generateActionsFromAssessment → instantiateActions → selectTemplates`. *(item 11 · `24a8219`)*
+
+- **fix** Business model template tagging — 3 incorrectly tagged templates corrected: `ACT-PNS-INV`, `ACT-CMA-PRD`, `ACT-CMA-ASR`. Business model filter in `selectTemplates()` was already present; bad tags were the root cause. *(item 07 · `24a8219`)*
+
+- **feat** Evidence-based scale labels expanded — observable criteria applied to 33 additional questions across NVS, UVS, SVC, PTS, FIN modules (on top of 13 done in Sprint 1). *(item 10 · `24a8219`)*
+
+- **feat** Ceiling analysis wired to Results page — `generateCeilingInsights()` connected via `useMemo` in `Results.tsx`; data ready for UI rendering (render TODO added). *(item 12 · `24a8219`)*
+
+- **verified** `implementationSteps` migration confirmed complete — all action templates already using `{ text, primaryRole }` format; no migration work required. *(item 02 · `24a8219`)*
+
+### UI (Lovable)
+
+- **feat** SVG score rings on Results page — animated SVG ring component replacing static score bars; score rings rendered per department. *(`5abd32a`, `4a54261`)*
+
+- **fix** Results cards layout and alignment corrected. *(`21ef7c4`, `2b7f297`)*
+
+---
+
 ## [Sprint 2] — 22 March 2026
 **Theme: Zero-credit infrastructure, diagnostic engine upgrade, and design system foundation**
 **Lovable credits used: 0 · Supabase MCP migrations: 5 · Claude Code commits: 6**

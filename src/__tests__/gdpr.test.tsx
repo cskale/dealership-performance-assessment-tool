@@ -7,8 +7,9 @@ import { Toaster } from '@/components/ui/toaster';
 
 // Hoist mock functions so they are available in vi.mock factory
 const { mockRpc, mockFrom, mockAuthState } = vi.hoisted(() => {
-  const authCallbackRef = { current: null as any };
-  
+  type AuthCallback = (event: string, session: Record<string, unknown> | null) => void;
+  const authCallbackRef = { current: null as AuthCallback | null };
+
   return {
     mockRpc: vi.fn(),
     mockFrom: vi.fn(() => ({
@@ -17,7 +18,7 @@ const { mockRpc, mockFrom, mockAuthState } = vi.hoisted(() => {
     })),
     mockAuthState: {
       callback: authCallbackRef,
-      trigger: (event: string, session: any) => {
+      trigger: (event: string, session: Record<string, unknown> | null) => {
         if (authCallbackRef.current) {
           authCallbackRef.current(event, session);
         }
@@ -30,7 +31,7 @@ const { mockRpc, mockFrom, mockAuthState } = vi.hoisted(() => {
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     auth: {
-      onAuthStateChange: (callback: any) => {
+      onAuthStateChange: (callback: (event: string, session: Record<string, unknown> | null) => void) => {
         mockAuthState.callback.current = callback;
         // Immediately trigger with a session
         setTimeout(() => {

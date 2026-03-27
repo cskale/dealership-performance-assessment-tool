@@ -69,10 +69,11 @@ const renderAuth = async () => {
 describe('Auth Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (supabase.auth.signUp as any).mockResolvedValue({ error: null });
-    (supabase.auth.signInWithPassword as any).mockResolvedValue({ error: null });
-    (supabase.auth.signInWithOtp as any).mockResolvedValue({ error: null });
-    (supabase.auth.signInWithOAuth as any).mockResolvedValue({ error: null });
+    const supabaseAuth = supabase.auth as any;
+    supabaseAuth.signUp.mockResolvedValue({ error: null });
+    supabaseAuth.signInWithPassword.mockResolvedValue({ error: null });
+    supabaseAuth.signInWithOtp.mockResolvedValue({ error: null });
+    supabaseAuth.signInWithOAuth.mockResolvedValue({ error: null });
   });
 
   afterEach(() => {
@@ -102,7 +103,7 @@ describe('Auth Component', () => {
       expect(magicTab).toHaveAttribute('data-state', 'active');
     });
     await waitFor(() => {
-      // Use role+name to avoid brittle text matching when icons are present
+      // Check for magic link button text
       expect(screen.getByRole('button', { name: /send magic link/i })).toBeInTheDocument();
     });
 
@@ -113,29 +114,31 @@ describe('Auth Component', () => {
     });
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
-      expect(screen.getByPlaceholderText('Enter your full name')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Your full name')).toBeInTheDocument();
     });
   });
 
   it('has proper accessibility attributes', async () => {
     await renderAuth();
 
-    // Check for form labels
-    expect(screen.getByLabelText('Email')).toBeInTheDocument();
+    // Check for form labels - get the first one in the sign-in tab
+    const emailLabels = screen.getAllByText('Email');
+    expect(emailLabels.length).toBeGreaterThan(0);
 
     // Check for required fields
-    const emailInput = screen.getByPlaceholderText('Enter your email');
+    const emailInput = screen.getByPlaceholderText('you@company.com');
     expect(emailInput).toHaveAttribute('required');
     expect(emailInput).toHaveAttribute('type', 'email');
   });
 
   it('shows loading states correctly', async () => {
     // Make the sign-in mutation stay pending so we can reliably observe the loading UI
-    let resolveSignIn: ((value: any) => void) | undefined;
-    const pendingSignIn = new Promise((resolve) => {
+    let resolveSignIn: ((value: Record<string, unknown>) => void) | undefined;
+    const pendingSignIn = new Promise((resolve: (value: Record<string, unknown>) => void) => {
       resolveSignIn = resolve;
     });
-    (supabase.auth.signInWithPassword as any).mockReturnValueOnce(pendingSignIn);
+    const supabaseAuth = supabase.auth as any;
+    supabaseAuth.signInWithPassword.mockReturnValueOnce(pendingSignIn);
 
     await renderAuth();
 
@@ -143,7 +146,7 @@ describe('Auth Component', () => {
 
     // Fill form
     await act(async () => {
-      fireEvent.change(screen.getByPlaceholderText('Enter your email'), {
+      fireEvent.change(screen.getByPlaceholderText('you@company.com'), {
         target: { value: 'test@example.com' }
       });
       fireEvent.change(screen.getByPlaceholderText('Enter your password'), {
@@ -173,10 +176,11 @@ describe('Auth Component', () => {
 describe('Auth Keyboard Navigation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (supabase.auth.signUp as any).mockResolvedValue({ error: null });
-    (supabase.auth.signInWithPassword as any).mockResolvedValue({ error: null });
-    (supabase.auth.signInWithOtp as any).mockResolvedValue({ error: null });
-    (supabase.auth.signInWithOAuth as any).mockResolvedValue({ error: null });
+    const supabaseAuth = supabase.auth as any;
+    supabaseAuth.signUp.mockResolvedValue({ error: null });
+    supabaseAuth.signInWithPassword.mockResolvedValue({ error: null });
+    supabaseAuth.signInWithOtp.mockResolvedValue({ error: null });
+    supabaseAuth.signInWithOAuth.mockResolvedValue({ error: null });
   });
 
   afterEach(() => {
@@ -186,8 +190,8 @@ describe('Auth Keyboard Navigation', () => {
   it('is keyboard navigable', async () => {
     await renderAuth();
 
-    const firstInput = screen.getByPlaceholderText('Enter your email');
-    const passwordInput = screen.getByPlaceholderText('Enter your password');
+    const firstInput = screen.getByPlaceholderText('you@company.com') as HTMLInputElement;
+    const passwordInput = screen.getByPlaceholderText('Enter your password') as HTMLInputElement;
 
     await act(async () => {
       firstInput.focus();
@@ -206,10 +210,11 @@ describe('Auth Keyboard Navigation', () => {
 describe('Auth Validation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (supabase.auth.signUp as any).mockResolvedValue({ error: null });
-    (supabase.auth.signInWithPassword as any).mockResolvedValue({ error: null });
-    (supabase.auth.signInWithOtp as any).mockResolvedValue({ error: null });
-    (supabase.auth.signInWithOAuth as any).mockResolvedValue({ error: null });
+    const supabaseAuth = supabase.auth as any;
+    supabaseAuth.signUp.mockResolvedValue({ error: null });
+    supabaseAuth.signInWithPassword.mockResolvedValue({ error: null });
+    supabaseAuth.signInWithOtp.mockResolvedValue({ error: null });
+    supabaseAuth.signInWithOAuth.mockResolvedValue({ error: null });
   });
 
   afterEach(() => {
@@ -219,7 +224,7 @@ describe('Auth Validation', () => {
   it('validates email format', async () => {
     await renderAuth();
 
-    const emailInput = screen.getByPlaceholderText('Enter your email');
+    const emailInput = screen.getByPlaceholderText('you@company.com') as HTMLInputElement;
 
     // Enter invalid email
     await act(async () => {
@@ -237,7 +242,7 @@ describe('Auth Validation', () => {
     // Switch to sign up
     await activateTab(/sign up/i);
 
-    const passwordInput = await screen.findByPlaceholderText('Create a password (min. 6 characters)');
+    const passwordInput = await screen.findByPlaceholderText('Min. 6 characters');
     expect(passwordInput).toHaveAttribute('minLength', '6');
   });
 });

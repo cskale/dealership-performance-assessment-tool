@@ -151,7 +151,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
     }
   };
 
-  const updateField = useCallback((field: string, value: any) => {
+  const updateField = useCallback((field: string, value: string | string[] | null | undefined) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setIsDirty(true);
   }, []);
@@ -562,7 +562,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                           <BarChart3 className="h-3.5 w-3.5 text-primary" /> KPIs This Action Will Improve
                         </p>
                         <div className="space-y-2">
-                          {visibleKpis.map((kpi: any, i: number) => (
+                          {visibleKpis.map((kpi: string, i: number) => (
                             <div key={i} className="rounded-lg border border-border/50 p-3 bg-background">
                               <div className="flex items-center justify-between mb-1">
                                 <span className="text-sm font-medium text-foreground flex items-center gap-1.5">
@@ -596,7 +596,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                           <AlertTriangle className="h-3.5 w-3.5 text-[hsl(var(--dd-amber))]" /> Likely Drivers
                         </p>
                         <div className="flex flex-wrap gap-1.5">
-                          {likelyDrivers.map((d: any, i: number) => (
+                          {likelyDrivers.map((d: string, i: number) => (
                             <div key={i} className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs",
                               typeof d === 'object' && d.type ? getDriverBadgeStyle(d.type) : 'border-border text-muted-foreground'
                             )}>
@@ -617,7 +617,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                           <TrendingUp className="h-3.5 w-3.5 text-destructive" /> Likely Consequences
                         </p>
                         <div className="flex flex-wrap gap-1.5">
-                          {likelyConsequences.map((c: any, i: number) => (
+                          {likelyConsequences.map((c: string, i: number) => (
                             <div key={i} className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs",
                               typeof c === 'object' && c.type ? getConsequenceBadgeStyle(c.type) : 'border-border text-muted-foreground'
                             )}>

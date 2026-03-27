@@ -51,9 +51,9 @@ export interface ActionRecord {
   business_impact?: string | null;
   recommendation?: string | null;
   expected_benefit?: string | null;
-  linked_kpis?: any | null;
-  likely_drivers?: any | null;
-  likely_consequences?: any | null;
+  linked_kpis?: string[] | null;
+  likely_drivers?: string[] | null;
+  likely_consequences?: string[] | null;
   expected_impact?: string | null;
   estimated_effort?: string | null;
 }
@@ -117,9 +117,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
   const overdueCount = actions.filter(a => isOverdue(a)).length;
 
-  useEffect(() => { loadActions(); }, [user, assessmentId, currentOrganization, actionPage]);
-
-  const loadActions = async () => {
+  const loadActions = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
@@ -140,7 +138,9 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, assessmentId, currentOrganization, actionPage]);
+
+  useEffect(() => { loadActions(); }, [loadActions]);
 
   const handleGenerateClick = () => {
     const now = Date.now();
@@ -397,7 +397,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
 
   const filteredActions = useMemo(() => {
     resetPatternUsage();
-    let result = actions.filter(action => {
+    const result = actions.filter(action => {
       if (statusFilter === 'Overdue') {
         if (!isOverdue(action)) return false;
       } else if (statusFilter !== 'all' && action.status !== statusFilter) return false;
@@ -848,7 +848,14 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
               Review Latest
             </AlertDialogCancel>
             <AlertDialogAction onClick={async () => {
-              if (editingAction) { try { await performUpdate(editingAction, null); } catch {} }
+              if (editingAction) {
+                try {
+                  await performUpdate(editingAction, null);
+                } catch (error) {
+                  // Overwrite attempt error handled by performUpdate
+                  console.error('Overwrite failed:', error);
+                }
+              }
               setConflictDetected(false);
             }}>Overwrite</AlertDialogAction>
           </AlertDialogFooter>

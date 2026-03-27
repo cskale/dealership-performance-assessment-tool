@@ -32,7 +32,7 @@ import { generateSignals } from '@/lib/signalEngine';
 interface ExecutiveSummaryProps {
   overallScore: number;
   scores: Record<string, number>;
-  answers: Record<string, any>;
+  answers: Record<string, number | string | null>;
   completedAt: string;
   onNavigateToEncyclopedia?: (kpiKey: string) => void;
 }

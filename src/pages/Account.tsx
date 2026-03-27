@@ -53,7 +53,7 @@ const Account = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Record<string, string | null> | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [displayName, setDisplayName] = useState('');
@@ -100,7 +100,7 @@ const Account = () => {
       setDepartment(data?.department || '');
       setBio(data?.bio || '');
       setTimezone(data?.timezone || 'UTC');
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error('Error fetching profile:', error);
       toast({ title: "Error", description: "Failed to load profile data", variant: "destructive" });
     } finally {
