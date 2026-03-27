@@ -8,6 +8,10 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { useLanguage } from "@/contexts/LanguageContext";
 import { TOTAL_QUESTIONS, getMaturityLevel as getCanonicalMaturityLevel, SCORE_THRESHOLDS } from "@/lib/constants";
 import { getDepartmentName } from "@/lib/departmentNames";
+import { DepartmentHeatmap } from "@/components/results/DepartmentHeatmap";
+import { CausalChainDiagram } from "@/components/results/CausalChainDiagram";
+import { CeilingInsightsPanel } from "@/components/results/CeilingInsightsPanel";
+import { getDepartmentName } from "@/lib/departmentNames";
 import {
   CATEGORY_WEIGHTS,
   DEPARTMENT_TO_CATEGORY,
