@@ -688,9 +688,12 @@ const Account = () => {
                         <div className="text-xs text-muted-foreground">{p.desc}</div>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">Connect</Button>
+                    <Badge variant="outline" className="text-muted-foreground">Coming soon</Badge>
                   </div>
                 ))}
+                <p className="text-xs text-muted-foreground mt-3">
+                  Integrations are available in enterprise configuration. Contact your administrator to enable.
+                </p>
               </div>
 
               <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-5">
@@ -699,7 +702,10 @@ const Account = () => {
                 <div className="text-center py-6">
                   <Key className="h-10 w-10 mx-auto mb-2 text-muted-foreground opacity-20" />
                   <p className="text-sm text-muted-foreground">No API tokens configured</p>
-                  <Button variant="outline" className="mt-3">Generate API token</Button>
+                  <Badge variant="outline" className="text-muted-foreground mt-2">Coming soon</Badge>
+                  <Button variant="outline" className="mt-3" disabled>
+                    Generate API token
+                  </Button>
                 </div>
               </div>
             </div>
