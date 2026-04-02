@@ -410,7 +410,7 @@ const translations: Record<Language, Record<string, string>> = {
 
     // Results — Ceiling Insights
     'results.ceiling.title': 'Excellence Gaps — Path to Top Quartile',
-    'results.ceiling.noInsights': 'All departments optimising. No immediate ceiling opportunities identified.',
+    'results.ceiling.noInsights': 'Ceiling analysis activates when a department reaches 55+. Focus on foundation improvements first — the action plan covers your priority gaps.',
     'results.ceiling.viewAll': 'View all insights',
     'results.ceiling.showLess': 'Show less',
     'results.ceiling.badge': 'Optimisation Opportunity',

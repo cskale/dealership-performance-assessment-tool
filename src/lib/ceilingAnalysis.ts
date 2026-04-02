@@ -100,7 +100,7 @@ export function generateCeilingInsights(
     if (!sectionKey) continue;
 
     const sectionScore = sectionScores[sectionKey];
-    if (sectionScore == null || sectionScore < 65) continue;
+    if (sectionScore == null || sectionScore < 55) continue;
 
     insights.push({
       questionId,
