@@ -275,7 +275,7 @@ const Account = () => {
   const completedAssessments = assessments.filter(a => a.status === 'completed');
   const hasActivityData = completedAssessments.length > 0;
   const latestCompleted = completedAssessments[0];
-  const canManageTeam = currentMembership && ['owner', 'admin', 'member'].includes(currentMembership.role);
+  const canManageTeam = currentMembership && ['owner', 'admin'].includes(currentMembership.role);
 
   return (
     <div className="min-h-screen bg-[hsl(var(--dd-fog))]">

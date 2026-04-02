@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
@@ -21,6 +21,24 @@ interface PendingInvite {
   token: string;
 }
 
+interface CurrentMember {
+  id: string;
+  user_id: string;
+  role: string;
+  display_name: string | null;
+  email: string | null;
+}
+
+interface MembershipWithProfile {
+  id: string;
+  user_id: string;
+  role: string;
+  profiles: {
+    display_name: string | null;
+    email: string | null;
+  };
+}
+
 // owner role is not assignable via invite — ownership transfer is handled separately
 const ROLE_OPTIONS = [
   { value: 'viewer', label: 'Viewer' },
@@ -36,6 +54,7 @@ export function InviteTeamMembers() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
+  const [currentMembers, setCurrentMembers] = useState<CurrentMember[]>([]);
   const [loadingInvites, setLoadingInvites] = useState(true);
 
   // Check if current user has permission to invite
@@ -47,10 +66,11 @@ export function InviteTeamMembers() {
   useEffect(() => {
     if (canInvite && currentOrganization) {
       loadPendingInvites();
+      loadCurrentMembers();
     }
-  }, [canInvite, currentOrganization]);
+  }, [canInvite, currentOrganization, loadPendingInvites, loadCurrentMembers]);
 
-  const loadPendingInvites = async () => {
+  const loadPendingInvites = useCallback(async () => {
     if (!currentOrganization) return;
     setLoadingInvites(true);
     try {
@@ -70,7 +90,34 @@ export function InviteTeamMembers() {
     } finally {
       setLoadingInvites(false);
     }
-  };
+  }, [currentOrganization]);
+
+  const loadCurrentMembers = useCallback(async () => {
+    if (!currentOrganization) return;
+
+    try {
+      const { data, error } = await supabase
+        .from<MembershipWithProfile>('memberships')
+        .select('id, user_id, role, profiles!inner(display_name, email)')
+        .eq('organization_id', currentOrganization.id)
+        .eq('is_active', true)
+        .order('created_at', { ascending: true })
+        .limit(500);
+
+      if (!error && data) {
+        const members: CurrentMember[] = data.map((item) => ({
+          id: item.id,
+          user_id: item.user_id,
+          role: item.role,
+          display_name: item.profiles?.display_name ?? null,
+          email: item.profiles?.email ?? null,
+        }));
+        setCurrentMembers(members);
+      }
+    } catch (err) {
+      console.error('Error loading current members:', err);
+    }
+  }, [currentOrganization]);
 
   const getActiveDealershipId = async (): Promise<string | null> => {
     if (!user) return null;
@@ -282,6 +329,24 @@ export function InviteTeamMembers() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Current Members */}
+        {!loadingInvites && currentMembers.length > 0 && (
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-muted-foreground">Current members</h4>
+            {currentMembers.map((member) => (
+              <div key={member.id} className="flex items-center gap-3 py-2.5 border-b border-[hsl(var(--dd-rule))] last:border-0">
+                <div className="w-8 h-8 rounded-full bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] flex items-center justify-center text-xs font-medium">
+                  {member.display_name ? member.display_name[0].toUpperCase() : member.email ? member.email[0].toUpperCase() : member.user_id.slice(0, 1).toUpperCase()}
+                </div>
+                <div className="flex-1 text-sm">
+                  {member.display_name || member.email || `User ${member.user_id.slice(0, 8)}`}
+                </div>
+                <span className="bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] text-[11px] px-2 py-0.5 rounded-full">{member.role}</span>
+              </div>
+            ))}
           </div>
         )}
       </CardContent>
