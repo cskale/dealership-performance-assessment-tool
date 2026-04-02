@@ -29,6 +29,8 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
 
 - **feat** Ceiling analysis wired to Results page — `generateCeilingInsights()` connected via `useMemo` in `Results.tsx`; data ready for UI rendering (render TODO added). *(item 12 · `24a8219`)*
 
+- **fix** Ceiling analysis threshold reduced to 55 and no-insight messaging updated (enterprise mode staging) for improved clarity in 54/58/68 scenarios. *(item 15 · `69283de`)*
+
 - **verified** `implementationSteps` migration confirmed complete — all action templates already using `{ text, primaryRole }` format; no migration work required. *(item 02 · `24a8219`)*
 
 ### UI (Lovable)
