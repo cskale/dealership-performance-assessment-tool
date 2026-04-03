@@ -261,24 +261,20 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
 
       {/* SECTION 1 — Diagnostic Narrative */}
       {narrative && (
-        <Card className="shadow-lg border">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <ShieldAlert className="h-5 w-5 text-primary" />
-              <h3 className="text-base font-semibold text-foreground">
-                Diagnostic Summary
-              </h3>
-            </div>
+        <div>
+          <p className="text-sm text-muted-foreground mb-2">Assessment Overview</p>
+          <Card className="shadow-lg border border-l-4 border-l-blue-500">
+            <CardContent className="p-6">
+              <p className="text-sm text-muted-foreground leading-relaxed mb-4">{narrative.situation}</p>
 
-            <p className="text-sm text-muted-foreground leading-relaxed mb-4">{narrative.situation}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-4">{narrative.diagnosis}</p>
 
-            <p className="text-sm text-muted-foreground leading-relaxed mb-4">{narrative.diagnosis}</p>
-
-            <div className="border-l-2 border-primary pl-4">
-              <p className="text-sm text-foreground leading-relaxed font-medium">{narrative.priority}</p>
-            </div>
-          </CardContent>
-        </Card>
+              <div className="border-l-2 border-primary pl-4">
+                <p className="text-sm text-foreground leading-relaxed font-medium">{narrative.priority}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* SECTION 1B — Department KPI Heatmap */}
