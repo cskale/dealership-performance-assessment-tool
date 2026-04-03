@@ -378,8 +378,8 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
           {systemicPatterns.map((p, i) => {
             const isSystemic = p.severity === 'systemic';
             const borderClass = isSystemic
-              ? 'border-l-4 border-l-red-500 border border-red-200 bg-red-50'
-              : 'border-l-4 border-l-amber-500 border border-amber-200 bg-amber-50';
+              ? 'border-l-4 border-l-red-500 border-t border-r border-b border-red-200 bg-red-50'
+              : 'border-l-4 border-l-amber-500 border-t border-r border-b border-amber-200 bg-amber-50';
             const badgeClass = isSystemic
               ? 'bg-red-100 text-red-700 border-red-200'
               : 'bg-amber-100 text-amber-700 border-amber-200';
@@ -389,7 +389,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
               .map((w: string) => w.charAt(0) + w.slice(1).toLowerCase())
               .join(' ');
             return (
-              <Card key={i} className={`shadow-sm ${borderClass}`}>
+              <Card key={p.signalCode} className={`shadow-sm ${borderClass}`}>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-sm font-semibold text-foreground">{title}</span>
