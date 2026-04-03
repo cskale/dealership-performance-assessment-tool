@@ -9,6 +9,39 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
 
 ---
 
+## [02 Apr 2026] — Sprint: Bug Fixes & System Verification
+
+### Added
+- answer_audit DB trigger (trg_audit_answer_changes): logs every 
+  answer change on assessments table for OEM compliance — tracker #04
+
+### Fixed
+- Ceiling analysis false negative: threshold corrected so departments 
+  scoring 55+ receive ceiling gap analysis; fallback message updated 
+  to be accurate for low-scoring dealers — tracker #15
+- Integrations tab: removed non-functional Connect buttons for Google 
+  and Microsoft; replaced with "Coming soon" badges to prevent dead 
+  ends in OEM demos
+- Role enum: ROLE_OPTIONS in InviteTeamMembers cleaned up 
+  (removed legacy analyst/manager values); canInvite restricted to 
+  owner/admin only — tracker #01
+- React hook crash: removed incorrectly placed useState/useEffect 
+  from InviteTeamMembers that caused React error #300
+- Missing Badge import in Account.tsx causing runtime crash on the 
+  integrations tab render
+- Team member UUID display: replaced raw UUID with name/email 
+  fallback in Team tab
+
+### System Verification (02 Apr 2026)
+- Full cross-system audit: Supabase MCP + Vercel MCP + commit history
+- Real progress confirmed at 43% (tracker reported 38%)
+- 8 items upgraded from Pending to Done, 8 upgraded to Partial
+- All DB enums confirmed clean — no legacy role values in any row
+- All 3 Edge Functions confirmed ACTIVE (send-invite v37, 
+  generate-actions v29, check-anon-key v3)
+
+---
+
 ## [Sprint 3] — 27 March 2026
 **Theme: Engine wiring, role unification, and Results UI polish**
 **Lovable credits used: ~4 · Claude Code commits: 1 (24a8219)**

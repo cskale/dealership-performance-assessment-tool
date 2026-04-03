@@ -296,10 +296,10 @@ export function InviteTeamMembers() {
             {orgMembers.map((member) => (
               <div key={member.id} className="flex items-center gap-3 py-2.5 border-b border-[hsl(var(--dd-rule))] last:border-0">
                 <div className="w-8 h-8 rounded-full bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] flex items-center justify-center text-xs font-medium">
-                  {member.user_id.slice(0, 1).toUpperCase()}
+                  T
                 </div>
                 <div className="flex-1 text-sm">
-                  {member.user_id.slice(0, 8) + '...'}
+                  Team Member
                 </div>
                 <span className="bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] text-[11px] px-2 py-0.5 rounded-full">{member.role}</span>
               </div>

@@ -450,9 +450,9 @@ const Account = () => {
                   {userMemberships.map((m: any) => (
                     <div key={m.id} className="flex items-center gap-3 py-2.5 border-b border-[hsl(var(--dd-rule))] last:border-0">
                       <div className="w-8 h-8 rounded-full bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] flex items-center justify-center text-xs font-medium">
-                        {getInitials(m.user_id.substring(0, 4))}
+                        T
                       </div>
-                      <div className="flex-1 text-sm">{m.user_id}</div>
+                      <div className="flex-1 text-sm">Team Member</div>
                       <span className="bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] text-[11px] px-2 py-0.5 rounded-full">{m.role}</span>
                     </div>
                   ))}

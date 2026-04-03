@@ -386,6 +386,28 @@ Two new DB tables required: `oem_organisations` and `coach_assignments`.
 - **Vercel MCP**: use for deployments and environment variable management
 - **Do not touch**: `src/integrations/supabase/types.ts` manually — regenerate via Supabase CLI after schema changes
 
+## Known Pitfalls
+
+### React Hook Rules
+- NEVER add useState or useEffect inside a component after a 
+  conditional check. Hooks must always be declared unconditionally 
+  at the top of the component body, before any if/return statements.
+- Violation causes React error #300 (invalid hook call) which 
+  crashes the entire page at runtime — it does NOT fail at build time.
+
+### Missing Imports  
+- ALWAYS import every UI component used in JSX (Badge, Button, 
+  Tooltip, etc.). Missing imports pass TypeScript compilation but 
+  throw ReferenceError crashes in the minified production bundle.
+- After adding any new JSX element, verify its import exists at the 
+  top of the file before committing.
+
+### Supabase Join Syntax
+- profiles!inner(field1, field2) join syntax can return profiles as 
+  an array rather than an object depending on the relationship 
+  direction. Prefer two separate queries with an .in() lookup when 
+  joining profiles to avoid shape mismatches.
+
 ## Current Tracker Status (as of 22 March 2026)
 - Total items: 58
 - Done: ~32 (55%)
