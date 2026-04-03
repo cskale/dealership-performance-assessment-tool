@@ -408,7 +408,7 @@ Two new DB tables required: `oem_organisations` and `coach_assignments`.
   direction. Prefer two separate queries with an .in() lookup when 
   joining profiles to avoid shape mismatches.
 
-## Current Tracker Status (as of 22 March 2026)
+## Current Tracker Status (as of 02 Apr 2026)
 - Total items: 58
 - Done: ~32 (55%)
 - Pending/Partial: ~26 (45%)

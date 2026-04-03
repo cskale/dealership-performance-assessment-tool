@@ -29,8 +29,8 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
   from InviteTeamMembers that caused React error #300
 - Missing Badge import in Account.tsx causing runtime crash on the 
   integrations tab render
-- Team member UUID display: replaced raw UUID with name/email 
-  fallback in Team tab
+- Team member UUID display: replaced raw UUID with "Team Member" 
+  placeholder in Team tab (profile join deferred to next sprint)
 
 ### System Verification (02 Apr 2026)
 - Full cross-system audit: Supabase MCP + Vercel MCP + commit history
