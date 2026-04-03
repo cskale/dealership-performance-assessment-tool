@@ -72,6 +72,14 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
 
 - **fix** Results cards layout and alignment corrected. *(`21ef7c4`, `2b7f297`)*
 
+- **feat** Results 5×5 heatmap and causal chain panels — KPI heatmap rendered on Results page with causal chain visualisation. Working in production. *(`0ac9ce2`, `88c4e1b`, `97caf36`, `b205439`, `3ddbc18`, `6f9e026`, `05422df`, `2cff226`)*
+
+- **feat** OEM and Coach dashboard scaffolding — routing, layout, and backend wiring for OEM network view and Coach assigned-dealer view created. Backend complete; dashboards not yet surfaced in the nav (stub state — pending role architecture item #01 and OEM tables item #38). *(`b3e338b`, `4b44ca1`, `88deac3`, `76ea1b6`, `c34aa5e`, `ecc0d8d`, `1f4293d`, `b0c4352`)*
+
+- **fix** Auth test selectors and ESLint violations cleaned up. *(`db27721`)*
+
+- **docs** Improvement tracker updated to reflect Sprint 3 completion status (67% done at close). *(`bd35adf`)*
+
 ---
 
 ## [Sprint 2] — 22 March 2026
