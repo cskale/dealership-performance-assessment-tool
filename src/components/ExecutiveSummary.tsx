@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, AlertTriangle, Target, Info, ShieldAlert, BarChart3, BookOpen } from "lucide-react";
+import { CheckCircle, AlertTriangle, Target, Info, BarChart3, BookOpen } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { TOTAL_QUESTIONS, getMaturityLevel as getCanonicalMaturityLevel, SCORE_THRESHOLDS } from "@/lib/constants";
@@ -371,30 +371,43 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
         </Card>
       )}
 
-      {/* SECTION 4 — Systemic Patterns (only when fired) */}
-      {systemicPatterns.filter(p => p.severity === 'systemic').length > 0 && (
-        <Card className="shadow-lg border border-destructive/30 bg-destructive/5">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-destructive">
-              <ShieldAlert className="h-5 w-5" />
-              Organisation-Wide Pattern Detected
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {systemicPatterns.filter(p => p.severity === 'systemic').map((p, i) => (
-              <div key={i} className="mb-3 last:mb-0">
-                <p className="text-body-sm text-destructive">{p.description}</p>
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {p.departments.map(d => (
-                    <Badge key={d} variant="outline" className="text-xs border-destructive/30 text-destructive">
-                      {getDepartmentName(d, language)}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+      {/* SECTION 4 — Systemic Issues Detected */}
+      {systemicPatterns.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">Systemic Issues Detected</p>
+          {systemicPatterns.map((p, i) => {
+            const isSystemic = p.severity === 'systemic';
+            const borderClass = isSystemic
+              ? 'border-l-4 border-l-red-500 border border-red-200 bg-red-50'
+              : 'border-l-4 border-l-amber-500 border border-amber-200 bg-amber-50';
+            const badgeClass = isSystemic
+              ? 'bg-red-100 text-red-700 border-red-200'
+              : 'bg-amber-100 text-amber-700 border-amber-200';
+            const badgeLabel = isSystemic ? 'Organisation-wide' : 'Recurring';
+            const title = p.signalCode
+              .split('_')
+              .map((w: string) => w.charAt(0) + w.slice(1).toLowerCase())
+              .join(' ');
+            return (
+              <Card key={i} className={`shadow-sm ${borderClass}`}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm font-semibold text-foreground">{title}</span>
+                    <Badge variant="outline" className={`text-xs ${badgeClass}`}>{badgeLabel}</Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-2">{p.description}</p>
+                  <div className="flex flex-wrap gap-1">
+                    {p.departments.map((d: string) => (
+                      <Badge key={d} variant="outline" className="text-xs">
+                        {getDepartmentName(d, language)}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       )}
 
       {/* SECTION 5 — Excellence Gaps (upgraded) */}
