@@ -1,209 +1,252 @@
-import { useMemo } from 'react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useMemo, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getDepartmentName } from '@/lib/departmentNames';
-import { SIGNAL_MAPPINGS, type RootCauseDimension } from '@/data/signalMappings';
+import { BarChart3 } from 'lucide-react';
+import type { DepartmentSubCategories } from '@/lib/scoringEngine';
 
 interface HeatmapProps {
   scores: Record<string, number>;
   answers: Record<string, number>;
+  subCategoryData?: Record<string, DepartmentSubCategories>;
+}
+
+interface KpiCell {
+  kpiName: string;
+  kpiCode: string;
+  score: number;
+  benchmarkBand: 'below' | 'in' | 'above';
+}
+
+interface HeatmapRow {
+  department: string;
+  departmentKey: string;
+  kpis: KpiCell[];
+}
+
+// Department question prefix → department key mapping
+const DEPT_PREFIXES: Record<string, string> = {
+  nvs: 'new-vehicle-sales',
+  uvs: 'used-vehicle-sales',
+  svc: 'service-performance',
+  pts: 'parts-inventory',
+  fin: 'financial-operations',
+};
+
+// Representative KPIs per department (5 each).
+// categoryKey maps to q.category in the questionnaire — used to look up
+// the scoring engine's weighted sub-category score from subCategoryData.
+// questionIds are kept as the raw-answer fallback for cells not covered.
+const DEPT_KPIS: Record<string, { code: string; name: string; nameDE: string; questionIds: string[]; categoryKey: string }[]> = {
+  'new-vehicle-sales': [
+    { code: 'nvs-vol',  name: 'Volume',       nameDE: 'Volumen',        questionIds: ['nvs-1'],        categoryKey: 'volume' },
+    { code: 'nvs-conv', name: 'Conversion',   nameDE: 'Konversion',     questionIds: ['nvs-2', 'nvs-5'], categoryKey: 'conversion' },
+    { code: 'nvs-sat',  name: 'Satisfaction', nameDE: 'Zufriedenheit',  questionIds: ['nvs-3'],        categoryKey: 'satisfaction' },
+    { code: 'nvs-prof', name: 'Profitability',nameDE: 'Profitabilität', questionIds: ['nvs-4', 'nvs-9'], categoryKey: 'profitability' },
+    { code: 'nvs-dig',  name: 'Digital',      nameDE: 'Digital',        questionIds: ['nvs-6', 'nvs-10'], categoryKey: 'digital' },
+  ],
+  'used-vehicle-sales': [
+    { code: 'uvs-turn', name: 'Turnover',     nameDE: 'Umschlag',       questionIds: ['uvs-1', 'uvs-10'], categoryKey: 'turnover' },
+    { code: 'uvs-prof', name: 'Profitability',nameDE: 'Profitabilität', questionIds: ['uvs-2'],        categoryKey: 'profitability' },
+    { code: 'uvs-appr', name: 'Appraisal',    nameDE: 'Bewertung',      questionIds: ['uvs-3', 'uvs-4'], categoryKey: 'accuracy' },
+    { code: 'uvs-dig',  name: 'Digital',      nameDE: 'Digital',        questionIds: ['uvs-5', 'uvs-8'], categoryKey: 'digital' },
+    { code: 'uvs-sat',  name: 'Satisfaction', nameDE: 'Zufriedenheit',  questionIds: ['uvs-7', 'uvs-9'], categoryKey: 'satisfaction' },
+  ],
+  'service-performance': [
+    { code: 'svc-util', name: 'Utilisation',  nameDE: 'Auslastung',     questionIds: ['svc-1', 'svc-3'], categoryKey: 'efficiency' },
+    { code: 'svc-qual', name: 'Quality',      nameDE: 'Qualität',       questionIds: ['svc-4', 'svc-6'], categoryKey: 'quality' },
+    { code: 'svc-sat',  name: 'Satisfaction', nameDE: 'Zufriedenheit',  questionIds: ['svc-5', 'svc-8'], categoryKey: 'satisfaction' },
+    { code: 'svc-prod', name: 'Productivity', nameDE: 'Produktivität',  questionIds: ['svc-2', 'svc-11'], categoryKey: 'productivity' },
+    { code: 'svc-dig',  name: 'Digital',      nameDE: 'Digital',        questionIds: ['svc-10', 'svc-12'], categoryKey: 'digital' },
+  ],
+  'parts-inventory': [
+    { code: 'pts-turn', name: 'Turnover',     nameDE: 'Umschlag',       questionIds: ['pts-1'],        categoryKey: 'turnover' },
+    { code: 'pts-avail',name: 'Availability', nameDE: 'Verfügbarkeit',  questionIds: ['pts-2', 'pts-8'], categoryKey: 'availability' },
+    { code: 'pts-prof', name: 'Profitability',nameDE: 'Profitabilität', questionIds: ['pts-3'],        categoryKey: 'profitability' },
+    { code: 'pts-qual', name: 'Quality',      nameDE: 'Qualität',       questionIds: ['pts-4', 'pts-5', 'pts-7'], categoryKey: 'obsolete' },
+    { code: 'pts-ops',  name: 'Operations',   nameDE: 'Betrieb',        questionIds: ['pts-6', 'pts-9', 'pts-10'], categoryKey: 'efficiency' },
+  ],
+  'financial-operations': [
+    { code: 'fin-prof', name: 'Profitability',nameDE: 'Profitabilität', questionIds: ['fin-1'],        categoryKey: 'profitability' },
+    { code: 'fin-cash', name: 'Cash Flow',    nameDE: 'Cashflow',       questionIds: ['fin-2'],        categoryKey: 'cashflow' },
+    { code: 'fin-gov',  name: 'Governance',   nameDE: 'Governance',     questionIds: ['fin-3', 'fin-4'], categoryKey: 'floorplan' },
+    { code: 'fin-prod', name: 'Productivity', nameDE: 'Produktivität',  questionIds: ['fin-5'],        categoryKey: 'productivity' },
+    { code: 'fin-tech', name: 'Technology',   nameDE: 'Technologie',    questionIds: ['fin-6', 'fin-7', 'fin-8'], categoryKey: 'technology' },
+  ],
+};
+
+function getScoreBand(score: number): { bg: string; text: string; label: string } {
+  if (score >= 85) return { bg: 'bg-success', text: 'text-white', label: '85-100' };
+  if (score >= 70) return { bg: 'bg-info', text: 'text-white', label: '70-84' };
+  if (score >= 46) return { bg: 'bg-warning', text: 'text-foreground', label: '46-69' };
+  return { bg: 'bg-destructive', text: 'text-white', label: '0-45' };
+}
+
+function getBenchmarkBand(score: number): 'below' | 'in' | 'above' {
+  if (score >= 75) return 'above';
+  if (score >= 55) return 'in';
+  return 'below';
 }
 
 const DEPT_ORDER = [
   'new-vehicle-sales',
   'used-vehicle-sales',
   'service-performance',
-  'financial-operations',
   'parts-inventory',
-] as const;
+  'financial-operations',
+];
 
 const DEPT_ABBREV: Record<string, string> = {
   'new-vehicle-sales': 'NVS',
   'used-vehicle-sales': 'UVS',
   'service-performance': 'SVC',
-  'financial-operations': 'FIN',
   'parts-inventory': 'PTS',
+  'financial-operations': 'FIN',
 };
 
-const DEPT_COLORS: Record<string, string> = {
-  'new-vehicle-sales': 'hsl(217 91% 60%)',
-  'used-vehicle-sales': 'hsl(263 70% 63%)',
-  'service-performance': 'hsl(160 84% 39%)',
-  'financial-operations': 'hsl(38 92% 50%)',
-  'parts-inventory': 'hsl(215 16% 47%)',
-};
+export function DepartmentHeatmap({ scores, answers, subCategoryData }: HeatmapProps) {
+  const { t, language } = useLanguage();
 
-const DIMENSIONS: RootCauseDimension[] = ['people', 'process', 'tools', 'structure', 'incentives'];
+  const rows = useMemo<HeatmapRow[]>(() => {
+    return DEPT_ORDER.map(deptKey => {
+      const kpiDefs = DEPT_KPIS[deptKey] || [];
+      const kpis: KpiCell[] = kpiDefs.map(kpiDef => {
+        // Prefer the scoring engine's weighted sub-category score when available.
+        // Fall back to raw answer averaging for cells not covered by subCategoryData.
+        const subCatScore = subCategoryData?.[deptKey]?.subCategories
+          .find(sc => sc.category === kpiDef.categoryKey)?.score;
 
-const DIMENSION_LABELS: Record<RootCauseDimension, { en: string; de: string }> = {
-  people: { en: 'People', de: 'Personal' },
-  process: { en: 'Process', de: 'Prozess' },
-  tools: { en: 'Tools', de: 'Werkzeuge' },
-  structure: { en: 'Structure', de: 'Struktur' },
-  incentives: { en: 'Incentives', de: 'Anreize' },
-};
+        let finalScore: number;
+        let hasData: boolean;
 
-interface Band {
-  bg: string;
-  label: { en: string; de: string };
-  range: string;
-}
-
-const BANDS: Band[] = [
-  { bg: 'hsl(0 72% 51%)', label: { en: 'Critical', de: 'Kritisch' }, range: '0–44' },
-  { bg: 'hsl(38 92% 50%)', label: { en: 'Developing', de: 'Entwicklung' }, range: '45–64' },
-  { bg: 'hsl(213 97% 55%)', label: { en: 'Progressing', de: 'Fortschritt' }, range: '65–79' },
-  { bg: 'hsl(160 84% 39%)', label: { en: 'Strong', de: 'Stark' }, range: '80–100' },
-];
-
-function getBand(score: number): Band {
-  if (score >= 80) return BANDS[3];
-  if (score >= 65) return BANDS[2];
-  if (score >= 45) return BANDS[1];
-  return BANDS[0];
-}
-
-export function DepartmentHeatmap({ answers }: HeatmapProps) {
-  const { language } = useLanguage();
-
-  // Build a lookup: dept → dimension → answered values
-  const grid = useMemo<Record<string, Record<RootCauseDimension, number | null>>>(() => {
-    const buckets: Record<string, Record<RootCauseDimension, number[]>> = {};
-    for (const dept of DEPT_ORDER) {
-      buckets[dept] = { people: [], process: [], tools: [], structure: [], incentives: [] };
-    }
-
-    for (const mapping of SIGNAL_MAPPINGS) {
-      const dim = mapping.rootCauseDimension;
-      if (!dim) continue;
-      const dept = mapping.moduleKey;
-      if (!buckets[dept]) continue;
-      const ans = answers[mapping.questionId];
-      if (typeof ans === 'number' && ans >= 1 && ans <= 5) {
-        buckets[dept][dim].push(ans);
-      }
-    }
-
-    const result: Record<string, Record<RootCauseDimension, number | null>> = {};
-    for (const dept of DEPT_ORDER) {
-      result[dept] = { people: null, process: null, tools: null, structure: null, incentives: null };
-      for (const dim of DIMENSIONS) {
-        const vals = buckets[dept][dim];
-        if (vals.length === 0) {
-          result[dept][dim] = null;
+        if (subCatScore !== undefined) {
+          finalScore = Math.max(0, Math.min(100, subCatScore));
+          hasData = true;
         } else {
-          const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-          result[dept][dim] = Math.round(((avg - 1) / 4) * 100);
+          const relevantScores = kpiDef.questionIds
+            .map(qId => answers[qId])
+            .filter((v): v is number => v != null);
+          hasData = relevantScores.length > 0;
+          const rawScore = hasData
+            ? relevantScores.reduce((a, b) => a + b, 0) / relevantScores.length
+            : 0;
+          // Normalize 1-5 scale to 0-100
+          finalScore = Math.max(0, Math.min(100, Math.round(((rawScore - 1) / 4) * 100)));
         }
-      }
-    }
-    return result;
-  }, [answers]);
 
-  const allEmpty = useMemo(
-    () => DEPT_ORDER.every(d => DIMENSIONS.every(dim => grid[d][dim] === null)),
-    [grid]
-  );
+        return {
+          kpiName: language === 'de' ? kpiDef.nameDE : kpiDef.name,
+          kpiCode: kpiDef.code,
+          score: hasData ? finalScore : -1,
+          benchmarkBand: getBenchmarkBand(hasData ? finalScore : 0),
+        };
+      });
 
-  const sectionTitle = language === 'de' ? 'Leistungsdimensionen' : 'Performance Dimensions';
+      return {
+        department: DEPT_ABBREV[deptKey],
+        departmentKey: deptKey,
+        kpis,
+      };
+    });
+  }, [answers, language, subCategoryData]);
+
+  // Get column headers from first row
+  const columnHeaders = rows[0]?.kpis.map(k => k.kpiName) ?? [];
 
   return (
     <Card className="shadow-lg border">
       <CardHeader className="pb-3">
-        <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
-          {sectionTitle}
-        </div>
+        <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
+          <BarChart3 className="h-5 w-5 text-primary" />
+          {t('results.kpiMatrix.title')}
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        {allEmpty ? (
-          <div className="text-[13px] text-muted-foreground text-center py-8">
-            {language === 'de'
-              ? 'Unterkategorie-Daten für diese Bewertung nicht verfügbar.'
-              : 'Sub-category data unavailable for this assessment.'}
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
+        <div className="overflow-x-auto">
+          <div className="inline-grid gap-1" style={{ gridTemplateColumns: `80px repeat(5, 1fr)` }}>
+            {/* Header row */}
+            <div className="h-12" />
+            {columnHeaders.map((header, i) => (
               <div
-                className="inline-grid gap-1 min-w-full"
-                style={{ gridTemplateColumns: '100px repeat(5, minmax(48px, 1fr))' }}
+                key={i}
+                className="h-12 flex items-end justify-center pb-1 text-xs font-medium text-muted-foreground text-center px-1"
               >
-                {/* Header row */}
-                <div />
-                {DEPT_ORDER.map(dept => (
-                  <div
-                    key={dept}
-                    className="flex items-center justify-center gap-1.5 pb-2 text-[11px] uppercase tracking-wider text-muted-foreground font-medium"
-                  >
-                    <span
-                      className="inline-block rounded-full"
-                      style={{ width: 6, height: 6, backgroundColor: DEPT_COLORS[dept] }}
-                    />
-                    {DEPT_ABBREV[dept]}
-                  </div>
-                ))}
-
-                {/* Data rows */}
-                {DIMENSIONS.map(dim => (
-                  <div key={dim} className="contents">
-                    <div className="flex items-center text-[12px] font-medium text-foreground pr-2 min-w-[80px]">
-                      {DIMENSION_LABELS[dim][language === 'de' ? 'de' : 'en']}
-                    </div>
-                    {DEPT_ORDER.map(dept => {
-                      const score = grid[dept][dim];
-                      const isEmpty = score === null;
-                      const band = isEmpty ? null : getBand(score);
-                      const bg = band ? band.bg : 'hsl(var(--muted))';
-                      const tooltipText = isEmpty
-                        ? `${getDepartmentName(dept, language)} — ${DIMENSION_LABELS[dim][language === 'de' ? 'de' : 'en']} — ${language === 'de' ? 'Keine Daten' : 'No data'}`
-                        : `${getDepartmentName(dept, language)} — ${DIMENSION_LABELS[dim][language === 'de' ? 'de' : 'en']} — ${score} — ${band!.label[language === 'de' ? 'de' : 'en']}`;
-                      return (
-                        <Tooltip key={`${dept}-${dim}`}>
-                          <TooltipTrigger asChild>
-                            <div
-                              className="flex items-center justify-center rounded-[4px] cursor-default transition-transform hover:scale-[1.03]"
-                              style={{
-                                backgroundColor: bg,
-                                minHeight: 44,
-                                padding: 4,
-                              }}
-                            >
-                              <span
-                                className="text-[12px] font-medium tabular-nums"
-                                style={{ color: isEmpty ? 'hsl(var(--muted-foreground))' : 'white' }}
-                              >
-                                {isEmpty ? '—' : score}
-                              </span>
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="max-w-[240px]">
-                            <p className="text-xs">{tooltipText}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      );
-                    })}
-                  </div>
-                ))}
+                <span className="md:rotate-0 -rotate-45 origin-bottom-left md:origin-center whitespace-nowrap md:whitespace-normal">
+                  {header}
+                </span>
               </div>
-            </div>
+            ))}
 
-            {/* Legend */}
-            <div className="mt-4 flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
-              {BANDS.map(band => (
-                <div key={band.range} className="flex items-center gap-1.5">
-                  <div
-                    className="rounded-sm"
-                    style={{ width: 10, height: 10, backgroundColor: band.bg }}
-                  />
-                  <span>
-                    {band.label[language === 'de' ? 'de' : 'en']} ({band.range})
-                  </span>
+            {/* Data rows */}
+            {rows.map((row, ri) => (
+              <>
+                {/* Row label */}
+                <div
+                  key={`label-${ri}`}
+                  className="h-12 md:h-12 flex items-center text-xs font-semibold text-foreground"
+                >
+                  <span className="hidden md:inline">{getDepartmentName(row.departmentKey, language)}</span>
+                  <span className="md:hidden">{row.department}</span>
                 </div>
-              ))}
+
+                {/* KPI cells */}
+                {row.kpis.map((kpi, ci) => {
+                  const band = kpi.score >= 0 ? getScoreBand(kpi.score) : null;
+                  return (
+                    <Tooltip key={`${ri}-${ci}`}>
+                      <TooltipTrigger asChild>
+                        <div
+                          className={`h-12 w-full min-w-[48px] md:min-w-[48px] rounded-md flex items-center justify-center cursor-default transition-transform hover:scale-105 ${
+                            band ? `${band.bg} ${band.text}` : 'bg-muted text-muted-foreground'
+                          }`}
+                        >
+                          <span className="text-xs font-bold tabular-nums">
+                            {kpi.score >= 0 ? kpi.score : '—'}
+                          </span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-[200px]">
+                        <div className="space-y-1">
+                          <p className="font-semibold text-sm">{kpi.kpiName}</p>
+                          <p className="text-xs">
+                            {t('results.kpiMatrix.score')}: {kpi.score >= 0 ? `${kpi.score}%` : 'N/A'}
+                          </p>
+                          {kpi.score >= 0 && (
+                            <Badge variant="outline" className="text-xs">
+                              {kpi.benchmarkBand === 'above'
+                                ? t('results.kpiMatrix.aboveBenchmark')
+                                : kpi.benchmarkBand === 'in'
+                                ? t('results.kpiMatrix.atBenchmark')
+                                : t('results.kpiMatrix.belowBenchmark')}
+                            </Badge>
+                          )}
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                })}
+              </>
+            ))}
+          </div>
+        </div>
+
+        {/* Color Legend */}
+        <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+          <span className="font-medium">{t('results.kpiMatrix.legend')}:</span>
+          {[
+            { bg: 'bg-destructive', label: '0–45' },
+            { bg: 'bg-warning', label: '46–69' },
+            { bg: 'bg-info', label: '70–84' },
+            { bg: 'bg-success', label: '85–100' },
+          ].map(item => (
+            <div key={item.label} className="flex items-center gap-1.5">
+              <div className={`w-4 h-3 rounded-sm ${item.bg}`} />
+              <span>{item.label}</span>
             </div>
-          </>
-        )}
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

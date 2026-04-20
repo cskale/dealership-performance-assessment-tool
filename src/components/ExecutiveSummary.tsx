@@ -298,7 +298,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
       <ScoreDecomposition scores={scores} overallScore={overallScore} />
 
       {/* SECTION 1B — Department KPI Heatmap */}
-      <DepartmentHeatmap scores={scores} answers={answers as Record<string, number>} />
+      <DepartmentHeatmap scores={scores} answers={answers as Record<string, number>} subCategoryData={subCategoryData} />
 
       {/* SECTION 1C — Causal Chain Diagram */}
       <CausalChainDiagram signals={topSignals} />
