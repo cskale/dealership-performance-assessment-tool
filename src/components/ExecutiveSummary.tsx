@@ -287,6 +287,75 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
       {/* SECTION 1C — Causal Chain Diagram */}
       <CausalChainDiagram signals={topSignals} />
 
+      {/* SECTION 1D — Systemic Patterns (moved up per spec) */}
+      {systemicPatterns.length > 0 && (
+        <Card className="shadow-lg border">
+          <CardHeader className="pb-3">
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+              {language === 'de' ? 'Systemische Muster' : 'Systemic Patterns'}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {systemicPatterns.map((p) => {
+              const isSystemic = p.severity === 'systemic';
+              const accent = isSystemic ? 'hsl(0 72% 51%)' : 'hsl(38 92% 50%)';
+              const badgeLabel = isSystemic
+                ? (language === 'de' ? 'Systemisch' : 'Systemic')
+                : (language === 'de' ? 'Wiederkehrend' : 'Recurring');
+              const title = p.signalCode
+                .split('_')
+                .map((w: string) => w.charAt(0) + w.slice(1).toLowerCase())
+                .join(' ');
+              const fallbackDesc = language === 'de'
+                ? 'Dieses Signal tritt in mehreren Abteilungen auf, was auf eine strukturelle Ursache hindeutet, nicht auf isolierte Ausführung.'
+                : 'This signal appears across multiple departments, suggesting a structural cause rather than isolated execution.';
+              return (
+                <div
+                  key={p.signalCode}
+                  className="rounded-md p-4 border-l-[3px]"
+                  style={{
+                    borderLeftColor: accent,
+                    backgroundColor: `${accent.replace(')', ' / 0.04)')}`,
+                  }}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span
+                      className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white"
+                      style={{ backgroundColor: accent }}
+                    >
+                      {badgeLabel}
+                    </span>
+                    <span className="text-[13px] font-medium text-foreground">{title}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {p.departments.map((d: string) => {
+                      const color = DEPT_COLORS_ES[d] ?? 'hsl(var(--muted-foreground))';
+                      const abbrev = DEPT_ABBREV_ES[d] ?? d;
+                      return (
+                        <div
+                          key={d}
+                          className="rounded-[20px] px-2.5 py-[3px] text-[11px] font-medium border"
+                          style={{
+                            backgroundColor: `${color.replace(')', ' / 0.10)')}`,
+                            borderColor: `${color.replace(')', ' / 0.40)')}`,
+                            color,
+                          }}
+                        >
+                          {abbrev}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[12px] text-muted-foreground leading-relaxed">
+                    {p.description || fallbackDesc}
+                  </p>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
+
       {/* SECTION 2 — Department Score Cards */}
       <Card className="shadow-lg border">
         <CardHeader>
