@@ -13,6 +13,7 @@ import { useSessionManager } from '@/hooks/useSessionManager';
 import { useGDPR } from '@/hooks/useGDPR';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 import { useToast } from '@/hooks/use-toast';
 import { OrganizationSettings } from '@/components/OrganizationSettings';
 import { InviteTeamMembers } from '@/components/InviteTeamMembers';
