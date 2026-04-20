@@ -393,6 +393,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </main>
+      )}
     </div>
   );
 };
