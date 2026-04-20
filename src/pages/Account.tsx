@@ -13,6 +13,7 @@ import { useSessionManager } from '@/hooks/useSessionManager';
 import { useGDPR } from '@/hooks/useGDPR';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 import { useToast } from '@/hooks/use-toast';
 import { OrganizationSettings } from '@/components/OrganizationSettings';
 import { InviteTeamMembers } from '@/components/InviteTeamMembers';
@@ -54,7 +55,7 @@ const Account = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  const [profile, setProfile] = useState<Record<string, string | null> | null>(null);
+  const [profile, setProfile] = useState<Tables<'profiles'> | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [displayName, setDisplayName] = useState('');
