@@ -98,6 +98,22 @@ const PREFIX_TO_DEPT: Record<string, string> = {
   pts: 'parts-inventory',
 };
 
+const DEPT_COLORS_ES: Record<string, string> = {
+  'new-vehicle-sales': 'hsl(217 91% 60%)',
+  'used-vehicle-sales': 'hsl(263 70% 63%)',
+  'service-performance': 'hsl(160 84% 39%)',
+  'financial-operations': 'hsl(38 92% 50%)',
+  'parts-inventory': 'hsl(215 16% 47%)',
+};
+
+const DEPT_ABBREV_ES: Record<string, string> = {
+  'new-vehicle-sales': 'NVS',
+  'used-vehicle-sales': 'UVS',
+  'service-performance': 'SVC',
+  'financial-operations': 'FIN',
+  'parts-inventory': 'PTS',
+};
+
 export function ExecutiveSummary({ overallScore, scores, answers, completedAt, onNavigateToEncyclopedia }: ExecutiveSummaryProps) {
   const { t, language } = useLanguage();
 
@@ -287,6 +303,75 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
       {/* SECTION 1C — Causal Chain Diagram */}
       <CausalChainDiagram signals={topSignals} />
 
+      {/* SECTION 1D — Systemic Patterns (moved up per spec) */}
+      {systemicPatterns.length > 0 && (
+        <Card className="shadow-lg border">
+          <CardHeader className="pb-3">
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+              {language === 'de' ? 'Systemische Muster' : 'Systemic Patterns'}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {systemicPatterns.map((p) => {
+              const isSystemic = p.severity === 'systemic';
+              const accent = isSystemic ? 'hsl(0 72% 51%)' : 'hsl(38 92% 50%)';
+              const badgeLabel = isSystemic
+                ? (language === 'de' ? 'Systemisch' : 'Systemic')
+                : (language === 'de' ? 'Wiederkehrend' : 'Recurring');
+              const title = p.signalCode
+                .split('_')
+                .map((w: string) => w.charAt(0) + w.slice(1).toLowerCase())
+                .join(' ');
+              const fallbackDesc = language === 'de'
+                ? 'Dieses Signal tritt in mehreren Abteilungen auf, was auf eine strukturelle Ursache hindeutet, nicht auf isolierte Ausführung.'
+                : 'This signal appears across multiple departments, suggesting a structural cause rather than isolated execution.';
+              return (
+                <div
+                  key={p.signalCode}
+                  className="rounded-md p-4 border-l-[3px]"
+                  style={{
+                    borderLeftColor: accent,
+                    backgroundColor: `${accent.replace(')', ' / 0.04)')}`,
+                  }}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span
+                      className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white"
+                      style={{ backgroundColor: accent }}
+                    >
+                      {badgeLabel}
+                    </span>
+                    <span className="text-[13px] font-medium text-foreground">{title}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {p.departments.map((d: string) => {
+                      const color = DEPT_COLORS_ES[d] ?? 'hsl(var(--muted-foreground))';
+                      const abbrev = DEPT_ABBREV_ES[d] ?? d;
+                      return (
+                        <div
+                          key={d}
+                          className="rounded-[20px] px-2.5 py-[3px] text-[11px] font-medium border"
+                          style={{
+                            backgroundColor: `${color.replace(')', ' / 0.10)')}`,
+                            borderColor: `${color.replace(')', ' / 0.40)')}`,
+                            color,
+                          }}
+                        >
+                          {abbrev}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[12px] text-muted-foreground leading-relaxed">
+                    {p.description || fallbackDesc}
+                  </p>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
+
       {/* SECTION 2 — Department Score Cards */}
       <Card className="shadow-lg border">
         <CardHeader>
@@ -373,45 +458,6 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
             </div>
           </CardContent>
         </Card>
-      )}
-
-      {/* SECTION 4 — Systemic Issues Detected */}
-      {systemicPatterns.length > 0 && (
-        <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">Systemic Issues Detected</p>
-          {systemicPatterns.map((p, i) => {
-            const isSystemic = p.severity === 'systemic';
-            const borderClass = isSystemic
-              ? 'border-l-4 border-l-red-500 border-t border-r border-b border-red-200 bg-red-50'
-              : 'border-l-4 border-l-amber-500 border-t border-r border-b border-amber-200 bg-amber-50';
-            const badgeClass = isSystemic
-              ? 'bg-red-100 text-red-700 border-red-200'
-              : 'bg-amber-100 text-amber-700 border-amber-200';
-            const badgeLabel = isSystemic ? 'Organisation-wide' : 'Recurring';
-            const title = p.signalCode
-              .split('_')
-              .map((w: string) => w.charAt(0) + w.slice(1).toLowerCase())
-              .join(' ');
-            return (
-              <Card key={p.signalCode} className={`shadow-sm ${borderClass}`}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm font-semibold text-foreground">{title}</span>
-                    <Badge variant="outline" className={`text-xs ${badgeClass}`}>{badgeLabel}</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">{p.description}</p>
-                  <div className="flex flex-wrap gap-1">
-                    {p.departments.map((d: string) => (
-                      <Badge key={d} variant="outline" className="text-xs">
-                        {getDepartmentName(d, language)}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
       )}
 
       {/* SECTION 5 — Excellence Gaps (upgraded) */}

@@ -1,52 +1,41 @@
-import { useMemo, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { useMemo } from 'react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { getDepartmentName } from '@/lib/departmentNames';
-import { GitBranch, ChevronDown, ChevronUp } from 'lucide-react';
+import { Users, GitBranch, Wrench, Building2, TrendingUp, CheckCircle2 } from 'lucide-react';
 import { SIGNAL_MAPPINGS, type RootCauseDimension, type EnrichedSignalMapping } from '@/data/signalMappings';
 import type { Signal } from '@/data/signalTypes';
+import type { LucideIcon } from 'lucide-react';
 
 interface CausalChainProps {
   signals: Signal[];
 }
 
 interface ChainNode {
-  signalCode: string;
-  department: string;
   departmentKey: string;
-  signalLabel: string;
-  rootCauseDimension: RootCauseDimension;
-  score: number;
 }
 
 interface CausalChain {
   dimension: RootCauseDimension;
-  dimensionLabel: string;
   nodes: ChainNode[];
 }
 
+const DEPT_ABBREV: Record<string, string> = {
+  'new-vehicle-sales': 'NVS',
+  'used-vehicle-sales': 'UVS',
+  'service-performance': 'SVC',
+  'financial-operations': 'FIN',
+  'parts-inventory': 'PTS',
+};
+
 const DEPT_COLORS: Record<string, string> = {
-  'new-vehicle-sales': 'bg-[hsl(var(--chart-2))]',
-  'used-vehicle-sales': 'bg-[hsl(var(--chart-1))]',
-  'service-performance': 'bg-destructive',
-  'parts-inventory': 'bg-warning',
-  'financial-operations': 'bg-[hsl(var(--chart-5))]',
+  'new-vehicle-sales': 'hsl(217 91% 60%)',
+  'used-vehicle-sales': 'hsl(263 70% 63%)',
+  'service-performance': 'hsl(160 84% 39%)',
+  'financial-operations': 'hsl(38 92% 50%)',
+  'parts-inventory': 'hsl(215 16% 47%)',
 };
 
-const SIGNAL_LABELS: Record<string, Record<string, string>> = {
-  PROCESS_NOT_STANDARDISED: { en: 'Process Gap', de: 'Prozesslücke' },
-  PROCESS_NOT_EXECUTED: { en: 'Execution Gap', de: 'Ausführungslücke' },
-  ROLE_OWNERSHIP_MISSING: { en: 'Ownership Gap', de: 'Zuständigkeitslücke' },
-  KPI_NOT_DEFINED: { en: 'KPI Undefined', de: 'KPI undefiniert' },
-  KPI_NOT_REVIEWED: { en: 'KPI Not Reviewed', de: 'KPI nicht überprüft' },
-  CAPACITY_MISALIGNED: { en: 'Capacity Gap', de: 'Kapazitätslücke' },
-  TOOL_UNDERUTILISED: { en: 'Tech Underused', de: 'Tech ungenutzt' },
-  GOVERNANCE_WEAK: { en: 'Weak Governance', de: 'Schwache Governance' },
-};
-
-const DIMENSION_LABELS: Record<RootCauseDimension, Record<string, string>> = {
+const DIMENSION_LABELS: Record<RootCauseDimension, { en: string; de: string }> = {
   people: { en: 'People', de: 'Personal' },
   process: { en: 'Process', de: 'Prozess' },
   tools: { en: 'Tools', de: 'Werkzeuge' },
@@ -54,9 +43,39 @@ const DIMENSION_LABELS: Record<RootCauseDimension, Record<string, string>> = {
   incentives: { en: 'Incentives', de: 'Anreize' },
 };
 
+const DIMENSION_ICONS: Record<RootCauseDimension, LucideIcon> = {
+  people: Users,
+  process: GitBranch,
+  tools: Wrench,
+  structure: Building2,
+  incentives: TrendingUp,
+};
+
+const IMPLICATIONS: Record<RootCauseDimension, { en: string; de: string }> = {
+  people: {
+    en: 'Staff capability or capacity gaps are limiting performance across these areas simultaneously.',
+    de: 'Personalkompetenz- oder Kapazitätslücken begrenzen die Leistung in diesen Bereichen gleichzeitig.',
+  },
+  process: {
+    en: 'Process standardisation is the common missing layer — fixing it once will lift multiple departments.',
+    de: 'Prozessstandardisierung ist die gemeinsame fehlende Ebene — eine einmalige Behebung verbessert mehrere Abteilungen.',
+  },
+  tools: {
+    en: 'Technology or system gaps are creating consistent friction across departments.',
+    de: 'Technologie- oder Systemlücken erzeugen konsistente Reibung über Abteilungen hinweg.',
+  },
+  structure: {
+    en: 'Organisational design or role clarity is constraining these areas in parallel.',
+    de: 'Organisationsdesign oder Rollenklarheit schränkt diese Bereiche parallel ein.',
+  },
+  incentives: {
+    en: 'Misaligned incentives are producing similar underperformance patterns across departments.',
+    de: 'Fehlausgerichtete Anreize erzeugen ähnliche Leistungsmuster in mehreren Abteilungen.',
+  },
+};
+
 export function CausalChainDiagram({ signals }: CausalChainProps) {
-  const { t, language } = useLanguage();
-  const [showAll, setShowAll] = useState(false);
+  const { language } = useLanguage();
 
   const mappingByQuestion = useMemo(() => {
     const map = new Map<string, EnrichedSignalMapping>();
@@ -81,15 +100,7 @@ export function CausalChainDiagram({ signals }: CausalChainProps) {
 
       if (!dimension) return;
 
-      const node: ChainNode = {
-        signalCode: signal.signalCode,
-        department: signal.moduleKey,
-        departmentKey: signal.moduleKey,
-        signalLabel: SIGNAL_LABELS[signal.signalCode]?.[language] ?? signal.signalCode,
-        rootCauseDimension: dimension,
-        score: 0,
-      };
-
+      const node: ChainNode = { departmentKey: signal.moduleKey };
       const existing = dimGroups.get(dimension) ?? [];
       if (!existing.some(n => n.departmentKey === signal.moduleKey)) {
         existing.push(node);
@@ -100,113 +111,84 @@ export function CausalChainDiagram({ signals }: CausalChainProps) {
     const result: CausalChain[] = [];
     dimGroups.forEach((nodes, dim) => {
       if (nodes.length >= 2) {
-        result.push({
-          dimension: dim,
-          dimensionLabel: DIMENSION_LABELS[dim]?.[language] ?? dim,
-          nodes,
-        });
+        result.push({ dimension: dim, nodes });
       }
     });
 
-    return result.sort((a, b) => b.nodes.length - a.nodes.length);
-  }, [signals, mappingByQuestion, language]);
+    return result.sort((a, b) => b.nodes.length - a.nodes.length).slice(0, 3);
+  }, [signals, mappingByQuestion]);
+
+  const sectionTitle = language === 'de' ? 'Gemeinsame Ursachen' : 'Shared Root Causes';
 
   if (chains.length === 0) {
     return (
-      <Card className="shadow-lg border">
+      <Card className="shadow-sm border-success/30 bg-success/5">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
-            <GitBranch className="h-5 w-5 text-primary" />
-            {t('results.causalChain.title')}
-          </CardTitle>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+            {sectionTitle}
+          </div>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">{t('results.causalChain.noChains')}</p>
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
+            <p className="text-[13px] text-foreground">
+              {language === 'de'
+                ? 'Keine systemischen Muster erkannt — Abteilungsprobleme erscheinen isoliert.'
+                : 'No systemic patterns detected — department issues appear isolated.'}
+            </p>
+          </div>
         </CardContent>
       </Card>
     );
   }
 
-  const visibleChains = showAll ? chains : chains.slice(0, 2);
-
   return (
     <Card className="shadow-lg border">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
-          <GitBranch className="h-5 w-5 text-primary" />
-          {t('results.causalChain.title')}
-        </CardTitle>
+        <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+          {sectionTitle}
+        </div>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {visibleChains.map((chain, ci) => (
-          <div key={ci} className="space-y-2">
-            <Badge variant="outline" className="text-xs font-medium">
-              {t('results.causalChain.sharedCause')}: {chain.dimensionLabel}
-            </Badge>
+      <CardContent className="space-y-5">
+        {chains.map((chain, ci) => {
+          const Icon = DIMENSION_ICONS[chain.dimension];
+          const dimLabel = DIMENSION_LABELS[chain.dimension][language === 'de' ? 'de' : 'en'];
+          const implication = IMPLICATIONS[chain.dimension][language === 'de' ? 'de' : 'en'];
 
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-0">
-              {chain.nodes.map((node, ni) => (
-                <div key={ni} className="flex items-center gap-0">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+          return (
+            <div key={ci} className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Icon className="h-4 w-4 text-foreground" />
+                <span className="text-[14px] font-semibold text-foreground">{dimLabel}</span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {chain.nodes.map((node, ni) => {
+                  const color = DEPT_COLORS[node.departmentKey] ?? 'hsl(var(--muted-foreground))';
+                  return (
+                    <div key={ni} className="flex items-center gap-2">
                       <div
-                        className={`rounded-lg px-4 py-3 min-w-[120px] text-center cursor-default ${DEPT_COLORS[node.departmentKey] ?? 'bg-muted'} text-white`}
+                        className="rounded-[20px] px-2.5 py-[3px] text-[11px] font-medium border"
+                        style={{
+                          backgroundColor: `${color.replace(')', ' / 0.10)')}`,
+                          borderColor: `${color.replace(')', ' / 0.40)')}`,
+                          color,
+                        }}
                       >
-                        <div className="text-xs font-bold leading-tight">{node.signalLabel}</div>
-                        <div className="text-[10px] opacity-80 mt-0.5">
-                          {getDepartmentName(node.departmentKey, language)}
-                        </div>
+                        {DEPT_ABBREV[node.departmentKey] ?? node.departmentKey}
                       </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-[220px]">
-                      <p className="text-sm font-semibold">{node.signalLabel}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {getDepartmentName(node.departmentKey, language)}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {t('results.causalChain.rootCause')}: {chain.dimensionLabel}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
+                      {ni < chain.nodes.length - 1 && (
+                        <span className="text-[12px] text-muted-foreground">→</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
 
-                  {ni < chain.nodes.length - 1 && (
-                    <>
-                      <div className="hidden md:flex items-center px-1">
-                        <svg width="40" height="20" viewBox="0 0 40 20" className="text-muted-foreground">
-                          <line x1="0" y1="10" x2="30" y2="10" stroke="currentColor" strokeWidth="1.5" />
-                          <polygon points="30,5 40,10 30,15" fill="currentColor" />
-                        </svg>
-                      </div>
-                      <div className="flex md:hidden justify-center w-full py-1">
-                        <svg width="20" height="24" viewBox="0 0 20 24" className="text-muted-foreground">
-                          <line x1="10" y1="0" x2="10" y2="16" stroke="currentColor" strokeWidth="1.5" />
-                          <polygon points="5,16 10,24 15,16" fill="currentColor" />
-                        </svg>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
+              <p className="text-[12px] text-muted-foreground leading-relaxed">{implication}</p>
             </div>
-          </div>
-        ))}
-
-        {chains.length > 2 && (
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 font-medium transition-colors"
-          >
-            {showAll ? (
-              <>
-                {t('results.causalChain.showLess')} <ChevronUp className="h-4 w-4" />
-              </>
-            ) : (
-              <>
-                {t('results.causalChain.viewAll')} ({chains.length}) <ChevronDown className="h-4 w-4" />
-              </>
-            )}
-          </button>
-        )}
+          );
+        })}
       </CardContent>
     </Card>
   );
