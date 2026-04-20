@@ -460,45 +460,6 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
         </Card>
       )}
 
-      {/* SECTION 4 — Systemic Issues Detected */}
-      {systemicPatterns.length > 0 && (
-        <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">Systemic Issues Detected</p>
-          {systemicPatterns.map((p, i) => {
-            const isSystemic = p.severity === 'systemic';
-            const borderClass = isSystemic
-              ? 'border-l-4 border-l-red-500 border-t border-r border-b border-red-200 bg-red-50'
-              : 'border-l-4 border-l-amber-500 border-t border-r border-b border-amber-200 bg-amber-50';
-            const badgeClass = isSystemic
-              ? 'bg-red-100 text-red-700 border-red-200'
-              : 'bg-amber-100 text-amber-700 border-amber-200';
-            const badgeLabel = isSystemic ? 'Organisation-wide' : 'Recurring';
-            const title = p.signalCode
-              .split('_')
-              .map((w: string) => w.charAt(0) + w.slice(1).toLowerCase())
-              .join(' ');
-            return (
-              <Card key={p.signalCode} className={`shadow-sm ${borderClass}`}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm font-semibold text-foreground">{title}</span>
-                    <Badge variant="outline" className={`text-xs ${badgeClass}`}>{badgeLabel}</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">{p.description}</p>
-                  <div className="flex flex-wrap gap-1">
-                    {p.departments.map((d: string) => (
-                      <Badge key={d} variant="outline" className="text-xs">
-                        {getDepartmentName(d, language)}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-
       {/* SECTION 5 — Excellence Gaps (upgraded) */}
       <CeilingInsightsPanel insights={ceilingInsights} />
 
