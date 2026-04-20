@@ -151,7 +151,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
     }
   };
 
-  const updateField = useCallback((field: string, value: string | string[] | null | undefined) => {
+  const updateField = useCallback((field: string, value: string | string[] | number | null | undefined) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setIsDirty(true);
   }, []);
@@ -562,24 +562,27 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                           <BarChart3 className="h-3.5 w-3.5 text-primary" /> KPIs This Action Will Improve
                         </p>
                         <div className="space-y-2">
-                          {visibleKpis.map((kpi: string, i: number) => (
+                          {visibleKpis.map((kpi: unknown, i: number) => {
+                            const k = (typeof kpi === 'object' && kpi !== null ? kpi : { name: String(kpi) }) as { name?: string; title?: string; key?: string; type?: string; reason?: string };
+                            return (
                             <div key={i} className="rounded-lg border border-border/50 p-3 bg-background">
                               <div className="flex items-center justify-between mb-1">
                                 <span className="text-sm font-medium text-foreground flex items-center gap-1.5">
                                   <BarChart3 className="h-3 w-3 text-primary flex-shrink-0" />
-                                  {kpi.name || kpi.title || kpi.key}
+                                  {k.name || k.title || k.key}
                                 </span>
-                                {kpi.type && (
-                                  <Badge variant="outline" className={cn("text-[10px] font-medium", getKpiBadgeStyle(kpi.type))}>
-                                    {kpi.type}
+                                {k.type && (
+                                  <Badge variant="outline" className={cn("text-[10px] font-medium", getKpiBadgeStyle(k.type))}>
+                                    {k.type}
                                   </Badge>
                                 )}
                               </div>
-                              {kpi.reason && (
-                                <p className="text-xs text-muted-foreground leading-relaxed ml-[18px]">{kpi.reason}</p>
+                              {k.reason && (
+                                <p className="text-xs text-muted-foreground leading-relaxed ml-[18px]">{k.reason}</p>
                               )}
                             </div>
-                          ))}
+                            );
+                          })}
                           {linkedKpiDetails.length > 4 && !showKpiAll && (
                             <Button variant="ghost" size="sm" onClick={() => setShowKpiAll(true)} className="text-xs w-full">
                               + {linkedKpiDetails.length - 4} more KPIs
@@ -596,16 +599,19 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                           <AlertTriangle className="h-3.5 w-3.5 text-[hsl(var(--dd-amber))]" /> Likely Drivers
                         </p>
                         <div className="flex flex-wrap gap-1.5">
-                          {likelyDrivers.map((d: string, i: number) => (
+                          {likelyDrivers.map((d: unknown, i: number) => {
+                            const obj = (typeof d === 'object' && d !== null ? d : null) as { name?: string; label?: string; type?: string } | null;
+                            return (
                             <div key={i} className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs",
-                              typeof d === 'object' && d.type ? getDriverBadgeStyle(d.type) : 'border-border text-muted-foreground'
+                              obj?.type ? getDriverBadgeStyle(obj.type) : 'border-border text-muted-foreground'
                             )}>
-                              <span className="text-foreground">{typeof d === 'string' ? d : d.name || d.label}</span>
-                              {typeof d === 'object' && d.type && (
-                                <span className="text-[9px] font-medium opacity-70">{d.type}</span>
+                              <span className="text-foreground">{typeof d === 'string' ? d : (obj?.name || obj?.label || '')}</span>
+                              {obj?.type && (
+                                <span className="text-[9px] font-medium opacity-70">{obj.type}</span>
                               )}
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -617,16 +623,19 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                           <TrendingUp className="h-3.5 w-3.5 text-destructive" /> Likely Consequences
                         </p>
                         <div className="flex flex-wrap gap-1.5">
-                          {likelyConsequences.map((c: string, i: number) => (
+                          {likelyConsequences.map((c: unknown, i: number) => {
+                            const obj = (typeof c === 'object' && c !== null ? c : null) as { name?: string; label?: string; type?: string } | null;
+                            return (
                             <div key={i} className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs",
-                              typeof c === 'object' && c.type ? getConsequenceBadgeStyle(c.type) : 'border-border text-muted-foreground'
+                              obj?.type ? getConsequenceBadgeStyle(obj.type) : 'border-border text-muted-foreground'
                             )}>
-                              <span className="text-foreground">{typeof c === 'string' ? c : c.name || c.label}</span>
-                              {typeof c === 'object' && c.type && (
-                                <span className="text-[9px] font-medium opacity-70">{c.type}</span>
+                              <span className="text-foreground">{typeof c === 'string' ? c : (obj?.name || obj?.label || '')}</span>
+                              {obj?.type && (
+                                <span className="text-[9px] font-medium opacity-70">{obj.type}</span>
                               )}
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     )}

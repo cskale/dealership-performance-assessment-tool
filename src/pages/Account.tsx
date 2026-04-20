@@ -54,7 +54,7 @@ const Account = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  const [profile, setProfile] = useState<Record<string, string | null> | null>(null);
+  const [profile, setProfile] = useState<Tables<'profiles'> | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [displayName, setDisplayName] = useState('');
