@@ -42,7 +42,7 @@ export default function Assessment() {
   const { generateActions, isEnabled: autoActionsEnabled } = useAutoActionGeneration();
   const { status: onboardingStatus, context: onboardingContext } = useOnboarding();
   const { currentOrganization } = useMultiTenant();
-  const businessModel = (currentOrganization as any)?.business_model as BusinessModel ?? null;
+  const businessModel = currentOrganization?.business_model ?? null;
 
   // Redirect to onboarding if not complete
   useEffect(() => {

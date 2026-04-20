@@ -8,6 +8,7 @@ interface Organization {
   name: string;
   slug: string;
   settings: any;
+  business_model?: 'sales_only' | 'service_only' | '2s' | '3s' | '4s' | null;
   created_at: string;
   updated_at: string;
 }
