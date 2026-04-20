@@ -1,123 +1,131 @@
 
 
-## Plan: Three Isolated UI Tasks (#45 · #31 · #48)
+## Plan: Executive Summary Polish (#32 · #29 · #33)
 
-Three fully isolated UI changes. No logic files touched. No new packages. All strings localised via the existing `language === 'de' ? ... : ...` pattern already in use.
-
----
-
-### File path correction
-
-The prompt names `src/components/QuestionCard.tsx`, but the file actually lives at `src/components/assessment/QuestionCard.tsx`. Task 1 will modify the real path. No other file is moved or renamed.
+Three visual-polish changes to components inside Executive Summary. No engine logic touched. No new packages. No new data sources — all data comes from hooks already wired in `ExecutiveSummary.tsx`.
 
 ### Files modified
 
-| File | Task | Change |
+| File | Task | Change type |
 |---|---|---|
-| `src/components/assessment/QuestionCard.tsx` | 1 | Replace coloured rating tiles with neutral white tiles + left-border accent on selected |
-| `src/components/results/ScoreDecomposition.tsx` | 2 | **CREATE** — stacked bar + legend |
-| `src/components/ExecutiveSummary.tsx` | 2 | Add import + render `<ScoreDecomposition>` directly under the Diagnostic Narrative card |
-| `src/pages/Dashboard.tsx` | 3 | Add empty-state onboarding panel rendered when no assessments exist |
+| `src/components/results/DepartmentHeatmap.tsx` | 1 | Re-purpose to a 5×5 dept × root-cause grid (visual + cell-derivation rewrite) |
+| `src/components/results/CausalChainDiagram.tsx` | 2 | Visual refinement — pill chain, dimension icons, implication line, empty state |
+| `src/components/ExecutiveSummary.tsx` | 3 + ordering | Refactor inline systemic-pattern cards to match spec; reorder JSX |
+
+### Important note on the heatmap (read first)
+
+The current `DepartmentHeatmap.tsx` renders a **dept × KPI** grid (Volume, Conversion, etc.). The spec describes a **dept × root-cause-dimension** grid (People · Process · Tools · Structure · Incentives). These are two different views. The spec wins — Task 1 replaces the KPI grid with the root-cause grid.
+
+The component receives `scores` and `answers` props (already wired by `ExecutiveSummary.tsx`). The spec mentions a `subCategoryData` prop that does not currently exist. Rather than change the prop interface (forbidden), the component will **derive root-cause dimension scores internally** from `answers` using the existing `SIGNAL_MAPPINGS` lookup (the same source `CausalChainDiagram` already uses). This keeps the prop contract stable and avoids touching `ExecutiveSummary.tsx`'s data wiring.
 
 ---
 
-### Task 1 — Neutral question tiles (#45)
+### Task 1 — Dept × Root-Cause Heatmap (#32)
 
-**File:** `src/components/assessment/QuestionCard.tsx`
+**File:** `src/components/results/DepartmentHeatmap.tsx` — full rewrite of render + cell derivation, props unchanged (`{ scores, answers }`).
 
-The current tiles are already mostly neutral (no red/yellow/green hardcoded — they use `border-l-primary` already). However, the selected state needs to match the spec exactly, and content layout needs adjustment so the **scale label is dominant** and the **number is the small secondary label above it**.
+**Cell derivation (replaces existing `DEPT_KPIS` block):**
 
-Replace the `<button>` block (lines ~74-95) with:
+For each `(department, dimension)` pair:
+1. Find all questions in that department whose `SIGNAL_MAPPINGS` entry has `rootCauseDimension === dimension`
+2. Average the answered values (1–5 scale), normalise to 0–100: `Math.round(((avg - 1) / 4) * 100)`
+3. If no answered questions in that intersection → `null` (not 0)
 
-- **Unselected tile:** `bg-background border border-border rounded-[8px] hover:border-primary/30 hover:bg-muted/40 transition-all duration-150`
-- **Selected tile:** `bg-primary/[0.04] border border-primary/30 border-l-[3px] border-l-primary rounded-[8px]`
-- **Padding:** `px-4 py-3` (12px 16px)
-- **Content layout (top → bottom, left-aligned):**
-  - Number: `text-[11px] font-mono text-muted-foreground` (DM Mono is the project mono token)
-  - Scale label: `text-[13px] font-medium text-foreground` — dominant
-- **Layout grid:** keep existing `grid grid-cols-1 sm:grid-cols-5 gap-3` (already responsive). Per spec: "match existing layout logic" — preserved.
-- **Removed:** centered alignment (`items-center`), the `tabular-nums` number-as-hero styling, the rating-summary card below the grid (the "Selected: X — label" block) is kept as-is since it's not colour-coded.
+Result: 5 columns (NVS · UVS · SVC · FIN · PTS) × 5 rows (People · Process · Tools · Structure · Incentives).
 
-No other changes to the file. The `getWeightLabel` helper, notes section, context expander, and `onChange` handler remain untouched.
+**Colour bands** (4-band diverging, no gradients):
+- 0–44 → `hsl(0 72% 51%)` "Critical"
+- 45–64 → `hsl(38 92% 50%)` "Developing"
+- 65–79 → `hsl(213 97% 55%)` "Progressing"
+- 80–100 → `hsl(160 84% 39%)` "Strong"
+- `null` → `hsl(var(--muted))` with `—` label
 
----
+**Cells:** equal-width columns, equal-height rows, min-height 44px, padding 4px. Score centred, 12px white font-weight 500. On widths < 48px hide the number (use Tailwind `text-[0]` at the small breakpoint and re-show in tooltip).
 
-### Task 2 — Score decomposition (#31)
+**Column headers:** `NVS · UVS · SVC · FIN · PTS` — 11px uppercase tracking-wider muted, with a 6px coloured dot before each abbreviation using the canonical dept colours (NVS `hsl(217 91% 60%)`, UVS `hsl(263 70% 63%)`, SVC `hsl(160 84% 39%)`, FIN `hsl(38 92% 50%)`, PTS `hsl(215 16% 47%)` — same as `ScoreDecomposition`).
 
-**Create:** `src/components/results/ScoreDecomposition.tsx`
+**Row headers:** Full dimension names (`People · Process · Tools · Structure · Incentives`), 12px foreground font-weight 500, left-aligned, min-width 80px. German labels via the existing `DIMENSION_LABELS` style (added inline in this file).
 
-```text
-Props: { scores: Record<string, number>; overallScore: number }
-```
+**Tooltip** (shadcn `<Tooltip>`): `"<Department full name> — <Dimension> — <Score> — <Band label>"`.
 
-**Hardcoded weights** (per spec, no import from scoringEngine):
-```ts
-const WEIGHTS = { 'new-vehicle-sales': 0.25, 'used-vehicle-sales': 0.20,
-  'service-performance': 0.20, 'financial-operations': 0.20, 'parts-inventory': 0.15 };
-```
+**Section header:** `"Performance Dimensions"` / `"Leistungsdimensionen"` — 11px uppercase tracking-wider muted (replaces the existing `t('results.kpiMatrix.title')` CardTitle for consistency with other section headers in ExecutiveSummary).
 
-**Department colours** (HSL per spec):
-- NVS `hsl(217 91% 60%)`, UVS `hsl(263 70% 63%)`, Service `hsl(160 84% 39%)`, Financial `hsl(38 92% 50%)`, Parts `hsl(215 16% 47%)`
+**Legend:** Below grid, single row of four 10px coloured squares + band label + range, 11px muted.
 
-**Layout:**
-1. Section header: `text-[11px] uppercase tracking-wider text-muted-foreground` — text "Score Breakdown" / "Punkteverteilung"
-2. Stacked bar: `relative h-7 w-full rounded-[6px] bg-muted overflow-hidden flex` — each segment is a `<div>` with inline `width` = `(score * weight)` % and inline `backgroundColor` = dept token, separated by `border-r border-white` (1px gap)
-3. Legend: `flex flex-wrap gap-4 mt-3 text-[12px]` — each item: 8px coloured dot + dept name + `score ×weight% = (score×weight/100).toFixed(1)pts`
-4. Tooltip: shadcn `<Tooltip>` wrapping each segment — content shows `Department — Score: X · Weight: Y% · Contribution: Z pts`
-5. Wrapped in a Card to match other Executive Summary sections (matching existing visual rhythm).
+**Empty state:** If every cell is `null`, render a single line `"Sub-category data unavailable for this assessment."` (DE: `"Unterkategorie-Daten für diese Bewertung nicht verfügbar."`) — 13px muted centred. No crash.
 
-Department display names use existing `getDepartmentName(dept, language)` helper from `@/lib/departmentNames`.
-
-**Modify:** `src/components/ExecutiveSummary.tsx`
-
-- Add import: `import { ScoreDecomposition } from "@/components/results/ScoreDecomposition";`
-- Add prop wiring: `ExecutiveSummary` already receives `overallScore` and `scores` — no new props needed.
-- Render placement: directly **after** the Diagnostic Narrative card (after line ~278, before `<DepartmentHeatmap>`). The spec says "below the overall score ring and above the executive narrative paragraph" — but the score ring lives in the parent `Results.tsx` (which is read-only and untouchable), and inside `ExecutiveSummary` the first content block is the narrative. Placing it immediately after the narrative card keeps it as the first visible breakdown right under the score ring rendered by `Results.tsx` above. This is the closest legal position to the spec without touching `Results.tsx`.
-
-Single-line insertion:
-```tsx
-<ScoreDecomposition scores={scores} overallScore={overallScore} />
-```
+**Removed:** the entire `DEPT_KPIS` constant block, `getBenchmarkBand`, the existing `getScoreBand` (replaced with the 4-band scale above), and the KPI-name column-header rotation logic.
 
 ---
 
-### Task 3 — Dashboard empty state (#48)
+### Task 2 — Causal Chain Diagram (#29)
 
-**File:** `src/pages/Dashboard.tsx`
+**File:** `src/components/results/CausalChainDiagram.tsx` — visual rewrite of the chain rendering. Chain-grouping logic in `useMemo` is preserved as-is (still groups signals by shared `rootCauseDimension`).
 
-The current Dashboard renders **static sample KPI data** with no real assessment query. There is no existing `assessments.length === 0` check. Approach:
+**Section header:** `"Shared Root Causes"` / `"Gemeinsame Ursachen"` — 11px uppercase tracking-wider muted (replaces current CardTitle text).
 
-1. Add a lightweight Supabase query at the top of the component using the existing `useAuth` hook + supabase client (already imported elsewhere in the project — same pattern used in other dashboard-style pages). Query: `select id from assessments where user_id = auth.uid() limit 1` to determine empty state. Store as `hasAssessments: boolean | null` (null = loading).
-2. While `hasAssessments === null`: render existing dashboard (no flash).
-3. When `hasAssessments === false`: render the **onboarding panel only**, replacing the entire `<main>` content (keep the context bar above it untouched so global navigation still works, but the empty-state panel takes over the main content area).
-4. When `hasAssessments === true`: render existing dashboard exactly as today — zero changes.
+**Per-chain card layout:**
+1. **Header row:** Lucide icon (16px) + dimension label (14px font-weight 600). Icon mapping: People→`Users`, Process→`GitBranch`, Tools→`Wrench`, Structure→`Building2`, Incentives→`TrendingUp`.
+2. **Pill chain:** horizontal flex row of department pills separated by `→` (12px muted). Pill style: bg = dept colour @ 10% opacity, border = dept colour @ 40% opacity, text = dept colour, abbreviated name (NVS/UVS/SVC/FIN/PTS), 11px, `rounded-[20px] px-2.5 py-[3px]`. Dept colours match Task 1 / ScoreDecomposition.
+3. **Implication line:** one sentence per dimension, 12px muted. Hardcoded EN/DE templates (5 dimensions × 2 languages = 10 strings) inside the component using the existing `language === 'de' ? ... : ...` pattern.
 
-**Onboarding panel structure** (centred card, `max-w-[640px] mx-auto`, `p-10 px-12`, `border rounded-[12px] bg-card`):
+**Empty state** (when `chains.length === 0`): single muted card with `CheckCircle2` (20px green) and `"No systemic patterns detected — department issues appear isolated."` / `"Keine systemischen Muster erkannt — Abteilungsprobleme erscheinen isoliert."` — 13px. Soft green border (`border-success/30 bg-success/5`).
 
-- **Hero:** `text-[20px] font-semibold` headline + `text-[14px] text-muted-foreground mt-2` sub-text
-- **Three benefit columns:** `grid grid-cols-1 md:grid-cols-3 gap-6 mt-8` — each: Lucide icon (`TrendingUp` / `Target` / `FileText`) at 20px, primary colour, then 13px medium heading, then 12px muted description
-- **Checklist heading:** `text-[12px] uppercase tracking-wider text-muted-foreground mt-8` — "Before you start, have these to hand:" / "Vor dem Start — halten Sie folgendes bereit:"
-- **Checklist:** 5 items, each `<CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />` + `text-[13px]`
-- **CTA:** `<Button size="lg" className="w-full mt-8" onClick={() => navigate('/app/assessment')}>` — "Begin Assessment" / "Bewertung starten"
-- **Footer line:** `text-[11px] text-muted-foreground text-center mt-2` — "Takes approximately 25–30 minutes" / "Dauer ca. 25–30 Minuten"
+**Max chains:** 3 (already enforced by `slice(0, 2)` + show-more — switch to `slice(0, 3)` and remove the show-more toggle since spec caps at 3).
 
-Route confirmed: `/app/assessment` is the canonical start-assessment route (used by 8+ existing components).
-
-All strings use the inline `language === 'de' ? '...' : '...'` pattern already used throughout `Dashboard.tsx` (e.g., the Preview banner block, lines 154-159).
+**Removed:** the `DEPT_COLORS` Tailwind class map (replaced with inline HSL via `style={{ backgroundColor, borderColor, color }}`), the SVG arrows (replaced with `→` glyph), the `SIGNAL_LABELS` block (no longer rendered — chains now display by dimension, not by signal label), the show-more toggle, the mobile vertical-arrow SVG block.
 
 ---
 
-### Out of scope / explicitly NOT touching
+### Task 3 — Systemic Pattern Cards (#33)
 
-- `signalEngine.ts`, `scoringEngine.ts`, `ceilingAnalysis.ts`, `narrativeTemplates.ts`, `actionTemplatesTiered.ts`, `crossValidationRules.ts`
-- `Results.tsx`, `useMultiTenant.tsx`, `useActiveRole.tsx`
-- Any Supabase migration
-- No existing logic in `QuestionCard.tsx`, `ExecutiveSummary.tsx`, `Dashboard.tsx` is refactored — only the changes above
+**File:** `src/components/ExecutiveSummary.tsx` lines 378–415 only. No data logic, no hook changes.
+
+**Section header:** `"Systemic Patterns"` / `"Systemische Muster"` — 11px uppercase tracking-wider muted (replaces the current `<p>Systemic Issues Detected</p>`).
+
+**Card variants:**
+- `severity === 'systemic'`: `border-l-[3px]` with `style={{ borderLeftColor: 'hsl(0 72% 51%)', backgroundColor: 'hsl(0 72% 51% / 0.04)' }}`. Badge `"Systemic"` — red bg, white text, 10px.
+- `severity === 'recurring'`: `border-l-[3px]` with amber HSL `38 92% 50%`. Badge `"Recurring"` — amber bg, white text, 10px.
+
+**Card content:**
+1. Top row: badge + signal title (13px font-weight 500). Title derived from existing `p.signalCode` via the existing capitalisation logic — kept.
+2. Affected-departments row: pills using the **same pill style as Task 2** (dept colour @ 10% bg / 40% border / full text, abbreviated name, rounded-[20px]). Replaces the current `Badge variant="outline"` rendering.
+3. Description: `p.description` from the pattern object (already populated by `detectSystemicPatterns`). Fallback string only used if `!p.description`: `"This signal appears across multiple departments, suggesting a structural cause rather than isolated execution."` / DE equivalent. 12px muted.
+
+**Visibility:** Already gated by `systemicPatterns.length > 0` — keep. Header hides with section.
+
+**No truncation** — render all patterns as-is.
+
+---
+
+### JSX ordering inside ExecutiveSummary.tsx
+
+Reorder only — no logic changes. Target order:
+
+1. Diagnostic Narrative (existing — lines 263–279) — unchanged
+2. **Score Decomposition** (line 282) — unchanged
+3. **Department Heatmap** (line 285) — unchanged position
+4. **Causal Chain Diagram** (line 288) — unchanged position
+5. **Systemic Pattern Cards** (currently line 378) — **move up** to sit immediately after CausalChainDiagram
+6. Department Performance score cards (lines 291–328) — moves down after systemic patterns
+7. Top Findings (lines 331–376) — unchanged relative order
+8. CeilingInsightsPanel (line 418) — unchanged
+
+Per the spec ("Score Decomposition → Department Heatmap → Shared Root Causes → Systemic Pattern Cards → Executive narrative paragraph"), the existing diagnostic narrative card is treated as the "executive narrative paragraph" and stays at the top (the spec says it's "already placed — do not move"). Items 6–8 (department score cards, top findings, ceiling insights) are not addressed by the spec and remain after the polished section in their existing relative order.
+
+---
+
+### Out of scope
+
+- No changes to `signalEngine.ts`, `scoringEngine.ts`, `narrativeTemplates.ts`, `ceilingAnalysis.ts`, `signalMappings.ts`, `kpiDefinitions.ts`, `moduleGating.ts`, `Results.tsx`, `useMultiTenant.tsx`, `useActiveRole.tsx`, `ScoreDecomposition.tsx`
+- No new packages
+- No prop interface changes to `DepartmentHeatmap` or `CausalChainDiagram`
+- No `useMemo` computation logic changes — only the cell-derivation block in DepartmentHeatmap (visual repurposing) is rewritten, and that block is presentation-side derivation, not engine logic
 
 ### Technical notes
 
-- Zero new packages
-- Zero new i18n keys (uses inline `language ===` ternaries to match the existing Dashboard pattern; ExecutiveSummary's section header for ScoreDecomposition follows the same inline pattern already used elsewhere in the file)
-- TypeScript: ScoreDecomposition typed strictly, no `any`
-- Mobile: ScoreDecomposition legend wraps; Dashboard onboarding benefit grid stacks 1-col below `md`
+- All new strings inline-localised via `language === 'de' ? '...' : '...'` (matches existing pattern in these files)
+- Dept colours hardcoded as inline HSL strings to keep parity with `ScoreDecomposition.tsx`
+- All Lucide icons (`Users`, `GitBranch`, `Wrench`, `Building2`, `TrendingUp`, `CheckCircle2`) are tree-shaken individual imports
+- TypeScript: no `any`; existing `RootCauseDimension` and `Signal` types reused
 
