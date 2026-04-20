@@ -77,16 +77,16 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
                   key={rating}
                   type="button"
                   onClick={() => handleRatingClick(rating)}
-                  className={`min-h-[80px] h-auto p-3 flex flex-col items-center justify-start gap-1.5 rounded-[12px] transition-all duration-200 text-left ${
+                  className={`min-h-[80px] h-auto px-4 py-3 flex flex-col items-start justify-start gap-1 rounded-[8px] text-left transition-all duration-150 ${
                     isSelected
-                      ? "border-l-4 border-l-primary border border-primary/30 bg-primary/5"
-                      : "border border-border bg-card hover:bg-muted/20"
+                      ? "bg-primary/[0.04] border border-primary/30 border-l-[3px] border-l-primary"
+                      : "bg-background border border-border hover:border-primary/30 hover:bg-muted/40"
                   }`}
                 >
-                  <span className={`text-sm font-semibold tabular-nums ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}>
+                  <span className="text-[11px] font-mono text-muted-foreground">
                     {rating}
                   </span>
-                  <span className={`text-xs text-center leading-tight whitespace-normal break-words w-full ${isSelected ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+                  <span className="text-[13px] font-medium text-foreground leading-snug whitespace-normal break-words w-full">
                     {label}
                   </span>
                 </button>
