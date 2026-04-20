@@ -98,6 +98,22 @@ const PREFIX_TO_DEPT: Record<string, string> = {
   pts: 'parts-inventory',
 };
 
+const DEPT_COLORS_ES: Record<string, string> = {
+  'new-vehicle-sales': 'hsl(217 91% 60%)',
+  'used-vehicle-sales': 'hsl(263 70% 63%)',
+  'service-performance': 'hsl(160 84% 39%)',
+  'financial-operations': 'hsl(38 92% 50%)',
+  'parts-inventory': 'hsl(215 16% 47%)',
+};
+
+const DEPT_ABBREV_ES: Record<string, string> = {
+  'new-vehicle-sales': 'NVS',
+  'used-vehicle-sales': 'UVS',
+  'service-performance': 'SVC',
+  'financial-operations': 'FIN',
+  'parts-inventory': 'PTS',
+};
+
 export function ExecutiveSummary({ overallScore, scores, answers, completedAt, onNavigateToEncyclopedia }: ExecutiveSummaryProps) {
   const { t, language } = useLanguage();
 
