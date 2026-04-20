@@ -11,6 +11,7 @@ import { getDepartmentName } from "@/lib/departmentNames";
 import { DepartmentHeatmap } from "@/components/results/DepartmentHeatmap";
 import { CausalChainDiagram } from "@/components/results/CausalChainDiagram";
 import { CeilingInsightsPanel } from "@/components/results/CeilingInsightsPanel";
+import { ScoreDecomposition } from "@/components/results/ScoreDecomposition";
 import {
   CATEGORY_WEIGHTS,
   DEPARTMENT_TO_CATEGORY,
@@ -276,6 +277,9 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
           </Card>
         </div>
       )}
+
+      {/* SECTION 1A — Score Decomposition */}
+      <ScoreDecomposition scores={scores} overallScore={overallScore} />
 
       {/* SECTION 1B — Department KPI Heatmap */}
       <DepartmentHeatmap scores={scores} answers={answers as Record<string, number>} />
