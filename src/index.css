@@ -208,3 +208,9 @@
     @apply -translate-y-0.5 shadow-md;
   }
 }
+
+@media (min-width: 768px) {
+  .question-card-grid {
+    grid-template-columns: 3fr 2fr;
+  }
+}

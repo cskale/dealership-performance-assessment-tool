@@ -130,9 +130,10 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
   );
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}
+         className="question-card-grid">
       {/* Left column: Question + rating + notes */}
-      <div className="space-y-6 md:col-span-1">
+      <div className="space-y-6">
         {/* Question Header */}
         <div className="space-y-3">
           <div className="flex items-start gap-3">
@@ -251,7 +252,7 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
       </div>
 
       {/* Right column: Persistent context panel (desktop only) */}
-      <div className="hidden md:block md:col-span-1">
+      <div className="hidden md:block">
         <div className="sticky top-4 h-fit rounded-[10px] border border-border bg-muted/40 p-5">
           <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium mb-4">
             {t('assessment.whyThisMatters')}
