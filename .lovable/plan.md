@@ -1,131 +1,70 @@
 
 
-## Plan: Executive Summary Polish (#32 · #29 · #33)
+## Plan: Always-Visible Context Panel (#46)
 
-Three visual-polish changes to components inside Executive Summary. No engine logic touched. No new packages. No new data sources — all data comes from hooks already wired in `ExecutiveSummary.tsx`.
+Single-file change to `src/components/assessment/QuestionCard.tsx`. Replace the collapsible "Why This Question Matters" accordion with a persistent right-side context panel on desktop, stacked below on mobile. No data, scoring, or save logic touched.
 
-### Files modified
+### File modified
 
-| File | Task | Change type |
-|---|---|---|
-| `src/components/results/DepartmentHeatmap.tsx` | 1 | Re-purpose to a 5×5 dept × root-cause grid (visual + cell-derivation rewrite) |
-| `src/components/results/CausalChainDiagram.tsx` | 2 | Visual refinement — pill chain, dimension icons, implication line, empty state |
-| `src/components/ExecutiveSummary.tsx` | 3 + ordering | Refactor inline systemic-pattern cards to match spec; reorder JSX |
+| File | Change |
+|---|---|
+| `src/components/assessment/QuestionCard.tsx` | Restructure root layout into a 2-column grid; convert accordion → persistent panel |
 
-### Important note on the heatmap (read first)
+### Layout restructure
 
-The current `DepartmentHeatmap.tsx` renders a **dept × KPI** grid (Volume, Conversion, etc.). The spec describes a **dept × root-cause-dimension** grid (People · Process · Tools · Structure · Incentives). These are two different views. The spec wins — Task 1 replaces the KPI grid with the root-cause grid.
+Wrap the existing content in a `grid grid-cols-1 md:grid-cols-5 gap-6` container:
 
-The component receives `scores` and `answers` props (already wired by `ExecutiveSummary.tsx`). The spec mentions a `subCategoryData` prop that does not currently exist. Rather than change the prop interface (forbidden), the component will **derive root-cause dimension scores internally** from `answers` using the existing `SIGNAL_MAPPINGS` lookup (the same source `CausalChainDiagram` already uses). This keeps the prop contract stable and avoids touching `ExecutiveSummary.tsx`'s data wiring.
+- **Left column** (`md:col-span-3` ≈ 60%): Question header (title + description + category badge), rating-scale label, rating tiles, "Selected: X" confirmation, notes button + weight label, notes textarea. **Zero content/style changes** to any of these — only their wrapping parent changes.
+- **Right column** (`md:col-span-2` ≈ 40%): New persistent context panel.
 
----
+### Right column — context panel
 
-### Task 1 — Dept × Root-Cause Heatmap (#32)
+Container: `sticky top-4 h-fit rounded-[10px] border border-border bg-muted/40 p-5`.
 
-**File:** `src/components/results/DepartmentHeatmap.tsx` — full rewrite of render + cell derivation, props unchanged (`{ scores, answers }`).
+Panel header: `"Why This Matters"` (uses existing `t('assessment.whyThisMatters')` key) — `text-[10px] uppercase tracking-[0.08em] text-muted-foreground mb-4`. No icon, no chevron.
 
-**Cell derivation (replaces existing `DEPT_KPIS` block):**
+Four conditional sections, rendered in order, each separated by a `border-t border-border` divider (no divider before the first):
 
-For each `(department, dimension)` pair:
-1. Find all questions in that department whose `SIGNAL_MAPPINGS` entry has `rootCauseDimension === dimension`
-2. Average the answered values (1–5 scale), normalise to 0–100: `Math.round(((avg - 1) / 4) * 100)`
-3. If no answered questions in that intersection → `null` (not 0)
+1. **Assessment Purpose** — icon `Target` (12px muted) + label (10px uppercase tracking muted) + body (12px foreground, leading-[1.6]). Source: `question.purpose`.
+2. **Situation Analysis** — icon `Search` (Lucide) + label + body. Source: `question.situationAnalysis`.
+3. **Linked KPIs** — icon `BarChart3` + label + flex-wrap row of pills. Pill: `bg-primary/10 text-primary text-[11px] rounded-[4px] px-2 py-0.5`. Source: `question.linkedKPIs`.
+4. **Business Benefits** — icon `TrendingUp` + label + body. Source: `question.benefits`.
 
-Result: 5 columns (NVS · UVS · SVC · FIN · PTS) × 5 rows (People · Process · Tools · Structure · Incentives).
+Each section: `py-3` vertical padding so dividers visually separate; skip silently when source is null/empty/zero-length.
 
-**Colour bands** (4-band diverging, no gradients):
-- 0–44 → `hsl(0 72% 51%)` "Critical"
-- 45–64 → `hsl(38 92% 50%)` "Developing"
-- 65–79 → `hsl(213 97% 55%)` "Progressing"
-- 80–100 → `hsl(160 84% 39%)` "Strong"
-- `null` → `hsl(var(--muted))` with `—` label
+If all four are empty: render single line `"No context available for this question."` — `text-[12px] text-muted-foreground text-center`.
 
-**Cells:** equal-width columns, equal-height rows, min-height 44px, padding 4px. Score centred, 12px white font-weight 500. On widths < 48px hide the number (use Tailwind `text-[0]` at the small breakpoint and re-show in tooltip).
+### Removals
 
-**Column headers:** `NVS · UVS · SVC · FIN · PTS` — 11px uppercase tracking-wider muted, with a 6px coloured dot before each abbreviation using the canonical dept colours (NVS `hsl(217 91% 60%)`, UVS `hsl(263 70% 63%)`, SVC `hsl(160 84% 39%)`, FIN `hsl(38 92% 50%)`, PTS `hsl(215 16% 47%)` — same as `ScoreDecomposition`).
+- `Collapsible`, `CollapsibleContent`, `CollapsibleTrigger` imports and usage (entire accordion block lines 108–179).
+- The trigger `Button` and its chevron/`Award` icon used as the indicator.
+- Outer `Card` + `CardContent` wrapper that previously held the accordion (panel uses a plain styled `div`).
+- Unused imports after cleanup: `Collapsible*`, and `Award` if no longer used.
 
-**Row headers:** Full dimension names (`People · Process · Tools · Structure · Incentives`), 12px foreground font-weight 500, left-aligned, min-width 80px. German labels via the existing `DIMENSION_LABELS` style (added inline in this file).
+### Preserved (no changes)
 
-**Tooltip** (shadcn `<Tooltip>`): `"<Department full name> — <Dimension> — <Score> — <Band label>"`.
+- `useState` for `showNotes` and `notes` — kept (notes feature is unrelated to the accordion).
+- All rating tile styling, "Selected" confirmation, notes textarea, weight badge.
+- Category badge, question text, description.
+- All `t()` translation keys already in use.
 
-**Section header:** `"Performance Dimensions"` / `"Leistungsdimensionen"` — 11px uppercase tracking-wider muted (replaces the existing `t('results.kpiMatrix.title')` CardTitle for consistency with other section headers in ExecutiveSummary).
+### Imports added
 
-**Legend:** Below grid, single row of four 10px coloured squares + band label + range, 11px muted.
+`Search`, `BarChart3` from `lucide-react`. `Target`, `TrendingUp` already imported.
 
-**Empty state:** If every cell is `null`, render a single line `"Sub-category data unavailable for this assessment."` (DE: `"Unterkategorie-Daten für diese Bewertung nicht verfügbar."`) — 13px muted centred. No crash.
+### Responsive behavior
 
-**Removed:** the entire `DEPT_KPIS` constant block, `getBenchmarkBand`, the existing `getScoreBand` (replaced with the 4-band scale above), and the KPI-name column-header rotation logic.
-
----
-
-### Task 2 — Causal Chain Diagram (#29)
-
-**File:** `src/components/results/CausalChainDiagram.tsx` — visual rewrite of the chain rendering. Chain-grouping logic in `useMemo` is preserved as-is (still groups signals by shared `rootCauseDimension`).
-
-**Section header:** `"Shared Root Causes"` / `"Gemeinsame Ursachen"` — 11px uppercase tracking-wider muted (replaces current CardTitle text).
-
-**Per-chain card layout:**
-1. **Header row:** Lucide icon (16px) + dimension label (14px font-weight 600). Icon mapping: People→`Users`, Process→`GitBranch`, Tools→`Wrench`, Structure→`Building2`, Incentives→`TrendingUp`.
-2. **Pill chain:** horizontal flex row of department pills separated by `→` (12px muted). Pill style: bg = dept colour @ 10% opacity, border = dept colour @ 40% opacity, text = dept colour, abbreviated name (NVS/UVS/SVC/FIN/PTS), 11px, `rounded-[20px] px-2.5 py-[3px]`. Dept colours match Task 1 / ScoreDecomposition.
-3. **Implication line:** one sentence per dimension, 12px muted. Hardcoded EN/DE templates (5 dimensions × 2 languages = 10 strings) inside the component using the existing `language === 'de' ? ... : ...` pattern.
-
-**Empty state** (when `chains.length === 0`): single muted card with `CheckCircle2` (20px green) and `"No systemic patterns detected — department issues appear isolated."` / `"Keine systemischen Muster erkannt — Abteilungsprobleme erscheinen isoliert."` — 13px. Soft green border (`border-success/30 bg-success/5`).
-
-**Max chains:** 3 (already enforced by `slice(0, 2)` + show-more — switch to `slice(0, 3)` and remove the show-more toggle since spec caps at 3).
-
-**Removed:** the `DEPT_COLORS` Tailwind class map (replaced with inline HSL via `style={{ backgroundColor, borderColor, color }}`), the SVG arrows (replaced with `→` glyph), the `SIGNAL_LABELS` block (no longer rendered — chains now display by dimension, not by signal label), the show-more toggle, the mobile vertical-arrow SVG block.
-
----
-
-### Task 3 — Systemic Pattern Cards (#33)
-
-**File:** `src/components/ExecutiveSummary.tsx` lines 378–415 only. No data logic, no hook changes.
-
-**Section header:** `"Systemic Patterns"` / `"Systemische Muster"` — 11px uppercase tracking-wider muted (replaces the current `<p>Systemic Issues Detected</p>`).
-
-**Card variants:**
-- `severity === 'systemic'`: `border-l-[3px]` with `style={{ borderLeftColor: 'hsl(0 72% 51%)', backgroundColor: 'hsl(0 72% 51% / 0.04)' }}`. Badge `"Systemic"` — red bg, white text, 10px.
-- `severity === 'recurring'`: `border-l-[3px]` with amber HSL `38 92% 50%`. Badge `"Recurring"` — amber bg, white text, 10px.
-
-**Card content:**
-1. Top row: badge + signal title (13px font-weight 500). Title derived from existing `p.signalCode` via the existing capitalisation logic — kept.
-2. Affected-departments row: pills using the **same pill style as Task 2** (dept colour @ 10% bg / 40% border / full text, abbreviated name, rounded-[20px]). Replaces the current `Badge variant="outline"` rendering.
-3. Description: `p.description` from the pattern object (already populated by `detectSystemicPatterns`). Fallback string only used if `!p.description`: `"This signal appears across multiple departments, suggesting a structural cause rather than isolated execution."` / DE equivalent. 12px muted.
-
-**Visibility:** Already gated by `systemicPatterns.length > 0` — keep. Header hides with section.
-
-**No truncation** — render all patterns as-is.
-
----
-
-### JSX ordering inside ExecutiveSummary.tsx
-
-Reorder only — no logic changes. Target order:
-
-1. Diagnostic Narrative (existing — lines 263–279) — unchanged
-2. **Score Decomposition** (line 282) — unchanged
-3. **Department Heatmap** (line 285) — unchanged position
-4. **Causal Chain Diagram** (line 288) — unchanged position
-5. **Systemic Pattern Cards** (currently line 378) — **move up** to sit immediately after CausalChainDiagram
-6. Department Performance score cards (lines 291–328) — moves down after systemic patterns
-7. Top Findings (lines 331–376) — unchanged relative order
-8. CeilingInsightsPanel (line 418) — unchanged
-
-Per the spec ("Score Decomposition → Department Heatmap → Shared Root Causes → Systemic Pattern Cards → Executive narrative paragraph"), the existing diagnostic narrative card is treated as the "executive narrative paragraph" and stays at the top (the spec says it's "already placed — do not move"). Items 6–8 (department score cards, top findings, ceiling insights) are not addressed by the spec and remain after the polished section in their existing relative order.
-
----
+- `md` and above: 2-column grid, sticky panel.
+- Below `md`: single column, panel renders below the rating tiles area (natural grid stacking — `grid-cols-1` default). Sticky has no effect on mobile single-column flow.
 
 ### Out of scope
 
-- No changes to `signalEngine.ts`, `scoringEngine.ts`, `narrativeTemplates.ts`, `ceilingAnalysis.ts`, `signalMappings.ts`, `kpiDefinitions.ts`, `moduleGating.ts`, `Results.tsx`, `useMultiTenant.tsx`, `useActiveRole.tsx`, `ScoreDecomposition.tsx`
-- No new packages
-- No prop interface changes to `DepartmentHeatmap` or `CausalChainDiagram`
-- No `useMemo` computation logic changes — only the cell-derivation block in DepartmentHeatmap (visual repurposing) is rewritten, and that block is presentation-side derivation, not engine logic
+- No changes to `Assessment.tsx`, questionnaire data, scoring, signal, or any hook.
+- No new props on `QuestionCard`.
+- No new translation keys (reuses existing `assessment.whyThisMatters`, `assessment.assessmentPurpose`, `assessment.situationAnalysis`, `assessment.linkedKPIs`, `assessment.businessBenefits`).
 
 ### Technical notes
 
-- All new strings inline-localised via `language === 'de' ? '...' : '...'` (matches existing pattern in these files)
-- Dept colours hardcoded as inline HSL strings to keep parity with `ScoreDecomposition.tsx`
-- All Lucide icons (`Users`, `GitBranch`, `Wrench`, `Building2`, `TrendingUp`, `CheckCircle2`) are tree-shaken individual imports
-- TypeScript: no `any`; existing `RootCauseDimension` and `Signal` types reused
+- TypeScript: zero new types; all sources already typed via `Question` interface.
+- The "Additional Features" row (notes button + weight label) and notes textarea remain inside the **left column** so they sit directly below the rating interaction, not under the context panel.
 
