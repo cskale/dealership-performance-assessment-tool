@@ -242,28 +242,24 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
         )}
       </div>
 
-      {/* Right column: Persistent context panel */}
-      <aside className="md:col-span-2">
-        <div className="sticky top-4 h-fit rounded-[10px] border border-border bg-muted/40 p-5">
-          <h4 className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium mb-4">
+        {/* Mobile context block */}
+        <div className="md:hidden mt-4 rounded-[10px] border border-border bg-muted/40 p-5">
+          <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium mb-4">
             {t('assessment.whyThisMatters')}
-          </h4>
-
-          {hasAnyContext ? (
-            <div className="divide-y divide-border">
-              {sections.map((s) => (
-                <div key={s.key} className="first:pt-0 last:pb-0">
-                  {s.render()}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-[12px] text-muted-foreground text-center">
-              No context available for this question.
-            </p>
-          )}
+          </p>
+          {contextPanelInner}
         </div>
-      </aside>
+      </div>
+
+      {/* Right column: Persistent context panel (desktop only) */}
+      <div className="hidden md:block">
+        <div className="sticky top-4 h-fit rounded-[10px] border border-border bg-muted/40 p-5">
+          <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium mb-4">
+            {t('assessment.whyThisMatters')}
+          </p>
+          {contextPanelInner}
+        </div>
+      </div>
     </div>
   );
 }
