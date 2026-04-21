@@ -115,10 +115,24 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
     });
   }
 
+  const contextPanelInner = hasAnyContext ? (
+    <div className="divide-y divide-border">
+      {sections.map((s) => (
+        <div key={s.key} className="first:pt-0 last:pb-0">
+          {s.render()}
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className="text-[12px] text-muted-foreground text-center">
+      No context available for this question.
+    </p>
+  );
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-[60%_40%] gap-6">
       {/* Left column: Question + rating + notes */}
-      <div className="md:col-span-3 space-y-6">
+      <div className="space-y-6">
         {/* Question Header */}
         <div className="space-y-3">
           <div className="flex items-start gap-3">
