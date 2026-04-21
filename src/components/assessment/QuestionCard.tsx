@@ -240,7 +240,6 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
             </CardContent>
           </Card>
         )}
-      </div>
 
         {/* Mobile context block */}
         <div className="md:hidden mt-4 rounded-[10px] border border-border bg-muted/40 p-5">
