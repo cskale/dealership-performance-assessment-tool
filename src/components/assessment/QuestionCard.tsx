@@ -115,8 +115,22 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
     });
   }
 
+  const contextPanelInner = hasAnyContext ? (
+    <div className="divide-y divide-border">
+      {sections.map((s) => (
+        <div key={s.key} className="first:pt-0 last:pb-0">
+          {s.render()}
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className="text-[12px] text-muted-foreground text-center">
+      No context available for this question.
+    </p>
+  );
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-[60%_40%] gap-6">
       {/* Left column: Question + rating + notes */}
       <div className="space-y-6">
         {/* Question Header */}
@@ -226,46 +240,24 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
             </CardContent>
           </Card>
         )}
-      </div>
 
-      {/* Right column: Persistent context panel — desktop only */}
-      <div className="hidden md:block">
-        <div className="sticky top-4 p-5 rounded-[10px] border border-border bg-muted/40">
-          <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground mb-4">
+        {/* Mobile context block */}
+        <div className="md:hidden mt-4 rounded-[10px] border border-border bg-muted/40 p-5">
+          <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium mb-4">
             {t('assessment.whyThisMatters')}
           </p>
-
-          {hasAnyContext ? (
-            <div className="divide-y divide-border">
-              {sections.map((s) => (
-                <div key={s.key} className="first:pt-0 last:pb-0">
-                  {s.render()}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-[12px] text-muted-foreground text-center">
-              No context available for this question.
-            </p>
-          )}
+          {contextPanelInner}
         </div>
       </div>
 
-      {/* Mobile fallback: context panel below left column */}
-      <div className="md:hidden col-span-1 mt-2">
-        {hasAnyContext ? (
-          <div className="divide-y divide-border">
-            {sections.map((s) => (
-              <div key={s.key} className="first:pt-0 last:pb-0">
-                {s.render()}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-[12px] text-muted-foreground text-center">
-            No context available for this question.
+      {/* Right column: Persistent context panel (desktop only) */}
+      <div className="hidden md:block">
+        <div className="sticky top-4 h-fit rounded-[10px] border border-border bg-muted/40 p-5">
+          <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium mb-4">
+            {t('assessment.whyThisMatters')}
           </p>
-        )}
+          {contextPanelInner}
+        </div>
       </div>
     </div>
   );
