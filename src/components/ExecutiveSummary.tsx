@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { type ModuleBenchmark, sectionToModuleCode, inferPositionStatement } from "@/lib/benchmarkUtils";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, AlertTriangle, Target, Info, BarChart3, BookOpen } from "lucide-react";
@@ -36,6 +37,7 @@ interface ExecutiveSummaryProps {
   answers: Record<string, number | string | null>;
   completedAt: string;
   onNavigateToEncyclopedia?: (kpiKey: string) => void;
+  benchmarks?: Record<string, ModuleBenchmark>;
 }
 
 function getScoreInterpretation(score: number, language: string): string {
@@ -114,7 +116,7 @@ const DEPT_ABBREV_ES: Record<string, string> = {
   'parts-inventory': 'PTS',
 };
 
-export function ExecutiveSummary({ overallScore, scores, answers, completedAt, onNavigateToEncyclopedia }: ExecutiveSummaryProps) {
+export function ExecutiveSummary({ overallScore, scores, answers, completedAt, onNavigateToEncyclopedia, benchmarks }: ExecutiveSummaryProps) {
   const { t, language } = useLanguage();
 
   // Enhanced analytics from the new scoring engine
@@ -257,10 +259,6 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
     return generateSignals(answers as Record<string, number>, questionWeights).slice(0, 3);
   }, [answers]);
 
-  const MODULE_BENCHMARKS: Record<string, number> = {
-    'new-vehicle-sales': 72, 'used-vehicle-sales': 70,
-    'service-performance': 75, 'financial-operations': 68, 'parts-inventory': 65,
-  };
 
   const signalLabels: Record<string, string> = {
     PROCESS_NOT_STANDARDISED: 'Process standardisation gap',
@@ -384,8 +382,9 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
             {Object.entries(scores)
               .sort(([, a], [, b]) => b - a)
               .map(([dept, score]) => {
-                const benchmark = MODULE_BENCHMARKS[dept] ?? 72;
-                const gap = score - benchmark;
+                const moduleBenchmark = benchmarks?.[sectionToModuleCode(dept)];
+                const benchmarkMean = moduleBenchmark?.meanScore ?? 70;
+                const gap = Math.round(score - benchmarkMean);
                 const isAbove = gap >= 0;
                 const statusColor = score >= 75 ? 'border-success/30 bg-success/5'
                   : score >= 55 ? 'border-warning/30 bg-warning/5'
@@ -393,6 +392,9 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
                 const scoreColor = score >= 75 ? 'text-success'
                   : score >= 55 ? 'text-warning-foreground'
                   : 'text-destructive';
+                const positionStmt = moduleBenchmark
+                  ? inferPositionStatement(dept, score, moduleBenchmark, language as 'en' | 'de')
+                  : null;
                 return (
                   <div key={dept} className={`rounded-lg border p-4 text-center ${statusColor}`}>
                     <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">
@@ -405,6 +407,11 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
                       </span>
                     </div>
                     <Progress value={score} className="mt-2 h-1.5" />
+                    {positionStmt && (
+                      <div className="mt-2 text-left" style={{ fontSize: 11, color: 'hsl(var(--muted-foreground))' }}>
+                        {positionStmt}
+                      </div>
+                    )}
                   </div>
                 );
               })}

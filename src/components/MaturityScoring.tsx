@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { type ModuleBenchmark, sectionToModuleCode } from "@/lib/benchmarkUtils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -21,6 +22,7 @@ import { questionnaire } from "@/data/questionnaire";
 interface MaturityScoringProps {
   scores: Record<string, number>;
   answers: Record<string, any>;
+  benchmarks?: Record<string, ModuleBenchmark>;
 }
 
 interface MaturityLevel {
@@ -32,7 +34,7 @@ interface MaturityLevel {
   characteristics: string[];
 }
 
-export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
+export function MaturityScoring({ scores, answers, benchmarks }: MaturityScoringProps) {
   const { t, language } = useLanguage();
 
   const subCategoryData = useMemo(() =>
@@ -163,29 +165,21 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
     return m[overallMaturity.level] || maturityLevels[0];
   }, [overallMaturity, maturityLevels]);
 
-  /**
-   * Indicative benchmark based on European automotive dealer network observations.
-   * NOT statistically validated across a live dealer population.
-   * Segmented benchmarks by brand tier and market type are available in 
-   * enterprise configuration. Do not cite this value in OEM presentations 
-   * without the indicative qualifier.
-   */
-  const INDICATIVE_BENCHMARK = 75;
-
   const radarData = useMemo(() =>
     Object.entries(scores).map(([key, score]) => ({
       subject: getDepartmentName(key, language),
       score: score || 0,
-      benchmark: INDICATIVE_BENCHMARK,
+      benchmark: benchmarks?.[sectionToModuleCode(key)]?.meanScore ?? 70,
       fullMark: 100
     })),
-    [scores, language]
+    [scores, language, benchmarks]
   );
 
   const gapAnalysisData = useMemo(() => {
     return Object.entries(scores)
       .map(([dept, score]) => {
-        const gap = score - INDICATIVE_BENCHMARK;
+        const benchmarkMean = benchmarks?.[sectionToModuleCode(dept)]?.meanScore ?? 70;
+        const gap = score - benchmarkMean;
         let priorityLabel: string, priorityColor: string, priorityIcon: React.ReactNode;
         if (gap <= -30) {
           priorityLabel = language === 'de' ? 'Kritisch' : 'Critical';
@@ -200,10 +194,10 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
           priorityColor = 'bg-success/10 text-success';
           priorityIcon = <CheckCircle className="h-3 w-3 text-success inline mr-1" />;
         }
-        return { category: getDepartmentName(dept, language), yourScore: score, industryAvg: INDICATIVE_BENCHMARK, gap, priorityLabel, priorityColor, priorityIcon };
+        return { category: getDepartmentName(dept, language), yourScore: score, industryAvg: benchmarkMean, gap, priorityLabel, priorityColor, priorityIcon };
       })
       .sort((a, b) => a.gap - b.gap);
-  }, [scores, language]);
+  }, [scores, language, benchmarks]);
 
   const weightTooltipLines = useMemo(() =>
     Object.entries(DEPARTMENT_TO_CATEGORY).map(([dept, cat]) =>
@@ -240,8 +234,8 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
           </CardTitle>
           <p className="text-sm text-muted-foreground">
             {language === 'de'
-              ? 'Ihre Bewertung (blau) vs. indikativer Benchmark 75% (graue Linie)'
-              : 'Your assessment (blue) vs. indicative benchmark 75% (gray line)'}
+              ? 'Ihre Bewertung (blau) vs. indikativer Benchmark (graue Linie)'
+              : 'Your assessment (blue) vs. indicative benchmark (gray line)'}
           </p>
         </CardHeader>
         <CardContent>
@@ -251,7 +245,7 @@ export function MaturityScoring({ scores, answers }: MaturityScoringProps) {
                 <PolarGrid stroke="#e5e7eb" strokeDasharray="3 3" />
                 <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: '#6b7280' }} />
                 <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fontSize: 10, fill: '#9ca3af' }} />
-                <Radar name={language === 'de' ? 'Indikative Benchmark (75%) ⓘ' : 'Indicative Benchmark (75%) ⓘ'} dataKey="benchmark" stroke="#9ca3af" fill="#9ca3af" fillOpacity={0.15} strokeWidth={2} strokeDasharray="5 5" />
+                <Radar name={language === 'de' ? 'Indikative Benchmark ⓘ' : 'Indicative Benchmark ⓘ'} dataKey="benchmark" stroke="#9ca3af" fill="#9ca3af" fillOpacity={0.15} strokeWidth={2} strokeDasharray="5 5" />
                 <Radar name={language === 'de' ? 'Ihre Bewertung' : 'Your Score'} dataKey="score" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.2} strokeWidth={3} />
                 <Legend />
               </RadarChart>

@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { PDFExportData } from "@/lib/pdfReportGenerator";
 import { calculateWeightedScore, CATEGORY_WEIGHTS } from "@/lib/scoringEngine";
 import { generateCeilingInsights } from "@/lib/ceilingAnalysis";
+import { fetchModuleBenchmarks, STATIC_BENCHMARKS, type ModuleBenchmark } from "@/lib/benchmarkUtils";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +39,7 @@ export default function Results() {
   const [animatedScore, setAnimatedScore] = useState(0);
   const [showExportModal, setShowExportModal] = useState(false);
   const [pdfActions, setPdfActions] = useState<PDFExportData['actions']>([]);
+  const [benchmarks, setBenchmarks] = useState<Record<string, ModuleBenchmark>>(STATIC_BENCHMARKS);
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -121,6 +123,12 @@ export default function Results() {
     };
     loadData();
   }, [navigate, toast, t, user, routeAssessmentId]);
+
+  useEffect(() => {
+    const org = currentOrganization as any;
+    fetchModuleBenchmarks(org?.positioning ?? null, org?.business_model ?? null)
+      .then(setBenchmarks);
+  }, [currentOrganization]);
 
   const overallScore = useMemo(() => {
     if (!resultsData?.scores) return 0;
@@ -441,6 +449,7 @@ export default function Results() {
                 scores={resultsData.scores}
                 answers={resultsData.answers}
                 completedAt={resultsData.completedAt}
+                benchmarks={benchmarks}
                 onNavigateToEncyclopedia={(kpiKey) => {
                   setActiveTab("resources");
                   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -463,7 +472,7 @@ export default function Results() {
 
           <TabsContent value="maturity" className="space-y-6 animate-fade-in">
             <ErrorBoundary fallbackTitle={language === 'de' ? 'Reifegradanalyse nicht verfügbar' : 'Maturity analysis unavailable'}>
-              <MaturityScoring scores={resultsData.scores} answers={resultsData.answers} />
+              <MaturityScoring scores={resultsData.scores} answers={resultsData.answers} benchmarks={benchmarks} />
             </ErrorBoundary>
           </TabsContent>
 
