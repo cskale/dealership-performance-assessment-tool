@@ -171,10 +171,10 @@ export function CategoryAssessment({
           const value = answers[question.id];
           
           return (
-            <Card className="shadow-card rounded-xl" 
+            <Card 
               key={question.id} 
               ref={(el) => { questionRefs.current[question.id] = el; }}
-              className="border bg-white hover:shadow-sm transition-all duration-200"
+              className="shadow-card rounded-xl bg-white hover:shadow-elevated transition-all duration-200"
             >
               <CardContent className="p-5">
                 <div className="space-y-3 mb-4">
