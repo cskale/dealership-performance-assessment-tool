@@ -97,7 +97,7 @@
     --signal-success:       160 84% 39%;
     --signal-success-light: 153 85% 91%;
     --signal-critical:      0 84% 50%;
-    --signal-critical-light:0 86% 95%;
+    --signal-critical-light: 0 86% 95%;
     --dd-accent: 221 82% 51%;
     --dd-accent-light: var(--brand-100);
     --dd-accent-mid: var(--brand-200);
