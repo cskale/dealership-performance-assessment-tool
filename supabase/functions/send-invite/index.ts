@@ -84,7 +84,10 @@ serve(async (req) => {
       inviteToken = existingInvite.token
     } else {
       const { data: newInvite, error: insertError } = await supabaseAdmin.from('dealership_invites').insert({ dealership_id, organization_id, invited_email: normalizedEmail, invited_by: user.id, membership_role: inviteRole }).select('token').single()
-      if (insertError) return new Response(JSON.stringify({ error: insertError.message }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      if (insertError) {
+        console.error('Invite insert failed:', insertError.message);
+        return new Response(JSON.stringify({ error: 'Failed to create invitation. Please try again.' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
       inviteToken = newInvite.token
     }
 
