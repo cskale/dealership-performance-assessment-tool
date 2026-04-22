@@ -238,7 +238,7 @@ export default function DealerActions() {
 
         <div className="space-y-3">
           {actions.length === 0 ? (
-            <Card className="- bg-card shadow-card rounded-xl">
+            <Card className="bg-card shadow-card rounded-xl">
               <CardContent className="py-12 text-center">
                 <p className="text-muted-foreground">No action items yet</p>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -248,7 +248,7 @@ export default function DealerActions() {
             </Card>
           ) : (
             actions.map((action) => (
-              <Card key={action.id} className="- bg-card shadow-card rounded-xl">
+              <Card key={action.id} className="bg-card shadow-card rounded-xl">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
