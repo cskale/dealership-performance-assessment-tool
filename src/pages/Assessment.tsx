@@ -415,10 +415,10 @@ export default function Assessment() {
                     return (
                       <Card
                         key={section.id}
-                        className={`transition-all duration-200 cursor-pointer border ${
+                        className={`shadow-card rounded-xl transition-all duration-200 cursor-pointer ${
                           isCurrentSection
-                            ? "border-primary shadow-md bg-primary/5"
-                            : "border-border hover:border-primary/50 hover:shadow-sm"
+                            ? "border border-primary bg-primary/5"
+                            : "hover:shadow-elevated"
                         }`}
                         onClick={() => !isCompleting && handleNavigateToSection(sectionIndex, 0)}
                       >
