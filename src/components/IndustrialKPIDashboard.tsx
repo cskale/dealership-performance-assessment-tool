@@ -102,7 +102,7 @@ export function IndustrialKPIDashboard({
   return (
     <div className="space-y-8">
       {/* Assessment-based KPI context banner */}
-      <Card className="-2 -primary/20 bg-primary/5 shadow-sm shadow-card rounded-xl">
+      <Card className="bg-primary/5 shadow-sm shadow-card rounded-xl">
         <CardContent className="py-4">
           <div className="flex items-start gap-3">
             <Info className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
@@ -123,7 +123,7 @@ export function IndustrialKPIDashboard({
       </Card>
 
       {/* Performance Hero Card */}
-      <Card className="col-span-2 mb-6 -2 -primary/20 bg-gradient-to-r from-primary/5 to-primary/10 shadow-card rounded-xl">
+      <Card className="col-span-2 mb-6 bg-gradient-to-r from-primary/5 to-primary/10 shadow-card rounded-xl">
         <CardContent className="p-6 flex items-center gap-6">
           <div>
             <p className="text-sm text-muted-foreground mb-1">
@@ -201,7 +201,7 @@ export function IndustrialKPIDashboard({
               {kpis.map((kpi) => (
                 <Card 
                   key={kpi.key} 
-                  className="-l-4 -l-primary/50 hover:-l-primary cursor-pointer transition-colors shadow-card rounded-xl"
+                  className="cursor-pointer transition-colors shadow-card rounded-xl"
                   onClick={() => onNavigateToEncyclopedia?.(kpi.key)}
                 >
                   <CardContent className="p-4">

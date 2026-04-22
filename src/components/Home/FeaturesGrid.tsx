@@ -66,7 +66,7 @@ export function FeaturesGrid() {
             return (
               <Card 
                 key={index} 
-                className="-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] group shadow-card rounded-xl"
+                className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] group shadow-card rounded-xl"
               >
                 <CardContent className="p-8">
                   <div className={`w-16 h-16 ${feature.bgColor} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>

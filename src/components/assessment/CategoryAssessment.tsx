@@ -363,7 +363,7 @@ export function CategoryAssessment({
         })}
       </div>
 
-      <Card className="bg-primary text-primary-foreground -0 shadow-card rounded-xl">
+      <Card className="bg-primary text-primary-foreground shadow-card rounded-xl">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>

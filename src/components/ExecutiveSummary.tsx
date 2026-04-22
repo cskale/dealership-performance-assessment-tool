@@ -278,7 +278,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
       {narrative && (
         <div>
           <p className="text-sm text-muted-foreground mb-2">Assessment Overview</p>
-          <Card className="shadow-lg -l-4 -l-blue-500 shadow-card rounded-xl">
+          <Card className="shadow-lg shadow-card rounded-xl">
             <CardContent className="p-6">
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">{narrative.situation}</p>
 

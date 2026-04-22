@@ -221,7 +221,7 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
 
         {/* Notes Section */}
         {showNotes && (
-          <Card className="-primary/20 shadow-card rounded-xl">
+          <Card className="shadow-card rounded-xl">
             <CardContent className="p-4">
               <label className="block text-sm font-medium text-foreground mb-2">
                 {t('assessment.additionalNotes')}

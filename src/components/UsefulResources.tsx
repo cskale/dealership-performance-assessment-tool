@@ -260,7 +260,7 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
                 {materials.map((material, index) => {
                   const Icon = material.icon;
                   return (
-                    <Card key={index} className="hover:-primary/50 transition-colors cursor-pointer shadow-card rounded-xl">
+                    <Card key={index} className="transition-colors cursor-pointer shadow-card rounded-xl">
                       <CardContent className="p-4 flex items-start gap-4">
                         <div className="p-3 rounded-lg bg-primary/10">
                           <Icon className="h-5 w-5 text-primary" />

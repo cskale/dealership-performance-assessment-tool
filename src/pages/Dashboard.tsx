@@ -339,7 +339,7 @@ const Dashboard = () => {
         </section>
 
         {/* AI Insights */}
-        <Card className="-primary/20 shadow-card rounded-xl">
+        <Card className="shadow-card rounded-xl">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />

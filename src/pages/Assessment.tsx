@@ -456,7 +456,7 @@ export default function Assessment() {
                   })}
                   
                   {/* Overall Progress Card */}
-                  <Card className="-primary/20 bg-primary/5 mt-4 shadow-card rounded-xl">
+                  <Card className="bg-primary/5 mt-4 shadow-card rounded-xl">
                     <CardContent className="p-3">
                       <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
                         <Check className="h-4 w-4" />

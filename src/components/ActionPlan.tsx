@@ -458,7 +458,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
     <div className="space-y-4">
       {/* View-only banner */}
       {!canEdit && (
-        <Card className="bg-muted/50 -muted shadow-card rounded-xl">
+        <Card className="bg-muted/50 shadow-card rounded-xl">
           <CardContent className="py-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Eye className="h-4 w-4" />

@@ -45,7 +45,7 @@ export function StatsSection() {
             return (
               <Card 
                 key={index} 
-                className="-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 shadow-card rounded-xl"
+                className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 shadow-card rounded-xl"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <CardContent className="p-6 text-center">
