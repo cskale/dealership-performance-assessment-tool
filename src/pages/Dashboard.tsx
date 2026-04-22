@@ -169,7 +169,7 @@ const Dashboard = () => {
       </div>
 
       {hasAssessments === false ? (
-        <main className="max-w-7xl mx-auto px-6 py-12">
+        <main className="max-w-7xl mx-auto px-6 py-6">
           <div className="max-w-[640px] mx-auto p-10 px-12 border rounded-[12px] bg-card">
             <div>
               <h1 className="text-[20px] font-semibold text-foreground">
@@ -210,7 +210,7 @@ const Dashboard = () => {
                 return (
                   <div key={i} className="flex flex-col gap-2">
                     <Icon className="h-5 w-5 text-primary" />
-                    <h3 className="text-[13px] font-medium text-foreground">{b.heading}</h3>
+                    <h3 className="text-sm font-medium text-foreground">{b.heading}</h3>
                     <p className="text-[12px] text-muted-foreground leading-snug">{b.desc}</p>
                   </div>
                 );
@@ -237,7 +237,7 @@ const Dashboard = () => {
                     'Parts obsolescence percentage',
                   ]
               ).map((item, i) => (
-                <li key={i} className="flex items-start gap-2 text-[13px] text-foreground leading-[1.6]">
+                <li key={i} className="flex items-start gap-2 text-sm text-foreground leading-[1.6]">
                   <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground mt-1 shrink-0" />
                   <span>{item}</span>
                 </li>
@@ -253,7 +253,7 @@ const Dashboard = () => {
           </div>
         </main>
       ) : (
-      <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+      <main className="max-w-7xl mx-auto px-6 py-6 space-y-8">
         {/* Preview banner */}
         <div className="flex items-start gap-3 p-4 rounded-lg border border-warning/30 bg-warning/5">
           <Info className="h-4 w-4 text-warning-foreground mt-0.5 shrink-0" />
