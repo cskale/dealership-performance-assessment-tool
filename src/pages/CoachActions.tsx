@@ -192,7 +192,7 @@ export default function CoachActions() {
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
           {dealerStats.map((stat) => (
-            <Card key={stat.dealerId} className="border-border bg-card">
+            <Card key={stat.dealerId} className="bg-card shadow-card rounded-xl">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   {stat.dealerName}
@@ -206,7 +206,7 @@ export default function CoachActions() {
           ))}
         </div>
 
-        <Card className="border-border bg-card">
+        <Card className="bg-card shadow-card rounded-xl">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-base font-medium">Action Items</CardTitle>

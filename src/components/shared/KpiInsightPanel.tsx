@@ -88,7 +88,7 @@ export function KpiInsightPanel({
     : [];
 
   return (
-    <Card className={cn("border border-border/40 bg-card/50", className)}>
+    <Card className={cn("shadow-card rounded-xl bg-card/50", className)}>
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
         <CollapsibleTrigger asChild>
           <button className="w-full text-left p-4 hover:bg-muted/30 transition-colors duration-150 rounded-lg">

@@ -122,7 +122,7 @@ export function CausalChainDiagram({ signals }: CausalChainProps) {
 
   if (chains.length === 0) {
     return (
-      <Card className="shadow-sm border-success/30 bg-success/5">
+      <Card className="shadow-sm -success/30 bg-success/5 shadow-card rounded-xl">
         <CardHeader className="pb-3">
           <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
             {sectionTitle}
@@ -143,7 +143,7 @@ export function CausalChainDiagram({ signals }: CausalChainProps) {
   }
 
   return (
-    <Card className="shadow-lg border">
+    <Card className="shadow-lg shadow-card rounded-xl">
       <CardHeader className="pb-3">
         <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
           {sectionTitle}

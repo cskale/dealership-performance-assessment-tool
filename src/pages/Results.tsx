@@ -239,7 +239,7 @@ export default function Results() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-muted">
-        <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="text-center space-y-6">
             <Skeleton className="h-8 w-48 mx-auto" />
             <Skeleton className="h-4 w-64 mx-auto" />
@@ -256,7 +256,7 @@ export default function Results() {
     return (
       <div className="min-h-screen bg-muted">
         <div className="flex items-center justify-center min-h-[60vh]">
-          <Card className="max-w-md w-full mx-4">
+          <Card className="max-w-md w-full mx-4 shadow-card rounded-xl">
             <CardContent className="pt-8 pb-6 text-center space-y-4">
               <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
                 <AlertCircle className="h-6 w-6 text-destructive" />
@@ -296,7 +296,7 @@ export default function Results() {
     <div className="min-h-screen bg-muted">
       
       
-      <div className="max-w-7xl mx-auto px-6 py-8" id="results-content">
+      <div className="max-w-7xl mx-auto px-6 py-6" id="results-content">
 
         {/* Results Hero */}
         <div className="mb-8">
@@ -381,7 +381,7 @@ export default function Results() {
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                       <span className="text-h4 font-bold text-foreground">{animatedScore}</span>
-                      <span className="text-[10px] text-muted-foreground">/100</span>
+                      <span className="text-xs text-muted-foreground">/100</span>
                     </div>
                   </div>
                   <div className={labelClass}>{language === 'de' ? 'Gesamtbewertung' : 'Overall Score'}</div>

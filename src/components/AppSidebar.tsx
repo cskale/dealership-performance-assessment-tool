@@ -83,12 +83,12 @@ export function AppSidebar() {
       'flex items-center gap-2.5 py-[9px] text-[13px] transition-all cursor-pointer',
       collapsed ? 'px-0 justify-center' : 'px-5',
       isActive(path)
-        ? 'bg-[hsl(221,82%,51%)]/20 text-white border-r-2 border-[hsl(var(--dd-accent))]'
+        ? 'bg-[hsl(var(--brand-500))]/10 border-r-2 border-[hsl(var(--brand-500))] text-white'
         : 'text-white/55 hover:bg-white/[0.05] hover:text-white/85'
     );
 
   const iconClass = (path: string) =>
-    cn('w-4 h-4 shrink-0', isActive(path) ? 'text-[hsl(var(--dd-accent))]' : 'opacity-70');
+    cn('w-4 h-4 shrink-0', isActive(path) ? 'text-[hsl(var(--brand-500))]' : 'opacity-70');
 
   const sections = [
     {
@@ -130,7 +130,7 @@ export function AppSidebar() {
       {/* Header */}
       <div className={cn('py-4 border-b border-white/[0.06]', collapsed ? 'px-2' : 'px-5')}>
         <Link to="/app/dashboard" className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-[hsl(var(--dd-accent))] flex items-center justify-center shrink-0">
+          <div className="w-7 h-7 rounded-lg bg-[hsl(var(--brand-500))] flex items-center justify-center shrink-0">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <rect x="1" y="1" width="5" height="5" rx="1" fill="white" />
               <rect x="8" y="1" width="5" height="5" rx="1" fill="white" />
@@ -162,7 +162,7 @@ export function AppSidebar() {
                 <item.icon className={iconClass(item.path)} />
                 {!collapsed && <span className="flex-1">{item.label}</span>}
                 {!collapsed && 'badge' in item && item.badge != null && item.badge > 0 && (
-                  <span className="min-w-[18px] h-[18px] rounded-full bg-[hsl(var(--dd-accent))]/30 text-[hsl(var(--dd-accent))] text-[10px] font-medium flex items-center justify-center">
+                  <span className="min-w-[18px] h-[18px] rounded-full bg-[hsl(var(--brand-500))]/30 text-[hsl(var(--brand-500))] text-[10px] font-medium flex items-center justify-center">
                     {item.badge}
                   </span>
                 )}
@@ -175,7 +175,7 @@ export function AppSidebar() {
       {/* Footer */}
       <div className={cn('mt-auto border-t border-white/[0.06]', collapsed ? 'p-2' : 'p-5')}>
         <div className="flex items-center gap-2.5">
-          <div className="w-[30px] h-[30px] rounded-full bg-gradient-to-br from-[hsl(var(--dd-accent))] to-indigo-500 flex items-center justify-center text-[11px] font-semibold text-white shrink-0">
+          <div className="w-[30px] h-[30px] rounded-full bg-gradient-to-br from-[hsl(var(--brand-500))] to-indigo-500 flex items-center justify-center text-[11px] font-semibold text-white shrink-0">
             {getUserInitials()}
           </div>
           {!collapsed && (

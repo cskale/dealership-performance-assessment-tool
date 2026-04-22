@@ -43,7 +43,7 @@ export function ScoreDecomposition({ scores, overallScore }: ScoreDecompositionP
   const ptsLabel = language === 'de' ? 'Pkt' : 'pts';
 
   return (
-    <Card className="shadow-sm">
+    <Card className="shadow-sm shadow-card rounded-xl">
       <CardContent className="p-6">
         <div className="flex items-baseline justify-between mb-4">
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">

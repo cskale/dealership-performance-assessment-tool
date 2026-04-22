@@ -58,10 +58,10 @@ export function SectionNavigation({
         return (
           <Card
             key={section.id}
-            className={`transition-all duration-200 cursor-pointer hover:scale-[1.02] border bg-white ${
+            className={`shadow-card rounded-xl transition-all duration-200 cursor-pointer hover:scale-[1.02] bg-white ${
               isCurrentSection 
-                ? "border-l-4 border-l-primary shadow-sm" 
-                : "hover:shadow-sm"
+                ? "border-l-4 border-l-primary" 
+                : "hover:shadow-elevated"
             }`}
             onClick={() => onNavigate(sectionIndex, 0)}
           >
@@ -143,7 +143,7 @@ export function SectionNavigation({
       })}
 
       {/* Overall Progress Card */}
-      <Card className="border bg-muted/20">
+      <Card className="bg-muted/20 shadow-card rounded-xl">
         <CardContent className="p-3">
           <div className="space-y-2">
             <div className="flex justify-between items-center">

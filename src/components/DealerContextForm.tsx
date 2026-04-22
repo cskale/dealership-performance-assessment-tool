@@ -171,7 +171,7 @@ export function DealerContextForm({ onComplete, existingContext }: DealerContext
   const isFormValid = formData.brandRepresented && formData.marketType && formData.annualUnitSales && parseInt(formData.annualUnitSales) > 0;
 
   return (
-    <Card className="max-w-2xl mx-auto shadow-lg">
+    <Card className="max-w-2xl mx-auto shadow-lg shadow-card rounded-xl">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl flex items-center justify-center gap-2">
           <Building2 className="h-6 w-6 text-primary" />

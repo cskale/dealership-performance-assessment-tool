@@ -306,7 +306,7 @@ const ResourceHub = () => {
                 </div>
               </div>
             ) : (
-              <Card>
+              <Card className="shadow-card rounded-xl">
                 <CardContent className="py-12 text-center text-muted-foreground">
                   <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>{tr('noRecommendations')}</p>
@@ -318,7 +318,7 @@ const ResourceHub = () => {
           {/* All Resources Tab */}
           <TabsContent value="all">
             {/* Filters */}
-            <Card className="mb-6">
+            <Card className="mb-6 shadow-card rounded-xl">
               <CardContent className="p-4">
                 <div className="flex flex-col sm:flex-row gap-4">
                   <div className="relative flex-1">
@@ -372,7 +372,7 @@ const ResourceHub = () => {
                 ))}
               </div>
             ) : (
-              <Card>
+              <Card className="shadow-card rounded-xl">
                 <CardContent className="py-12 text-center text-muted-foreground">
                   <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>{tr('noResources')}</p>
@@ -395,7 +395,7 @@ const ResourceHub = () => {
                 ))}
               </div>
             ) : (
-              <Card>
+              <Card className="shadow-card rounded-xl">
                 <CardContent className="py-12 text-center text-muted-foreground">
                   <Bookmark className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>{tr('noSavedResources')}</p>

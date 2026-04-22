@@ -130,8 +130,7 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
   );
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}
-         className="question-card-grid">
+    <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6">
       {/* Left column: Question + rating + notes */}
       <div className="space-y-6">
         {/* Question Header */}
@@ -222,7 +221,7 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
 
         {/* Notes Section */}
         {showNotes && (
-          <Card className="border-primary/20">
+          <Card className="shadow-card rounded-xl">
             <CardContent className="p-4">
               <label className="block text-sm font-medium text-foreground mb-2">
                 {t('assessment.additionalNotes')}
