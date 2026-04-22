@@ -99,6 +99,8 @@
     --signal-critical:      0 84% 50%;
     --signal-critical-light:0 86% 95%;
     --dd-accent: 221 82% 51%;
+    --dd-accent-light: var(--brand-100);
+    --dd-accent-mid: var(--brand-200);
     --dd-amber: var(--signal-warning);
     --dd-amber-light: var(--signal-warning-light);
     --dd-green: var(--signal-success);
