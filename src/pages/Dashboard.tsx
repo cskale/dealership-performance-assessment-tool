@@ -64,7 +64,7 @@ const Dashboard = () => {
     };
 
     return (
-      <Card className="hover-lift">
+      <Card className="hover-lift shadow-card rounded-xl">
         <CardContent className="p-5">
           <div className="flex items-start justify-between mb-3">
             <h4 className="text-body-sm text-muted-foreground font-medium">{title}</h4>
@@ -339,7 +339,7 @@ const Dashboard = () => {
         </section>
 
         {/* AI Insights */}
-        <Card className="border-primary/20">
+        <Card className="-primary/20 shadow-card rounded-xl">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
@@ -369,7 +369,7 @@ const Dashboard = () => {
         </Card>
 
         {/* Overall Performance */}
-        <Card>
+        <Card className="shadow-card rounded-xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-primary" />

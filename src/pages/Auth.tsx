@@ -61,7 +61,7 @@ const Auth = () => {
           </p>
         </div>
 
-        <Card className="shadow-elevated">
+        <Card className="shadow-elevated shadow-card rounded-xl">
           <CardContent className="pt-6 space-y-5">
             {/* Social Auth */}
             <div className="space-y-2.5">

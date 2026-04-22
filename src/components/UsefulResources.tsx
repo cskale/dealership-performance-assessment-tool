@@ -149,7 +149,7 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
 
         {/* Learning Library Tab */}
         <TabsContent value="learning" className="space-y-6">
-          <Card>
+          <Card className="shadow-card rounded-xl">
             <CardHeader>
               <CardTitle className="text-lg">
                 {language === 'de' ? 'Kuratierte Lernressourcen für Ihre Verbesserungsbereiche' : 'Curated Learning Resources for Your Improvement Areas'}
@@ -244,7 +244,7 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
 
         {/* Support Materials Tab */}
         <TabsContent value="support" className="space-y-6">
-          <Card>
+          <Card className="shadow-card rounded-xl">
             <CardHeader>
               <CardTitle className="text-lg">
                 {language === 'de' ? 'Unterstützungsmaterialien' : 'Support Materials'}
@@ -260,7 +260,7 @@ export function UsefulResources({ scores }: UsefulResourcesProps) {
                 {materials.map((material, index) => {
                   const Icon = material.icon;
                   return (
-                    <Card key={index} className="hover:border-primary/50 transition-colors cursor-pointer">
+                    <Card key={index} className="hover:-primary/50 transition-colors cursor-pointer shadow-card rounded-xl">
                       <CardContent className="p-4 flex items-start gap-4">
                         <div className="p-3 rounded-lg bg-primary/10">
                           <Icon className="h-5 w-5 text-primary" />

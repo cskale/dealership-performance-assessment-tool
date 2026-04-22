@@ -69,7 +69,7 @@ export function AchievementsSection() {
 
           {/* Right side - Mockup Preview */}
           <div className="relative">
-            <Card className="shadow-2xl border-0 overflow-hidden transform rotate-2 hover:rotate-0 transition-transform duration-500">
+            <Card className="shadow-2xl -0 overflow-hidden transform rotate-2 hover:rotate-0 transition-transform duration-500 shadow-card rounded-xl">
               <CardContent className="p-0">
                 <div className="bg-gradient-to-br from-purple-600 to-blue-600 p-6">
                   <div className="text-white/80 text-sm font-medium mb-2">

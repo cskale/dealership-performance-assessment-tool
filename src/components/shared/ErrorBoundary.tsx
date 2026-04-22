@@ -63,7 +63,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       } = this.props;
 
       return (
-        <Card className="border-destructive/30 bg-destructive/5">
+        <Card className="-destructive/30 bg-destructive/5 shadow-card rounded-xl">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base text-destructive">
               <AlertTriangle className="h-5 w-5" />

@@ -32,7 +32,7 @@ export function CeilingInsightsPanel({ insights }: CeilingInsightsPanelProps) {
 
   if (insights.length === 0) {
     return (
-      <Card className="shadow-lg border">
+      <Card className="shadow-lg shadow-card rounded-xl">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
             <Target className="h-5 w-5 text-primary" />
@@ -49,7 +49,7 @@ export function CeilingInsightsPanel({ insights }: CeilingInsightsPanelProps) {
   const visibleInsights = showAll ? insights : insights.slice(0, 3);
 
   return (
-    <Card className="shadow-lg border">
+    <Card className="shadow-lg shadow-card rounded-xl">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
           <Target className="h-5 w-5 text-primary" />

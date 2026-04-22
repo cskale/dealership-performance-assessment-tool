@@ -66,7 +66,7 @@ export default function AcceptInvite() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md shadow-card rounded-xl">
         <CardHeader className="text-center">
           <CardTitle>Dealership Invite</CardTitle>
         </CardHeader>

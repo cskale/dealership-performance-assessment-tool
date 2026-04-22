@@ -251,7 +251,7 @@ export default function OemDashboard() {
         {summaryCards.map((card, i) => (
           <Card
             key={card.label}
-            className="opacity-0 animate-fade-in"
+            className="opacity-0 animate-fade-in shadow-card rounded-xl"
             style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'forwards' }}
           >
             <CardContent className="p-4">
@@ -270,7 +270,7 @@ export default function OemDashboard() {
       </div>
 
       {/* Leaderboard */}
-      <Card>
+      <Card className="shadow-card rounded-xl">
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold">{t('oem.leaderboard')}</CardTitle>
         </CardHeader>

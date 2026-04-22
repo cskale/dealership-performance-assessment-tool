@@ -133,7 +133,7 @@ export function CategoryAssessment({
 
   return (
     <div className="space-y-4">
-      <Card className="border bg-white">
+      <Card className="bg-white shadow-card rounded-xl">
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
@@ -171,7 +171,7 @@ export function CategoryAssessment({
           const value = answers[question.id];
           
           return (
-            <Card 
+            <Card className="shadow-card rounded-xl" 
               key={question.id} 
               ref={(el) => { questionRefs.current[question.id] = el; }}
               className="border bg-white hover:shadow-sm transition-all duration-200"
@@ -257,7 +257,7 @@ export function CategoryAssessment({
                 )}
 
                 {(question.purpose || question.situationAnalysis || question.linkedKPIs || question.benefits) && (
-                  <Card className="border bg-card mb-4">
+                  <Card className="bg-card mb-4 shadow-card rounded-xl">
                     <CardContent className="p-0">
                       <Collapsible 
                         open={expandedQuestions.has(question.id)}
@@ -327,7 +327,7 @@ export function CategoryAssessment({
                   </Card>
                 )}
 
-                <Card className="border bg-white">
+                <Card className="bg-white shadow-card rounded-xl">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <MessageSquare className="h-4 w-4 text-primary" />
@@ -363,7 +363,7 @@ export function CategoryAssessment({
         })}
       </div>
 
-      <Card className="bg-primary text-primary-foreground border-0">
+      <Card className="bg-primary text-primary-foreground -0 shadow-card rounded-xl">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>

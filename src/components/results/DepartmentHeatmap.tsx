@@ -156,7 +156,7 @@ export function DepartmentHeatmap({ scores, answers, subCategoryData }: HeatmapP
   const columnHeaders = rows[0]?.kpis.map(k => k.kpiName) ?? [];
 
   return (
-    <Card className="shadow-lg border">
+    <Card className="shadow-lg shadow-card rounded-xl">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
           <BarChart3 className="h-5 w-5 text-primary" />

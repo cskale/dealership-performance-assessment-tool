@@ -166,7 +166,7 @@ export default function Onboarding() {
         <div className="max-w-3xl mx-auto">
           {/* Existing Dealerships in Org */}
           {existingDealerships.length > 0 && activePath === 'choose' && (
-            <Card className="border-2 mb-6">
+            <Card className="-2 mb-6 shadow-card rounded-xl">
               <CardHeader>
                 <CardTitle className="text-lg">Your Organization's Dealerships</CardTitle>
                 <CardDescription>
@@ -205,7 +205,7 @@ export default function Onboarding() {
               </p>
               <div className="grid md:grid-cols-2 gap-6">
                 {/* New Dealership Card */}
-                <Card className="border-2 hover:border-primary/50 transition-colors cursor-pointer group"
+                <Card className="-2 hover:-primary/50 transition-colors cursor-pointer group shadow-card rounded-xl"
                       onClick={() => setActivePath('create')}>
                   <CardHeader className="text-center pb-2">
                     <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
@@ -224,7 +224,7 @@ export default function Onboarding() {
                 </Card>
 
                 {/* Join Existing Card */}
-                <Card className="border-2 hover:border-primary/50 transition-colors cursor-pointer group"
+                <Card className="-2 hover:-primary/50 transition-colors cursor-pointer group shadow-card rounded-xl"
                       onClick={() => setActivePath('join')}>
                   <CardHeader className="text-center pb-2">
                     <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
@@ -247,7 +247,7 @@ export default function Onboarding() {
 
           {/* Create Dealership Form */}
           {activePath === 'create' && (
-            <Card className="border-2">
+            <Card className="-2 shadow-card rounded-xl">
               <CardHeader className="text-center pb-2">
                 <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Car className="h-8 w-8 text-primary" />
@@ -352,7 +352,7 @@ export default function Onboarding() {
 
           {/* Join Existing - Static Instructions */}
           {activePath === 'join' && (
-            <Card className="border-2">
+            <Card className="-2 shadow-card rounded-xl">
               <CardHeader className="text-center pb-2">
                 <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Mail className="h-8 w-8 text-primary" />

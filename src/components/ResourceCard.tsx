@@ -55,7 +55,7 @@ export function ResourceCard({ resource, isSaved, onToggleSave }: ResourceCardPr
   };
 
   return (
-    <Card className="group bg-card border-border/50 rounded-xl hover:border-primary/40 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200 hover:-translate-y-0.5">
+    <Card className="group bg-card -/50 rounded-xl hover:-primary/40 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200 hover:-translate-y-0.5 shadow-card">
       <CardContent className="p-4 space-y-3">
         {/* Top row: icon + type badge + recommended */}
         <div className="flex items-start justify-between gap-2">

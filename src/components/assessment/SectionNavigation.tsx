@@ -143,7 +143,7 @@ export function SectionNavigation({
       })}
 
       {/* Overall Progress Card */}
-      <Card className="border bg-muted/20">
+      <Card className="bg-muted/20 shadow-card rounded-xl">
         <CardContent className="p-3">
           <div className="space-y-2">
             <div className="flex justify-between items-center">

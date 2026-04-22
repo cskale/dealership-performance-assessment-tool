@@ -288,7 +288,7 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
   // ─── CARD VIEW (complete + not editing) ───
   if (complete && !editMode) {
     return (
-      <Card className="border-border">
+      <Card className="- shadow-card rounded-xl">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -404,7 +404,7 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
         )}
 
         {/* Section 1: Brand & Authorization */}
-        <Card className="border-border">
+        <Card className="- shadow-card rounded-xl">
           <CardContent className="pt-6 space-y-6">
             <SettingsSection icon={Building2} title="Brand & Authorization" description="Define your OEM portfolio and authorization status">
               <div className="space-y-5">
@@ -474,7 +474,7 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
         </Card>
 
         {/* Section 2: Dealer Footprint */}
-        <Card className="border-border">
+        <Card className="- shadow-card rounded-xl">
           <CardContent className="pt-6 space-y-6">
             <SettingsSection icon={Network} title="Dealer Footprint" description="Network structure and geographic presence">
               <div className="space-y-5">
@@ -504,7 +504,7 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
         </Card>
 
         {/* Section 3: Operational Scope */}
-        <Card className="border-border">
+        <Card className="- shadow-card rounded-xl">
           <CardContent className="pt-6 space-y-6">
             <SettingsSection icon={Briefcase} title="Operational Scope" description="Business model, product segments, and operational focus">
               <div className="space-y-5">
@@ -557,7 +557,7 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
         </Card>
 
         {/* Section 4: Localization */}
-        <Card className="border-border">
+        <Card className="- shadow-card rounded-xl">
           <CardContent className="pt-6 space-y-6">
             <SettingsSection icon={Languages} title="Localization" description="Language used in exports, reports, and PDF generation">
               <div className="space-y-2 max-w-sm">
@@ -579,7 +579,7 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
         </Card>
 
         {/* Section 5: Brand Identity */}
-        <Card className="border-border">
+        <Card className="- shadow-card rounded-xl">
           <CardContent className="pt-6 space-y-6">
             <SettingsSection icon={Palette} title="Brand Identity" description="Logo used in reports and exports">
               <div className="flex items-center gap-5">
