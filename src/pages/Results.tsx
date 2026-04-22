@@ -9,6 +9,7 @@ import { FileText, RefreshCw, ArrowLeft, ClipboardList, BarChart3, Award, CheckS
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { ExecutiveSummary } from "@/components/ExecutiveSummary";
+import { CeilingInsightsPanel } from "@/components/results/CeilingInsightsPanel";
 import { IndustrialKPIDashboard } from "@/components/IndustrialKPIDashboard";
 import { MaturityScoring } from "@/components/MaturityScoring";
 import { ActionPlan } from "@/components/ActionPlan";
@@ -135,7 +136,6 @@ export default function Results() {
     return calculateWeightedScore(resultsData.scores);
   }, [resultsData?.scores]);
 
-  // TODO CC-12: ceilingInsights ready — render in Results UI (next session)
   const ceilingInsights = useMemo(() => {
     if (!resultsData?.answers || !resultsData?.scores) return [];
     return generateCeilingInsights(
@@ -456,6 +456,11 @@ export default function Results() {
                 }}
               />
             </ErrorBoundary>
+            {ceilingInsights.length > 0 && (
+              <ErrorBoundary fallbackTitle={language === 'de' ? 'Deckenanalyse nicht verfügbar' : 'Ceiling analysis unavailable'}>
+                <CeilingInsightsPanel insights={ceilingInsights} />
+              </ErrorBoundary>
+            )}
           </TabsContent>
 
           <TabsContent value="kpi" className="space-y-6 animate-fade-in">
