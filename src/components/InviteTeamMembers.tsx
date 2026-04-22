@@ -192,7 +192,7 @@ export function InviteTeamMembers() {
   if (!canInvite) return null;
 
   return (
-    <Card>
+    <Card className="shadow-card rounded-xl">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <UserPlus className="h-5 w-5" />

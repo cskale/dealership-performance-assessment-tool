@@ -209,7 +209,7 @@ export function MaturityScoring({ scores, answers, benchmarks }: MaturityScoring
   return (
     <div className="space-y-6">
       {/* Radar Chart */}
-      <Card className="shadow-card">
+      <Card className="shadow-card rounded-xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             {language === 'de' ? 'Leistungsradar' : 'Performance Radar'}
@@ -255,7 +255,7 @@ export function MaturityScoring({ scores, answers, benchmarks }: MaturityScoring
       </Card>
 
       {/* Gap Analysis Table */}
-      <Card className="shadow-card">
+      <Card className="shadow-card rounded-xl">
         <CardHeader>
           <CardTitle>{language === 'de' ? 'Lückenanalyse' : 'Performance Gap Analysis'}</CardTitle>
           <p className="text-sm text-muted-foreground">
@@ -358,7 +358,7 @@ export function MaturityScoring({ scores, answers, benchmarks }: MaturityScoring
       </Card>
 
       {/* Roadmap */}
-      <Card className="bg-muted border border-border">
+      <Card className="bg-muted - shadow-card rounded-xl">
         <CardHeader>
           <CardTitle className="text-foreground flex items-center gap-2">
             <Zap className="h-5 w-5" />

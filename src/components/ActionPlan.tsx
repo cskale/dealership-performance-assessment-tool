@@ -443,7 +443,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
 
   if (loading) {
     return (
-      <Card>
+      <Card className="shadow-card rounded-xl">
         <CardContent className="flex items-center justify-center py-12">
           <div className="text-center space-y-4">
             <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
@@ -458,7 +458,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
     <div className="space-y-4">
       {/* View-only banner */}
       {!canEdit && (
-        <Card className="bg-muted/50 border-muted">
+        <Card className="bg-muted/50 shadow-card rounded-xl">
           <CardContent className="py-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Eye className="h-4 w-4" />

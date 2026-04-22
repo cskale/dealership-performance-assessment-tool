@@ -242,7 +242,7 @@ export default function CoachDashboard() {
         {filteredDealers.map((dealer, i) => (
           <Card
             key={dealer.dealershipId}
-            className="cursor-pointer hover:shadow-md transition-shadow opacity-0 animate-fade-in"
+            className="cursor-pointer hover:shadow-md transition-shadow opacity-0 animate-fade-in shadow-card rounded-xl"
             style={{ animationDelay: `${Math.min(i, 4) * 50}ms`, animationFillMode: 'forwards' }}
             onClick={() => {
               if (dealer.latestAssessmentId) {
@@ -294,7 +294,7 @@ export default function CoachDashboard() {
       </div>
 
       {/* Score Trend Chart */}
-      <Card>
+      <Card className="shadow-card rounded-xl">
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold">{t('coach.scoreTrend')}</CardTitle>
           <p className="text-xs text-muted-foreground">{t('coach.selectDealers')}</p>

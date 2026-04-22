@@ -328,7 +328,7 @@ export default function Assessment() {
       {/* Completion Overlay */}
       {isCompleting && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-          <Card className="w-full max-w-md mx-4">
+          <Card className="w-full max-w-md mx-4 shadow-card rounded-xl">
             <CardContent className="pt-6">
               <div className="text-center space-y-4">
                 <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
@@ -397,7 +397,7 @@ export default function Assessment() {
           {/* Left Sidebar - Sections Navigation */}
           <div className="w-80 flex-shrink-0">
             <div className="sticky top-24">
-              <Card className="border">
+              <Card className="shadow-card rounded-xl">
                 <CardHeader className="pb-4">
                   <div className="flex items-center gap-2">
                     <BarChart3 className="h-5 w-5 text-primary" />
@@ -415,10 +415,10 @@ export default function Assessment() {
                     return (
                       <Card
                         key={section.id}
-                        className={`transition-all duration-200 cursor-pointer border ${
+                        className={`shadow-card rounded-xl transition-all duration-200 cursor-pointer ${
                           isCurrentSection
-                            ? "border-primary shadow-md bg-primary/5"
-                            : "border-border hover:border-primary/50 hover:shadow-sm"
+                            ? "border border-primary bg-primary/5"
+                            : "hover:shadow-elevated"
                         }`}
                         onClick={() => !isCompleting && handleNavigateToSection(sectionIndex, 0)}
                       >
@@ -456,7 +456,7 @@ export default function Assessment() {
                   })}
                   
                   {/* Overall Progress Card */}
-                  <Card className="border-primary/20 bg-primary/5 mt-4">
+                  <Card className="bg-primary/5 mt-4 shadow-card rounded-xl">
                     <CardContent className="p-3">
                       <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
                         <Check className="h-4 w-4" />
@@ -489,7 +489,7 @@ export default function Assessment() {
             
             {/* Section Navigation Buttons */}
             {translatedSections.length > 1 && (
-              <Card className="mt-6 bg-muted/50">
+              <Card className="mt-6 bg-muted/50 shadow-card rounded-xl">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <Button

@@ -278,7 +278,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
       {narrative && (
         <div>
           <p className="text-sm text-muted-foreground mb-2">Assessment Overview</p>
-          <Card className="shadow-lg border-l-4 border-l-blue-500">
+          <Card className="shadow-lg shadow-card rounded-xl">
             <CardContent className="p-6">
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">{narrative.situation}</p>
 
@@ -303,7 +303,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
 
       {/* SECTION 1D — Systemic Patterns (moved up per spec) */}
       {systemicPatterns.length > 0 && (
-        <Card className="shadow-lg border">
+        <Card className="shadow-lg shadow-card rounded-xl">
           <CardHeader className="pb-3">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
               {language === 'de' ? 'Systemische Muster' : 'Systemic Patterns'}
@@ -371,7 +371,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
       )}
 
       {/* SECTION 2 — Department Score Cards */}
-      <Card className="shadow-lg border">
+      <Card className="shadow-lg shadow-card rounded-xl">
         <CardHeader>
           <CardTitle className="text-base font-semibold text-foreground">
             Department Performance
@@ -421,7 +421,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
 
       {/* SECTION 3 — Top Findings */}
       {topSignals.length > 0 && (
-        <Card className="shadow-lg border">
+        <Card className="shadow-lg shadow-card rounded-xl">
           <CardHeader>
             <CardTitle className="text-base font-semibold text-foreground">
               Top Findings
