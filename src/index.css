@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -92,15 +92,21 @@
     --dd-paper: 210 20% 98%;
 
     /* ── DD Semantic ── */
+    --signal-warning:       38 92% 45%;
+    --signal-warning-light: 43 96% 90%;
+    --signal-success:       160 84% 39%;
+    --signal-success-light: 153 85% 91%;
+    --signal-critical:      0 84% 50%;
+    --signal-critical-light: 0 86% 95%;
     --dd-accent: 221 82% 51%;
-    --dd-accent-light: 221 100% 95%;
-    --dd-accent-mid: 221 72% 82%;
-    --dd-amber: 38 92% 45%;
-    --dd-amber-light: 43 96% 90%;
-    --dd-green: 160 84% 39%;
-    --dd-green-light: 153 85% 91%;
-    --dd-red: 0 84% 50%;
-    --dd-red-light: 0 86% 95%;
+    --dd-accent-light: var(--brand-100);
+    --dd-accent-mid: var(--brand-200);
+    --dd-amber: var(--signal-warning);
+    --dd-amber-light: var(--signal-warning-light);
+    --dd-green: var(--signal-success);
+    --dd-green-light: var(--signal-success-light);
+    --dd-red: var(--signal-critical);
+    --dd-red-light: var(--signal-critical-light);
     --dd-teal: 199 89% 36%;
     --dd-teal-light: 204 100% 94%;
 
@@ -190,7 +196,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 
   /* Accessible focus */
@@ -206,6 +212,13 @@
   }
   .hover-lift:hover {
     @apply -translate-y-0.5 shadow-md;
+  }
+}
+
+/* ── Question card two-column layout (#46) ── */
+@media (min-width: 768px) {
+  .question-card-grid {
+    grid-template-columns: 3fr 2fr;
   }
 }
 

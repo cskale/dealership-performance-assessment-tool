@@ -9,11 +9,14 @@ import { FileText, RefreshCw, ArrowLeft, ClipboardList, BarChart3, Award, CheckS
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { ExecutiveSummary } from "@/components/ExecutiveSummary";
+import { CeilingInsightsPanel } from "@/components/results/CeilingInsightsPanel";
 import { IndustrialKPIDashboard } from "@/components/IndustrialKPIDashboard";
 import { MaturityScoring } from "@/components/MaturityScoring";
 import { ActionPlan } from "@/components/ActionPlan";
 import { UsefulResources } from "@/components/UsefulResources";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { evaluateCrossValidations } from "@/data/crossValidationRules";
+import type { CrossValidationFinding } from "@/data/crossValidationRules";
 
 import { ExportPDFModal } from "@/components/ExportPDFModal";
 import { useAuth } from "@/hooks/useAuth";
@@ -135,13 +138,17 @@ export default function Results() {
     return calculateWeightedScore(resultsData.scores);
   }, [resultsData?.scores]);
 
-  // TODO CC-12: ceilingInsights ready — render in Results UI (next session)
   const ceilingInsights = useMemo(() => {
     if (!resultsData?.answers || !resultsData?.scores) return [];
     return generateCeilingInsights(
       resultsData.answers as Record<string, number>,
       resultsData.scores as Record<string, number>
     );
+  }, [resultsData]);
+
+  const crossValidationAlerts = useMemo((): CrossValidationFinding[] => {
+    if (!resultsData?.answers) return [];
+    return evaluateCrossValidations(resultsData.answers as Record<string, number>);
   }, [resultsData]);
 
   useEffect(() => {
@@ -456,6 +463,40 @@ export default function Results() {
                 }}
               />
             </ErrorBoundary>
+            {ceilingInsights.length > 0 && (
+              <ErrorBoundary fallbackTitle={language === 'de' ? 'Deckenanalyse nicht verfügbar' : 'Ceiling analysis unavailable'}>
+                <CeilingInsightsPanel insights={ceilingInsights} />
+              </ErrorBoundary>
+            )}
+            {crossValidationAlerts.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">
+                  {language === 'de' ? 'Quervalidierungen' : 'Cross-Validation Findings'}
+                </h3>
+                {crossValidationAlerts.map((alert) => (
+                  <div
+                    key={alert.ruleId}
+                    className={cn(
+                      'flex items-start gap-3 px-4 py-3 rounded-r-md border-l-[3px]',
+                      alert.severity === 'HIGH'   && 'bg-destructive/8 border-l-destructive',
+                      alert.severity === 'MEDIUM' && 'bg-[hsl(var(--signal-warning))]/8 border-l-[hsl(var(--signal-warning))]',
+                      alert.severity === 'LOW'    && 'bg-muted border-l-muted-foreground/30',
+                    )}
+                  >
+                    <div className={cn(
+                      'mt-1.5 w-1.5 h-1.5 rounded-full shrink-0',
+                      alert.severity === 'HIGH'   && 'bg-destructive',
+                      alert.severity === 'MEDIUM' && 'bg-[hsl(var(--signal-warning))]',
+                      alert.severity === 'LOW'    && 'bg-muted-foreground/50',
+                    )} />
+                    <div>
+                      <p className="text-[11px] font-medium text-foreground">{alert.title}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{alert.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="kpi" className="space-y-6 animate-fade-in">
