@@ -19,7 +19,7 @@ export default {
 		},
 		extend: {
 		fontFamily: {
-				sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+				sans: ['"Inter"', 'system-ui', 'sans-serif'],
 				display: ['"Instrument Serif"', 'Georgia', 'serif'],
 				mono: ['"DM Mono"', 'monospace'],
 			},
@@ -137,8 +137,8 @@ export default {
 			},
 			boxShadow: {
 				'soft': '0 1px 3px 0 hsl(var(--neutral-1000) / 0.06), 0 1px 2px -1px hsl(var(--neutral-1000) / 0.06)',
-				'card': '0 1px 3px 0 hsl(var(--neutral-1000) / 0.04), 0 1px 2px 0 hsl(var(--neutral-1000) / 0.02)',
-				'elevated': '0 4px 6px -1px hsl(var(--neutral-1000) / 0.07), 0 2px 4px -2px hsl(var(--neutral-1000) / 0.05)',
+				'card': '0 1px 3px 0 rgb(15 23 42 / 0.06), 0 4px 12px 0 rgb(15 23 42 / 0.05)',
+				'elevated': '0 4px 16px 0 rgb(15 23 42 / 0.08), 0 1px 4px 0 rgb(15 23 42 / 0.04)',
 				'overlay': '0 10px 15px -3px hsl(var(--neutral-1000) / 0.08), 0 4px 6px -4px hsl(var(--neutral-1000) / 0.04)',
 			},
 			keyframes: {
