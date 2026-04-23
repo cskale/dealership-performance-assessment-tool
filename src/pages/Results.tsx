@@ -455,8 +455,7 @@ export default function Results() {
                 completedAt={resultsData.completedAt}
                 benchmarks={benchmarks}
                 onNavigateToEncyclopedia={(kpiKey) => {
-                  setActiveTab("resources");
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  navigate(kpiKey ? `/app/kpi-encyclopedia?kpi=${kpiKey}` : '/app/kpi-encyclopedia');
                 }}
               />
             </ErrorBoundary>
@@ -501,8 +500,7 @@ export default function Results() {
               <IndustrialKPIDashboard
                 scores={resultsData.scores}
                 onNavigateToEncyclopedia={(kpiKey) => {
-                  setActiveTab("resources");
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  navigate(kpiKey ? `/app/kpi-encyclopedia?kpi=${kpiKey}` : '/app/kpi-encyclopedia');
                 }}
               />
             </ErrorBoundary>
