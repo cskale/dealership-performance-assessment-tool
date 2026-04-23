@@ -4,6 +4,7 @@
  */
 
 import { questionnaire } from "@/data/questionnaire";
+import { getMaturityLevel as _getMaturityKey, MATURITY_LEVELS as MATURITY_CONFIG } from "@/lib/maturityConfig";
 
 /**
  * Total number of questions in the assessment
@@ -31,15 +32,22 @@ export const SCORE_THRESHOLDS = {
 } as const;
 
 /**
- * Maturity level definitions based on score ranges
- * CANONICAL SOURCE for all maturity interpretation
+ * Maturity level definitions — re-exported from maturityConfig.
+ * Canonical source of truth is src/lib/maturityConfig.ts.
  */
-export const MATURITY_LEVELS = {
-  advanced: { min: 85, label: { en: 'Advanced', de: 'Fortgeschritten' } },
-  mature: { min: 70, label: { en: 'Mature', de: 'Ausgereift' } },
-  developing: { min: 50, label: { en: 'Developing', de: 'Entwickelnd' } },
-  basic: { min: 0, label: { en: 'Basic', de: 'Basis' } },
-} as const;
+export { MATURITY_LEVELS } from "@/lib/maturityConfig";
+
+/** Returns the canonical maturity key ('leading' | 'advanced' | 'developing' | 'foundational'). */
+export function getMaturityLevelKey(score: number) {
+  return _getMaturityKey(score);
+}
+
+const DE_LABELS: Record<string, string> = {
+  leading:      'Führend',
+  advanced:     'Fortgeschritten',
+  developing:   'Entwickelnd',
+  foundational: 'Grundlegend',
+};
 
 /**
  * Get score label based on canonical thresholds
@@ -67,29 +75,11 @@ export function getScoreColor(score: number): string {
 }
 
 /**
- * Get maturity level based on canonical thresholds
+ * Get maturity level label (localised) based on canonical thresholds.
  */
 export function getMaturityLevel(score: number, language: 'en' | 'de' = 'en'): string {
-  if (score >= MATURITY_LEVELS.advanced.min) {
-    return MATURITY_LEVELS.advanced.label[language];
-  }
-  if (score >= MATURITY_LEVELS.mature.min) {
-    return MATURITY_LEVELS.mature.label[language];
-  }
-  if (score >= MATURITY_LEVELS.developing.min) {
-    return MATURITY_LEVELS.developing.label[language];
-  }
-  return MATURITY_LEVELS.basic.label[language];
-}
-
-/**
- * Get maturity level key based on canonical thresholds
- */
-export function getMaturityLevelKey(score: number): 'advanced' | 'mature' | 'developing' | 'basic' {
-  if (score >= MATURITY_LEVELS.advanced.min) return 'advanced';
-  if (score >= MATURITY_LEVELS.mature.min) return 'mature';
-  if (score >= MATURITY_LEVELS.developing.min) return 'developing';
-  return 'basic';
+  const key = _getMaturityKey(score);
+  return language === 'de' ? DE_LABELS[key] : MATURITY_CONFIG[key].label;
 }
 
 /**

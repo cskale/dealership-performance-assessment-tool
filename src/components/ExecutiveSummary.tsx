@@ -234,7 +234,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
     const weakestDept = DEPT_LABELS[sortedAsc[0]?.[0]] ?? 'New Vehicle Sales';
     const avgScore = Math.round(Object.values(scores).reduce((s, v) => s + v, 0) / Math.max(Object.values(scores).length, 1));
     const maturityMap: Record<string, MaturityLevel> = {
-      'Advanced': 'leading', 'Mature': 'capable', 'Developing': 'developing', 'Basic': 'foundational', 'Inconsistent': 'developing',
+      'Leading': 'leading', 'Advanced': 'advanced', 'Developing': 'developing', 'Foundational': 'foundational',
     };
     const subCats = Object.values(subCategoryData).flatMap(d => d.subCategories);
     const avgConf = { standardDeviation: 0.5, consistencyScore: 75, confidence: 'medium' as const, reviewRecommended: false };
