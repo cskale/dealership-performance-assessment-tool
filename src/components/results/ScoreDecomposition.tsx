@@ -42,6 +42,12 @@ export function ScoreDecomposition({ scores, overallScore }: ScoreDecompositionP
   const contributionLabel = language === 'de' ? 'Beitrag' : 'Contribution';
   const ptsLabel = language === 'de' ? 'Pkt' : 'pts';
 
+  // Exclude modules with no score (gated out by business model).
+  // Redistribute display widths proportionally among included modules so the
+  // bar fills correctly — this is display-only; actual scoring weights are unchanged.
+  const includedDepts = ORDER.filter(dept => (scores[dept] ?? 0) > 0);
+  const totalIncludedWeight = includedDepts.reduce((sum, dept) => sum + WEIGHTS[dept], 0) || 1;
+
   return (
     <Card className="shadow-sm shadow-card rounded-xl">
       <CardContent className="p-6">
@@ -56,19 +62,19 @@ export function ScoreDecomposition({ scores, overallScore }: ScoreDecompositionP
 
         <TooltipProvider delayDuration={150}>
           <div className="relative h-7 w-full rounded-[6px] bg-muted overflow-hidden flex">
-            {ORDER.map((dept, idx) => {
-              const score = scores[dept] ?? 0;
+            {includedDepts.map((dept, idx) => {
+              const score = scores[dept]!;
               const weight = WEIGHTS[dept];
-              const widthPct = score * weight;
-              const contribution = (score * weight) / 1;
-              if (widthPct <= 0) return null;
+              const contribution = score * weight;
+              // Normalize width so included modules fill the full bar proportionally
+              const displayWidthPct = (contribution / totalIncludedWeight) * 100;
               return (
                 <Tooltip key={dept}>
                   <TooltipTrigger asChild>
                     <div
                       className={idx > 0 ? "border-l border-white cursor-pointer" : "cursor-pointer"}
                       style={{
-                        width: `${widthPct}%`,
+                        width: `${displayWidthPct}%`,
                         backgroundColor: COLORS[dept],
                       }}
                       aria-label={`${getDepartmentName(dept, language)} contribution`}
@@ -88,10 +94,10 @@ export function ScoreDecomposition({ scores, overallScore }: ScoreDecompositionP
         </TooltipProvider>
 
         <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3 text-[12px]">
-          {ORDER.map((dept) => {
-            const score = scores[dept] ?? 0;
+          {includedDepts.map((dept) => {
+            const score = scores[dept]!;
             const weight = WEIGHTS[dept];
-            const contribution = (score * weight);
+            const contribution = score * weight;
             return (
               <div key={dept} className="flex items-center gap-1.5">
                 <span
