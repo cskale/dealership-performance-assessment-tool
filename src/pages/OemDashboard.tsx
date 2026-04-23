@@ -39,10 +39,10 @@ interface DealerScore {
 }
 
 function getScoreBand(score: number): { label: string; className: string } {
-  if (score >= 85) return { label: 'Advanced', className: 'bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20' };
-  if (score >= 70) return { label: 'Performing', className: 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20' };
-  if (score >= 46) return { label: 'Developing', className: 'bg-[#d97706]/10 text-[#d97706] border-[#d97706]/20' };
-  return { label: 'Foundational', className: 'bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20' };
+  if (score >= 85) return { label: 'Leading',      className: 'bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20' };
+  if (score >= 65) return { label: 'Advanced',     className: 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20' };
+  if (score >= 45) return { label: 'Developing',   className: 'bg-[#d97706]/10 text-[#d97706] border-[#d97706]/20' };
+  return             { label: 'Foundational', className: 'bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20' };
 }
 
 function getTrendIcon(latest: number | null, previous: number | null) {

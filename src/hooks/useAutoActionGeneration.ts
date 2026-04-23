@@ -98,7 +98,8 @@ export function useAutoActionGeneration() {
     assessmentId: string,
     answers: Record<string, number>,
     organizationId: string,
-    businessModel?: string
+    businessModel?: string,
+    sectionScores?: Record<string, number>
   ): Promise<AutoActionResult> => {
     // Check feature flag
     if (!ENABLE_AUTO_ACTIONS) {
@@ -162,11 +163,12 @@ export function useAutoActionGeneration() {
       // Get question weights
       const questionWeights = getQuestionWeights();
 
-      // Configuration
+      // Configuration — sectionScores enables the ceiling pass for high-scoring dealers
       const config: SignalEngineConfig = {
         enableAutoActions: true,
         weakScoreThreshold: 3,
-        criticalScoreThreshold: 2
+        criticalScoreThreshold: 2,
+        sectionScores: sectionScores ?? {},
       };
 
       // Generate actions using deterministic signal engine

@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 
 interface KPIExplorerProps {
   scores: Record<string, number>;
+  initialKpiKey?: string;
 }
 
 export interface KPIListItem {
@@ -42,13 +43,13 @@ function highlightMatch(text: string, search: string) {
 // Primary visible chips (max 6) + overflow into dropdown
 const PRIMARY_CHIP_COUNT = 6;
 
-export function KPIExplorer({ scores }: KPIExplorerProps) {
+export function KPIExplorer({ scores, initialKpiKey }: KPIExplorerProps) {
   const { language } = useLanguage();
   const isMobile = useIsMobile();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [activeDepartment, setActiveDepartment] = useState<string>("all");
-  const [selectedKpiKey, setSelectedKpiKey] = useState<string | null>(null);
+  const [selectedKpiKey, setSelectedKpiKey] = useState<string | null>(initialKpiKey ?? null);
 
   // Build flat list
   const allItems: KPIListItem[] = useMemo(() => {

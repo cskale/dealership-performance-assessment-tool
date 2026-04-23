@@ -21,6 +21,21 @@ interface PendingInvite {
   token: string;
 }
 
+interface OrgMember {
+  id: string;
+  user_id: string;
+  role: string;
+  displayName: string;
+  initials: string;
+}
+
+function getInitials(name: string): string {
+  if (!name) return 'U';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 // owner role is not assignable via invite — ownership transfer is handled separately
 const ROLE_OPTIONS = [
   { value: 'viewer', label: 'Viewer' },
@@ -37,6 +52,7 @@ export function InviteTeamMembers() {
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
   const [loadingInvites, setLoadingInvites] = useState(true);
+  const [orgMembers, setOrgMembers] = useState<OrgMember[]>([]);
 
   // Check if current user has permission to invite
   const currentMembership = userMemberships.find(
@@ -66,11 +82,37 @@ export function InviteTeamMembers() {
     }
   }, [currentOrganization]);
 
+  const fetchOrgMembers = useCallback(async () => {
+    if (!currentOrganization) return;
+    const { data: memberships } = await supabase
+      .from('memberships')
+      .select('id, user_id, role')
+      .eq('organization_id', currentOrganization.id)
+      .eq('is_active', true);
+
+    if (!memberships || memberships.length === 0) { setOrgMembers([]); return; }
+
+    const userIds = memberships.map(m => m.user_id);
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, display_name, full_name, email')
+      .in('user_id', userIds);
+
+    const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
+
+    setOrgMembers(memberships.map(m => {
+      const p = profileMap.get(m.user_id);
+      const name = p?.display_name || p?.full_name || p?.email || `${m.user_id.slice(0, 8)}…`;
+      return { id: m.id, user_id: m.user_id, role: m.role, displayName: name, initials: getInitials(name) };
+    }));
+  }, [currentOrganization]);
+
   useEffect(() => {
     if (canInvite && currentOrganization) {
       loadPendingInvites();
+      fetchOrgMembers();
     }
-  }, [canInvite, currentOrganization, loadPendingInvites]);
+  }, [canInvite, currentOrganization, loadPendingInvites, fetchOrgMembers]);
 
   const getActiveDealershipId = async (): Promise<string | null> => {
     if (!user) return null;
@@ -185,10 +227,6 @@ export function InviteTeamMembers() {
     toast.success('Invite link copied!');
   };
 
-  const orgMembers = userMemberships.filter(
-    m => m.organization_id === currentOrganization?.id
-  );
-
   if (!canInvite) return null;
 
   return (
@@ -296,11 +334,9 @@ export function InviteTeamMembers() {
             {orgMembers.map((member) => (
               <div key={member.id} className="flex items-center gap-3 py-2.5 border-b border-[hsl(var(--dd-rule))] last:border-0">
                 <div className="w-8 h-8 rounded-full bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] flex items-center justify-center text-xs font-medium">
-                  T
+                  {member.initials}
                 </div>
-                <div className="flex-1 text-sm">
-                  Team Member
-                </div>
+                <div className="flex-1 text-sm">{member.displayName}</div>
                 <span className="bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] text-[11px] px-2 py-0.5 rounded-full">{member.role}</span>
               </div>
             ))}

@@ -3,7 +3,7 @@ import { type ModuleBenchmark, sectionToModuleCode } from "@/lib/benchmarkUtils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, Zap, Info, AlertCircle, TrendingUp, Award, ShieldQuestion } from "lucide-react";
+import { CheckCircle, Zap, Info, AlertCircle, TrendingUp, Award } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Legend } from "recharts";
@@ -26,7 +26,7 @@ interface MaturityScoringProps {
 }
 
 interface MaturityLevel {
-  level: 1 | 2 | 3 | 4 | 5;
+  level: 1 | 2 | 3 | 4;
   name: string;
   icon: React.ReactNode;
   color: string;
@@ -50,36 +50,36 @@ export function MaturityScoring({ scores, answers, benchmarks }: MaturityScoring
   const maturityLevels: MaturityLevel[] = useMemo(() => [
     {
       level: 1,
-      name: language === 'de' ? 'Basis' : 'Basic',
+      name: language === 'de' ? 'Grundlegend' : 'Foundational',
       icon: <AlertCircle className="h-5 w-5 text-destructive" />,
       color: 'bg-destructive/10 text-destructive border-destructive/20',
-      description: language === 'de' ? 'Grundlegende Prozesse vorhanden' : 'Basic processes in place',
+      description: language === 'de' ? 'Kernprozesse nicht definiert oder inkonsistent angewendet' : 'Core processes undefined or inconsistently applied',
       characteristics: [
-        language === 'de' ? 'Grundlegende Prozesse vorhanden' : 'Basic processes in place',
+        language === 'de' ? 'Prozesse fehlen oder sind undokumentiert' : 'Processes missing or undocumented',
         language === 'de' ? 'Begrenzte Datennutzung' : 'Limited data usage',
         language === 'de' ? 'Reaktiver Ansatz' : 'Reactive approach',
-        language === 'de' ? 'Verbesserungspotenzial' : 'Room for improvement'
+        language === 'de' ? 'Grundlagen müssen etabliert werden' : 'Foundations need to be established'
       ]
     },
     {
       level: 2,
-      name: language === 'de' ? 'Inkonsistent' : 'Inconsistent',
-      icon: <ShieldQuestion className="h-5 w-5 text-warning-foreground" />,
-      color: 'bg-warning/10 text-warning-foreground border-warning/20',
-      description: language === 'de' ? 'Uneinheitliche Leistung zwischen Abteilungen' : 'Uneven performance across departments',
+      name: language === 'de' ? 'Entwickelnd' : 'Developing',
+      icon: <TrendingUp className="h-5 w-5 text-orange-600" />,
+      color: 'bg-orange-50 text-orange-800 border-orange-200',
+      description: language === 'de' ? 'Prozesse vorhanden, Ausführung inkonsistent' : 'Processes in place but execution is inconsistent',
       characteristics: [
-        language === 'de' ? 'Hohe Varianz zwischen Bereichen' : 'High variance across areas',
-        language === 'de' ? 'Einige Stärken, einige Lücken' : 'Some strengths, some gaps',
-        language === 'de' ? 'Standardisierung fehlt' : 'Standardization lacking',
-        language === 'de' ? 'Fokus auf Konsistenz nötig' : 'Focus on consistency needed'
+        language === 'de' ? 'Grundprozesse dokumentiert' : 'Basic processes documented',
+        language === 'de' ? 'Inkonsistente Ausführung' : 'Inconsistent execution',
+        language === 'de' ? 'Fokus auf Konsistenz nötig' : 'Focus on consistency needed',
+        language === 'de' ? 'Verantwortlichkeit wird aufgebaut' : 'Accountability being established'
       ]
     },
     {
       level: 3,
-      name: language === 'de' ? 'Entwickelnd' : 'Developing',
-      icon: <TrendingUp className="h-5 w-5 text-orange-600" />,
-      color: 'bg-orange-50 text-orange-800 border-orange-200',
-      description: language === 'de' ? 'Prozesse werden etabliert. Fokus auf Konsistenz.' : 'Processes are being established. Focus on consistency.',
+      name: language === 'de' ? 'Fortgeschritten' : 'Advanced',
+      icon: <CheckCircle className="h-5 w-5 text-blue-600" />,
+      color: 'bg-blue-50 text-blue-800 border-blue-200',
+      description: language === 'de' ? 'Konsistente Ausführung mit datengesteuertem Management' : 'Consistent execution with data-driven management',
       characteristics: [
         language === 'de' ? 'Strukturierte Prozesse' : 'Structured processes',
         language === 'de' ? 'Regelmäßige Datenanalyse' : 'Regular data analysis',
@@ -89,23 +89,10 @@ export function MaturityScoring({ scores, answers, benchmarks }: MaturityScoring
     },
     {
       level: 4,
-      name: language === 'de' ? 'Ausgereift' : 'Mature',
-      icon: <CheckCircle className="h-5 w-5 text-blue-600" />,
-      color: 'bg-blue-50 text-blue-800 border-blue-200',
-      description: language === 'de' ? 'Optimierte Prozesse' : 'Optimized processes',
-      characteristics: [
-        language === 'de' ? 'Optimierte Arbeitsabläufe' : 'Optimized workflows',
-        language === 'de' ? 'Datengesteuerte Entscheidungen' : 'Data-driven decisions',
-        language === 'de' ? 'Starke Kundenorientierung' : 'Strong customer focus',
-        language === 'de' ? 'Marktführende Praktiken' : 'Market-leading practices'
-      ]
-    },
-    {
-      level: 5,
-      name: language === 'de' ? 'Fortgeschritten' : 'Advanced',
+      name: language === 'de' ? 'Führend' : 'Leading',
       icon: <Award className="h-5 w-5 text-success" />,
       color: 'bg-success/10 text-success border-success/20',
-      description: language === 'de' ? 'Branchenführend' : 'Industry leading',
+      description: language === 'de' ? 'Marktdifferenzierende Leistung und kontinuierliche Verbesserung' : 'Market-differentiating performance and continuous improvement',
       characteristics: [
         language === 'de' ? 'Innovation und Best Practices' : 'Innovation and best practices',
         language === 'de' ? 'Exzellente Leistung' : 'Excellent performance',
@@ -122,13 +109,11 @@ export function MaturityScoring({ scores, answers, benchmarks }: MaturityScoring
       const conf = confidenceData[dept] || { standardDeviation: 0, consistencyScore: 100, confidence: 'high' as const, reviewRecommended: false };
       const enhanced = calculateEnhancedMaturity(score, subCats, conf);
 
-      // Map enhanced level to our MaturityLevel objects
       const levelMap: Record<string, MaturityLevel> = {
-        'Basic': maturityLevels[0],
-        'Inconsistent': maturityLevels[1],
-        'Developing': maturityLevels[2],
-        'Mature': maturityLevels[3],
-        'Advanced': maturityLevels[4],
+        'Foundational': maturityLevels[0],
+        'Developing':   maturityLevels[1],
+        'Advanced':     maturityLevels[2],
+        'Leading':      maturityLevels[3],
       };
 
       return {
@@ -156,11 +141,10 @@ export function MaturityScoring({ scores, answers, benchmarks }: MaturityScoring
 
   const overallMaturityLevel = useMemo(() => {
     const m: Record<string, MaturityLevel> = {
-      'Basic': maturityLevels[0],
-      'Inconsistent': maturityLevels[1],
-      'Developing': maturityLevels[2],
-      'Mature': maturityLevels[3],
-      'Advanced': maturityLevels[4],
+      'Foundational': maturityLevels[0],
+      'Developing':   maturityLevels[1],
+      'Advanced':     maturityLevels[2],
+      'Leading':      maturityLevels[3],
     };
     return m[overallMaturity.level] || maturityLevels[0];
   }, [overallMaturity, maturityLevels]);

@@ -240,7 +240,8 @@ export default function Assessment() {
             realAssessmentId,  // Real DB-generated UUID
             answers,
             onboardingContext.organizationId,
-            businessModel ?? undefined
+            businessModel ?? undefined,
+            finalScores       // Enables ceiling-pass signals for high-scoring dealers
           );
           
           if (actionResult.success && actionResult.actionsGenerated > 0) {

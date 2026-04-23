@@ -297,7 +297,7 @@ function capitalize(s: string): string {
 
 // ─── Enhanced Maturity Model ─────────────────────────────────────────
 
-export type MaturityLevelName = 'Advanced' | 'Mature' | 'Developing' | 'Basic' | 'Inconsistent';
+export type MaturityLevelName = 'Leading' | 'Advanced' | 'Developing' | 'Foundational';
 
 export interface EnhancedMaturityResult {
   level: MaturityLevelName;
@@ -309,10 +309,10 @@ export interface EnhancedMaturityResult {
  * Enhanced maturity model using sub-category analysis
  * 
  * Rules:
- * - "Advanced" requires score ≥ 85 AND no sub-category below 60
- * - "Basic" if any sub-category below 30, regardless of average
- * - "Inconsistent" if confidence is low (high variance)
- * - Otherwise standard thresholds: ≥70 Mature, ≥50 Developing, else Basic
+ * - "Leading" requires score ≥ 85 AND no sub-category below 60
+ * - "Foundational" if any sub-category below 30, regardless of average
+ * - "Developing" if confidence is low (high variance)
+ * - Otherwise standard thresholds: ≥70 Advanced, ≥50 Developing, else Foundational
  */
 export function calculateEnhancedMaturity(
   overallScore: number,
@@ -323,51 +323,51 @@ export function calculateEnhancedMaturity(
     ? Math.min(...subCategories.map(sc => sc.score)) 
     : overallScore;
   
-  // Inconsistent: high variance overrides other levels
+  // Developing: high variance overrides other levels — flag as inconsistent execution
   if (confidence.confidence === 'low' && overallScore >= 50) {
     return {
-      level: 'Inconsistent',
+      level: 'Developing',
       numericLevel: 2,
       reason: 'High answer variance detected — responses suggest inconsistent performance across areas.'
     };
   }
-  
-  // Advanced: needs high score AND all sub-categories above 60
+
+  // Leading: needs high score AND all sub-categories above 60
   if (overallScore >= 85 && minSubCat >= 60) {
     return {
-      level: 'Advanced',
+      level: 'Leading',
       numericLevel: 4,
       reason: 'Consistently high performance across all capability areas.'
     };
   }
-  
+
   // Downgrade if score looks high but has a very weak sub-category
   if (overallScore >= 85 && minSubCat < 60) {
     return {
-      level: 'Mature',
+      level: 'Advanced',
       numericLevel: 3,
       reason: `Overall score is strong but ${subCategories.find(sc => sc.score < 60)?.category || 'a sub-category'} needs attention.`
     };
   }
-  
-  // Basic: any sub-category critically weak
+
+  // Foundational: any sub-category critically weak
   if (minSubCat < 30) {
     return {
-      level: 'Basic',
+      level: 'Foundational',
       numericLevel: 1,
       reason: `Critical weakness in ${subCategories.find(sc => sc.score < 30)?.category || 'a sub-category'} (${minSubCat}%) requires immediate attention.`
     };
   }
-  
+
   // Standard thresholds
   if (overallScore >= 70) {
-    return { level: 'Mature', numericLevel: 3, reason: 'Solid performance with room for optimization.' };
+    return { level: 'Advanced', numericLevel: 3, reason: 'Solid performance with room for optimization.' };
   }
   if (overallScore >= 50) {
     return { level: 'Developing', numericLevel: 2, reason: 'Processes are being established. Focus on consistency.' };
   }
-  
-  return { level: 'Basic', numericLevel: 1, reason: 'Foundational processes need to be established.' };
+
+  return { level: 'Foundational', numericLevel: 1, reason: 'Foundational processes need to be established.' };
 }
 
 // ─── Legacy exports (kept for backwards compatibility) ───────────────

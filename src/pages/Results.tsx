@@ -24,6 +24,7 @@ import { useMultiTenant } from "@/hooks/useMultiTenant";
 import { supabase } from "@/integrations/supabase/client";
 import type { PDFExportData } from "@/lib/pdfReportGenerator";
 import { calculateWeightedScore, CATEGORY_WEIGHTS } from "@/lib/scoringEngine";
+import { getMaturityLevel } from "@/lib/maturityConfig";
 import { generateCeilingInsights } from "@/lib/ceilingAnalysis";
 import { fetchModuleBenchmarks, STATIC_BENCHMARKS, type ModuleBenchmark } from "@/lib/benchmarkUtils";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
@@ -323,21 +324,17 @@ export default function Results() {
 
           {/* Summary metric cards */}
           {(() => {
-            const maturityLabel = overallScore >= 85
-              ? (language === 'de' ? 'Fortgeschritten' : 'Advanced')
-              : overallScore >= 70
-              ? (language === 'de' ? 'Entwickelnd' : 'Developing')
-              : overallScore >= 50
-              ? (language === 'de' ? 'Inkonsistent' : 'Inconsistent')
-              : overallScore >= 30
-              ? (language === 'de' ? 'Grundlegend' : 'Foundational')
-              : (language === 'de' ? 'Kritisch' : 'Critical');
+            const maturityKey = getMaturityLevel(overallScore);
+            const maturityLabelEn: Record<string, string> = { leading: 'Leading', advanced: 'Advanced', developing: 'Developing', foundational: 'Foundational' };
+            const maturityLabelDe: Record<string, string> = { leading: 'Führend', advanced: 'Fortgeschritten', developing: 'Entwickelnd', foundational: 'Grundlegend' };
+            const maturityLabel = language === 'de' ? maturityLabelDe[maturityKey] : maturityLabelEn[maturityKey];
 
-            const maturityBadgeVariant = overallScore >= 85 ? 'maturity-advanced' as const
-              : overallScore >= 70 ? 'maturity-developing' as const
-              : overallScore >= 50 ? 'maturity-inconsistent' as const
-              : overallScore >= 30 ? 'maturity-foundational' as const
-              : 'maturity-critical' as const;
+            const maturityBadgeVariant = ({
+              leading:      'maturity-leading',
+              advanced:     'maturity-advanced',
+              developing:   'maturity-developing',
+              foundational: 'maturity-foundational',
+            } as const)[maturityKey];
             const modulesAssessed = resultsData?.scores ? Object.keys(resultsData.scores).length : 0;
             const confidenceLevel = overallScore >= 70
               ? (language === 'de' ? 'Hoch' : 'High')
@@ -458,8 +455,7 @@ export default function Results() {
                 completedAt={resultsData.completedAt}
                 benchmarks={benchmarks}
                 onNavigateToEncyclopedia={(kpiKey) => {
-                  setActiveTab("resources");
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  navigate(kpiKey ? `/app/kpi-encyclopedia?kpi=${kpiKey}` : '/app/kpi-encyclopedia');
                 }}
               />
             </ErrorBoundary>
@@ -504,8 +500,7 @@ export default function Results() {
               <IndustrialKPIDashboard
                 scores={resultsData.scores}
                 onNavigateToEncyclopedia={(kpiKey) => {
-                  setActiveTab("resources");
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  navigate(kpiKey ? `/app/kpi-encyclopedia?kpi=${kpiKey}` : '/app/kpi-encyclopedia');
                 }}
               />
             </ErrorBoundary>

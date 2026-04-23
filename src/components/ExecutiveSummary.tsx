@@ -19,11 +19,11 @@ import {
   calculateSubCategoryScores,
   calculateAllConfidenceMetrics,
   detectSystemicPatterns,
-  calculateEnhancedMaturity,
   type ConfidenceMetrics,
   type DepartmentSubCategories,
   type SystemicPattern,
 } from "@/lib/scoringEngine";
+import { getMaturityLevel as getMaturityKey } from "@/lib/maturityConfig";
 import { questionnaire } from "@/data/questionnaire";
 import { KpiInsightPanel } from "@/components/shared/KpiInsightPanel";
 import { buildExecutiveNarrative, DEPT_LABELS } from '@/lib/narrativeTemplates';
@@ -228,25 +228,16 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
   // ── New data hooks ──
 
   const narrative = useMemo(() => {
-    const sortedByScore = Object.entries(scores).sort(([, a], [, b]) => b - a);
     const sortedAsc = [...Object.entries(scores)].sort(([, a], [, b]) => a - b);
-    const topDept = DEPT_LABELS[sortedByScore[0]?.[0]] ?? 'New Vehicle Sales';
     const weakestDept = DEPT_LABELS[sortedAsc[0]?.[0]] ?? 'New Vehicle Sales';
-    const avgScore = Math.round(Object.values(scores).reduce((s, v) => s + v, 0) / Math.max(Object.values(scores).length, 1));
-    const maturityMap: Record<string, MaturityLevel> = {
-      'Advanced': 'leading', 'Mature': 'capable', 'Developing': 'developing', 'Basic': 'foundational', 'Inconsistent': 'developing',
-    };
-    const subCats = Object.values(subCategoryData).flatMap(d => d.subCategories);
-    const avgConf = { standardDeviation: 0.5, consistencyScore: 75, confidence: 'medium' as const, reviewRecommended: false };
-    const maturity = calculateEnhancedMaturity(avgScore, subCats, avgConf);
-    const maturityLevelKey: MaturityLevel = maturityMap[maturity.level] ?? 'developing';
+    const maturityLevelKey: MaturityLevel = getMaturityKey(overallScore);
     const questionWeights: Record<string, number> = {};
     questionnaire.sections.forEach(s => s.questions.forEach(q => { questionWeights[q.id] = q.weight; }));
     const signals = generateSignals(answers as Record<string, number>, questionWeights);
     const primarySignal = (signals[0]?.signalCode ?? 'PROCESS_NOT_STANDARDISED') as PrimarySignalCode;
     const isSystemic = systemicPatterns.some(p => p.severity === 'systemic');
-    return buildExecutiveNarrative({ maturityLevel: maturityLevelKey, primarySignal, isSystemic, dealerName: 'Your dealership', department: weakestDept, score: avgScore, benchmark: 72 });
-  }, [scores, answers, subCategoryData, systemicPatterns]);
+    return buildExecutiveNarrative({ maturityLevel: maturityLevelKey, primarySignal, isSystemic, dealerName: 'Your dealership', department: weakestDept, score: overallScore, benchmark: 72 });
+  }, [overallScore, scores, answers, systemicPatterns]);
 
   const ceilingInsights = useMemo(() =>
     generateCeilingInsights(answers as Record<string, number>, scores),
@@ -298,10 +289,25 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
       {/* SECTION 1B — Department KPI Heatmap */}
       <DepartmentHeatmap scores={scores} answers={answers as Record<string, number>} subCategoryData={subCategoryData} />
 
-      {/* SECTION 1C — Causal Chain Diagram */}
+      {/* SECTION 1C — Causal Chain Diagram (null when no signal-based chains) */}
       <CausalChainDiagram signals={topSignals} />
 
-      {/* SECTION 1D — Systemic Patterns (moved up per spec) */}
+      {/* SECTION 1D — Systemic Patterns — single detectSystemicPatterns() call drives both sections.
+          Empty state shown here when none found; pattern cards shown when found. */}
+      {systemicPatterns.length === 0 && (
+        <Card className="shadow-sm bg-success/5 shadow-card rounded-xl">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="h-5 w-5 text-success shrink-0" />
+              <p className="text-[13px] text-foreground">
+                {language === 'de'
+                  ? 'Keine systemischen Muster erkannt — Abteilungsprobleme erscheinen isoliert.'
+                  : 'No systemic patterns detected — department issues appear isolated.'}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       {systemicPatterns.length > 0 && (
         <Card className="shadow-lg shadow-card rounded-xl">
           <CardHeader className="pb-3">

@@ -1,9 +1,10 @@
 import { KPIExplorer } from "@/components/kpi-encyclopedia/KPIExplorer";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 
 export default function KPIEncyclopediaPage() {
-  const { language } = useLanguage();
+  const [searchParams] = useSearchParams();
+  const initialKpiKey = searchParams.get('kpi') ?? undefined;
 
   useEffect(() => {
     document.title = 'KPI Encyclopedia — Dealer Diagnostic';
@@ -11,7 +12,7 @@ export default function KPIEncyclopediaPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
-      <KPIExplorer scores={{}} />
+      <KPIExplorer scores={{}} initialKpiKey={initialKpiKey} />
     </div>
   );
 }

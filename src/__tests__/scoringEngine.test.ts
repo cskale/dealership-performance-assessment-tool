@@ -243,43 +243,43 @@ describe('detectSystemicPatterns', () => {
 // ─── E. Enhanced Maturity Model ───────────────────────────────────────
 
 describe('calculateEnhancedMaturity', () => {
-  it('returns Advanced when score >= 85 and all sub-cats >= 60', () => {
+  it('returns Leading when score >= 85 and all sub-cats >= 60', () => {
     const subCats = [
       { category: 'volume', score: 90, questionCount: 2, weight: 2.0 },
       { category: 'conversion', score: 85, questionCount: 2, weight: 2.0 },
     ];
     const conf = { standardDeviation: 0.3, consistencyScore: 85, confidence: 'high' as const, reviewRecommended: false };
     const result = calculateEnhancedMaturity(90, subCats, conf);
-    expect(result.level).toBe('Advanced');
+    expect(result.level).toBe('Leading');
   });
 
-  it('downgrades to Mature when score >= 85 but sub-cat < 60', () => {
+  it('downgrades to Advanced when score >= 85 but sub-cat < 60', () => {
     const subCats = [
       { category: 'volume', score: 95, questionCount: 2, weight: 2.0 },
       { category: 'digital', score: 40, questionCount: 2, weight: 2.0 },
     ];
     const conf = { standardDeviation: 0.5, consistencyScore: 75, confidence: 'high' as const, reviewRecommended: false };
     const result = calculateEnhancedMaturity(88, subCats, conf);
-    expect(result.level).toBe('Mature');
+    expect(result.level).toBe('Advanced');
   });
 
-  it('forces Basic when any sub-cat < 30', () => {
+  it('forces Foundational when any sub-cat < 30', () => {
     const subCats = [
       { category: 'volume', score: 80, questionCount: 2, weight: 2.0 },
       { category: 'digital', score: 20, questionCount: 2, weight: 2.0 },
     ];
     const conf = { standardDeviation: 0.5, consistencyScore: 75, confidence: 'high' as const, reviewRecommended: false };
     const result = calculateEnhancedMaturity(65, subCats, conf);
-    expect(result.level).toBe('Basic');
+    expect(result.level).toBe('Foundational');
   });
 
-  it('returns Inconsistent for low confidence departments', () => {
+  it('returns Developing for low confidence departments', () => {
     const subCats = [
       { category: 'volume', score: 70, questionCount: 2, weight: 2.0 },
     ];
     const conf = { standardDeviation: 1.8, consistencyScore: 10, confidence: 'low' as const, reviewRecommended: true };
     const result = calculateEnhancedMaturity(65, subCats, conf);
-    expect(result.level).toBe('Inconsistent');
+    expect(result.level).toBe('Developing');
   });
 
   it('returns Developing for middle-range scores', () => {

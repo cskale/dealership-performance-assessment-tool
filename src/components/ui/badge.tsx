@@ -26,15 +26,17 @@ const badgeVariants = cva(
         discovery:
           "border-transparent bg-discovery/10 text-discovery-foreground",
 
-        // Maturity variants
-        "maturity-advanced":
+        // Maturity variants — 4-level: foundational / developing / advanced / leading
+        "maturity-leading":
           "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-green-light))] text-[hsl(160,60%,22%)] border border-[#6ee7b7] font-medium",
-        "maturity-developing":
+        "maturity-advanced":
           "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] border border-[hsl(var(--dd-accent-mid))] font-medium",
-        "maturity-inconsistent":
+        "maturity-developing":
           "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-amber-light))] text-[hsl(38,70%,28%)] border border-[#fcd34d] font-medium",
         "maturity-foundational":
           "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-red-light))] text-[hsl(0,60%,35%)] border border-[#fca5a5] font-medium",
+        "maturity-inconsistent":
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-amber-light))] text-[hsl(38,70%,28%)] border border-[#fcd34d] font-medium",
         "maturity-critical":
           "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-fog))] text-[hsl(var(--dd-muted))] border border-[hsl(var(--dd-rule))] font-medium",
 

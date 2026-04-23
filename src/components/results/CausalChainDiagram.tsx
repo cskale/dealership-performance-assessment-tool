@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Users, GitBranch, Wrench, Building2, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { Users, GitBranch, Wrench, Building2, TrendingUp } from 'lucide-react';
 import { SIGNAL_MAPPINGS, type RootCauseDimension, type EnrichedSignalMapping } from '@/data/signalMappings';
 import type { Signal } from '@/data/signalTypes';
 import type { LucideIcon } from 'lucide-react';
@@ -120,27 +120,7 @@ export function CausalChainDiagram({ signals }: CausalChainProps) {
 
   const sectionTitle = language === 'de' ? 'Gemeinsame Ursachen' : 'Shared Root Causes';
 
-  if (chains.length === 0) {
-    return (
-      <Card className="shadow-sm -success/30 bg-success/5 shadow-card rounded-xl">
-        <CardHeader className="pb-3">
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
-            {sectionTitle}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
-            <p className="text-[13px] text-foreground">
-              {language === 'de'
-                ? 'Keine systemischen Muster erkannt — Abteilungsprobleme erscheinen isoliert.'
-                : 'No systemic patterns detected — department issues appear isolated.'}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  if (chains.length === 0) return null;
 
   return (
     <Card className="shadow-lg shadow-card rounded-xl">

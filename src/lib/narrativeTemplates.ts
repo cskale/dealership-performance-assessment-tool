@@ -5,7 +5,7 @@
  * keyed by maturity level and primary signal code.
  */
 
-export type MaturityLevel = 'foundational' | 'developing' | 'capable' | 'leading';
+export type MaturityLevel = 'foundational' | 'developing' | 'advanced' | 'leading';
 
 export type PrimarySignalCode =
   | 'PROCESS_NOT_STANDARDISED'
@@ -42,10 +42,10 @@ export const SITUATION_TEMPLATES: Record<MaturityLevel, string> = {
     '{dealerName} is currently operating at a foundational level across key performance dimensions, with significant gaps between current practice and industry benchmarks. Core processes are either undefined or inconsistently applied, and the dealership lacks the structured infrastructure needed to sustain performance improvements over time. This stage represents a significant opportunity: dealers who successfully transition from foundational to developing typically achieve 15–25% improvements in operational efficiency within 12 months.',
 
   developing:
-    '{dealerName} is operating at a developing level, with some structured processes in place but inconsistent execution across departments and team members. The dealership has established the basic building blocks of performance management, yet has not yet embedded the discipline and accountability frameworks needed to translate intent into consistent outcomes. Dealers at this stage who close execution gaps typically move to capable-level performance within 6–9 months with targeted interventions.',
+    '{dealerName} is operating at a developing level, with some structured processes in place but inconsistent execution across departments and team members. The dealership has established the basic building blocks of performance management, yet has not yet embedded the discipline and accountability frameworks needed to translate intent into consistent outcomes. Dealers at this stage who close execution gaps typically move to advanced performance within 6–9 months with targeted interventions.',
 
-  capable:
-    '{dealerName} demonstrates capable-level performance, with structured processes, defined KPIs, and reasonable execution consistency across most departments. The assessment identifies selective improvement opportunities that, if addressed, would allow the dealership to transition from capable to leading-edge performance in targeted areas. Top-quartile dealers at this level focus their improvement energy on the 20% of initiatives that drive 80% of incremental performance gains.',
+  advanced:
+    '{dealerName} demonstrates advanced performance, with structured processes, defined KPIs, and consistent execution across most departments. The assessment identifies selective improvement opportunities that, if addressed, would allow the dealership to transition to leading performance in targeted areas. Top-quartile dealers at this level focus their improvement energy on the 20% of initiatives that drive 80% of incremental performance gains.',
 
   leading:
     '{dealerName} is performing at a leading level across the assessed dimensions, with strong process discipline, data-driven decision-making, and consistent above-benchmark results. The assessment has identified ceiling-level opportunities — areas where the dealership can move from best-practice execution to market-differentiating performance. Dealers operating at this level typically focus on innovation, digital capability, and talent development to maintain competitive distance from the market.',
@@ -125,10 +125,10 @@ export const PRIORITY_TEMPLATES: Record<MaturityLevel, string> = {
     'Given the foundational maturity profile identified, the immediate priority is to establish the structural foundations before attempting performance optimisation — process documentation, role clarity, and KPI definition must precede execution improvement efforts. The recommended sequencing is: Week 1–2 stabilise the highest-risk gaps; Week 3–6 document core processes and assign ownership; Month 2–3 establish measurement and review cadence. Attempting to skip the foundational layer and go directly to performance improvement initiatives typically results in short-term gains that are not sustained beyond 60–90 days.',
 
   developing:
-    'With a developing maturity profile, the priority is converting documented intent into consistent execution — the frameworks exist but the discipline of daily compliance has not yet been embedded. Focus the next 30 days on the top two execution gaps identified in the assessment, implementing daily compliance monitoring and weekly management review of adherence. Dealers who successfully close the developing-to-capable gap typically do so by installing one strong process champion per department who owns compliance accountability.',
+    'With a developing maturity profile, the priority is converting documented intent into consistent execution — the frameworks exist but the discipline of daily compliance has not yet been embedded. Focus the next 30 days on the top two execution gaps identified in the assessment, implementing daily compliance monitoring and weekly management review of adherence. Dealers who successfully close the developing-to-advanced gap typically do so by installing one strong process champion per department who owns compliance accountability.',
 
-  capable:
-    'At capable maturity, the priority is selective performance optimisation in the 2–3 areas where the gap between current performance and top-quartile benchmarks is greatest. Rather than broad-based improvement programmes, capable-level dealers benefit most from targeted interventions with clear ROI — typically 60-day focused projects with measurable outcomes. The assessment has identified the highest-leverage opportunities; sequencing these by impact-to-effort ratio will maximise the return on improvement investment.',
+  advanced:
+    'At advanced maturity, the priority is selective performance optimisation in the 2–3 areas where the gap between current performance and top-quartile benchmarks is greatest. Rather than broad-based improvement programmes, advanced-level dealers benefit most from targeted interventions with clear ROI — typically 60-day focused projects with measurable outcomes. The assessment has identified the highest-leverage opportunities; sequencing these by impact-to-effort ratio will maximise the return on improvement investment.',
 
   leading:
     'At leading maturity, the priority shifts from operational improvement to competitive differentiation — the focus is on the capabilities that will separate this dealership from peers over the next 12–24 months. The assessment has identified ceiling-level opportunities in specific areas where best-practice execution can be elevated to market-leading performance through technology, talent, or process innovation. Sustaining leading-level performance requires quarterly reassessment to ensure the dealership continues to raise its own benchmark rather than optimising toward a static target.',
