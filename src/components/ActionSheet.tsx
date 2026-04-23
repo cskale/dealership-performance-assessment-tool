@@ -12,11 +12,11 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  CalendarIcon, Save, X, Trash2, Lightbulb, Target,
-  Clock, Loader2, BarChart3, AlertTriangle, TrendingUp, 
-  User, ArrowRight
+  CalendarIcon, Save, X, Trash2, Lightbulb,
+  Loader2, BarChart3, AlertTriangle, TrendingUp,
+  ArrowRight
 } from "lucide-react";
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { KPI_DEFINITIONS } from "@/lib/kpiDefinitions";
 import { cleanDescription } from "@/lib/cleanDescription";
@@ -24,7 +24,6 @@ import { sanitizeFormData } from "@/lib/sanitize";
 import { actionSchema } from "@/lib/validationSchemas";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { supabase } from "@/integrations/supabase/client";
 import type { ActionRecord } from "./ActionPlan";
 
 interface ActionSheetProps {
@@ -65,27 +64,11 @@ function getQuadrantLabel(impact: number, effort: number): string {
   return 'Low Priority';
 }
 
-interface AuditEntry {
-  id: string;
-  field_name: string;
-  old_value: string | null;
-  new_value: string;
-  changed_at: string;
-  changed_by: string;
-}
-
 export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete, readOnly }: ActionSheetProps) {
   const { language } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'details' | 'history'>('details');
   const [isDirty, setIsDirty] = useState(false);
   const [showKpiAll, setShowKpiAll] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  // History state
-  const [historyEntries, setHistoryEntries] = useState<AuditEntry[]>([]);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const [historyError, setHistoryError] = useState(false);
-  const [historyLoaded, setHistoryLoaded] = useState(false);
 
   const [formData, setFormData] = useState<Partial<ActionRecord>>({
     action_title: '', action_description: '', department: '', priority: 'medium',
@@ -96,9 +79,6 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
 
   useEffect(() => {
     setIsDirty(false);
-    setActiveTab('details');
-    setHistoryLoaded(false);
-    setHistoryEntries([]);
     setShowKpiAll(false);
     if (action && mode === 'edit') {
       setFormData({
@@ -125,33 +105,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
     }
   }, [action, mode, open]);
 
-  useEffect(() => {
-    if (activeTab === 'history' && !historyLoaded && action?.id) {
-      loadHistory(action.id);
-    }
-  }, [activeTab, historyLoaded, action?.id]);
-
-  const loadHistory = async (actionId: string) => {
-    setHistoryLoading(true);
-    setHistoryError(false);
-    try {
-      const { data, error } = await supabase
-        .from('action_audit_log')
-        .select('*')
-        .eq('action_id', actionId)
-        .order('changed_at', { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      setHistoryEntries((data || []) as unknown as AuditEntry[]);
-      setHistoryLoaded(true);
-    } catch {
-      setHistoryError(true);
-    } finally {
-      setHistoryLoading(false);
-    }
-  };
-
-  const updateField = useCallback((field: string, value: string | string[] | number | null | undefined) => {
+const updateField = useCallback((field: string, value: string | string[] | number | null | undefined) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setIsDirty(true);
   }, []);
@@ -272,19 +226,6 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
     return 'text-muted-foreground border-border';
   }
 
-  function formatHistoryDescription(entry: AuditEntry): string {
-    const { field_name, old_value, new_value } = entry;
-    if (field_name === 'created') return new_value;
-    if (field_name === 'status') return `Status: ${old_value || '—'} → ${new_value}`;
-    if (field_name === 'priority') return `Priority: ${old_value || '—'} → ${new_value}`;
-    if (field_name === 'responsible_person') return `Reassigned to ${new_value}`;
-    if (field_name === 'target_completion_date') return `Due date → ${new_value}`;
-    if (field_name === 'impact_score') return `Impact → ${IMPACT_LABELS[parseInt(new_value) - 1] || new_value}`;
-    if (field_name === 'effort_score') return `Effort → ${EFFORT_LABELS[parseInt(new_value) - 1] || new_value}`;
-    if (field_name === 'urgency_score') return `Urgency → ${URGENCY_LABELS[parseInt(new_value) - 1] || new_value}`;
-    return `Updated ${field_name.replace(/_/g, ' ')}`;
-  }
-
   // Priority color helpers
   const priorityColor = (p: string) => {
     if (p === 'critical') return 'border-l-destructive';
@@ -321,25 +262,12 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
               )}
             </div>
           </div>
-          {/* Tab bar */}
-          <div className="flex gap-4 mt-3 border-b">
-            <button
-              onClick={() => setActiveTab('details')}
-              className={cn("text-sm pb-2 border-b-2 transition-colors -mb-px",
-                activeTab === 'details' ? "border-primary text-primary font-medium" : "border-transparent text-muted-foreground hover:text-foreground"
-              )}>Details</button>
-            <button
-              onClick={() => setActiveTab('history')}
-              className={cn("text-sm pb-2 border-b-2 transition-colors -mb-px",
-                activeTab === 'history' ? "border-primary text-primary font-medium" : "border-transparent text-muted-foreground hover:text-foreground"
-              )}>History</button>
-          </div>
+          <div className="mt-3 border-b" />
         </DialogHeader>
 
         {/* ── BODY ── */}
         <ScrollArea className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 160px)' }}>
-          {activeTab === 'details' ? (
-            <div className="px-6 py-5">
+          <div className="px-6 py-5">
               <div className={cn("gap-6", mode === 'edit' ? "grid grid-cols-1 lg:grid-cols-[1fr_380px]" : "space-y-5")}>
                 {/* ── LEFT: Form ── */}
                 <div className="space-y-5">
@@ -643,39 +571,7 @@ export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete
                 )}
               </div>
             </div>
-          ) : (
-            /* ── HISTORY TAB ── */
-            <div className="px-6 py-5">
-              {historyLoading ? (
-                <div className="flex items-center justify-center py-16">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                </div>
-              ) : historyError ? (
-                <p className="text-sm text-destructive text-center py-16">Could not load history.</p>
-              ) : historyEntries.length === 0 ? (
-                <div className="text-center py-16">
-                  <Clock className="h-8 w-8 mx-auto mb-3 text-muted-foreground/30" />
-                  <p className="text-sm text-muted-foreground">No history yet.</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {historyEntries.map(entry => (
-                    <div key={entry.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="h-7 w-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-semibold flex-shrink-0 mt-0.5">
-                        {entry.changed_by?.slice(0, 2).toUpperCase() || '??'}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-foreground">{formatHistoryDescription(entry)}</p>
-                      </div>
-                      <span className="text-xs text-muted-foreground flex-shrink-0">
-                        {formatDistanceToNow(new Date(entry.changed_at), { addSuffix: true })}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          </div>
         </ScrollArea>
 
         {/* ── FOOTER ── */}
