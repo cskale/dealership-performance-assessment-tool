@@ -289,10 +289,25 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
       {/* SECTION 1B — Department KPI Heatmap */}
       <DepartmentHeatmap scores={scores} answers={answers as Record<string, number>} subCategoryData={subCategoryData} />
 
-      {/* SECTION 1C — Causal Chain Diagram */}
+      {/* SECTION 1C — Causal Chain Diagram (null when no signal-based chains) */}
       <CausalChainDiagram signals={topSignals} />
 
-      {/* SECTION 1D — Systemic Patterns (moved up per spec) */}
+      {/* SECTION 1D — Systemic Patterns — single detectSystemicPatterns() call drives both sections.
+          Empty state shown here when none found; pattern cards shown when found. */}
+      {systemicPatterns.length === 0 && (
+        <Card className="shadow-sm bg-success/5 shadow-card rounded-xl">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="h-5 w-5 text-success shrink-0" />
+              <p className="text-[13px] text-foreground">
+                {language === 'de'
+                  ? 'Keine systemischen Muster erkannt — Abteilungsprobleme erscheinen isoliert.'
+                  : 'No systemic patterns detected — department issues appear isolated.'}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       {systemicPatterns.length > 0 && (
         <Card className="shadow-lg shadow-card rounded-xl">
           <CardHeader className="pb-3">
