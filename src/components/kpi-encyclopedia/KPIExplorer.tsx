@@ -126,24 +126,8 @@ export function KPIExplorer({ scores, initialKpiKey }: KPIExplorerProps) {
 
   const resultCount = filteredItems.length;
 
-  // If a KPI is selected, show Studio
-  if (selectedKpiKey && selectedItem) {
-    return (
-      <KPIStudio
-        kpiKey={selectedKpiKey}
-        kpi={selectedItem.kpi}
-        departmentKey={selectedItem.departmentKey}
-        language={language}
-        onBack={handleCloseStudio}
-        onNavigateToKpi={handleNavigateToKpi}
-        assessmentScore={
-          scores[selectedItem.departmentKey] !== undefined
-            ? Math.max(1, Math.min(5, Math.ceil((scores[selectedItem.departmentKey] / 100) * 5)))
-            : undefined
-        }
-      />
-    );
-  }
+  // Detail view now opens in a right-side Sheet (rendered at bottom of component)
+
 
   // Check if active department is in overflow
   const activeInOverflow = overflowChips.some(c => c.key === activeDepartment);
