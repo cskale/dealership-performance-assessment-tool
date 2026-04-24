@@ -286,7 +286,7 @@ const Account = () => {
         <h1 className="text-lg font-semibold text-foreground">Account Settings</h1>
       </div>
 
-      <div className="px-6 py-6 max-w-6xl mx-auto">
+      <div className="px-6 py-6">
         {/* Hero card */}
         <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-6 mb-5">
           <div className="flex items-center gap-4">
@@ -325,7 +325,7 @@ const Account = () => {
             { label: 'Last assessment', value: latestCompleted?.completed_at ? format(new Date(latestCompleted.completed_at), 'MMM d, yyyy') : '—' },
             { label: 'Organizations', value: String(organizations.length) },
           ].map(card => (
-            <div key={card.label} className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-3">
+            <div key={card.label} className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-3 text-center">
               <div className="text-2xl font-semibold text-foreground">{card.value}</div>
               <div className="text-[11px] text-muted-foreground mt-0.5">{card.label}</div>
             </div>
