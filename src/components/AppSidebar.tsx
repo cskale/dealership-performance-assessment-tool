@@ -104,7 +104,7 @@ export function AppSidebar() {
       label: 'Diagnostic',
       items: [
         { path: '/app/assessment', label: 'New Assessment', icon: Plus },
-        { path: '/app/results', label: 'History', icon: ClipboardList, badge: completedCount },
+        { path: '/app/results', label: 'History', icon: ClipboardList },
         { path: '/actions', label: 'Action Plans', icon: CheckSquare },
       ],
     },
@@ -175,23 +175,32 @@ export function AppSidebar() {
       {/* Footer */}
       <div className={cn('mt-auto border-t border-white/[0.06]', collapsed ? 'p-2' : 'p-5')}>
         <div className="flex items-center gap-2.5">
-          <div className="w-[30px] h-[30px] rounded-full bg-gradient-to-br from-[hsl(var(--brand-500))] to-indigo-500 flex items-center justify-center text-[11px] font-semibold text-white shrink-0">
-            {getUserInitials()}
-          </div>
-          {!collapsed && (
-            <>
+          <Link
+            to="/account"
+            className={cn(
+              'flex items-center gap-2.5 flex-1 min-w-0 rounded-md transition-colors hover:bg-white/10',
+              collapsed ? 'p-1 justify-center' : '-mx-2 px-2 py-1.5'
+            )}
+            title="Account settings"
+          >
+            <div className="w-[30px] h-[30px] rounded-full bg-gradient-to-br from-[hsl(var(--brand-500))] to-indigo-500 flex items-center justify-center text-[11px] font-semibold text-white shrink-0">
+              {getUserInitials()}
+            </div>
+            {!collapsed && (
               <div className="min-w-0 flex-1">
                 <div className="text-[12px] font-medium text-white/75 truncate">{getUserName()}</div>
                 <div className="text-[10px] text-white/35 capitalize">{currentRole || 'member'}</div>
               </div>
-              <button
-                onClick={async () => { await signOut(); }}
-                className="text-white/30 hover:text-white/60 transition-colors"
-                title="Sign out"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-              </button>
-            </>
+            )}
+          </Link>
+          {!collapsed && (
+            <button
+              onClick={async () => { await signOut(); }}
+              className="text-white/30 hover:text-white/60 transition-colors"
+              title="Sign out"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
           )}
         </div>
       </div>
