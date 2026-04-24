@@ -308,6 +308,32 @@ export function KPIExplorer({ scores, initialKpiKey }: KPIExplorerProps) {
           })}
         </div>
       )}
+
+      {/* KPI Detail Sheet (right-side drawer) */}
+      <Sheet open={!!selectedKpiKey && !!selectedItem} onOpenChange={(open) => { if (!open) handleCloseStudio(); }}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-none p-0 overflow-y-auto sm:w-[40vw] sm:min-w-[600px]"
+        >
+          {selectedKpiKey && selectedItem && (
+            <div className="p-6">
+              <KPIStudio
+                kpiKey={selectedKpiKey}
+                kpi={selectedItem.kpi}
+                departmentKey={selectedItem.departmentKey}
+                language={language}
+                onBack={handleCloseStudio}
+                onNavigateToKpi={handleNavigateToKpi}
+                assessmentScore={
+                  scores[selectedItem.departmentKey] !== undefined
+                    ? Math.max(1, Math.min(5, Math.ceil((scores[selectedItem.departmentKey] / 100) * 5)))
+                    : undefined
+                }
+              />
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
