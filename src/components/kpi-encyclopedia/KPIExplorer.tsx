@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 interface KPIExplorerProps {
   scores: Record<string, number>;
@@ -125,24 +126,8 @@ export function KPIExplorer({ scores, initialKpiKey }: KPIExplorerProps) {
 
   const resultCount = filteredItems.length;
 
-  // If a KPI is selected, show Studio
-  if (selectedKpiKey && selectedItem) {
-    return (
-      <KPIStudio
-        kpiKey={selectedKpiKey}
-        kpi={selectedItem.kpi}
-        departmentKey={selectedItem.departmentKey}
-        language={language}
-        onBack={handleCloseStudio}
-        onNavigateToKpi={handleNavigateToKpi}
-        assessmentScore={
-          scores[selectedItem.departmentKey] !== undefined
-            ? Math.max(1, Math.min(5, Math.ceil((scores[selectedItem.departmentKey] / 100) * 5)))
-            : undefined
-        }
-      />
-    );
-  }
+  // Detail view now opens in a right-side Sheet (rendered at bottom of component)
+
 
   // Check if active department is in overflow
   const activeInOverflow = overflowChips.some(c => c.key === activeDepartment);
@@ -323,6 +308,32 @@ export function KPIExplorer({ scores, initialKpiKey }: KPIExplorerProps) {
           })}
         </div>
       )}
+
+      {/* KPI Detail Sheet (right-side drawer) */}
+      <Sheet open={!!selectedKpiKey && !!selectedItem} onOpenChange={(open) => { if (!open) handleCloseStudio(); }}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-none p-0 overflow-y-auto sm:w-[40vw] sm:min-w-[600px]"
+        >
+          {selectedKpiKey && selectedItem && (
+            <div className="p-6">
+              <KPIStudio
+                kpiKey={selectedKpiKey}
+                kpi={selectedItem.kpi}
+                departmentKey={selectedItem.departmentKey}
+                language={language}
+                onBack={handleCloseStudio}
+                onNavigateToKpi={handleNavigateToKpi}
+                assessmentScore={
+                  scores[selectedItem.departmentKey] !== undefined
+                    ? Math.max(1, Math.min(5, Math.ceil((scores[selectedItem.departmentKey] / 100) * 5)))
+                    : undefined
+                }
+              />
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
