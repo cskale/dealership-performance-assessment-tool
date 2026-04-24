@@ -161,11 +161,6 @@ export function AppSidebar() {
               <Link key={item.path} to={item.path} className={navItemClass(item.path)}>
                 <item.icon className={iconClass(item.path)} />
                 {!collapsed && <span className="flex-1">{item.label}</span>}
-                {!collapsed && 'badge' in item && item.badge != null && item.badge > 0 && (
-                  <span className="min-w-[18px] h-[18px] rounded-full bg-[hsl(var(--brand-500))]/30 text-[hsl(var(--brand-500))] text-[10px] font-medium flex items-center justify-center">
-                    {item.badge}
-                  </span>
-                )}
               </Link>
             ))}
           </div>
