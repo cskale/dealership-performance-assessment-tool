@@ -179,10 +179,10 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
                         : "bg-background border border-border hover:border-primary/30 hover:bg-muted/40"
                     }`}
                   >
-                    <span className="text-[11px] font-mono text-muted-foreground">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground/70">
                       {rating}
                     </span>
-                    <span className="text-[13px] font-medium text-foreground leading-snug whitespace-normal break-words w-full">
+                    <span className="text-[15px] font-medium text-foreground leading-snug whitespace-normal break-words w-full">
                       {label}
                     </span>
                   </button>
