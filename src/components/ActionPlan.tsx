@@ -490,10 +490,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => setOwnerPanelOpen(true)} title="Owner Workload">
-            <Users className="h-4 w-4" />
-          </Button>
-          {/* View toggle */}
+          {/* View toggle + workload */}
           <div className="flex rounded-lg border overflow-hidden">
             <button onClick={() => setViewMode('kanban')}
               className={cn("px-2 py-1.5 transition-colors",
@@ -513,13 +510,12 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
               )} title="Timeline view">
               <GanttChart className="h-3.5 w-3.5" />
             </button>
+            <button onClick={() => setOwnerPanelOpen(true)}
+              className="px-2 py-1.5 transition-colors bg-card text-muted-foreground hover:bg-muted border-l"
+              title="Owner Workload">
+              <Users className="h-3.5 w-3.5" />
+            </button>
           </div>
-          {canEdit && (
-            <Button onClick={handleGenerateClick} disabled={generating || (lastGenerated !== null && Date.now() - lastGenerated < 30000)} size="sm">
-              {generating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-              {generating ? 'Generating...' : 'Generate Actions'}
-            </Button>
-          )}
           {canCreate && (
             <Button onClick={openCreatePanel} variant="outline" size="sm">
               <Plus className="mr-2 h-4 w-4" /> Add Action

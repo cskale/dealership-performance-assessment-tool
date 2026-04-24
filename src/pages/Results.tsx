@@ -297,7 +297,7 @@ export default function Results() {
     <div className="min-h-screen bg-muted">
       
       
-      <div className="max-w-7xl mx-auto px-6 py-6" id="results-content">
+      <div className="px-6 py-6" id="results-content">
 
         {/* Results Hero */}
         <div className="mb-8">
