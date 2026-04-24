@@ -197,17 +197,9 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
     : quadrantLabel === 'Low Priority' ? 'text-destructive'
     : 'text-muted-foreground';
 
-  function getKpiBadgeStyle(type: string) {
-    const t = (type || '').toUpperCase();
-    if (t.includes('INPUT')) return 'text-[hsl(var(--dd-accent))] border-[hsl(var(--dd-accent))]/20 bg-transparent';
-    if (t.includes('CORE')) return 'bg-[hsl(var(--dd-accent))] text-white border-[hsl(var(--dd-accent))]';
-    if (t.includes('OUTCOME')) return 'text-[hsl(var(--dd-green))] border-[hsl(var(--dd-green))]/20 bg-transparent';
-    if (t.includes('OPERATIONAL')) return 'text-[hsl(var(--dd-amber))] border-[hsl(var(--dd-amber))]/20 bg-transparent';
-    if (t.includes('PROCESS')) return 'text-[hsl(var(--dd-teal))] border-[hsl(var(--dd-teal))]/20 bg-transparent';
-    if (t.includes('CUSTOMER')) return 'text-[hsl(var(--dd-green))] border-[hsl(var(--dd-green))]/20 bg-[hsl(var(--dd-green-light))]';
-    if (t.includes('FINANCIAL')) return 'text-[hsl(var(--dd-amber))] border-[hsl(var(--dd-amber))]/20 bg-[hsl(var(--dd-amber-light))]';
-    if (t.includes('PRODUCTIVITY')) return 'text-[hsl(var(--dd-teal))] border-[hsl(var(--dd-teal))]/20 bg-transparent';
-    return 'text-muted-foreground border-border bg-transparent';
+  function getKpiBadgeStyle(_type: string) {
+    // Unified outlined pill style for all KPI types
+    return 'bg-transparent text-muted-foreground border-border';
   }
 
   function getDriverBadgeStyle(type: string) {
@@ -500,7 +492,7 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                                   {k.name || k.title || k.key}
                                 </span>
                                 {k.type && (
-                                  <Badge variant="outline" className={cn("text-[10px] font-medium", getKpiBadgeStyle(k.type))}>
+                                  <Badge variant="outline" className={cn("text-xs font-medium uppercase", getKpiBadgeStyle(k.type))}>
                                     {k.type}
                                   </Badge>
                                 )}
@@ -530,12 +522,10 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                           {likelyDrivers.map((d: unknown, i: number) => {
                             const obj = (typeof d === 'object' && d !== null ? d : null) as { name?: string; label?: string; type?: string } | null;
                             return (
-                            <div key={i} className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs",
-                              obj?.type ? getDriverBadgeStyle(obj.type) : 'border-border text-muted-foreground'
-                            )}>
+                            <div key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs">
                               <span className="text-foreground">{typeof d === 'string' ? d : (obj?.name || obj?.label || '')}</span>
                               {obj?.type && (
-                                <span className="text-[9px] font-medium opacity-70">{obj.type}</span>
+                                <span className="text-xs font-medium uppercase tracking-wide bg-muted text-muted-foreground rounded-full px-2 py-0.5">{obj.type}</span>
                               )}
                             </div>
                             );
@@ -554,12 +544,10 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                           {likelyConsequences.map((c: unknown, i: number) => {
                             const obj = (typeof c === 'object' && c !== null ? c : null) as { name?: string; label?: string; type?: string } | null;
                             return (
-                            <div key={i} className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs",
-                              obj?.type ? getConsequenceBadgeStyle(obj.type) : 'border-border text-muted-foreground'
-                            )}>
+                            <div key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs">
                               <span className="text-foreground">{typeof c === 'string' ? c : (obj?.name || obj?.label || '')}</span>
                               {obj?.type && (
-                                <span className="text-[9px] font-medium opacity-70">{obj.type}</span>
+                                <span className="text-xs font-medium uppercase tracking-wide bg-muted text-muted-foreground rounded-full px-2 py-0.5">{obj.type}</span>
                               )}
                             </div>
                             );
