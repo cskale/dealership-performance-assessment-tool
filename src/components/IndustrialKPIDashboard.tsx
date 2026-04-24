@@ -151,7 +151,7 @@ export function IndustrialKPIDashboard({
       <SharedSectionHeader
         icon={BarChart3}
         title={language === 'de' ? 'Relevante Leistungskennzahlen' : 'Relevant Performance Indicators'}
-        subtitle={language === 'de' ? 'KPIs basierend auf Ihren bewerteten Bereichen mit Branchenbenchmarks' : 'KPIs based on your assessed areas with industry benchmarks'}
+        subtitle={language === 'de' ? 'KPIs basierend auf Ihren bewerteten Bereichen mit Branchenbenchmarks' : 'KPIs directly linked to your lowest-scoring areas — with European benchmark ranges to show where you stand against the market.'}
         action={
           onNavigateToEncyclopedia && (
             <Button
