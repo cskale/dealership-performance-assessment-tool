@@ -35,12 +35,12 @@ export function ImprovementPlaybook({ levers, language, className }: Improvement
               key={i}
               className="flex items-start gap-4 rounded-xl px-5 py-4 bg-muted/20 hover:bg-muted/35 transition-colors duration-150"
             >
-              <span className="flex items-center justify-center h-6 w-6 rounded-md bg-muted text-muted-foreground text-xs font-semibold shrink-0 mt-0.5">
+              <span className="flex items-center justify-center h-6 w-6 rounded-md bg-muted text-xs font-normal text-foreground shrink-0 mt-0.5">
                 {i + 1}
               </span>
-              <p className="flex-1 text-sm text-foreground/80 leading-relaxed min-w-0">{lever}</p>
+              <p className="flex-1 text-sm font-normal text-foreground leading-relaxed min-w-0">{lever}</p>
               {tag && (
-                <span className="text-[9px] font-medium text-muted-foreground/50 uppercase tracking-wider shrink-0 mt-1 hidden sm:block">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide shrink-0 mt-1 hidden sm:block">
                   {language === 'de' ? tag.de : tag.en}
                 </span>
               )}
