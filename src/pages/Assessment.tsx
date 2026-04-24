@@ -382,7 +382,7 @@ export default function Assessment() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-6">
+      <div className="px-6 py-6">
         {(() => {
           const suppressedCount = getSuppressedSectionCount(questionnaire.sections, businessModel);
           const modelLabel = businessModel?.toUpperCase() ?? '';
