@@ -570,7 +570,6 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                   </div>
                 )}
               </div>
-            </div>
           </div>
         </ScrollArea>
 
