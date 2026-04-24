@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { ChevronRight } from "lucide-react";
+
 
 interface KpiRelationshipMapProps {
   interdependencies: {
@@ -57,17 +57,15 @@ export function KpiRelationshipMap({ interdependencies, kpiTitle, language, onNa
               {interdependencies.upstreamDrivers.map((driver, i) => {
                 const tag = getUpstreamTag(driver);
                 return (
-                  <button
+                  <div
                     key={i}
-                    onClick={() => onNavigateToKpi(driver)}
-                    className="w-full text-left flex items-center gap-3 rounded-xl px-4 py-3 bg-muted/25 hover:bg-muted/50 transition-colors duration-150 group overflow-hidden"
+                    className="w-full text-left flex items-center gap-3 rounded-xl px-4 py-3 bg-muted/25 overflow-hidden"
                   >
-                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0 group-hover:text-primary transition-colors" />
                     <span className="flex-1 text-sm text-foreground/80 truncate min-w-0">{driver}</span>
                     <span className="text-[9px] font-medium text-muted-foreground/50 uppercase tracking-wider shrink-0 hidden sm:block">
                       {language === 'de' ? tag.de : tag.en}
                     </span>
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -108,17 +106,15 @@ export function KpiRelationshipMap({ interdependencies, kpiTitle, language, onNa
               {interdependencies.downstreamImpacts.map((impact, i) => {
                 const tag = getDownstreamTag(impact);
                 return (
-                  <button
+                  <div
                     key={i}
-                    onClick={() => onNavigateToKpi(impact)}
-                    className="w-full text-left flex items-center gap-3 rounded-xl px-4 py-3 bg-muted/25 hover:bg-muted/50 transition-colors duration-150 group overflow-hidden"
+                    className="w-full text-left flex items-center gap-3 rounded-xl px-4 py-3 bg-muted/25 overflow-hidden"
                   >
-                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0 group-hover:text-primary transition-colors" />
                     <span className="flex-1 text-sm text-foreground/80 truncate min-w-0">{impact}</span>
                     <span className="text-[9px] font-medium text-muted-foreground/50 uppercase tracking-wider shrink-0 hidden sm:block">
                       {language === 'de' ? tag.de : tag.en}
                     </span>
-                  </button>
+                  </div>
                 );
               })}
             </div>

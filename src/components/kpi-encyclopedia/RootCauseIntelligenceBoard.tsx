@@ -36,13 +36,6 @@ export function RootCauseIntelligenceBoard({ diagnostics, language, className }:
           const Icon = DIMENSION_ICONS[dim.key];
           const label = dim.label[language as 'en' | 'de'] || dim.label.en;
 
-          const dotIndex = text.indexOf('.', 30);
-          const shortText = dotIndex > 0 && dotIndex < 110
-            ? text.slice(0, dotIndex + 1)
-            : text.length > 100
-              ? text.slice(0, text.lastIndexOf(' ', 100)) + '.'
-              : text;
-
           return (
             <div
               key={dim.key}
@@ -55,7 +48,7 @@ export function RootCauseIntelligenceBoard({ diagnostics, language, className }:
                 <span className={cn("text-xs font-semibold", dim.textClass)}>{label}</span>
               </div>
               <p className="text-sm text-foreground/65 leading-relaxed flex-1">
-                {shortText}
+                {text}
               </p>
             </div>
           );

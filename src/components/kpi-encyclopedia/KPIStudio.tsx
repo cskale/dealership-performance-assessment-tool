@@ -190,54 +190,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
         </div>
       </section>
 
-      {/* ===== 4. REFERENCE BENCHMARK RANGE (full-width) ===== */}
-      {kpi.benchmark && (
-        <section className="mb-14">
-          <h2 className="text-sm font-semibold text-foreground mb-1.5">
-            {language === 'de' ? 'Referenz-Benchmarkbereich' : 'Reference Benchmark Range'}
-          </h2>
-          <p className="text-sm text-muted-foreground/70 mb-6 leading-relaxed">
-            {language === 'de'
-              ? 'Referenzbereiche sollten nach OEM, Markt und Kanalmix weiter kalibriert werden.'
-              : 'Reference ranges should be calibrated further by OEM, market, and channel mix where available.'}
-          </p>
-          <div className="rounded-xl border border-border/30 bg-card p-6 sm:p-7">
-            <KPIBenchmarkStudio
-              kpiKey={kpiKey}
-              benchmark={kpi.benchmark}
-              unit={kpi.unitOfMeasure}
-              isLowerBetter={!!isLowerBetter}
-              language={language}
-            />
-          </div>
-          {(() => {
-            const position = inferKPIPosition(kpiKey, assessmentScore, language as 'en' | 'de');
-            if (!position) return null;
-            const colourMap = {
-              well_below: 'bg-destructive/10 border border-destructive/20 text-destructive',
-              below:      'bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400',
-              at:         'bg-primary/8 border border-primary/20 text-primary/80',
-              above:      'bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400',
-              leading:    'bg-emerald-500/15 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300',
-            };
-            const iconMap = { well_below: '↓↓', below: '↓', at: '→', above: '↑', leading: '↑↑' };
-            return (
-              <div className={`mt-4 rounded-lg px-4 py-3 text-xs leading-relaxed ${colourMap[position.positionOnSpectrum]}`}>
-                <span className="font-semibold mr-1.5">{iconMap[position.positionOnSpectrum]}</span>
-                <span className="font-medium mr-1">
-                  {language === 'de' ? 'Geschätzte Position:' : 'Estimated position:'}
-                </span>
-                {position.statement}
-                <span className="block mt-1 opacity-60 text-[10px]">
-                  {language === 'de'
-                    ? 'Basierend auf Ihren Bewertungsantworten. Tatsächliche Werte erfordern Systemintegration.'
-                    : 'Based on your assessment responses. Actual values require system integration.'}
-                </span>
-              </div>
-            );
-          })()}
-        </section>
-      )}
+      {/* Reference Benchmark Range removed — already shown inline at top of detail view */}
 
       {/* ===== 5. KEY DIAGNOSTIC THEMES ===== */}
       {kpi.rootCauseDiagnostics && (
