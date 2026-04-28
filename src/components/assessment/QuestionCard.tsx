@@ -155,12 +155,6 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
         {/* Rating Scale */}
         {question.type === "scale" && question.scale && (
           <div className="space-y-4">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-4">
-                {t('assessment.rateFrom')} {question.scale.min} ({t('assessment.lowest')}) {t('assessment.to')} {question.scale.max} ({t('assessment.highest')})
-              </p>
-            </div>
-
             {/* Rating Tiles — Neutral pattern per DESIGN.md §5.3 / §14 */}
             <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
               {Array.from({ length: question.scale.max }, (_, i) => {
@@ -179,25 +173,16 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
                         : "bg-background border border-border hover:border-primary/30 hover:bg-muted/40"
                     }`}
                   >
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground/70">
+                    <span className="text-xs text-muted-foreground font-mono">
                       {rating}
                     </span>
-                    <span className="text-[15px] font-medium text-foreground leading-snug whitespace-normal break-words w-full">
+                    <span className="text-sm font-semibold text-foreground leading-snug whitespace-normal break-words w-full">
                       {label}
                     </span>
                   </button>
                 );
               })}
             </div>
-
-            {/* Selected Value Display */}
-            {value && (
-              <div className="text-center p-3 bg-primary/5 rounded-lg border border-primary/20">
-                <p className="text-sm text-foreground">
-                  <strong>{t('assessment.selected')}:</strong> {value} - {getRatingText(value)}
-                </p>
-              </div>
-            )}
           </div>
         )}
 
