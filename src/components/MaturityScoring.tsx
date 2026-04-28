@@ -15,8 +15,8 @@ import {
   calculateSubCategoryScores,
   calculateAllConfidenceMetrics,
   calculateEnhancedMaturity,
-  type EnhancedMaturityResult,
 } from "@/lib/scoringEngine";
+import { getMaturityLevelKey } from "@/lib/constants";
 import { questionnaire } from "@/data/questionnaire";
 
 interface MaturityScoringProps {
@@ -129,15 +129,20 @@ export function MaturityScoring({ scores, answers, benchmarks }: MaturityScoring
 
   const overallMaturity = useMemo(() => {
     const avgScore = Object.values(scores).reduce((s, v) => s + v, 0) / Object.values(scores).length || 0;
-    const allSubCats = Object.values(subCategoryData).flatMap(d => d.subCategories);
-    const overallConf = {
-      standardDeviation: 0,
-      consistencyScore: 100,
-      confidence: 'high' as const,
-      reviewRecommended: false,
+    const roundedScore = Math.round(avgScore);
+    const key = getMaturityLevelKey(roundedScore);
+    const levelLabelMap: Record<string, string> = {
+      foundational: 'Foundational',
+      developing:   'Developing',
+      advanced:     'Advanced',
+      leading:      'Leading',
     };
-    return calculateEnhancedMaturity(Math.round(avgScore), allSubCats, overallConf);
-  }, [scores, subCategoryData]);
+    const label = levelLabelMap[key] || 'Foundational';
+    const reason = language === 'de'
+      ? `Gesamtpunktzahl: ${roundedScore}`
+      : `Overall score: ${roundedScore}`;
+    return { level: label, reason };
+  }, [scores, language]);
 
   const overallMaturityLevel = useMemo(() => {
     const m: Record<string, MaturityLevel> = {
