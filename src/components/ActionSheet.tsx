@@ -515,15 +515,15 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                     {/* Likely Drivers */}
                     {likelyDrivers.length > 0 && (
                       <div className="rounded-xl border border-border/50 bg-card p-4 space-y-2">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                          <AlertTriangle className="h-3.5 w-3.5 text-[hsl(var(--dd-amber))]" /> Likely Drivers
+                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5">
+                          <AlertTriangle className="h-3.5 w-3.5 text-muted-foreground" /> Likely Drivers
                         </p>
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="space-y-2">
                           {likelyDrivers.map((d: unknown, i: number) => {
                             const obj = (typeof d === 'object' && d !== null ? d : null) as { name?: string; label?: string; type?: string } | null;
                             return (
-                            <div key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs">
-                              <span className="text-foreground">{typeof d === 'string' ? d : (obj?.name || obj?.label || '')}</span>
+                            <div key={i} className="flex items-center gap-2">
+                              <span className="text-sm text-foreground">{typeof d === 'string' ? d : (obj?.name || obj?.label || '')}</span>
                               {obj?.type && (
                                 <span className="text-xs font-medium uppercase tracking-wide bg-muted text-muted-foreground rounded-full px-2 py-0.5">{obj.type}</span>
                               )}
@@ -537,15 +537,15 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                     {/* Likely Consequences */}
                     {likelyConsequences.length > 0 && (
                       <div className="rounded-xl border border-border/50 bg-card p-4 space-y-2">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                          <TrendingUp className="h-3.5 w-3.5 text-destructive" /> Likely Consequences
+                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5">
+                          <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" /> Likely Consequences
                         </p>
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="space-y-2">
                           {likelyConsequences.map((c: unknown, i: number) => {
                             const obj = (typeof c === 'object' && c !== null ? c : null) as { name?: string; label?: string; type?: string } | null;
                             return (
-                            <div key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs">
-                              <span className="text-foreground">{typeof c === 'string' ? c : (obj?.name || obj?.label || '')}</span>
+                            <div key={i} className="flex items-center gap-2">
+                              <span className="text-sm text-foreground">{typeof c === 'string' ? c : (obj?.name || obj?.label || '')}</span>
                               {obj?.type && (
                                 <span className="text-xs font-medium uppercase tracking-wide bg-muted text-muted-foreground rounded-full px-2 py-0.5">{obj.type}</span>
                               )}
