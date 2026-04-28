@@ -540,12 +540,12 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
 
           {/* Filter popover */}
           <Popover open={filterOpen} onOpenChange={setFilterOpen}>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <Filter className="h-3.5 w-3.5" /> Filter
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-56 p-3 space-y-3" align="end">
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <Filter className="h-3.5 w-3.5" /> Filter
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-3 space-y-3" align="end">
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground">Priority</label>
               <div className="flex flex-wrap gap-1">
@@ -590,8 +590,9 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
                 ))}
               </div>
             </div>
-          </PopoverContent>
-        </Popover>
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
 
       {/* Content area: Kanban, List, or Timeline */}
