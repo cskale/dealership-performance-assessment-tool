@@ -69,7 +69,10 @@ export function IndustrialKPIDashboard({
     Object.entries(kpiKeyMapping).forEach(([sectionId, kpis]) => {
       result[sectionId] = Object.entries(kpis).map(([_, canonicalKey]) => {
         const kpiDef = KPI_DEFINITIONS[canonicalKey];
-        if (!kpiDef) return null;
+        if (!kpiDef) {
+          console.warn(`[KPI Nav] Unknown key: ${canonicalKey}`);
+          return null;
+        }
         const localized = kpiDef[language as 'en' | 'de'] || kpiDef.en;
         return {
           key: canonicalKey,
