@@ -478,39 +478,11 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          {/* View toggle + workload */}
-          <div className="flex rounded-lg border overflow-hidden">
-            <button onClick={() => setViewMode('kanban')}
-              className={cn("px-2 py-1.5 transition-colors",
-                viewMode === 'kanban' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"
-              )} title="Board view">
-              <LayoutGrid className="h-3.5 w-3.5" />
-            </button>
-            <button onClick={() => setViewMode('list')}
-              className={cn("px-2 py-1.5 transition-colors",
-                viewMode === 'list' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"
-              )} title="List view">
-              <LayoutList className="h-3.5 w-3.5" />
-            </button>
-            <button onClick={() => setViewMode('timeline')}
-              className={cn("px-2 py-1.5 transition-colors",
-                viewMode === 'timeline' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"
-              )} title="Timeline view">
-              <GanttChart className="h-3.5 w-3.5" />
-            </button>
-          </div>
-          {canCreate && (
-            <Button onClick={openCreatePanel} variant="outline" size="sm">
-              <Plus className="mr-2 h-4 w-4" /> Add Action
-            </Button>
-          )}
-        </div>
       </div>
 
       {/* Command Bar */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="relative flex-shrink-0 w-56">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="relative flex-shrink-0 w-full max-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search actions..."
@@ -538,14 +510,42 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
           ))}
         </div>
 
-        {/* Filter popover */}
-        <Popover open={filterOpen} onOpenChange={setFilterOpen}>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <Filter className="h-3.5 w-3.5" /> Filter
+        <div className="flex items-center gap-2 ml-auto flex-shrink-0">
+          {/* View toggle + workload */}
+          <div className="flex rounded-lg border overflow-hidden">
+            <button onClick={() => setViewMode('kanban')}
+              className={cn("px-2 py-1.5 transition-colors",
+                viewMode === 'kanban' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"
+              )} title="Board view">
+              <LayoutGrid className="h-3.5 w-3.5" />
+            </button>
+            <button onClick={() => setViewMode('list')}
+              className={cn("px-2 py-1.5 transition-colors",
+                viewMode === 'list' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"
+              )} title="List view">
+              <LayoutList className="h-3.5 w-3.5" />
+            </button>
+            <button onClick={() => setViewMode('timeline')}
+              className={cn("px-2 py-1.5 transition-colors",
+                viewMode === 'timeline' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"
+              )} title="Timeline view">
+              <GanttChart className="h-3.5 w-3.5" />
+            </button>
+          </div>
+          {canCreate && (
+            <Button onClick={openCreatePanel} variant="outline" size="sm">
+              <Plus className="mr-2 h-4 w-4" /> Add Action
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-56 p-3 space-y-3" align="end">
+          )}
+
+          {/* Filter popover */}
+          <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <Filter className="h-3.5 w-3.5" /> Filter
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-3 space-y-3" align="end">
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground">Priority</label>
               <div className="flex flex-wrap gap-1">
@@ -590,8 +590,9 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
                 ))}
               </div>
             </div>
-          </PopoverContent>
-        </Popover>
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
 
       {/* Content area: Kanban, List, or Timeline */}
