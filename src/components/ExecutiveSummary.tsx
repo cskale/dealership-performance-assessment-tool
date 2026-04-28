@@ -28,6 +28,7 @@ import { questionnaire } from "@/data/questionnaire";
 import { KpiInsightPanel } from "@/components/shared/KpiInsightPanel";
 import { buildExecutiveNarrative, DEPT_LABELS } from '@/lib/narrativeTemplates';
 import type { MaturityLevel, PrimarySignalCode } from '@/lib/narrativeTemplates';
+import { MODULE_LABELS } from '@/lib/moduleLabels';
 import { generateCeilingInsights } from '@/lib/ceilingAnalysis';
 import { generateSignals } from '@/lib/signalEngine';
 
@@ -108,13 +109,6 @@ const DEPT_COLORS_ES: Record<string, string> = {
   'parts-inventory': 'hsl(215 16% 47%)',
 };
 
-const DEPT_ABBREV_ES: Record<string, string> = {
-  'new-vehicle-sales': 'NVS',
-  'used-vehicle-sales': 'UVS',
-  'service-performance': 'SVC',
-  'financial-operations': 'FIN',
-  'parts-inventory': 'PTS',
-};
 
 export function ExecutiveSummary({ overallScore, scores, answers, completedAt, onNavigateToEncyclopedia, benchmarks }: ExecutiveSummaryProps) {
   const { t, language } = useLanguage();
@@ -350,7 +344,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
                   <div className="flex flex-wrap gap-1.5 mb-2">
                     {p.departments.map((d: string) => {
                       const color = DEPT_COLORS_ES[d] ?? 'hsl(var(--muted-foreground))';
-                      const abbrev = DEPT_ABBREV_ES[d] ?? d;
+                      const abbrev = MODULE_LABELS[d] ?? d;
                       return (
                         <div
                           key={d}

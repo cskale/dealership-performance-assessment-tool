@@ -5,6 +5,7 @@ import { Users, GitBranch, Wrench, Building2, TrendingUp } from 'lucide-react';
 import { SIGNAL_MAPPINGS, type RootCauseDimension, type EnrichedSignalMapping } from '@/data/signalMappings';
 import type { Signal } from '@/data/signalTypes';
 import type { LucideIcon } from 'lucide-react';
+import { MODULE_LABELS } from '@/lib/moduleLabels';
 
 interface CausalChainProps {
   signals: Signal[];
@@ -19,13 +20,6 @@ interface CausalChain {
   nodes: ChainNode[];
 }
 
-const DEPT_ABBREV: Record<string, string> = {
-  'new-vehicle-sales': 'NVS',
-  'used-vehicle-sales': 'UVS',
-  'service-performance': 'SVC',
-  'financial-operations': 'FIN',
-  'parts-inventory': 'PTS',
-};
 
 const DEPT_COLORS: Record<string, string> = {
   'new-vehicle-sales': 'hsl(217 91% 60%)',
@@ -155,7 +149,7 @@ export function CausalChainDiagram({ signals }: CausalChainProps) {
                           color,
                         }}
                       >
-                        {DEPT_ABBREV[node.departmentKey] ?? node.departmentKey}
+                        {MODULE_LABELS[node.departmentKey] ?? node.departmentKey}
                       </div>
                       {ni < chain.nodes.length - 1 && (
                         <span className="text-[12px] text-muted-foreground">→</span>
