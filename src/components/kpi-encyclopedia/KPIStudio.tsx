@@ -139,6 +139,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
     kpi.unitOfMeasure?.toLowerCase()?.includes("minute") ||
     kpi.unitOfMeasure?.toLowerCase()?.includes("day");
   const directionLabel = isLowerBetter ? t.lowerBetter : t.higherBetter;
+  const benchmarkSegments = isLowerBetter ? BENCHMARK_GOOD_TO_BAD : BENCHMARK_BAD_TO_GOOD;
   const hasInterdependencies = !!(
     kpi.interdependencies &&
     (kpi.interdependencies.upstreamDrivers.length > 0 || kpi.interdependencies.downstreamImpacts.length > 0)
