@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Command, CommandInput, CommandList, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
@@ -14,7 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   CalendarIcon, Save, X, Trash2, Lightbulb,
   Loader2, BarChart3, AlertTriangle, TrendingUp,
-  ArrowRight
+  ArrowRight, ChevronsUpDown, Check
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -460,19 +461,55 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                   {/* Support Required */}
                   <div className="space-y-2">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Support Required</p>
-                    <div className="flex flex-wrap gap-2">
-                      {SUPPORT_OPTIONS.map(s => (
-                        <button key={s} disabled={readOnly}
-                          onClick={() => toggleSupport(s)}
-                          className={cn("px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors",
-                            (formData.support_required_from || []).includes(s)
-                              ? "bg-primary text-primary-foreground border-primary"
-                              : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
-                          )}>
-                          {s}
-                        </button>
-                      ))}
-                    </div>
+                    {readOnly ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {(formData.support_required_from || []).length === 0
+                          ? <span className="text-xs text-muted-foreground">None</span>
+                          : (formData.support_required_from || []).map((s: string) => (
+                              <Badge key={s} variant="outline" className="text-xs">{s}</Badge>
+                            ))}
+                      </div>
+                    ) : (
+                      <>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-between text-left font-normal" disabled={readOnly}>
+                              {(formData.support_required_from || []).length > 0
+                                ? (formData.support_required_from || []).join(', ')
+                                : 'Select support required...'}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[300px] p-0">
+                            <Command>
+                              <CommandInput placeholder="Search..." />
+                              <CommandList>
+                                <CommandGroup>
+                                  {SUPPORT_OPTIONS.map(option => (
+                                    <CommandItem key={option} onSelect={() => toggleSupport(option)}>
+                                      <Check className={cn("mr-2 h-4 w-4", (formData.support_required_from || []).includes(option) ? "opacity-100" : "opacity-0")} />
+                                      {option}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                        {(formData.support_required_from || []).length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {(formData.support_required_from || []).map((s: string) => (
+                              <Badge key={s} variant="outline" className="text-xs gap-1">
+                                {s}
+                                <button type="button" onClick={() => toggleSupport(s)} className="hover:text-destructive">
+                                  <X className="h-2.5 w-2.5" />
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
 
