@@ -161,13 +161,13 @@ const BENEFIT_TEMPLATES: Record<string, string[]> = {
 
 const DEFAULT_BENEFIT = ['Implementing this improvement will yield measurable gains in efficiency and performance, targeting a 5–10% uplift within 60 days.'];
 
-function getKPIType(kpiKey: string): 'INPUT KPI' | 'CORE KPI' | 'OUTCOME KPI' {
+function getKPIType(kpiKey: string): 'Input KPI' | 'Core KPI' | 'Outcome KPI' {
   const def = KPI_DEFINITIONS[kpiKey]?.en;
-  if (!def) return 'CORE KPI';
+  if (!def) return 'Core KPI';
   const cat = (def as any).category?.toLowerCase() || '';
-  if (cat.includes('input') || cat.includes('lead') || cat.includes('activity')) return 'INPUT KPI';
-  if (cat.includes('outcome') || cat.includes('result') || cat.includes('profit') || cat.includes('revenue')) return 'OUTCOME KPI';
-  return 'CORE KPI';
+  if (cat.includes('input') || cat.includes('lead') || cat.includes('activity')) return 'Input KPI';
+  if (cat.includes('outcome') || cat.includes('result') || cat.includes('profit') || cat.includes('revenue')) return 'Outcome KPI';
+  return 'Core KPI';
 }
 
 function getKPIName(kpiKey: string): string {
@@ -177,61 +177,61 @@ function getKPIName(kpiKey: string): string {
 // Driver mappings by signal code
 const DRIVERS_BY_SIGNAL: Record<string, Array<{ name: string; type: string }>> = {
   PROCESS_NOT_STANDARDISED: [
-    { name: 'Missing SOPs', type: 'PROCESS GAP' },
-    { name: 'Inconsistent execution methods', type: 'OPERATIONAL FACTOR' },
-    { name: 'No compliance monitoring', type: 'PROCESS GAP' },
+    { name: 'Missing SOPs', type: 'Process Gap' },
+    { name: 'Inconsistent execution methods', type: 'Operational Factor' },
+    { name: 'No compliance monitoring', type: 'Process Gap' },
   ],
   PROCESS_NOT_EXECUTED: [
-    { name: 'Low accountability', type: 'PROCESS GAP' },
-    { name: 'No process enforcement', type: 'OPERATIONAL FACTOR' },
-    { name: 'Staff skill gaps', type: 'INPUT KPI' },
+    { name: 'Low accountability', type: 'Process Gap' },
+    { name: 'No process enforcement', type: 'Operational Factor' },
+    { name: 'Staff skill gaps', type: 'Input KPI' },
   ],
   ROLE_OWNERSHIP_MISSING: [
-    { name: 'Undefined responsibilities', type: 'PROCESS GAP' },
-    { name: 'Overlapping role scope', type: 'OPERATIONAL FACTOR' },
+    { name: 'Undefined responsibilities', type: 'Process Gap' },
+    { name: 'Overlapping role scope', type: 'Operational Factor' },
   ],
   KPI_NOT_DEFINED: [
-    { name: 'No measurement framework', type: 'PROCESS GAP' },
-    { name: 'Unclear performance targets', type: 'OPERATIONAL FACTOR' },
+    { name: 'No measurement framework', type: 'Process Gap' },
+    { name: 'Unclear performance targets', type: 'Operational Factor' },
   ],
   KPI_NOT_REVIEWED: [
-    { name: 'No review cadence', type: 'PROCESS GAP' },
-    { name: 'Data not acted upon', type: 'OPERATIONAL FACTOR' },
+    { name: 'No review cadence', type: 'Process Gap' },
+    { name: 'Data not acted upon', type: 'Operational Factor' },
   ],
   CAPACITY_MISALIGNED: [
-    { name: 'Demand pattern mismatch', type: 'OPERATIONAL FACTOR' },
-    { name: 'Fixed scheduling model', type: 'PROCESS GAP' },
-    { name: 'Insufficient cross-training', type: 'INPUT KPI' },
+    { name: 'Demand pattern mismatch', type: 'Operational Factor' },
+    { name: 'Fixed scheduling model', type: 'Process Gap' },
+    { name: 'Insufficient cross-training', type: 'Input KPI' },
   ],
   TOOL_UNDERUTILISED: [
-    { name: 'Insufficient training', type: 'INPUT KPI' },
-    { name: 'Manual process defaults', type: 'PROCESS GAP' },
-    { name: 'Low adoption enforcement', type: 'OPERATIONAL FACTOR' },
+    { name: 'Insufficient training', type: 'Input KPI' },
+    { name: 'Manual process defaults', type: 'Process Gap' },
+    { name: 'Low adoption enforcement', type: 'Operational Factor' },
   ],
   GOVERNANCE_WEAK: [
-    { name: 'Informal decision-making', type: 'PROCESS GAP' },
-    { name: 'No approval workflows', type: 'OPERATIONAL FACTOR' },
-    { name: 'Insufficient oversight frequency', type: 'PROCESS GAP' },
+    { name: 'Informal decision-making', type: 'Process Gap' },
+    { name: 'No approval workflows', type: 'Operational Factor' },
+    { name: 'Insufficient oversight frequency', type: 'Process Gap' },
   ],
 };
 
 // Consequence mappings by department type
 const CONSEQUENCES_SALES: Array<{ name: string; type: string }> = [
-  { name: 'Revenue leakage', type: 'FINANCIAL OUTCOME' },
-  { name: 'Lower closing rates', type: 'PRODUCTIVITY OUTCOME' },
-  { name: 'Customer defection', type: 'CUSTOMER OUTCOME' },
+  { name: 'Revenue leakage', type: 'Financial Outcome' },
+  { name: 'Lower closing rates', type: 'Productivity Outcome' },
+  { name: 'Customer defection', type: 'Customer Outcome' },
 ];
 
 const CONSEQUENCES_SERVICE: Array<{ name: string; type: string }> = [
-  { name: 'Reduced retention', type: 'CUSTOMER OUTCOME' },
-  { name: 'Lower labour revenue', type: 'FINANCIAL OUTCOME' },
-  { name: 'Increased rework', type: 'PRODUCTIVITY OUTCOME' },
+  { name: 'Reduced retention', type: 'Customer Outcome' },
+  { name: 'Lower labour revenue', type: 'Financial Outcome' },
+  { name: 'Increased rework', type: 'Productivity Outcome' },
 ];
 
 const CONSEQUENCES_DEFAULT: Array<{ name: string; type: string }> = [
-  { name: 'Margin compression', type: 'FINANCIAL OUTCOME' },
-  { name: 'Operational inefficiency', type: 'PRODUCTIVITY OUTCOME' },
-  { name: 'Competitive disadvantage', type: 'CUSTOMER OUTCOME' },
+  { name: 'Margin compression', type: 'Financial Outcome' },
+  { name: 'Operational inefficiency', type: 'Productivity Outcome' },
+  { name: 'Competitive disadvantage', type: 'Customer Outcome' },
 ];
 
 const SALES_DEPTS = ['New Vehicle Sales', 'Used Vehicle Sales', 'Financial Operations', 'Sales', 'Finance'];
@@ -292,29 +292,29 @@ export function generateContextIntelligence(action: InstantiatedAction): Context
   if (linked_kpis.length < 2) {
     const deptKpis: Record<string, Array<{ name: string; type: string; reason: string }>> = {
       'New Vehicle Sales': [
-        { name: 'Units Sold Per Executive', type: 'CORE KPI', reason: 'Direct measure of sales team productivity affected by process improvements.' },
-        { name: 'Closing Ratio', type: 'CORE KPI', reason: 'Conversion effectiveness is directly improved by standardised sales processes.' },
+        { name: 'Units Sold Per Executive', type: 'Core KPI', reason: 'Direct measure of sales team productivity affected by process improvements.' },
+        { name: 'Closing Ratio', type: 'Core KPI', reason: 'Conversion effectiveness is directly improved by standardised sales processes.' },
       ],
       'Used Vehicle Sales': [
-        { name: 'Days in Inventory', type: 'CORE KPI', reason: 'Inventory velocity improves with standardised pricing and reconditioning processes.' },
-        { name: 'Used Vehicle Gross Profit', type: 'OUTCOME KPI', reason: 'Better process execution protects margins across the used vehicle lifecycle.' },
+        { name: 'Days in Inventory', type: 'Core KPI', reason: 'Inventory velocity improves with standardised pricing and reconditioning processes.' },
+        { name: 'Used Vehicle Gross Profit', type: 'Outcome KPI', reason: 'Better process execution protects margins across the used vehicle lifecycle.' },
       ],
       'Service': [
-        { name: 'Labour Utilisation Rate', type: 'CORE KPI', reason: 'Service productivity directly benefits from process standardisation and capacity alignment.' },
-        { name: 'Service Retention Rate', type: 'OUTCOME KPI', reason: 'Customer retention improves when service experiences are consistent and predictable.' },
+        { name: 'Labour Utilisation Rate', type: 'Core KPI', reason: 'Service productivity directly benefits from process standardisation and capacity alignment.' },
+        { name: 'Service Retention Rate', type: 'Outcome KPI', reason: 'Customer retention improves when service experiences are consistent and predictable.' },
       ],
       'Parts & Inventory': [
-        { name: 'Parts Fill Rate', type: 'CORE KPI', reason: 'First-time availability improves with better inventory management processes.' },
-        { name: 'Parts Obsolescence Rate', type: 'INPUT KPI', reason: 'Active inventory governance reduces dead stock and frees working capital.' },
+        { name: 'Parts Fill Rate', type: 'Core KPI', reason: 'First-time availability improves with better inventory management processes.' },
+        { name: 'Parts Obsolescence Rate', type: 'Input KPI', reason: 'Active inventory governance reduces dead stock and frees working capital.' },
       ],
       'Financial Operations': [
-        { name: 'F&I Penetration Rate', type: 'CORE KPI', reason: 'Structured F&I presentation processes directly drive product attachment rates.' },
-        { name: 'Back-End Gross Per Unit', type: 'OUTCOME KPI', reason: 'F&I revenue per unit improves with menu-based selling and better product knowledge.' },
+        { name: 'F&I Penetration Rate', type: 'Core KPI', reason: 'Structured F&I presentation processes directly drive product attachment rates.' },
+        { name: 'Back-End Gross Per Unit', type: 'Outcome KPI', reason: 'F&I revenue per unit improves with menu-based selling and better product knowledge.' },
       ],
     };
     const fallbacks = deptKpis[dept] || [
-      { name: 'Departmental Efficiency Score', type: 'CORE KPI', reason: 'Overall efficiency improves through better process execution and resource alignment.' },
-      { name: 'Customer Satisfaction Index', type: 'OUTCOME KPI', reason: 'Consistent execution quality drives higher satisfaction and repeat business.' },
+      { name: 'Departmental Efficiency Score', type: 'Core KPI', reason: 'Overall efficiency improves through better process execution and resource alignment.' },
+      { name: 'Customer Satisfaction Index', type: 'Outcome KPI', reason: 'Consistent execution quality drives higher satisfaction and repeat business.' },
     ];
     for (const fb of fallbacks) {
       if (linked_kpis.length >= 2) break;
@@ -324,8 +324,8 @@ export function generateContextIntelligence(action: InstantiatedAction): Context
 
   // likely_drivers
   const likely_drivers = (DRIVERS_BY_SIGNAL[signal] || [
-    { name: 'Process maturity gap', type: 'PROCESS GAP' },
-    { name: 'Execution inconsistency', type: 'OPERATIONAL FACTOR' },
+    { name: 'Process maturity gap', type: 'Process Gap' },
+    { name: 'Execution inconsistency', type: 'Operational Factor' },
   ]).slice(0, 3);
 
   // likely_consequences
