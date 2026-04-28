@@ -173,7 +173,7 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
       const kpi = KPI_DEFINITIONS[key];
       if (!kpi) return { name: key, type: 'KPI', reason: '' };
       const loc = kpi[language as 'en' | 'de'] || kpi.en;
-      return { name: loc.title, type: 'CORE KPI', reason: loc.whyItMatters || '' };
+      return { name: loc.title, type: 'Core KPI', reason: loc.whyItMatters || '' };
     });
   }, [linkedKpisData, formData.kpis_linked_to, language]);
 
@@ -286,6 +286,47 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                       </Select>
                     </div>
                   </div>
+
+                  {/* KPIs This Action Will Improve */}
+                  {(linkedKpiDetails.length > 0 || mode === 'create') && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold tracking-wide text-muted-foreground flex items-center gap-1.5">
+                        <BarChart3 className="h-3.5 w-3.5 text-muted-foreground" /> KPIs This Action Will Improve
+                      </p>
+                      {mode === 'create' && linkedKpiDetails.length === 0 ? (
+                        <p className="text-xs text-muted-foreground italic">KPIs will appear here after action generation.</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {visibleKpis.map((kpi: unknown, i: number) => {
+                            const k = (typeof kpi === 'object' && kpi !== null ? kpi : { name: String(kpi) }) as { name?: string; title?: string; key?: string; type?: string; reason?: string };
+                            return (
+                              <div key={i} className="w-full rounded-lg border border-border p-3 bg-card">
+                                <div className="flex items-center justify-between gap-3 mb-1">
+                                  <span className="text-sm font-medium text-foreground flex items-center gap-1.5 min-w-0">
+                                    <BarChart3 className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                    {k.name || k.title || k.key}
+                                  </span>
+                                  {k.type && (
+                                    <Badge variant="outline" className={cn("text-xs font-medium bg-transparent shrink-0", getKpiBadgeStyle(k.type))}>
+                                      {k.type}
+                                    </Badge>
+                                  )}
+                                </div>
+                                {k.reason && (
+                                  <p className="text-xs text-muted-foreground leading-relaxed ml-[18px]">{k.reason}</p>
+                                )}
+                              </div>
+                            );
+                          })}
+                          {linkedKpiDetails.length > 4 && !showKpiAll && (
+                            <Button variant="ghost" size="sm" onClick={() => setShowKpiAll(true)} className="text-xs w-full">
+                              + {linkedKpiDetails.length - 4} more KPIs
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <Separator />
 
@@ -475,47 +516,10 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                       </div>
                     )}
 
-                    {/* KPI Intelligence */}
-                    {linkedKpiDetails.length > 0 && (
-                      <div className="rounded-xl border border-border/50 bg-card p-4 space-y-3">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5">
-                          <BarChart3 className="h-3.5 w-3.5 text-muted-foreground" /> KPIs This Action Will Improve
-                        </p>
-                        <div className="space-y-2">
-                          {visibleKpis.map((kpi: unknown, i: number) => {
-                            const k = (typeof kpi === 'object' && kpi !== null ? kpi : { name: String(kpi) }) as { name?: string; title?: string; key?: string; type?: string; reason?: string };
-                            return (
-                            <div key={i} className="w-full rounded-lg border border-border p-3 bg-card">
-                              <div className="flex items-center justify-between gap-3 mb-1">
-                                <span className="text-sm font-medium text-foreground flex items-center gap-1.5 min-w-0">
-                                  <BarChart3 className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                                  {k.name || k.title || k.key}
-                                </span>
-                                {k.type && (
-                                  <Badge variant="outline" className={cn("text-xs font-medium uppercase bg-transparent shrink-0", getKpiBadgeStyle(k.type))}>
-                                    {k.type}
-                                  </Badge>
-                                )}
-                              </div>
-                              {k.reason && (
-                                <p className="text-xs text-muted-foreground leading-relaxed ml-[18px]">{k.reason}</p>
-                              )}
-                            </div>
-                            );
-                          })}
-                          {linkedKpiDetails.length > 4 && !showKpiAll && (
-                            <Button variant="ghost" size="sm" onClick={() => setShowKpiAll(true)} className="text-xs w-full">
-                              + {linkedKpiDetails.length - 4} more KPIs
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
                     {/* Likely Drivers */}
                     {likelyDrivers.length > 0 && (
                       <div className="rounded-xl border border-border/50 bg-card p-4 space-y-2">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5">
+                        <p className="text-xs font-semibold tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5">
                           <AlertTriangle className="h-3.5 w-3.5 text-muted-foreground" /> Likely Drivers
                         </p>
                         <div className="space-y-2">
@@ -525,7 +529,7 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                             <div key={i} className="flex items-center gap-2">
                               <span className="text-sm text-foreground">{typeof d === 'string' ? d : (obj?.name || obj?.label || '')}</span>
                               {obj?.type && (
-                                <span className="text-xs font-medium uppercase tracking-wide bg-muted text-muted-foreground rounded-full px-2 py-0.5">{obj.type}</span>
+                                <span className="text-xs font-medium tracking-wide bg-muted text-muted-foreground rounded-full px-2 py-0.5">{obj.type}</span>
                               )}
                             </div>
                             );
@@ -537,7 +541,7 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                     {/* Likely Consequences */}
                     {likelyConsequences.length > 0 && (
                       <div className="rounded-xl border border-border/50 bg-card p-4 space-y-2">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5">
+                        <p className="text-xs font-semibold tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5">
                           <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" /> Likely Consequences
                         </p>
                         <div className="space-y-2">
@@ -547,7 +551,7 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                             <div key={i} className="flex items-center gap-2">
                               <span className="text-sm text-foreground">{typeof c === 'string' ? c : (obj?.name || obj?.label || '')}</span>
                               {obj?.type && (
-                                <span className="text-xs font-medium uppercase tracking-wide bg-muted text-muted-foreground rounded-full px-2 py-0.5">{obj.type}</span>
+                                <span className="text-xs font-medium tracking-wide bg-muted text-muted-foreground rounded-full px-2 py-0.5">{obj.type}</span>
                               )}
                             </div>
                             );
