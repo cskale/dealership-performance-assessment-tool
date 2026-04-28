@@ -204,55 +204,35 @@ export function CategoryAssessment({
                 </div>
 
                 {question.type === "scale" && question.scale && (
-                  <div className="space-y-4 mb-4">
-                    <div className="text-xs text-muted-foreground text-center">
-                      {t('assessment.rateFrom')} {question.scale.min} ({t('assessment.lowest')}) {t('assessment.to')} {question.scale.max} ({t('assessment.highest')})
-                    </div>
-
-                    <div className="grid grid-cols-5 gap-2">
+                  <div className="mb-4">
+                    <div className="grid grid-cols-5 gap-3">
                       {Array.from({ length: question.scale.max }, (_, i) => {
                         const rating = i + 1;
                         const isSelected = value === rating;
                         const label = getRatingText(question, rating);
 
                         return (
-                          <Button
+                          <button
                             key={rating}
-                            variant={isSelected ? "default" : "outline"}
                             onClick={() => handleRatingClick(question.id, rating)}
-                            className={`min-h-[80px] h-auto p-2 flex flex-col items-center justify-start gap-1 transition-all duration-200 ${
+                            className={`min-h-[90px] w-full rounded-xl border-2 bg-white px-3 py-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all hover:border-brand-300 hover:bg-brand-050 ${
                               isSelected
-                                ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                                : "border hover:bg-muted/50 hover:scale-[1.02]"
+                                ? "border-brand-500 bg-brand-050"
+                                : "border-neutral-200"
                             }`}
                           >
-                            <span className={`text-xl font-medium ${isSelected ? '' : 'text-foreground'}`}>
+                            <span className={`text-[11px] font-medium text-center ${isSelected ? 'text-brand-500' : 'text-neutral-400'}`}>
                               {rating}
                             </span>
-                            <span className={`text-[10px] text-center leading-tight whitespace-normal break-words w-full overflow-visible ${
-                              isSelected ? 'opacity-90' : 'text-muted-foreground'
+                            <span className={`text-sm text-center leading-tight whitespace-normal break-words w-full overflow-visible ${
+                              isSelected ? 'text-neutral-900 font-bold' : 'text-neutral-800 font-semibold'
                             }`}>
                               {label}
                             </span>
-                          </Button>
+                          </button>
                         );
                       })}
                     </div>
-
-                    {value !== undefined && (
-                      <div className="flex items-center gap-1.5 mt-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-success flex-shrink-0" />
-                        <span className="text-xs text-muted-foreground">Saved</span>
-                      </div>
-                    )}
-
-                    {value && (
-                      <div className="text-center p-3 bg-muted/30 rounded border">
-                        <p className="text-sm text-foreground">
-                          <span className="font-medium">{t('assessment.selected')}:</span> {value} - {getRatingText(question, value)}
-                        </p>
-                      </div>
-                    )}
                   </div>
                 )}
 

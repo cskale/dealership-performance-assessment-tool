@@ -75,6 +75,33 @@ function isOverdue(action: ActionRecord): boolean {
   return new Date(action.target_completion_date) < new Date(new Date().toDateString());
 }
 
+function getDueBadge(action: ActionRecord): { label: string; className: string } | null {
+  if (!action.target_completion_date) return null;
+  const daysRemaining = Math.ceil((new Date(action.target_completion_date).getTime() - new Date().getTime()) / 86400000);
+  const overdue = isOverdue(action);
+  const label = overdue
+    ? 'Overdue'
+    : daysRemaining <= 30
+    ? '30 Days'
+    : daysRemaining <= 60
+    ? '60 Days'
+    : daysRemaining <= 90
+    ? '90 Days'
+    : new Date(action.target_completion_date).toLocaleDateString();
+
+  return {
+    label,
+    className: overdue ? 'bg-red-50 text-red-600' : 'bg-neutral-100 text-neutral-600',
+  };
+}
+
+function getPriorityPillClass(priority: ActionRecord['priority']): string {
+  if (priority === 'critical') return 'bg-red-50 border-red-200 text-red-700';
+  if (priority === 'high') return 'bg-orange-50 border-orange-200 text-orange-700';
+  if (priority === 'medium') return 'bg-yellow-50 border-yellow-200 text-yellow-700';
+  return 'bg-neutral-50 border-neutral-200 text-neutral-500';
+}
+
 const STATUS_STRIPE: Record<string, string> = {
   'Open': 'bg-muted-foreground',
   'In Progress': 'bg-warning',
@@ -678,50 +705,26 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
                 const priorityConfig = priorityDisplay[action.priority as keyof typeof priorityDisplay] || priorityDisplay.medium;
                 const displayTitle = cleanActionTitle(action.action_title);
                 const displayDesc = cleanDescription(action.action_description);
-                const overdue = isOverdue(action);
-                const triageScore = computeTriageScore(action);
-                const triageBadge = getTriageBadge(triageScore);
-                const linkedKpisCount = Array.isArray(action.linked_kpis) ? action.linked_kpis.length :
-                  (action.linked_kpis && typeof action.linked_kpis === 'object' ? Object.keys(action.linked_kpis).length : 0);
-                const kpiCount = linkedKpisCount || (action.kpis_linked_to?.length || 0);
                 const isCompleted = action.status === 'Completed';
+                const dueBadge = getDueBadge(action);
+                const topicHint = displayDesc.trim().split(/\s+/)[0] || '';
 
                 return (
                   <div
                     key={action.id}
                     onClick={() => openEditPanel(action)}
                     className={cn(
-                      "group relative flex rounded-lg border bg-card cursor-pointer transition-all hover:shadow-md hover:-translate-y-px",
+                      "group bg-white rounded-xl border border-neutral-200 border-l-4 border-l-brand-500 shadow-sm hover:shadow-md transition-shadow cursor-pointer",
                       isCompleted && "opacity-70"
                     )}
                   >
-                    <div className="flex-1 p-4 min-w-0">
+                    <div className="flex-1 min-w-0 p-4">
                       <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap mb-1">
-                            <h3 className="font-medium text-sm text-foreground truncate">{displayTitle}</h3>
-                          </div>
-                          <p className="text-xs text-muted-foreground line-clamp-1 mb-2">{displayDesc}</p>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-label border border-border text-muted-foreground">
-                              {action.department}
-                            </span>
-                            <Badge variant="outline" className="text-label rounded-md border-border bg-muted text-muted-foreground">{priorityConfig.label}</Badge>
-                            {triageBadge && (
-                              <Badge variant="outline" className={cn("text-label rounded-md", triageBadge.className)}>{triageBadge.label}</Badge>
-                            )}
-                            {kpiCount > 0 && (
-                              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Target className="h-3 w-3" /> {kpiCount} KPIs
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                          {action.target_completion_date && (
-                            <span className={cn("text-xs", overdue ? "text-destructive font-medium" : "text-muted-foreground")}>
-                              {overdue && <AlertTriangle className="h-3 w-3 inline mr-1" />}
-                              {new Date(action.target_completion_date).toLocaleDateString()}
+                        <h3 className="text-sm font-semibold text-neutral-900 line-clamp-2 flex-1">{displayTitle}</h3>
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          {dueBadge && (
+                            <span className={cn("text-[11px] font-medium px-2 py-0.5 rounded-md whitespace-nowrap", dueBadge.className)}>
+                              {dueBadge.label}
                             </span>
                           )}
                           {canEdit && (
@@ -731,6 +734,25 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
                             </Button>
                           )}
                         </div>
+                      </div>
+                      <p className="mt-1 text-xs text-neutral-500 leading-relaxed line-clamp-2">{displayDesc}</p>
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        <span className="text-[11px] px-2 py-0.5 rounded-full border border-neutral-200 bg-neutral-50 text-neutral-600">
+                          {action.department}
+                        </span>
+                        {action.responsible_person && (
+                          <span className="text-[11px] px-2 py-0.5 rounded-full border border-neutral-200 bg-neutral-50 text-neutral-600">
+                            {action.responsible_person}
+                          </span>
+                        )}
+                        {topicHint && (
+                          <span className="text-[11px] px-2 py-0.5 rounded-full border border-neutral-200 bg-neutral-50 text-neutral-600">
+                            {topicHint}
+                          </span>
+                        )}
+                        <span className={cn("text-[11px] px-2 py-0.5 rounded-full border", getPriorityPillClass(action.priority))}>
+                          {priorityConfig.label}
+                        </span>
                       </div>
                     </div>
                   </div>
