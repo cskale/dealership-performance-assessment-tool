@@ -285,7 +285,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
-          {topSignals.length === 0 && systemicPatterns.length === 0 && (
+          {weaknesses.length === 0 && systemicPatterns.length === 0 && (
             <div className="flex items-center gap-3">
               <CheckCircle className="h-5 w-5 text-success shrink-0" />
               <p className="text-[13px] text-foreground">
@@ -295,25 +295,27 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
               </p>
             </div>
           )}
-          {topSignals.length > 0 && (
+          {weaknesses.length > 0 && (
             <div>
               <div className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 mb-3">
                 {language === 'de' ? 'Abteilungsbefunde' : 'Department Findings'}
               </div>
               <div>
-                {topSignals.map((signal, i) => {
-            const severityLabel = signal.severity === 'HIGH' ? (language === 'de' ? 'Kritisch' : 'Critical')
+                {weaknesses.map((weakness, i) => {
+            const severityLabel = weakness.score < 50 ? (language === 'de' ? 'Kritisch' : 'Critical')
               : (language === 'de' ? 'Beobachten' : 'Watch');
-            const severityBadge = signal.severity === 'HIGH'
+            const severityBadge = weakness.score < 50
               ? 'bg-red-50 text-red-700 border-red-200'
               : 'bg-amber-50 text-amber-700 border-amber-200';
-            const deptName = getDepartmentName(signal.moduleKey, language);
-            const triggerCount = signal.triggeringQuestionIds?.length ?? 1;
+            const deptName = getDepartmentName(weakness.dept, language);
+            const triggerCount = subCategoryData[weakness.dept]?.subCategories
+              .filter((category) => category.score < 60)
+              .reduce((count, category) => count + category.questionCount, 0) || 1;
             return (
               <div key={`finding-${i}`} className="border-b border-neutral-100 py-3 flex items-start justify-between gap-4 last:border-b-0">
                   <div className="flex-1">
                     <div className="text-sm font-semibold text-neutral-900">
-                      {signalLabels[signal.signalCode] ?? signal.signalCode}
+                      {deptName}
                     </div>
                     <div className="text-xs text-neutral-500 mt-0.5">
                       {deptName} · {triggerCount} {language === 'de' ? (triggerCount > 1 ? 'Fragen markiert' : 'Frage markiert') : (triggerCount > 1 ? 'questions flagged' : 'question flagged')}
