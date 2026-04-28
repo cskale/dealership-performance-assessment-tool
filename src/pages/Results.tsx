@@ -24,6 +24,7 @@ import { useMultiTenant } from "@/hooks/useMultiTenant";
 import { supabase } from "@/integrations/supabase/client";
 import type { PDFExportData } from "@/lib/pdfReportGenerator";
 import { calculateWeightedScore, CATEGORY_WEIGHTS } from "@/lib/scoringEngine";
+import { TOTAL_QUESTIONS } from "@/lib/constants";
 import { getMaturityLevel } from "@/lib/maturityConfig";
 import { generateCeilingInsights } from "@/lib/ceilingAnalysis";
 import { fetchModuleBenchmarks, STATIC_BENCHMARKS, type ModuleBenchmark } from "@/lib/benchmarkUtils";
@@ -336,12 +337,7 @@ export default function Results() {
               foundational: 'maturity-foundational',
             } as const)[maturityKey];
             const modulesAssessed = resultsData?.scores ? Object.keys(resultsData.scores).length : 0;
-            const confidenceLevel = overallScore >= 70
-              ? (language === 'de' ? 'Hoch' : 'High')
-              : overallScore >= 45
-              ? (language === 'de' ? 'Mittel' : 'Medium')
-              : (language === 'de' ? 'Niedrig' : 'Low');
-            const confidenceColor = overallScore >= 70 ? 'text-[hsl(var(--dd-green))]' : overallScore >= 45 ? 'text-[hsl(var(--dd-amber))]' : 'text-[hsl(var(--dd-red))]';
+            const answeredQuestions = resultsData?.answers ? Object.keys(resultsData.answers).length : 0;
 
             const cardBase = "bg-card border border-border rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]";
             const labelClass = "text-caption uppercase tracking-widest text-muted-foreground font-semibold mb-1";
@@ -401,14 +397,12 @@ export default function Results() {
                   </div>
                 </div>
 
-                {/* Card 4 — Confidence */}
+                {/* Card 4 — Assessment Coverage */}
                 <div className={cn(cardBase, "opacity-0 animate-fade-in")} style={{ animationDelay: '150ms', animationFillMode: 'forwards' }}>
-                  <div className={labelClass}>{language === 'de' ? 'Bewertungskonfidenz' : 'Assessment Confidence'}</div>
-                  <div className={`text-h4 ${confidenceColor}`}>{confidenceLevel}</div>
+                  <div className={labelClass}>{language === 'de' ? 'Bewertungsabdeckung' : 'Assessment Coverage'}</div>
+                  <div className="text-h4 text-foreground">{answeredQuestions}/{TOTAL_QUESTIONS}</div>
                   <div className="text-caption text-muted-foreground mt-1">
-                    {overallScore < 45
-                      ? (language === 'de' ? 'Überprüfung empfohlen' : 'Review recommended')
-                      : (language === 'de' ? 'Stabile Ergebnisse' : 'Stable results')}
+                    {language === 'de' ? `Fragen · ${modulesAssessed} Module bewertet` : `questions · ${modulesAssessed} modules assessed`}
                   </div>
                 </div>
               </div>
