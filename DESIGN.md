@@ -1,8 +1,8 @@
 # DESIGN.md — Dealer Diagnostic Platform
 ## Visual Language & Component Specification
-### Version 2.0 · 22 April 2026 · Reference this file in every Lovable prompt
+### Version 3.0 · 28 April 2026 · Reference this file in every Lovable prompt
 
-> **v2 changes (Apr 2026):** Font → Inter, Cards → soft shadow (no border), page background → `neutral-100`, sidebar active state refined, department labels use full names, brand blue `#1D7AFC` is sole accent metric colour. See §16 for full work split.
+> **v3 changes (Apr 2026):** Action card priority borders → uniform brand blue only; department abbreviations removed from display UI (full names everywhere); card top-bar accents → uniform brand blue; heatmap cell colours → soft tint palette; question tile font sizes increased + centre-aligned; Inter confirmed as primary font; department badges removed from UI. See §16 for full change log.
 
 ---
 
@@ -35,7 +35,7 @@ This file is the single source of truth for all visual decisions. Lovable must n
 /* Brand Blue — the only accent colour allowed */
 --brand-700: 213 79% 41%;   /* #1a5fb4 — headers, active nav, primary CTA hover */
 --brand-600: 214 81% 48%;   /* #1e6ec8 — links, secondary CTAs */
---brand-500: 213 97% 55%;   /* #1a8cf8 — primary buttons, active states */
+--brand-500: 213 97% 55%;   /* #1D7AFC — primary buttons, active states */
 --brand-400: 213 100% 67%;  /* #4fa8ff — icon fills, chart series 1 */
 --brand-300: 213 100% 76%;  /* #7dc0ff — light accents */
 --brand-200: 213 100% 87%;  /* #b3d9ff — backgrounds, hover fills */
@@ -75,7 +75,7 @@ Performing    (70–84):  #2563eb  (blue-600)    — at benchmark
 Advanced      (85–100): #16a34a  (green-600)   — above benchmark
 ```
 
-### 2.4 Department Colours (Consistent across all charts and badges)
+### 2.4 Department Colours (Charts only — NOT used in card UI accents)
 
 ```
 NVS (New Vehicle Sales):    #2563eb  blue-600
@@ -85,6 +85,8 @@ FIN (Financial):            #059669  emerald-600
 PTS (Parts):                #d97706  amber-600
 ```
 
+**v3 rule:** Department colours are used ONLY in charts, data visualisations, and the heatmap row labels. They must NOT be used for card top-bar accents or left-border priority indicators — those use brand blue (`--brand-500`) only.
+
 ### 2.5 Colour Rules
 
 - **Never** use purple gradients on white. This is a SaaS cliché.
@@ -93,6 +95,7 @@ PTS (Parts):                #d97706  amber-600
 - Cards use `--background` (white) on the neutral-050 page background.
 - Dark mode uses the existing `.dark` variables — do not add new dark mode tokens.
 - Data visualisations use the department colour scale above + neutral greys for non-highlighted series.
+- **Department card top-bar accents:** always `--brand-500` (#1D7AFC), never per-department colour.
 
 ---
 
@@ -100,7 +103,7 @@ PTS (Parts):                #d97706  amber-600
 
 ### 3.1 Font Stack
 
-**Current font: Inter** (replaced Roboto in v2).
+**Primary font: Inter** (v3 confirmation — Inter is the canonical font).
 
 ```css
 /* index.css */
@@ -131,7 +134,7 @@ fontFamily: { sans: ['"Inter"', 'system-ui', 'sans-serif'], mono: ['"DM Mono"', 
 ### 3.3 Typography Rules
 
 - **Score numbers** always use `.text-metric-lg` with `tabular-nums` class
-- **Department labels** always use `.text-label uppercase tracking-wider`
+- **Department labels** when shown: always use `.text-label uppercase tracking-wider` with full name, never abbreviation
 - **Action titles** use `.text-body-md font-medium` (not bold)
 - **Section headings on results pages** use `.text-h3` max — never h1/h2 inside content panels
 - Letter-spacing: use `tracking-tight` on h1/h2 only, `tracking-wider` on uppercase labels only
@@ -185,8 +188,6 @@ shadow-card:    0 1px 3px 0 rgb(15 23 42 / 0.06), 0 4px 12px 0 rgb(15 23 42 / 0.
 shadow-elevated:0 4px 16px 0 rgb(15 23 42 / 0.08), 0 1px 4px 0 rgb(15 23 42 / 0.04)
 ```
 
-**Exception:** Department KPI mini-cards use `border-2 border-brand-500` as an active/focus ring — intentional, not a contradiction.
-
 ---
 
 ## 5. COMPONENT SPECIFICATIONS
@@ -210,28 +211,28 @@ Size:          120px diameter (results page), 80px (dashboard cards), 48px (list
 
 ```
 ┌──────────────────────────────┐
-│  [Dept colour bar, 4px top]  │
-│  Score Ring (80px)  Dept name│  ← .text-h5
-│                     NVS      │  ← .text-label uppercase dept colour
+│  [Brand blue bar, 4px top]   │  ← always --brand-500, never per-dept colour
+│  Score Ring (80px)  Dept name│  ← .text-h5, full name (e.g. "New Vehicle Sales")
 │  ── ── ── ── ── ── ── ── ──  │
 │  3 key signal chips below    │  ← max 3, truncated
 └──────────────────────────────┘
 ```
 
-- Top border accent: 4px, department colour, `rounded-t-lg`
+- Top border accent: 4px, **brand-500 only** (`#1D7AFC`), `rounded-t-lg`
+- Department name: always full name ("New Vehicle Sales", not "NVS")
 - No more than 3 signal chips per card
 - Signal chips: `text-xs bg-muted rounded px-2 py-0.5`
 
 ### 5.3 Assessment Question Cards
 
-**CRITICAL — Item 45 in tracker:** Neutral white tiles with left-border accent on selection only.
+**CRITICAL:** Neutral white tiles with left-border accent on selection only.
 
 ```
 Unselected state:
 ┌────────────────────────────────────┐
 │  border border-border              │
 │  bg-white hover:bg-muted/20        │
-│  Scale label (text-body-md)        │
+│  Scale label (text-body-md 12.5px) │  ← min 12.5px, centre-aligned
 │  Score indicator (text-label)      │
 └────────────────────────────────────┘
 
@@ -240,33 +241,34 @@ Selected state:
 │  border-l-4 border-l-primary      │  ← 4px left accent, brand-500
 │  border border-primary/30         │
 │  bg-primary/5                     │
-│  Scale label (text-body-md font-medium)
+│  Scale label (text-body-md font-medium, centre-aligned)
 │  Score indicator (text-label text-primary)
 └────────────────────────────────────┘
 ```
 
-**Never use coloured backgrounds (red/yellow/green) on unselected answer tiles.** This is anchoring bias. Colour appears only on the selected tile's left border.
+- Question text: minimum **16px / font-weight 700**
+- Option label text: minimum **12.5px**, centre-aligned within tile
+- Rating number: top-centre, `text-caption text-muted-foreground`
+- **Never use coloured backgrounds (red/yellow/green) on unselected answer tiles.** Colour appears only on the selected tile's left border.
 
 ### 5.4 Action Cards (Triage / Action Plan)
 
-Priority indicator is a left border, not a coloured background.
+**v3 rule:** All action cards use a single uniform left border colour. No priority colour-coding on the border.
 
 ```
-Critical / Foundational:  border-l-4 border-l-destructive
-High / Developing:        border-l-4 border-l-warning
-Medium / Performing:      border-l-4 border-l-primary
-Low:                      border-l-4 border-l-muted-foreground/30
+All priorities:  border-l-4 border-l-brand-500   ← always #1D7AFC, uniform
 
 Card body: bg-white, no coloured backgrounds
 Time horizon badge: top-right, rounded-full, bg-muted text-label
+Department chip: full name only ("New Vehicle Sales", not "NVS")
 ```
 
 Action card structure:
 ```
-[Priority border] [Title .text-body-md font-medium]
-                  [Context .text-body-sm text-muted-foreground, 2 lines max]
-                  [Role chip] [KPI chip] [Time horizon badge]
-                  [Expand chevron → steps by role]
+[Brand blue border] [Title .text-body-md font-medium]
+                    [Context .text-body-sm text-muted-foreground, 2 lines max]
+                    [Full dept name chip] [Role chip] [Time horizon badge]
+                    [Expand chevron → steps by role]
 ```
 
 ### 5.5 KPI Benchmark Corridor Chart
@@ -290,7 +292,7 @@ Label row below: P25 / Median / P75 values in .text-caption
 
 ### 5.6 Systemic Pattern Cards
 
-Surface BEFORE the action plan in results. These are the diagnostic insight layer.
+Surface BEFORE the action plan in results.
 
 ```
 Pattern type badge:
@@ -300,10 +302,12 @@ Pattern type badge:
 Card:
 ┌──────────────────────────────────────────┐
 │  [Pattern badge]  [Signal name]          │
-│  Affected: [Dept chip] [Dept chip]       │
+│  Affected: [Full dept name] [Full dept name]
 │  One-line description .text-body-sm      │
 └──────────────────────────────────────────┘
 ```
+
+Affected department chips: full names only, brand-500 tint background.
 
 ### 5.7 Navigation Sidebar
 
@@ -328,8 +332,11 @@ Pending:   bg-info/10 text-info border border-info/20
 Blocked:   bg-destructive/10 text-destructive border border-destructive/20
 ```
 
-Always: `rounded-full px-2.5 py-0.5 text-label inline-flex items-center gap-1.5`
+Style: `rounded-md px-2.5 py-1 text-label inline-flex items-center gap-1.5`
+(Note v3: `rounded-md` preferred over `rounded-full` for a more enterprise look)
 Status dot: `w-1.5 h-1.5 rounded-full bg-current`
+
+**No department abbreviation badges.** Department identity is communicated via full name chips only.
 
 ### 5.9 Data Tables
 
@@ -339,6 +346,24 @@ Data rows:  bg-white hover:bg-muted/20 border-b border-border/50
 Numbers:    text-right tabular-nums
 Rank column: font-semibold text-muted-foreground (deemphasised)
 Delta values: text-success (positive ↑) text-destructive (negative ↓) with arrow icon
+```
+
+### 5.10 Department × KPI Heatmap
+
+**v3:** Heatmap cells use soft tint palette — never full-saturation score band colours.
+
+```
+Cell colours (v3 — soft tints):
+  Score ≥85:  bg:#dcf3e8  text:#166534  border:#bbdece  (soft green)
+  Score 70–84: bg:#dbeafe  text:#1e40af  border:#bfdbfe  (soft blue)
+  Score 46–69: bg:#fef3c7  text:#92400e  border:#fde68a  (soft amber)
+  Score 0–45:  bg:#fee2e2  text:#991b1b  border:#fecaca  (soft red)
+  No data:     bg:#F1F2F4  text:#97A0AF  border:transparent
+
+Cell size: 72×56px minimum
+Cell content: score number (12px bold tabular-nums)
+Header row/col: text-label uppercase bg-muted/50
+Row labels: department abbreviation in dept colour (chart context only — acceptable here)
 ```
 
 ---
@@ -368,29 +393,6 @@ For multi-series charts, use department colours in this order:
 - Bar charts: `radius={[4, 4, 0, 0]}` (rounded top only)
 - Line charts: `strokeWidth={2}`, dots only on hover
 - Radar/Spider: department fill with 20% opacity
-
-### 6.4 The 5×5 Department × Root-Cause Heatmap (Item 32)
-
-This is the most important missing visual. Specification:
-
-```
-           People  Process  Tools  Structure  Incentives
-NVS        [cell]  [cell]   [cell]  [cell]    [cell]
-UVS        [cell]  ...
-SVC
-FIN
-PTS
-
-Cell colours:
-  Score ≥70:  bg-success/20 text-success
-  Score 50–69: bg-warning/20 text-warning
-  Score <50:  bg-destructive/20 text-destructive
-  No data:    bg-muted/30 text-muted-foreground
-
-Cell size: 72×56px minimum
-Cell content: score number (text-metric variant, 18px) + optional icon
-Header row/col: text-label uppercase bg-muted/50
-```
 
 ---
 
@@ -510,9 +512,8 @@ Icon:    h-10 w-10 (square)
 
 ---
 
-## 11. RESULTS PAGE LAYOUT (Item 47 — Critical UX Fix)
+## 11. RESULTS PAGE LAYOUT
 
-**Current problem:** 5-tab structure fragments the diagnostic narrative.
 **Target state:** Single scrollable page with sticky section navigation.
 
 ### 11.1 Results Page Structure
@@ -522,19 +523,18 @@ Icon:    h-10 w-10 (square)
 │  STICKY HEADER (64px)                               │
 │  Dealer name · Assessment date · Export button      │
 ├─────────────────────────────────────────────────────┤
-│  SECTION 1: Executive Narrative (no tab needed)     │
+│  SECTION 1: Executive Narrative                     │
 │  Overall score ring + 2-paragraph narrative         │
 │  Score band badge + confidence indicator            │
 ├─────────────────────────────────────────────────────┤
-│  SECTION 2: Department Heatmap (Hero Visual)        │
-│  5×5 grid or 5 dept score bars                      │
-│  THIS replaces the score ring as the hero           │
+│  SECTION 2: Department Performance (Hero Visual)    │
+│  5×5 KPI heatmap (soft tint colours — see §5.10)   │
 ├─────────────────────────────────────────────────────┤
 │  SECTION 3: Systemic Patterns (if any)              │
 │  Pattern cards — BEFORE action plan                 │
 ├─────────────────────────────────────────────────────┤
 │  SECTION 4: Action Plan (30/60/90 day columns)      │
-│  Tiered by time horizon, role-addressable           │
+│  Uniform blue left border · full dept names         │
 ├─────────────────────────────────────────────────────┤
 │  SECTION 5: KPI Deep Dive (expandable)              │
 │  Per-department, accordion                          │
@@ -553,7 +553,7 @@ Width: 160px, `text-caption`, active section highlighted with brand-500 left bor
 
 ---
 
-## 12. EMPTY STATES (Item 48)
+## 12. EMPTY STATES
 
 Every empty state must have:
 1. A single icon (size-8, neutral-400)
@@ -573,20 +573,49 @@ Benefits: [Weighted scoring] [Benchmark comparison] [Action plan]
 
 ---
 
-## 13. LOVABLE PROMPT TEMPLATE
+## 13. NAMING & COPY CONVENTIONS
+
+**Department names — always use full names in UI:**
+
+| Full name | Abbreviation (charts/heatmap row labels only) |
+|---|---|
+| New Vehicle Sales | NVS |
+| Used Vehicle Sales | UVS |
+| Service | SVC |
+| Financial Operations | FIN |
+| Parts | PTS |
+
+**Score bands — always use these names:**
+
+| Score | Band name |
+|---|---|
+| 0–45 | Foundational |
+| 46–69 | Developing |
+| 70–84 | Performing |
+| 85–100 | Advanced |
+
+Never: "Poor", "Fair", "Good", "Excellent", "Very Good"
+
+---
+
+## 14. LOVABLE PROMPT TEMPLATE
 
 Use this template for every Lovable prompt:
 
 ```
-DESIGN SYSTEM: Follow DESIGN.md exactly.
-- Font: Inter only (not Roboto)
+DESIGN SYSTEM: Follow DESIGN.md v3 exactly.
+- Font: Inter only
 - Colours: Use CSS variables (--brand-500, --neutral-900, etc.), not hex values
 - No new colour tokens, no gradients unless specified in DESIGN.md
 - Cards: shadow-card, NO border prop, rounded-xl, bg-white on bg-neutral-100 page
-- Department labels: full names only (New Vehicle Sales, Used Vehicle Sales, Service, Parts, Financial Operations)
+- Department labels: FULL NAMES only (New Vehicle Sales, Used Vehicle Sales, Service, Parts, Financial Operations)
+- NO department abbreviation badges (NVS/UVS/SVC/FIN/PTS chips are chart-context only)
 - Score colours: success ≥70, warning 50–69, destructive <50
-- Brand blue #1D7AFC (--brand-500) is the sole metric and accent colour
-- Department colours: NVS=#2563eb, UVS=#7c3aed, SVC=#0891b2, FIN=#059669, PTS=#d97706
+- Brand blue #1D7AFC (--brand-500) is the sole metric, accent, and UI border colour
+- Action card left borders: always brand-500 only — no priority colour-coding
+- Department card top bars: always brand-500 only — no per-department colour
+- Heatmap cells: soft tint palette (see §5.10) — never full-saturation colours
+- Question tiles: 16px question text, 12.5px option text, centre-aligned content
 - Icons: Lucide React only, size-4 default
 - Buttons: use shadcn/ui Button component with variant prop
 - NO emoji in production UI
@@ -602,75 +631,47 @@ CONSTRAINTS:
 
 ---
 
-## 14. WHAT NOT TO DO (Anti-Patterns)
-
-These patterns have been explicitly identified as problems and must never be reintroduced:
+## 15. WHAT NOT TO DO (Anti-Patterns)
 
 | Anti-pattern | Why | Instead |
 |---|---|---|
 | Red/yellow/green coloured answer buttons | Anchoring bias | Neutral white tiles, left-border on selected only |
 | Emoji in component UI | Unprofessional | Lucide React icons |
 | "Time Sink" / "Fill-in" triage labels | Negative framing | "Low Priority" / "Maintenance" |
-| "Assessment Complete — Here's What To Do Next" banner | Redundant | Clean results page |
-| 5-tab results structure | Fragments narrative | Single scrollable page (pending) |
+| 5-tab results structure | Fragments narrative | Single scrollable page |
 | Purple gradients on white | SaaS cliché | Brand blue accents on white/neutral-050 |
 | Score ring as hero visual | Wrong hierarchy | Department heatmap as hero |
 | Collapsed context accordions in assessment | Hidden information | Persistent right-column panel |
 | Generic "Poor/Fair/Good/Very Good/Excellent" scale labels | Non-diagnostic | Specific measurable thresholds |
+| Department abbreviations (NVS/UVS/SVC/FIN/PTS) in display UI | Jargon | Full department names |
+| Per-department coloured card top bars | Visual noise, inconsistent | Uniform brand-500 blue |
+| Priority colour-coded action card borders (red/amber/blue) | Distracting, inconsistent | Uniform brand-500 blue border |
+| Full-saturation heatmap cell colours | Harsh, unprofessional | Soft tint palette (see §5.10) |
+| Department abbreviation badges as UI chips | Jargon | Full name chips in neutral style |
+| Small question tile text (<12px options) | Legibility | Min 12.5px, centre-aligned |
 
 ---
 
-## 15. FILE LOCATIONS
+## 16. CHANGE LOG
 
-```
-src/
-  components/
-    ui/              ← shadcn/ui base components — do not modify
-    assessment/      ← CategoryAssessment, QuestionCard, ScoreRing
-    results/         ← ResultsPage, ActionSheet, ExecutiveNarrative
-    dashboard/       ← DashboardPage, DepartmentCard, NetworkDashboard
-    kpi/             ← KPIStudio, BenchmarkCorridor, CausalChain
-    shared/          ← StatusBadge, DepartmentBadge, ConfidenceIndicator
-  data/
-    assessmentQuestions.ts   ← question bank with scale labels
-    signalEngine.ts          ← deterministic signal → action mapping
-    actionTemplatesTiered.ts ← NEW: tiered templates (items 20/21/22)
-    kpiDefinitions.ts        ← KPI encyclopedia data
-    narrativeTemplates.ts    ← executive narrative paragraph variants
-    crossValidationRules.ts  ← cross-question validation logic
-    ceilingAnalysis.ts       ← high-scorer ceiling insights
-  lib/
-    i18n.ts          ← translations (EN/DE complete, FR/ES/IT partial)
-    scoring.ts       ← weighted scoring, confidence intervals
-```
+### v3.0 — 28 April 2026
+- **Action card borders:** Changed from priority colour-coding (red/amber/blue) to uniform `--brand-500` on all cards
+- **Department card top bars:** Changed from per-department colour to uniform `--brand-500`
+- **Department abbreviations:** Removed from all display UI. Full names required everywhere. Abbreviations remain valid only in chart axis labels and heatmap row labels
+- **Department abbreviation badges:** Removed entirely from badge system
+- **Heatmap cell colours:** Changed from full-saturation score band colours to soft tint palette (§5.10)
+- **Question tile typography:** Increased question text to 16px/700, option text to 12.5px, content centre-aligned
+- **Font:** Inter confirmed as canonical primary font (Roboto not used)
+- **Status badge shape:** Updated preference to `rounded-md` over `rounded-full` for enterprise consistency
+
+### v2.0 — 22 April 2026
+- Font → Inter (replaced Roboto)
+- Cards → soft shadow (no border)
+- Page background → `neutral-100`
+- Sidebar active state refined
+- Department labels → full names in results/action context
+- Brand blue `#1D7AFC` confirmed as sole accent metric colour
 
 ---
 
----
-
-## 16. UX OVERHAUL SPRINT — Work Split (April 2026)
-
-### Lovable (UI / TSX only — no logic files)
-- Font class references → Inter throughout
-- `<Card>` instances → `shadow-card rounded-xl bg-white`, remove all `border` props
-- `AppSidebar` → replace hardcoded `hsl(221,82%,51%)` with `hsl(var(--brand-500))`, apply v2 active state classes
-- `Badge`, `Button`, `SharedStatusBadge` → align to token set
-- `Dashboard` page → layout padding (`px-6 py-6`), spacing normalisation, hardcoded colour cleanup
-- `Results` page → tab/layout cleanup, department full names, padding normalisation
-- `Assessment` page → visual spacing cleanup
-
-### Claude Code (config + logic — do not send to Lovable)
-- `index.css` → consolidate `brand-*` / `dd-*` token systems, swap Roboto → Inter import, update shadow tokens
-- `tailwind.config.ts` → `fontFamily.sans` → Inter, update `boxShadow.card` and `boxShadow.elevated`
-- Wire `evaluateCrossValidations()` from `crossValidationRules.ts` into `signalEngine.ts`
-- Wire `generateCeilingInsights()` from `ceilingAnalysis.ts` into `Results.tsx` render
-
-### Out of scope this sprint
-- Role architecture fix (tracker #01)
-- OEM / Coach dashboard (tracker #38)
-- 2S/3S/4S business model branching (tracker #13)
-- Dark mode · New npm packages
-
----
-
-*Last updated: 22 April 2026. Update this file before any major UI sprint.*
+*Last updated: 28 April 2026. Update this file before any major UI sprint.*
