@@ -159,8 +159,8 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
       <section className="border-b border-border/30 px-8 py-9 sm:px-10 lg:px-14">
         <div className="max-w-5xl">
           <div className="mb-5 flex items-center gap-3">
-            <span className="h-[1.5px] w-6 bg-[#1D9E75]" />
-            <span className="text-[10px] font-medium uppercase tracking-widest text-[#1D9E75]">{deptLabel}</span>
+            <span className="h-[1.5px] w-6 bg-primary" />
+            <span className="text-[10px] font-medium uppercase tracking-widest text-primary">{deptLabel}</span>
           </div>
 
           <h1 className="mb-4 text-h2 font-bold tracking-tight text-foreground">{kpi.title}</h1>
@@ -317,7 +317,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
                     key={driver}
                     type="button"
                     onClick={() => onNavigateToKpi?.(driver)}
-                    className="hover-lift flex w-full items-center gap-2 rounded-r-md border border-l-2 border-border/30 border-l-[#1D9E75] bg-card p-2 text-left"
+                    className="hover-lift flex w-full items-center gap-2 rounded-r-md border border-l-2 border-border/30 border-l-primary bg-card p-2 text-left"
                   >
                     <span className="flex-1 text-sm text-muted-foreground">{driver}</span>
                     <span className="text-[10px] text-muted-foreground/50">{getUpstreamTag(driver, language)}</span>
@@ -339,7 +339,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
                     key={impact}
                     type="button"
                     onClick={() => onNavigateToKpi?.(impact)}
-                    className="hover-lift flex w-full items-center gap-2 rounded-l-md border border-r-2 border-border/30 border-r-[#F0997B] bg-card p-2 text-left"
+                    className="hover-lift flex w-full items-center gap-2 rounded-l-md border border-r-2 border-border/30 border-r-destructive bg-card p-2 text-left"
                   >
                     <span className="flex-1 text-sm text-muted-foreground">{impact}</span>
                     <span className="text-[10px] text-muted-foreground/50">{getDownstreamTag(impact, language)}</span>
