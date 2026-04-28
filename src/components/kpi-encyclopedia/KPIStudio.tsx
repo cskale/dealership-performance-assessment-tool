@@ -222,10 +222,9 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
           </p>
         </div>
         <div className="grid h-2 grid-cols-4 gap-[3px]">
-          <span className="rounded-[4px] bg-[#1D9E75]" />
-          <span className="rounded-[4px] bg-[#97C459]" />
-          <span className="rounded-[4px] bg-[#FAC775]" />
-          <span className="rounded-[4px] bg-[#F0997B]" />
+          {benchmarkSegments.map((segmentClass, index) => (
+            <span key={index} className={cn("rounded-[4px]", segmentClass)} />
+          ))}
         </div>
         {isLeadResponseTime && (
           <div className="mt-3 grid grid-cols-4 gap-[3px] text-[10px] font-medium text-muted-foreground/70">
