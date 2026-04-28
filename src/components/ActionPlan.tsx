@@ -766,7 +766,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-500" /> Edit Conflict Detected
+              <AlertTriangle className="h-5 w-5 text-warning" /> Edit Conflict Detected
             </AlertDialogTitle>
             <AlertDialogDescription>
               This action has been modified since you started editing. Review the latest version or overwrite.
