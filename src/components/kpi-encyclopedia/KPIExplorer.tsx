@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Search, BookOpen, ArrowRight, ChevronDown } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { KPI_DEFINITIONS, KPIDefinition } from "@/lib/kpiDefinitions";
 import { ORDERED_DEPARTMENTS, getDepartmentConfig } from "@/lib/departmentConfig";
 import { KPIStudio } from "./KPIStudio";
@@ -44,9 +43,8 @@ function highlightMatch(text: string, search: string) {
 // Primary visible chips (max 6) + overflow into dropdown
 const PRIMARY_CHIP_COUNT = 6;
 
-export function KPIExplorer({ scores, initialKpiKey }: KPIExplorerProps) {
+export function KPIExplorer({ initialKpiKey }: KPIExplorerProps) {
   const { language } = useLanguage();
-  const isMobile = useIsMobile();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [activeDepartment, setActiveDepartment] = useState<string>("all");
