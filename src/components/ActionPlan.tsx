@@ -75,24 +75,14 @@ function isOverdue(action: ActionRecord): boolean {
   return new Date(action.target_completion_date) < new Date(new Date().toDateString());
 }
 
-function getDueBadge(action: ActionRecord): { label: string; className: string } | null {
+function getDueBadge(action: ActionRecord): { label: string; style: string } | null {
   if (!action.target_completion_date) return null;
-  const daysRemaining = Math.ceil((new Date(action.target_completion_date).getTime() - new Date().getTime()) / 86400000);
-  const overdue = isOverdue(action);
-  const label = overdue
-    ? 'Overdue'
-    : daysRemaining <= 30
-    ? '30 Days'
-    : daysRemaining <= 60
-    ? '60 Days'
-    : daysRemaining <= 90
-    ? '90 Days'
-    : new Date(action.target_completion_date).toLocaleDateString();
-
-  return {
-    label,
-    className: overdue ? 'bg-red-50 text-red-600' : 'bg-neutral-100 text-neutral-600',
-  };
+  const days = Math.ceil((new Date(action.target_completion_date).getTime() - Date.now()) / 86400000);
+  if (days < 0) return { label: 'Overdue', style: 'bg-red-50 text-red-600' };
+  if (days <= 30) return { label: '30 Days', style: 'bg-neutral-100 text-neutral-600' };
+  if (days <= 60) return { label: '60 Days', style: 'bg-neutral-100 text-neutral-600' };
+  if (days <= 90) return { label: '90 Days', style: 'bg-neutral-100 text-neutral-600' };
+  return null;
 }
 
 function getPriorityPillClass(priority: ActionRecord['priority']): string {
@@ -723,7 +713,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
                         <h3 className="text-sm font-semibold text-neutral-900 line-clamp-2 flex-1">{displayTitle}</h3>
                         <div className="flex items-center gap-1.5 flex-shrink-0">
                           {dueBadge && (
-                            <span className={cn("text-[11px] font-medium px-2 py-0.5 rounded-md whitespace-nowrap", dueBadge.className)}>
+                            <span className={cn("text-[11px] font-medium px-2 py-0.5 rounded-md whitespace-nowrap", dueBadge.style)}>
                               {dueBadge.label}
                             </span>
                           )}
@@ -735,7 +725,9 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
                           )}
                         </div>
                       </div>
-                      <p className="mt-1 text-xs text-neutral-500 leading-relaxed line-clamp-2">{displayDesc}</p>
+                      {displayDesc && (
+                        <p className="text-xs text-neutral-500 leading-relaxed line-clamp-2 mt-1">{displayDesc}</p>
+                      )}
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         <span className="text-[11px] px-2 py-0.5 rounded-full border border-neutral-200 bg-neutral-50 text-neutral-600">
                           {action.department}
