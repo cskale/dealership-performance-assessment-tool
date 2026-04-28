@@ -39,7 +39,7 @@ const statusConfig: Record<StatusType, {
 };
 
 /**
- * SharedStatusBadge — §5.8 spec: status dot + rounded-full pill
+ * SharedStatusBadge — §5.8 spec: status dot + rounded-md enterprise badge
  */
 export function SharedStatusBadge({
   status,
@@ -55,7 +55,7 @@ export function SharedStatusBadge({
     <Badge
       variant="outline"
       className={cn(
-        "rounded-full px-2.5 py-0.5 text-xs font-medium border inline-flex items-center gap-1.5",
+        "rounded-md px-2.5 py-1 text-label border inline-flex items-center gap-1.5",
         config.classes,
         className
       )}

@@ -55,9 +55,9 @@ const PIPELINE_STEPS = [
 ];
 
 const METRICS = [
-  { value: 5, suffix: "", label: "Departments\nfully assessed", sub: "NVS · UVS · Service · Finance · Parts" },
+  { value: 5, suffix: "", label: "Departments\nfully assessed", sub: "New Vehicle Sales · Used Vehicle Sales · Service · Finance · Parts" },
   { value: 100, suffix: "+", label: "KPIs\nTracked", sub: "Weighted, scored 1–5 per item" },
-  { value: 3, suffix: "", label: "Maturity\nbands", sub: "Foundational · Developing · Optimising" },
+  { value: 4, suffix: "", label: "Score\nbands", sub: "Foundational · Developing · Performing · Advanced" },
   { value: 18, suffix: "", label: "Audit fields\nper action", sub: "Full traceability to source question" },
 ];
 
@@ -65,8 +65,8 @@ const PROOF_PILLARS = [
   {
     icon: TrendingUp,
     title: "Score-Band Intelligence",
-    body: "A dealer at 38% and a dealer at 72% with the same weak signal receive different, maturity-appropriate actions. Foundational dealers get gap-closure. Optimising dealers get ceiling actions.",
-    bottom: "3 score bands: Foundational · Developing · Optimising",
+    body: "A dealer at 38% and a dealer at 72% with the same weak signal receive different, maturity-appropriate actions. Foundational dealers get gap-closure. Advanced dealers get ceiling actions.",
+    bottom: "4 score bands: Foundational · Developing · Performing · Advanced",
   },
   {
     icon: Shield,
@@ -97,56 +97,51 @@ const Index = () => {
   const metricsSection = useScrollReveal(0.2);
 
   return (
-    <div className="min-h-screen bg-background font-[Roboto]">
+    <div className="min-h-screen bg-background">
       <HomeHeader hasCompletedAssessment={hasCompletedAssessment} />
 
       {/* SECTION 2 — Hero (Dark navy + crosshatch grid) */}
       <section
-        className="pt-16"
-        style={{
-          backgroundColor: '#0A0F1E',
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)`,
-          backgroundSize: '40px 40px',
-        }}
+        className="pt-16 bg-dd-midnight"
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-28">
           <div className="lg:grid lg:grid-cols-2 gap-16 items-center">
             {/* Left column — copy */}
             <Reveal>
               <div>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest bg-white/15 text-white border border-white/30">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-label uppercase tracking-wider bg-sidebar-accent text-sidebar-foreground border border-sidebar-border">
                   Dealer Diagnostic &amp; Performance Platform
                 </span>
 
-                <h1 className="font-black text-5xl md:text-6xl lg:text-7xl leading-[1.05] tracking-tight text-white mt-4">
+                <h1 className="font-black text-5xl md:text-6xl lg:text-7xl leading-[1.05] tracking-tight text-sidebar-foreground mt-4">
                   Diagnose. Prioritise.<br />
-                  <span className="text-white underline decoration-brand-500 decoration-2 underline-offset-4">Improve.</span>
+                  <span className="text-sidebar-foreground underline decoration-brand-500 decoration-2 underline-offset-4">Improve.</span>
                 </h1>
 
-                <p className="mt-6 text-base lg:text-lg text-white/60 max-w-lg leading-relaxed">
+                <p className="mt-6 text-base lg:text-lg text-sidebar-foreground/70 max-w-lg leading-relaxed">
                   The only dealer performance platform that turns
                   assessment answers into deterministic, auditable
                   action plans — built for OEM programme teams.
                 </p>
 
                 <div className="mt-8 flex flex-wrap gap-4 items-center">
-                  <Button size="lg" className="bg-white text-[#0A0F1E] hover:bg-white/90" asChild>
+                  <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90" asChild>
                     <Link to="/auth">
                       Request OEM Demo
                       <ArrowRight className="ml-1" />
                     </Link>
                   </Button>
-                  <Button variant="ghost" size="lg" className="border border-white/30 text-white bg-transparent hover:bg-white/10 hover:text-white" asChild>
+                  <Button variant="ghost" size="lg" className="border border-sidebar-border text-sidebar-foreground bg-transparent hover:bg-sidebar-accent hover:text-sidebar-foreground" asChild>
                     <Link to="/methodology">View Methodology</Link>
                   </Button>
                 </div>
 
-                <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs uppercase tracking-widest text-white/40">
+                <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs uppercase tracking-widest text-sidebar-foreground/50">
                   <span>Built for</span>
                   <span>Dealer Principals</span>
-                  <span className="text-white/20">·</span>
+                  <span className="text-sidebar-foreground/25">·</span>
                   <span>Field Coaches</span>
-                  <span className="text-white/20">·</span>
+                  <span className="text-sidebar-foreground/25">·</span>
                   <span>OEM Programme Managers</span>
                 </div>
               </div>
@@ -155,31 +150,31 @@ const Index = () => {
             {/* Right column — product preview card */}
             <Reveal delay={200}>
               <div className="mt-12 lg:mt-0">
-                <div className="bg-white/[0.08] border border-white/10 rounded-xl shadow-none p-6">
+                <div className="bg-sidebar-accent border border-sidebar-border rounded-xl shadow-none p-6">
                   {/* Mini-panel 1: Department score */}
                   <Reveal delay={300}>
                     <div>
-                      <p className="text-xs uppercase tracking-widest text-white/60 mb-3">SERVICE DEPARTMENT</p>
+                      <p className="text-xs uppercase tracking-widest text-sidebar-foreground/70 mb-3">SERVICE DEPARTMENT</p>
                       <div className="flex items-baseline">
-                        <span className="text-4xl font-bold text-white leading-none">68</span>
-                        <span className="text-sm text-white/60 ml-1">/ 100</span>
-                        <span className="inline-flex ml-3 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                        <span className="text-4xl font-bold text-sidebar-foreground leading-none">68</span>
+                        <span className="text-sm text-sidebar-foreground/70 ml-1">/ 100</span>
+                        <span className="inline-flex ml-3 text-xs font-semibold px-2 py-0.5 rounded-md bg-warning/10 text-warning border border-warning/20">
                           DEVELOPING
                         </span>
                       </div>
-                      <div className="w-full h-1.5 rounded-full bg-white/10 mt-3">
-                        <div className="w-[68%] h-full rounded-full bg-amber-400" />
+                      <div className="w-full h-1.5 rounded-md bg-sidebar-border mt-3">
+                        <div className="w-[68%] h-full rounded-md bg-warning" />
                       </div>
                     </div>
                   </Reveal>
 
                   {/* Mini-panel 2: Signal detected */}
                   <Reveal delay={500}>
-                    <div className="border-t border-white/10 pt-4 mt-4">
-                      <p className="text-xs uppercase tracking-widest text-white/60 mb-2">SIGNAL DETECTED</p>
-                      <p className="text-sm font-semibold text-white">Capacity Misalignment</p>
-                      <p className="text-xs text-white/60 mt-0.5">3 questions triggered · HIGH severity · service-performance</p>
-                      <span className="inline-flex mt-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
+                    <div className="border-t border-sidebar-border pt-4 mt-4">
+                      <p className="text-xs uppercase tracking-widest text-sidebar-foreground/70 mb-2">SIGNAL DETECTED</p>
+                      <p className="text-sm font-semibold text-sidebar-foreground">Capacity Misalignment</p>
+                      <p className="text-xs text-sidebar-foreground/70 mt-0.5">3 questions triggered · HIGH severity · service-performance</p>
+                      <span className="inline-flex mt-2 text-xs font-semibold px-2 py-0.5 rounded-md bg-destructive/10 text-destructive border border-destructive/20">
                         HIGH
                       </span>
                     </div>
@@ -187,11 +182,11 @@ const Index = () => {
 
                   {/* Mini-panel 3: Action generated */}
                   <Reveal delay={700}>
-                    <div className="border-t border-white/10 pt-4 mt-4">
-                      <p className="text-xs uppercase tracking-widest text-white/60 mb-2">ACTION GENERATED</p>
-                      <p className="text-sm font-semibold text-white leading-snug">Implement structured throughput management</p>
-                      <p className="text-xs text-white/60 mt-1">Service Manager · 60 days · Developing band</p>
-                      <span className="inline-flex mt-2 text-xs px-2 py-0.5 rounded-full bg-white/[0.08] text-white/60 border border-white/10">
+                    <div className="border-t border-sidebar-border pt-4 mt-4">
+                      <p className="text-xs uppercase tracking-widest text-sidebar-foreground/70 mb-2">ACTION GENERATED</p>
+                      <p className="text-sm font-semibold text-sidebar-foreground leading-snug">Implement structured throughput management</p>
+                      <p className="text-xs text-sidebar-foreground/70 mt-1">Service Manager · 60 days · Developing band</p>
+                      <span className="inline-flex mt-2 text-xs px-2 py-0.5 rounded-md bg-sidebar-accent text-sidebar-foreground/70 border border-sidebar-border">
                         60-DAY
                       </span>
                     </div>
@@ -199,10 +194,10 @@ const Index = () => {
 
                   {/* Audit trail */}
                   <Reveal delay={900}>
-                    <div className="mt-4 pt-4 border-t border-white/[0.08]">
-                      <p className="text-xs font-mono text-white/30 leading-relaxed">
+                    <div className="mt-4 pt-4 border-t border-sidebar-border">
+                      <p className="text-xs font-mono text-sidebar-foreground/40 leading-relaxed">
                         Q17 → CAPACITY_MISALIGNED :: service-performance<br />
-                        → SVC_WORKSHOP_UTILISATION (developing) → Action
+                        → Service workshop utilisation (Developing) → Action
                       </p>
                     </div>
                   </Reveal>
@@ -214,7 +209,7 @@ const Index = () => {
       </section>
 
       {/* SECTION 3 — Pipeline Visual (Scroll-triggered) */}
-      <section className="bg-white border-y border-border">
+      <section className="bg-background border-y border-border">
         <div ref={pipelineSection.ref} className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
           <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-8 text-center"
             style={{
@@ -231,7 +226,7 @@ const Index = () => {
             {PIPELINE_STEPS.map((s, i) => (
               <div key={s.step} className="flex items-center gap-2 flex-1 min-w-0">
                 <div
-                  className="flex-1 bg-white border border-border rounded-lg p-4 text-center hover:border-brand-500 hover:shadow-md transition-all duration-300"
+                  className="flex-1 bg-card rounded-lg shadow-card p-4 text-center hover:border-brand-500 hover:shadow-elevated transition-all duration-300"
                   style={{
                     opacity: pipelineSection.visible ? 1 : 0,
                     transform: pipelineSection.visible ? 'translateY(0)' : 'translateY(12px)',
@@ -261,7 +256,7 @@ const Index = () => {
             {PIPELINE_STEPS.map((s, i) => (
               <div
                 key={s.step}
-                className="bg-white border border-border rounded-lg p-4 text-center hover:border-brand-500 hover:shadow-md transition-all duration-300"
+                className="bg-card rounded-lg shadow-card p-4 text-center hover:border-brand-500 hover:shadow-elevated transition-all duration-300"
                 style={{
                   opacity: pipelineSection.visible ? 1 : 0,
                   transform: pipelineSection.visible ? 'translateY(0)' : 'translateY(12px)',
@@ -290,7 +285,7 @@ const Index = () => {
       <ProductSneakPeek />
 
       {/* SECTION 4 — Three Proof Pillars */}
-      <section className="bg-white py-20 px-6 lg:px-8">
+      <section className="bg-background py-20 px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <Reveal>
             <p className="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-2">
@@ -304,7 +299,7 @@ const Index = () => {
           <div className="lg:grid-cols-3 grid gap-8 mt-12">
             {PROOF_PILLARS.map((card, i) => (
               <Reveal key={card.title} delay={i * 150}>
-                <div className="bg-white border border-border rounded-xl p-6 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 h-full">
+                <div className="bg-card rounded-xl p-6 shadow-card hover:shadow-elevated hover:-translate-y-0.5 transition-all duration-200 h-full">
                   <div className="w-9 h-9 rounded-lg bg-brand-500/15 flex items-center justify-center mb-4">
                     <card.icon className="size-5 text-brand-500" />
                   </div>
@@ -320,32 +315,28 @@ const Index = () => {
 
       {/* SECTION 5 — Metrics Trust Bar (Dark navy) */}
       <section
-        style={{
-          backgroundColor: '#0A0F1E',
-          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px)',
-          backgroundSize: '24px 24px',
-        }}
+        className="bg-dd-midnight"
       >
         <div ref={metricsSection.ref} className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
-          <p className="text-center text-xs uppercase tracking-widest text-white/30 mb-12">
+          <p className="text-center text-xs uppercase tracking-widest text-sidebar-foreground/40 mb-12">
             BUILT TO SCALE ACROSS YOUR DEALER NETWORK
           </p>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0">
             {METRICS.map((m, i) => (
               <div
                 key={m.label}
-                className={`text-center lg:text-left${i > 0 ? " lg:border-l lg:border-white/10 lg:pl-10" : ""}`}
+                className={`text-center lg:text-left${i > 0 ? " lg:border-l lg:border-sidebar-border lg:pl-10" : ""}`}
                 style={{
                   opacity: metricsSection.visible ? 1 : 0,
                   transform: metricsSection.visible ? 'translateY(0)' : 'translateY(12px)',
                   transition: `opacity 500ms ease-out ${i * 100}ms, transform 500ms ease-out ${i * 100}ms`,
                 }}
               >
-                <p className="text-6xl lg:text-7xl font-black text-white leading-none tracking-tight">
+                <p className="text-6xl lg:text-7xl font-black text-sidebar-foreground leading-none tracking-tight">
                   {metricsSection.visible ? <AnimatedCounter end={m.value} duration={1500} suffix={m.suffix} /> : "0"}
                 </p>
-                <p className="text-sm font-semibold text-white/70 mt-3 leading-snug whitespace-pre-line">{m.label}</p>
-                <p className="text-xs text-white/35 mt-1.5 leading-relaxed">{m.sub}</p>
+                <p className="text-sm font-semibold text-sidebar-foreground/80 mt-3 leading-snug whitespace-pre-line">{m.label}</p>
+                <p className="text-xs text-sidebar-foreground/50 mt-1.5 leading-relaxed">{m.sub}</p>
               </div>
             ))}
           </div>
@@ -355,31 +346,27 @@ const Index = () => {
       {/* SECTION 6 — Closing CTA Strip (Dark navy) */}
       <Reveal>
         <section
-          style={{
-            backgroundColor: '#0A0F1E',
-            backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)',
-            backgroundSize: '24px 24px',
-          }}
+          className="bg-dd-midnight"
         >
           <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16 text-center">
-            <p className="text-xs font-semibold uppercase tracking-widest text-white/40 mb-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-sidebar-foreground/50 mb-4">
               READY TO DEPLOY
             </p>
-            <h2 className="text-3xl md:text-4xl font-bold text-white max-w-2xl mx-auto leading-tight">
+            <h2 className="text-3xl md:text-4xl font-bold text-sidebar-foreground max-w-2xl mx-auto leading-tight">
               A diagnostic programme your dealers will trust.
             </h2>
-            <p className="mt-4 text-base text-white/60 max-w-xl mx-auto">
+            <p className="mt-4 text-base text-sidebar-foreground/70 max-w-xl mx-auto">
               Request an OEM walkthrough. See the engine, the scoring logic,
               and the action plan output in a single 45-minute session.
             </p>
             <div className="mt-8 flex flex-wrap gap-4 justify-center">
-              <Button className="bg-white text-[#0A0F1E] hover:bg-white/90" size="lg" asChild>
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90" size="lg" asChild>
                 <Link to="/auth">
                   Request OEM Demo
                   <ArrowRight className="ml-1" />
                 </Link>
               </Button>
-              <Button variant="ghost" className="border border-white/20 text-white hover:bg-white/10 hover:text-white" size="lg" asChild>
+              <Button variant="ghost" className="border border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground" size="lg" asChild>
                 <Link to="/methodology">View Methodology</Link>
               </Button>
             </div>

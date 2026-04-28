@@ -42,33 +42,33 @@ const badgeVariants = cva(
 
         // Module variants
         "module-nvs":
-          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-teal-light))] text-[hsl(var(--dd-teal))] border border-[#7dd3fc] font-medium",
+          "bg-muted text-muted-foreground border-border",
         "module-uvs":
-          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] border border-[hsl(var(--dd-accent-mid))] font-medium",
+          "bg-muted text-muted-foreground border-border",
         "module-service":
-          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-green-light))] text-[hsl(var(--dd-green))] border border-[#6ee7b7] font-medium",
+          "bg-muted text-muted-foreground border-border",
         "module-financial":
-          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-amber-light))] text-[hsl(var(--dd-amber))] border border-[#fcd34d] font-medium",
+          "bg-muted text-muted-foreground border-border",
         "module-parts":
-          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-fog))] text-[hsl(var(--dd-muted))] border border-[hsl(var(--dd-rule))] font-medium",
+          "bg-muted text-muted-foreground border-border",
 
         // Priority variants
         "priority-critical":
-          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-red-light))] text-[hsl(var(--dd-red))] border border-[#fca5a5] font-medium",
+          "bg-muted text-muted-foreground border-border",
         "priority-high":
-          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-amber-light))] text-[hsl(var(--dd-amber))] border border-[#fcd34d] font-medium",
+          "bg-muted text-muted-foreground border-border",
         "priority-medium":
-          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] border border-[hsl(var(--dd-accent-mid))] font-medium",
+          "bg-muted text-muted-foreground border-border",
         "priority-low":
-          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-fog))] text-[hsl(var(--dd-muted))] border border-[hsl(var(--dd-rule))] font-medium",
+          "bg-muted text-muted-foreground border-border",
 
         // Phase variants
         "phase-30":
-          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-green-light))] text-[hsl(var(--dd-green))] border border-[#6ee7b7] font-medium",
+          "bg-muted text-muted-foreground border-border",
         "phase-60":
-          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] border border-[hsl(var(--dd-accent-mid))] font-medium",
+          "bg-muted text-muted-foreground border-border",
         "phase-90":
-          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-fog))] text-[hsl(var(--dd-muted))] border border-[hsl(var(--dd-rule))] font-medium",
+          "bg-muted text-muted-foreground border-border",
       },
     },
     defaultVariants: {

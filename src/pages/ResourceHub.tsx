@@ -243,7 +243,7 @@ const ResourceHub = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="min-h-screen bg-neutral-50">
         <div className="flex items-center justify-center h-[60vh]">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -252,7 +252,7 @@ const ResourceHub = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-neutral-50">
       
       
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -260,9 +260,9 @@ const ResourceHub = () => {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <BookOpen className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-slate-900">{tr('title')}</h1>
+            <h1 className="text-h1 text-foreground">{tr('title')}</h1>
           </div>
-          <p className="text-lg text-muted-foreground">{tr('subtitle')}</p>
+          <p className="text-body-md text-muted-foreground">{tr('subtitle')}</p>
         </div>
 
         <Tabs defaultValue="recommended" className="space-y-6">
@@ -291,7 +291,7 @@ const ResourceHub = () => {
             {recommendedResources.length > 0 ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Star className="h-4 w-4 text-amber-500" />
+                  <Star className="h-4 w-4 text-primary" />
                   {tr('recommendedFor')}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

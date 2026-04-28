@@ -43,7 +43,7 @@ function getImprovementTag(index: number, language: string) {
   };
 }
 
-const BENCHMARK_GOOD_TO_BAD = ["bg-[#1D9E75]", "bg-[#97C459]", "bg-[#FAC775]", "bg-[#F0997B]"];
+const BENCHMARK_GOOD_TO_BAD = ["bg-success", "bg-primary", "bg-warning", "bg-destructive/80"];
 const BENCHMARK_BAD_TO_GOOD = [...BENCHMARK_GOOD_TO_BAD].reverse();
 
 function getUpstreamTag(driver: string, language: string) {
@@ -146,7 +146,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
   );
 
   return (
-    <div className="max-h-[88vh] overflow-y-auto bg-card text-foreground [font-family:Roboto,sans-serif]">
+    <div className="max-h-[88vh] overflow-y-auto bg-card text-foreground">
       {onBack && (
         <div className="border-b border-border/30 px-8 py-3 sm:px-10 lg:px-14">
           <Button variant="ghost" onClick={onBack} className="h-8 px-0 text-sm text-muted-foreground hover:bg-transparent hover:text-foreground">
@@ -166,19 +166,19 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
           <h1 className="mb-4 text-h2 font-bold tracking-tight text-foreground">{kpi.title}</h1>
 
           <div className="mb-8 flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className={cn("rounded-full border px-2.5 py-1 text-xs font-medium", config.bgClass, config.textClass, config.borderClass)}>
+            <Badge variant="outline" className={"rounded-md border border-border/40 bg-muted text-label text-muted-foreground"}>
               <DeptIcon className="mr-1 h-3 w-3" />
               {deptLabel}
             </Badge>
             {kpi.unitOfMeasure && (
-              <Badge variant="outline" className="rounded-full border-border/40 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+              <Badge variant="outline" className="rounded-md border-border/40 px-2.5 py-1 text-label text-muted-foreground">
                 {kpi.unitOfMeasure}
               </Badge>
             )}
-            <Badge variant="outline" className="rounded-full border-border/40 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+            <Badge variant="outline" className="rounded-md border-border/40 px-2.5 py-1 text-label text-muted-foreground">
               {directionLabel}
             </Badge>
-            <Badge variant="outline" className="rounded-full border-border/40 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+            <Badge variant="outline" className="rounded-md border-border/40 px-2.5 py-1 text-label text-muted-foreground">
               {t.referenceType}
             </Badge>
           </div>
@@ -295,7 +295,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
                 <div key={lever} className="flex items-start gap-3 border-b border-border/20 py-3 last:border-b-0">
                   <span className="w-4 shrink-0 text-xs text-muted-foreground/50">{index + 1}</span>
                   <p className="flex-1 text-sm leading-relaxed text-foreground">{lever}</p>
-                  <span className={cn("shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium", tag.className)}>
+                  <span className={cn("shrink-0 rounded-md border px-2 py-0.5 text-caption", tag.className)}>
                     {tag.label}
                   </span>
                 </div>
@@ -339,7 +339,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
                     key={impact}
                     type="button"
                     onClick={() => onNavigateToKpi?.(impact)}
-                    className="hover-lift flex w-full items-center gap-2 rounded-l-md border border-r-2 border-border/30 border-r-destructive bg-card p-2 text-left"
+                    className="hover-lift flex w-full items-center gap-2 rounded-l-md border border-r-2 border-border/30 border-r-primary bg-card p-2 text-left"
                   >
                     <span className="flex-1 text-sm text-muted-foreground">{impact}</span>
                     <span className="text-[10px] text-muted-foreground/50">{getDownstreamTag(impact, language)}</span>
