@@ -202,7 +202,7 @@
 <div class="header">
   <div class="header-eyebrow">Dealer Diagnostic Platform · Munich 2026</div>
   <div class="header-title">Improvement Master Tracker</div>
-  <div class="header-sub">Last updated: 2 April 2026 (Sprint 3 complete) — 39/58 items done or partial (67%)</div>
+  <div class="header-sub">Last updated: 28 April 2026 (Round 2 complete) — 34/54 items done or partial (59%)</div>
 </div>
 
 <div class="summary-bar">
@@ -236,6 +236,20 @@
     ✓ #11 Score-band template selection<br>
     ✓ #12 Ceiling analysis wired to Results<br>
     ✓ All 52 tests passing | Auth tests 7/7 | ESLint critical violations cleared
+  </div>
+</div>
+
+<div class="sprint-banner" style="background:#f0fdf4; border-color:#bbf7d0; border-left-color:#16a34a;">
+  <div class="sprint-banner-title" style="color:#166534;">✓ Round 2 Complete (28 April 2026)</div>
+  <div class="sprint-banner-items" style="color:#166534;">
+    ✓ #10 Evidence-based scale labels — Done (satisfaction questions: % options replaced with qualitative labels)<br>
+    ✓ #27 KPI analysis: all assessed departments shown ordered by score ascending; View Details wired to encyclopedia modal; duplicate overall score block removed<br>
+    ✓ #33 Results: systemic patterns + top findings merged into unified Key Diagnostic Findings block; module abbreviations expanded to full names<br>
+    ✓ #43 Assessment sidebar made sticky, dead scroll space eliminated (Partial)<br>
+    ✓ #54 Design system specification (DESIGN.md) — Done<br>
+    ✓ Assessment UX: option label made primary, redundant rating instruction removed<br>
+    ✓ Results: questions answered coverage card replaces assessment confidence card<br>
+    ✓ Actions: owner workload panel and toolbar button removed
   </div>
 </div>
 
@@ -373,15 +387,15 @@
     <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 
-  <div class="item" data-status="partial" data-method="manual" data-phase="now">
+  <div class="item" data-status="done" data-method="manual" data-phase="done">
     <div class="item-num">10</div>
     <div class="item-body">
       <div class="item-title">Evidence-based scale labels</div>
-      <div class="item-desc">Sprint 3: 33 additional questions updated (46 total). Observable criteria applied across NVS, UVS, SVC, PTS, FIN. ~4 questions remain on generic "Poor/Fair/Good/Very Good/Excellent".</div>
+      <div class="item-desc">Sprint 3: 33 additional questions updated (46 total). Observable criteria applied across NVS, UVS, SVC, PTS, FIN. Round 2: satisfaction questions completed — % options replaced with qualitative labels (e.g. "Very satisfied / Satisfied / Neutral / Dissatisfied / Very dissatisfied"). All questions now use observable or qualitative criteria. (923cba2)</div>
     </div>
-    <div><span class="status-badge s-partial"><span class="status-dot"></span>Partial</span></div>
+    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
     <div><span class="method-badge m-manual">Manual</span></div>
-    <div><span class="phase-badge ph-now">Do now</span></div>
+    <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 
   <div class="item" data-status="done" data-method="both" data-phase="done">
@@ -406,15 +420,15 @@
     <div><span class="phase-badge ph-1">Phase 1</span></div>
   </div>
 
-  <div class="item" data-status="pending" data-method="lovable" data-phase="1">
+  <div class="item" data-status="done" data-method="both" data-phase="done">
     <div class="item-num">13</div>
     <div class="item-body">
       <div class="item-title">Business model branching (2S/3S/4S module gating)</div>
-      <div class="item-desc">Business model captured in OrganizationSettings. Assessment does not branch based on it. Module suppression logic missing.</div>
+      <div class="item-desc">Fully implemented. src/lib/moduleGating.ts: MODULE_GATING_RULES drives section suppression for all 5 models. getActiveSections() + getSuppressedSectionCount() wired in Assessment.tsx. Suppression banner live. Score weights redistribute proportionally for suppressed sections (scoringEngine.ts). Organization interface typed with business_model; as any cast removed. Verified 21 Apr 2026 — ea0aef4.</div>
     </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-now">Do now</span></div>
+    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
+    <div><span class="method-badge m-both">Both</span></div>
+    <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 
   <div class="item" data-status="pending" data-method="lovable" data-phase="1">
@@ -591,7 +605,7 @@
     <div class="item-num">27</div>
     <div class="item-body">
       <div class="item-title">KPI Encyclopedia</div>
-      <div class="item-desc">kpiDefinitions.ts (355KB): formula, inclusions/exclusions, executiveSummary, rootCauseDiagnostics, improvementLevers, interdependencies. KPIStudio renders all sections.</div>
+      <div class="item-desc">kpiDefinitions.ts (355KB): formula, inclusions/exclusions, executiveSummary, rootCauseDiagnostics, improvementLevers, interdependencies. KPIStudio renders all sections. Round 2: KPI analysis tab now shows sections for all assessed departments ordered by score ascending; View Details links wired to KPI encyclopedia modal; duplicate overall score block removed. (e4b43d7, 315281a, f4a53c8)</div>
     </div>
     <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
     <div><span class="method-badge m-na">Built</span></div>
@@ -609,15 +623,15 @@
     <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 
-  <div class="item" data-status="pending" data-method="lovable" data-phase="1">
+  <div class="item" data-status="done" data-method="lovable" data-phase="done">
     <div class="item-num">29</div>
     <div class="item-body">
       <div class="item-title">Causal chain visualisation</div>
-      <div class="item-desc">interdependencies upstream/downstream data exists. Not rendered in results. Need visual: "Low Lead Response → Low Show Rate → Low Closing Ratio".</div>
+      <div class="item-desc">Sprint 3: CausalChainDiagram.tsx component live in src/components/results/. Mounted in ExecutiveSummary.tsx (Section 1C). Reads top-3 signals from generateSignals(); groups by shared root-cause dimension via SIGNAL_MAPPINGS. Renders dimension-grouped chain nodes with arrows. Empty-state handled. Note: uses shared-cause chain model (not KPI upstream/downstream from kpiDefinitions) — valid design decision. Verified 21 Apr 2026.</div>
     </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
+    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
     <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-1">Phase 1</span></div>
+    <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 </div>
 
@@ -651,26 +665,26 @@
     <div><span class="phase-badge ph-1">Phase 1</span></div>
   </div>
 
-  <div class="item" data-status="pending" data-method="lovable" data-phase="1">
+  <div class="item" data-status="done" data-method="both" data-phase="done">
     <div class="item-num">32</div>
     <div class="item-body">
       <div class="item-title">Department × root-cause heatmap (5×5 maturity grid)</div>
-      <div class="item-desc">calculateSubCategoryScores provides the data. Not rendered. 5-dept × 5-dimension colour grid is the single most diagnostic visual missing from results.</div>
+      <div class="item-desc">Sprint 3 + 21 Apr fix: DepartmentHeatmap.tsx component live in src/components/results/. Mounted in ExecutiveSummary.tsx (Section 1B). 5 depts × 5 KPIs per dept, colour-coded by score band (0–45 red, 46–69 amber, 70–84 blue, 85–100 green). Fix 21 Apr: data source corrected — cell values now read from calculateSubCategoryScores() output (engine-weighted) via subCategoryData prop; raw answer fallback retained for unmatched cells. categoryKey added to each DEPT_KPIS entry. Commit 9f2c44d. Verified 21 Apr 2026.</div>
     </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-1">Phase 1</span></div>
+    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
+    <div><span class="method-badge m-both">Both</span></div>
+    <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 
-  <div class="item" data-status="pending" data-method="lovable" data-phase="1">
+  <div class="item" data-status="done" data-method="lovable" data-phase="done">
     <div class="item-num">33</div>
     <div class="item-body">
       <div class="item-title">Systemic pattern cards in results UI</div>
-      <div class="item-desc">detectSystemicPatterns runs but output not visible in results page. Systemic (3+ depts) and recurring (2 depts) cards should appear before action plan.</div>
+      <div class="item-desc">Sprint 3: Systemic and recurring pattern cards rendered in ExecutiveSummary.tsx, mounted on Results page. Both severity variants live: systemic (3+ depts) and recurring (2 depts). Verified 20 Apr 2026. Round 2: merged with top findings into unified Key Diagnostic Findings block for cleaner hierarchy; module abbreviations (NVS/UVS/SVC/PTS/FIN) expanded to full department names in pattern cards. (160f1bc, 35fef31)</div>
     </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
+    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
     <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-1">Phase 1</span></div>
+    <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 
   <div class="item" data-status="done" data-method="manual" data-phase="done">
@@ -790,13 +804,13 @@
     <div><span class="phase-badge ph-1">Phase 1</span></div>
   </div>
 
-  <div class="item" data-status="pending" data-method="lovable" data-phase="1">
+  <div class="item" data-status="partial" data-method="lovable" data-phase="1">
     <div class="item-num">43</div>
     <div class="item-body">
       <div class="item-title">Always-visible context panel</div>
-      <div class="item-desc">Purpose, situation analysis, linked KPIs, benchmark hidden behind accordion. Move to persistent right-column panel. Mobile: bottom drawer.</div>
+      <div class="item-desc">Purpose, situation analysis, linked KPIs, benchmark hidden behind accordion. Move to persistent right-column panel. Mobile: bottom drawer. Round 2 partial: section sidebar made sticky and dead scroll space eliminated — context stays visible as user scrolls through questions. Right-column panel and mobile drawer still pending. (fc89216)</div>
     </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
+    <div><span class="status-badge s-partial"><span class="status-dot"></span>Partial</span></div>
     <div><span class="method-badge m-lovable">Lovable</span></div>
     <div><span class="phase-badge ph-1">Phase 1</span></div>
   </div>
@@ -898,15 +912,15 @@
     <div><span class="phase-badge ph-now">Do now</span></div>
   </div>
 
-  <div class="item" data-status="pending" data-method="manual" data-phase="1">
+  <div class="item" data-status="done" data-method="manual" data-phase="done">
     <div class="item-num">52</div>
     <div class="item-body">
       <div class="item-title">Executive narrative templates (situation synthesis)</div>
-      <div class="item-desc">Template-driven paragraph blocks: maturity × signals × pattern → narrative. No AI required. 20–30 block variants in content file.</div>
+      <div class="item-desc">Duplicate of item #34 — completed Sprint 1. narrativeTemplates.ts contains 32 variants (4 maturity × 8 signal codes × single/systemic). buildExecutiveNarrative() exported and live. Verified 20 Apr 2026.</div>
     </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
+    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
     <div><span class="method-badge m-manual">Manual</span></div>
-    <div><span class="phase-badge ph-1">Phase 1</span></div>
+    <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 
   <div class="item" data-status="partial" data-method="na" data-phase="done">
@@ -918,6 +932,17 @@
     <div><span class="status-badge s-partial"><span class="status-dot"></span>Partial</span></div>
     <div><span class="method-badge m-manual">Manual</span></div>
     <div><span class="phase-badge ph-1">Phase 1</span></div>
+  </div>
+
+  <div class="item" data-status="done" data-method="manual" data-phase="done">
+    <div class="item-num">54</div>
+    <div class="item-body">
+      <div class="item-title">Design system specification (DESIGN.md)</div>
+      <div class="item-desc">Sprint 2: DESIGN.md created at project root — 630-line visual design system specification derived from live production CSS. Covers: colour system (brand/neutral/semantic/department/score-band tokens), typography scale, spacing and layout rules, component specs (score ring, question tiles, action cards, benchmark corridor, 5×5 heatmap, systemic pattern cards), chart/animation/icon rules, scrollable results layout spec, Lovable prompt template, and anti-patterns list. All Lovable prompts must reference this file.</div>
+    </div>
+    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
+    <div><span class="method-badge m-manual">Manual</span></div>
+    <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 </div>
 

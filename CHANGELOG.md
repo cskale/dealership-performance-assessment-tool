@@ -9,6 +9,105 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
 
 ---
 
+## [28 Apr 2026] — Round 2: Assessment UX, KPI Analysis & Results Polish
+
+### Fixed
+
+- **fix** Questions answered coverage card replaces assessment confidence card on Results page — the old card surfaced raw confidence metrics with no clear user action; replaced with a questions-answered progress indicator showing completion coverage per department. *(tracker #45 pending · `479d1d4`)*
+
+- **fix** Owner workload panel and toolbar button removed from Actions tab — panel was displaying organisational context that belongs to a future coach/OEM view; removed to clean up the dealer-facing action UI. *(tracker #01 cleanup · `a93c092`)*
+
+- **fix** Systemic patterns and top findings merged into unified Key Diagnostic Findings block on Results page — two separate cards with overlapping content collapsed into a single prioritised block, reducing visual noise and improving narrative flow. *(tracker #33 · `160f1bc`)*
+
+- **fix** Duplicate overall score block removed from KPI Analysis tab — the overall score was rendering twice; second instance removed. *(tracker #27 · `f4a53c8`)*
+
+- **fix** KPI Analysis tab now renders sections for all assessed departments, ordered by score ascending — previously only showed a subset; now all departments with answered questions appear, worst-performing first for faster prioritisation. *(tracker #27 · `e4b43d7`)*
+
+- **fix** View Details links in KPI Analysis tab wired to KPI Encyclopedia modal — links were rendered but unbound; now open the correct KPI sheet on click. *(tracker #27 · `315281a`)*
+
+- **fix** Module abbreviations (NVS/UVS/SVC/PTS/FIN) expanded to full department names in systemic pattern cards on Results page — "NVS" now reads "New Vehicle Sales" etc., improving readability for non-technical users. *(tracker #33 · `35fef31`)*
+
+- **fix** Satisfaction questions: percentage-scale options (0–20%, 21–40% etc.) replaced with qualitative labels (Very satisfied / Satisfied / Neutral / Dissatisfied / Very dissatisfied) — percentage anchors were meaningless for satisfaction judgements and biased responses. Completes evidence-based scale label work across all question types. *(tracker #10 → Done · `923cba2`)*
+
+- **fix** Assessment section sidebar made sticky, dead scroll space eliminated — sidebar now stays fixed to the viewport as the user scrolls through questions; excess whitespace below the last question removed. Partial implementation of always-visible context panel. *(tracker #43 → Partial · `fc89216`)*
+
+- **fix** Option label made primary in assessment question cards; redundant rating instruction and selection confirmation text removed — the descriptive label text is now the dominant visual element; secondary instruction copy ("Select a rating 1–5", "Answer saved") stripped as it added noise without adding information. *(tracker #42 partial · `8570827`)*
+
+---
+
+## [21 Apr 2026] — Results UI: Engine Data Wiring
+
+### Fixed
+- **fix** `DepartmentHeatmap` data source corrected — component was re-deriving cell
+  values by averaging raw answers internally, bypassing the scoring engine's category
+  weights. `subCategoryData` prop added (`Record<string, DepartmentSubCategories>`);
+  `categoryKey` field added to every `DEPT_KPIS` entry (maps to `q.category` in the
+  questionnaire). `useMemo` now prefers `calculateSubCategoryScores()` output for each
+  cell; raw answer fallback retained for any cell whose `categoryKey` has no matching
+  sub-category. `ExecutiveSummary.tsx` passes the already-computed `subCategoryData`
+  (line 106) to the component. *(tracker #32 · `9f2c44d`)*
+
+### Verified Complete (audit 21 Apr 2026)
+- **verified** `CausalChainDiagram.tsx` — component live in `src/components/results/`,
+  mounted in `ExecutiveSummary.tsx` (Section 1C). Reads top-3 live signals from
+  `generateSignals()`; groups by shared root-cause dimension via `SIGNAL_MAPPINGS`;
+  renders dimension-grouped chain nodes with arrows. Empty-state handled. Uses
+  shared-cause chain model rather than KPI upstream/downstream fields from
+  `kpiDefinitions.ts`. *(tracker #29)*
+- **verified** Systemic + recurring pattern cards — both severity variants (`systemic`
+  and `recurring`) rendered in `ExecutiveSummary.tsx` (Section 4) from live
+  `detectSystemicPatterns()` output. No placeholder data. *(tracker #33)*
+
+---
+
+## [21 Apr 2026] — Type Safety
+
+### Fixed
+- **fix** `Organization` interface typed with `business_model` field — added
+  `business_model?: 'sales_only' | 'service_only' | '2s' | '3s' | '4s' | null`
+  to the `Organization` interface in `useMultiTenant.tsx`. Field was fetched at runtime
+  via `organizations(*)` but absent from the TypeScript type, forcing an `as any` cast
+  in `Assessment.tsx`. *(tracker #13 · `ea0aef4`)*
+- **fix** `as any` cast removed from `Assessment.tsx:45` — `businessModel` now read
+  directly as `currentOrganization?.business_model`. *(tracker #13 · `ea0aef4`)*
+- **refactor** Dead `applicableModels?: string[]` field removed from `Section` interface
+  in `questionnaire.ts` — field was declared but never populated on any section object;
+  all gating handled by `moduleGating.ts`. *(tracker #13 · `ea0aef4`)*
+
+---
+
+## [20 Apr 2026] — Lovable Build Fix
+
+### Fixed
+- ActionSheet.tsx: KPI, likely-driver, and likely-consequence map callbacks retyped from
+  `string` to `unknown` with explicit object guard casts — resolves TypeScript strict-mode
+  build errors when iterating KPI/driver/consequence arrays whose runtime shape is
+  `{ name, type, reason }` rather than plain string. `updateField` value union widened to
+  include `number`. *(`7eb666e`, `40a7d0d`, `bbf0783`)*
+- Account.tsx: profile state typed as `Tables<'profiles'>` (replacing loose
+  `Record<string, string | null>`); `Tables` import added. Fixes downstream
+  type errors on `actor_type` and other typed profile fields. *(`40a7d0d`, `9d1d82f`)*
+
+---
+
+## [03 Apr 2026] — Results UI Polish
+
+### Added
+- **feat** Recurring pattern cards — `ExecutiveSummary.tsx` updated to render both
+  systemic (3+ depts) and recurring (2 depts) severity variants side-by-side. Previously
+  only the systemic variant was rendered. *(tracker #33 · `21aa99d`)*
+
+### Fixed
+- **fix** Border colour conflict on pattern cards — conflicting Tailwind border class
+  removed from pattern card wrapper; stable `key` prop added using pattern signal code
+  instead of array index. *(tracker #33 · `01ae43e`)*
+- **fix** Narrative card border conflict removed — conflicting border class stripped from
+  executive narrative card in `ExecutiveSummary.tsx`. *(tracker #34 · `14a33a4`)*
+- **feat** Executive narrative card restyled — card header relabelled "Assessment Overview";
+  layout tightened. *(tracker #34 · `cfa7fd8`)*
+
+---
+
 ## [02 Apr 2026] — Sprint: Bug Fixes & System Verification
 
 ### Added
@@ -60,7 +159,7 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
 
 - **feat** Evidence-based scale labels expanded — observable criteria applied to 33 additional questions across NVS, UVS, SVC, PTS, FIN modules (on top of 13 done in Sprint 1). *(item 10 · `24a8219`)*
 
-- **feat** Ceiling analysis wired to Results page — `generateCeilingInsights()` connected via `useMemo` in `Results.tsx`; data ready for UI rendering (render TODO added). *(item 12 · `24a8219`)*
+- **feat** Ceiling analysis wired to Results page — `generateCeilingInsights()` connected via `useMemo` in `Results.tsx`; data computed but UI rendering deferred (TODO CC-12 comment in source). *(item 12 · `24a8219`)*
 
 - **fix** Ceiling analysis threshold reduced to 55 and no-insight messaging updated (enterprise mode staging) for improved clarity in 54/58/68 scenarios. *(item 15 · `69283de`)*
 
@@ -72,7 +171,7 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
 
 - **fix** Results cards layout and alignment corrected. *(`21ef7c4`, `2b7f297`)*
 
-- **feat** Results 5×5 heatmap and causal chain panels — KPI heatmap rendered on Results page with causal chain visualisation. Working in production. *(`0ac9ce2`, `88c4e1b`, `97caf36`, `b205439`, `3ddbc18`, `6f9e026`, `05422df`, `2cff226`)*
+- **feat** Results 5×5 heatmap and causal chain panels — KPI heatmap rendered on Results page with causal chain visualisation. Systemic pattern cards render inside `ExecutiveSummary.tsx` (mounted within Results page). Working in production. *(`0ac9ce2`, `88c4e1b`, `97caf36`, `b205439`, `3ddbc18`, `6f9e026`, `05422df`, `2cff226`)*
 
 - **feat** OEM and Coach dashboard scaffolding — routing, layout, and backend wiring for OEM network view and Coach assigned-dealer view created. Backend complete; dashboards not yet surfaced in the nav (stub state — pending role architecture item #01 and OEM tables item #38). *(`b3e338b`, `4b44ca1`, `88deac3`, `76ea1b6`, `c34aa5e`, `ecc0d8d`, `1f4293d`, `b0c4352`)*
 
@@ -100,7 +199,7 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
 
 ### Diagnostic Engine (Claude Code)
 
-- **feat** `src/data/actionTemplatesTiered.ts` — 688-line tiered action template system. 27 templates across 9 signal codes × 3 score bands: `foundational` (20–45), `developing` (46–69), `optimising` (70–84). Signals covered: `NVS_LEAD_RESPONSE`, `NVS_CLOSING_RATIO`, `NVS_GROSS_PER_UNIT`, `UVS_STOCK_TURN`, `SVC_WORKSHOP_UTILISATION`, `SVC_CSI`, `FIN_NET_PROFIT`, `PTS_OBSOLESCENCE`. Exports: `getTieredTemplate()`, `filterByBusinessModel()`, `scoreToBand()`, `getAllBandsForSignal()`. *(item 20)*
+- **feat** `src/data/actionTemplatesTiered.ts` — 589-line tiered action template system. 25 templates across 8 signal codes × 3 score bands: `foundational` (20–45), `developing` (46–69), `optimising` (70–84). Signals covered: `NVS_LEAD_RESPONSE`, `NVS_CLOSING_RATIO`, `NVS_GROSS_PER_UNIT`, `UVS_STOCK_TURN`, `SVC_WORKSHOP_UTILISATION`, `SVC_CSI`, `FIN_NET_PROFIT`, `PTS_OBSOLESCENCE`. Exports: `getTieredTemplate()`, `filterByBusinessModel()`, `scoreToBand()`, `getAllBandsForSignal()`. *(item 20)*
 
 - **feat** Business model filtering on all action templates — `relevantBusinessModels[]` array on every template. `filterByBusinessModel()` returns `null` for non-applicable combinations (PTS templates excluded for `sales_only`, UVS templates excluded for `service_only`). Signal engine skips null templates gracefully. *(item 21)*
 
@@ -134,7 +233,7 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
 
 - **fix** Scale labels updated to wrap properly across multiple lines in rating buttons. *(`5b3a1c`)*
 
-- **feat** `crossValidationRules.ts` — 5 cross-validation rules created: NVS productivity (nvs-1/nvs-7), service utilisation vs CSI (svc-1/svc-5), parts blocking service (svc-2/svc-9), profit-cash disconnect (fin-1/fin-2), hidden dead stock (pts-1/pts-4). `evaluateCrossValidations()` function ready. *(item 11)*
+- **feat** `src/data/crossValidationRules.ts` — 5 cross-validation rules created: NVS productivity (nvs-1/nvs-7), service utilisation vs CSI (svc-1/svc-5), parts blocking service (svc-2/svc-9), profit-cash disconnect (fin-1/fin-2), hidden dead stock (pts-1/pts-4). `evaluateCrossValidations()` function ready. *(item 11)*
 
 - **feat** Triage scoring upgraded — replaced static priority lookup with formula-driven calculation. Impact = f(module_weight, score_gap, downstream_KPI_count). Effort = f(step_count, root_cause_dimension_modifier). Urgency escalates for low scores and stale repeat assessments. *(item 19)*
 
