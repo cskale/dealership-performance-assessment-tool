@@ -75,6 +75,33 @@ function isOverdue(action: ActionRecord): boolean {
   return new Date(action.target_completion_date) < new Date(new Date().toDateString());
 }
 
+function getDueBadge(action: ActionRecord): { label: string; className: string } | null {
+  if (!action.target_completion_date) return null;
+  const daysRemaining = Math.ceil((new Date(action.target_completion_date).getTime() - new Date().getTime()) / 86400000);
+  const overdue = isOverdue(action);
+  const label = overdue
+    ? 'Overdue'
+    : daysRemaining <= 30
+    ? '30 Days'
+    : daysRemaining <= 60
+    ? '60 Days'
+    : daysRemaining <= 90
+    ? '90 Days'
+    : new Date(action.target_completion_date).toLocaleDateString();
+
+  return {
+    label,
+    className: overdue ? 'bg-red-50 text-red-600' : 'bg-neutral-100 text-neutral-600',
+  };
+}
+
+function getPriorityPillClass(priority: ActionRecord['priority']): string {
+  if (priority === 'critical') return 'bg-red-50 border-red-200 text-red-700';
+  if (priority === 'high') return 'bg-orange-50 border-orange-200 text-orange-700';
+  if (priority === 'medium') return 'bg-yellow-50 border-yellow-200 text-yellow-700';
+  return 'bg-neutral-50 border-neutral-200 text-neutral-500';
+}
+
 const STATUS_STRIPE: Record<string, string> = {
   'Open': 'bg-muted-foreground',
   'In Progress': 'bg-warning',
