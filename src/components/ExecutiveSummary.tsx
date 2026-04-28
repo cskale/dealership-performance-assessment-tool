@@ -286,89 +286,114 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
       {/* SECTION 1C — Causal Chain Diagram (null when no signal-based chains) */}
       <CausalChainDiagram signals={topSignals} />
 
-      {/* SECTION 1D — Systemic Patterns — single detectSystemicPatterns() call drives both sections.
-          Empty state shown here when none found; pattern cards shown when found. */}
-      {systemicPatterns.length === 0 && (
-        <Card className="shadow-sm bg-success/5 shadow-card rounded-xl">
-          <CardContent className="p-5">
+      {/* SECTION 1D — Key Diagnostic Findings (critical findings + systemic patterns unified) */}
+      <Card className="shadow-lg shadow-card rounded-xl">
+        <CardHeader className="pb-3">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+            {language === 'de' ? 'Wichtigste diagnostische Befunde' : 'Key Diagnostic Findings'}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {topSignals.length === 0 && systemicPatterns.length === 0 && (
             <div className="flex items-center gap-3">
               <CheckCircle className="h-5 w-5 text-success shrink-0" />
               <p className="text-[13px] text-foreground">
                 {language === 'de'
-                  ? 'Keine systemischen Muster erkannt — Abteilungsprobleme erscheinen isoliert.'
-                  : 'No systemic patterns detected — department issues appear isolated.'}
+                  ? 'Keine wesentlichen Befunde — Leistung liegt durchgehend im Normalbereich.'
+                  : 'No significant findings — performance is consistently within normal range.'}
               </p>
             </div>
-          </CardContent>
-        </Card>
-      )}
-      {systemicPatterns.length > 0 && (
-        <Card className="shadow-lg shadow-card rounded-xl">
-          <CardHeader className="pb-3">
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
-              {language === 'de' ? 'Systemische Muster' : 'Systemic Patterns'}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {systemicPatterns.map((p) => {
-              const isSystemic = p.severity === 'systemic';
-              const accent = isSystemic ? 'hsl(0 72% 51%)' : 'hsl(38 92% 50%)';
-              const badgeLabel = isSystemic
-                ? (language === 'de' ? 'Systemisch' : 'Systemic')
-                : (language === 'de' ? 'Wiederkehrend' : 'Recurring');
-              const title = p.signalCode
-                .split('_')
-                .map((w: string) => w.charAt(0) + w.slice(1).toLowerCase())
-                .join(' ');
-              const fallbackDesc = language === 'de'
-                ? 'Dieses Signal tritt in mehreren Abteilungen auf, was auf eine strukturelle Ursache hindeutet, nicht auf isolierte Ausführung.'
-                : 'This signal appears across multiple departments, suggesting a structural cause rather than isolated execution.';
-              return (
-                <div
-                  key={p.signalCode}
-                  className="rounded-md p-4 border-l-[3px]"
-                  style={{
-                    borderLeftColor: accent,
-                    backgroundColor: `${accent.replace(')', ' / 0.04)')}`,
-                  }}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <span
-                      className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white"
-                      style={{ backgroundColor: accent }}
-                    >
-                      {badgeLabel}
-                    </span>
-                    <span className="text-[13px] font-medium text-foreground">{title}</span>
+          )}
+          {topSignals.map((signal, i) => {
+            const severityColor = signal.severity === 'HIGH'
+              ? 'border-l-destructive bg-destructive/5'
+              : signal.severity === 'MEDIUM'
+              ? 'border-l-warning bg-warning/5'
+              : 'border-l-info bg-info/5';
+            const severityLabel = signal.severity === 'HIGH' ? (language === 'de' ? 'Kritisch' : 'Critical')
+              : signal.severity === 'MEDIUM' ? (language === 'de' ? 'Mittel' : 'Moderate') : (language === 'de' ? 'Beobachten' : 'Monitor');
+            const severityBadge = signal.severity === 'HIGH'
+              ? 'bg-destructive/10 text-destructive border-destructive/20'
+              : signal.severity === 'MEDIUM'
+              ? 'bg-warning/10 text-warning-foreground border-warning/20'
+              : 'bg-info/10 text-info border-info/20';
+            const deptName = getDepartmentName(signal.moduleKey, language);
+            const triggerCount = signal.triggeringQuestionIds?.length ?? 1;
+            return (
+              <div key={`finding-${i}`} className={`border-l-4 rounded-r-lg p-4 ${severityColor}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold text-foreground">
+                      {signalLabels[signal.signalCode] ?? signal.signalCode}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {deptName} · {triggerCount} {language === 'de' ? (triggerCount > 1 ? 'Fragen markiert' : 'Frage markiert') : (triggerCount > 1 ? 'questions flagged' : 'question flagged')}
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-1.5 mb-2">
-                    {p.departments.map((d: string) => {
-                      const color = DEPT_COLORS_ES[d] ?? 'hsl(var(--muted-foreground))';
-                      const abbrev = MODULE_LABELS[d] ?? d;
-                      return (
-                        <div
-                          key={d}
-                          className="rounded-[20px] px-2.5 py-[3px] text-[11px] font-medium border"
-                          style={{
-                            backgroundColor: `${color.replace(')', ' / 0.10)')}`,
-                            borderColor: `${color.replace(')', ' / 0.40)')}`,
-                            color,
-                          }}
-                        >
-                          {abbrev}
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <p className="text-[12px] text-muted-foreground leading-relaxed">
-                    {p.description || fallbackDesc}
-                  </p>
+                  <Badge variant="outline" className={`text-xs shrink-0 ${severityBadge}`}>
+                    {severityLabel}
+                  </Badge>
                 </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-      )}
+              </div>
+            );
+          })}
+          {systemicPatterns.map((p) => {
+            const isSystemic = p.severity === 'systemic';
+            const accent = isSystemic ? 'hsl(0 72% 51%)' : 'hsl(38 92% 50%)';
+            const badgeLabel = isSystemic
+              ? (language === 'de' ? 'Systemisch' : 'Systemic')
+              : (language === 'de' ? 'Wiederkehrend' : 'Recurring');
+            const title = p.signalCode
+              .split('_')
+              .map((w: string) => w.charAt(0) + w.slice(1).toLowerCase())
+              .join(' ');
+            const fallbackDesc = language === 'de'
+              ? 'Dieses Signal tritt in mehreren Abteilungen auf, was auf eine strukturelle Ursache hindeutet.'
+              : 'This signal appears across multiple departments, suggesting a structural cause.';
+            return (
+              <div
+                key={`pattern-${p.signalCode}`}
+                className="rounded-md p-4 border-l-[3px]"
+                style={{
+                  borderLeftColor: accent,
+                  backgroundColor: `${accent.replace(')', ' / 0.04)')}`,
+                }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span
+                    className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white"
+                    style={{ backgroundColor: accent }}
+                  >
+                    {badgeLabel}
+                  </span>
+                  <span className="text-[13px] font-medium text-foreground">{title}</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {p.departments.map((d: string) => {
+                    const color = DEPT_COLORS_ES[d] ?? 'hsl(var(--muted-foreground))';
+                    return (
+                      <div
+                        key={d}
+                        className="rounded-[20px] px-2.5 py-[3px] text-[11px] font-medium border"
+                        style={{
+                          backgroundColor: `${color.replace(')', ' / 0.10)')}`,
+                          borderColor: `${color.replace(')', ' / 0.40)')}`,
+                          color,
+                        }}
+                      >
+                        {MODULE_LABELS[d] ?? d}
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-[12px] text-muted-foreground leading-relaxed">
+                  {p.description || fallbackDesc}
+                </p>
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
 
       {/* SECTION 2 — Department Score Cards */}
       <Card className="shadow-lg shadow-card rounded-xl">
@@ -418,54 +443,6 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
           </div>
         </CardContent>
       </Card>
-
-      {/* SECTION 3 — Top Findings */}
-      {topSignals.length > 0 && (
-        <Card className="shadow-lg shadow-card rounded-xl">
-          <CardHeader>
-            <CardTitle className="text-base font-semibold text-foreground">
-              Top Findings
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {topSignals.map((signal, i) => {
-                const severityColor = signal.severity === 'HIGH'
-                  ? 'border-l-destructive bg-destructive/5'
-                  : signal.severity === 'MEDIUM'
-                  ? 'border-l-warning bg-warning/5'
-                  : 'border-l-info bg-info/5';
-                const severityLabel = signal.severity === 'HIGH' ? 'Critical'
-                  : signal.severity === 'MEDIUM' ? 'Moderate' : 'Monitor';
-                const severityBadge = signal.severity === 'HIGH'
-                  ? 'bg-destructive/10 text-destructive border-destructive/20'
-                  : signal.severity === 'MEDIUM'
-                  ? 'bg-warning/10 text-warning-foreground border-warning/20'
-                  : 'bg-info/10 text-info border-info/20';
-                const deptName = getDepartmentName(signal.moduleKey, language);
-                const triggerCount = signal.triggeringQuestionIds?.length ?? 1;
-                return (
-                  <div key={i} className={`border-l-4 rounded-r-lg p-4 ${severityColor}`}>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1">
-                        <div className="text-sm font-semibold text-foreground">
-                          {signalLabels[signal.signalCode] ?? signal.signalCode}
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {deptName} · {triggerCount} question{triggerCount > 1 ? 's' : ''} flagged
-                        </div>
-                      </div>
-                      <Badge variant="outline" className={`text-xs shrink-0 ${severityBadge}`}>
-                        {severityLabel}
-                      </Badge>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* SECTION 5 — Excellence Gaps (upgraded) */}
       <CeilingInsightsPanel insights={ceilingInsights} />
