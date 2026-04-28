@@ -1,25 +1,32 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { ArrowLeft } from "lucide-react";
+import { Network, Target, Users, Wrench, Workflow } from "lucide-react";
 import { getDepartmentConfig } from "@/lib/departmentConfig";
 import { KPIBenchmarkStudio } from "./KPIBenchmarkStudio";
-import { RootCauseIntelligenceBoard } from "./RootCauseIntelligenceBoard";
-import { ImprovementPlaybook } from "./ImprovementPlaybook";
-import { KpiRelationshipMap } from "./KpiRelationshipMap";
 import type { KPIDefinition } from "@/lib/kpiDefinitions";
-import { inferKPIPosition } from "@/lib/benchmarkGovernance";
 
 interface KPIStudioProps {
   kpiKey: string;
   kpi: KPIDefinition;
   departmentKey: string;
   language: string;
-  onBack: () => void;
-  onNavigateToKpi: (name: string) => void;
-  assessmentScore?: number;
 }
 
-export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavigateToKpi, assessmentScore }: KPIStudioProps) {
+const diagnosticRows = [
+  { key: "people", label: "People", icon: Users },
+  { key: "process", label: "Process", icon: Workflow },
+  { key: "tools", label: "Tools", icon: Wrench },
+  { key: "structure", label: "Structure", icon: Network },
+  { key: "incentives", label: "Incentives", icon: Target },
+] as const;
+
+function getImprovementTag(index: number, total: number) {
+  if (total <= 3 || index < 2) return "Quick win";
+  if (index >= total - 1) return "Capability";
+  return "Structural";
+}
+
+export function KPIStudio({ kpiKey, kpi, departmentKey, language }: KPIStudioProps) {
   const config = getDepartmentConfig(departmentKey);
   const DeptIcon = config.icon;
   const deptLabel = config.label[language as 'en' | 'de'] || config.label.en;
@@ -32,59 +39,37 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
     ? (language === 'de' ? 'Niedriger ist besser' : 'Lower is better')
     : (language === 'de' ? 'Höher ist besser' : 'Higher is better');
 
-  return (
-    <div className="max-w-5xl mx-auto">
-      {/* Back navigation */}
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 mb-10 group"
-      >
-        <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
-        {language === 'de' ? 'Zurück zur Enzyklopädie' : 'Back to Encyclopedia'}
-      </button>
+  const displayedLevers = kpi.improvementLevers?.slice(0, 7) ?? [];
 
-      {/* ===== 1. KPI HERO ===== */}
-      <section className="mb-6">
-        {/* Row 1: Chips */}
-        <div className="flex items-center gap-2 flex-wrap mb-5">
+  return (
+    <div className="flex max-h-[85vh] flex-col bg-card">
+      <header className="shrink-0 px-6 py-5 pr-14 border-b border-border/60">
+        <h1 className="text-2xl font-bold text-foreground leading-tight mb-3">
+          {kpi.title}
+        </h1>
+        <div className="flex items-center gap-2 flex-wrap">
           <Badge
             variant="outline"
-            className={cn("text-xs font-medium border", config.bgClass, config.textClass, config.borderClass)}
+            className={cn("rounded-full text-xs font-medium border px-2.5 py-1", config.bgClass, config.textClass, config.borderClass)}
           >
             <DeptIcon className="h-3 w-3 mr-1" />
             {deptLabel}
           </Badge>
           {kpi.unitOfMeasure && (
-            <Badge variant="secondary" className="text-xs font-normal bg-muted text-muted-foreground">
+            <Badge variant="secondary" className="rounded-full text-xs font-medium bg-muted text-muted-foreground px-2.5 py-1">
               {kpi.unitOfMeasure}
             </Badge>
           )}
         </div>
+      </header>
 
-        {/* Row 2: Title + Benchmark */}
-        <div className="flex flex-col lg:flex-row lg:items-start gap-8 lg:gap-14">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight leading-tight mb-4">
-              {kpi.title}
-            </h1>
-
-            {/* Row 3: Summary with Why It Matters integrated */}
-            <p className="text-base text-muted-foreground leading-relaxed max-w-2xl mb-2">
-              {kpi.definition}
-            </p>
-            {kpi.whyItMatters && (
-              <p className="text-sm text-foreground/60 leading-relaxed max-w-2xl">
-                {kpi.whyItMatters}
-              </p>
-            )}
-          </div>
-
-          {/* Benchmark card */}
-          {kpi.benchmark && (
-            <div className="lg:w-[300px] shrink-0 rounded-2xl border border-border/40 bg-card p-5">
-              <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-widest block mb-3">
-                {language === 'de' ? 'Referenz-Benchmarkbereich' : 'Reference Benchmark Range'}
-              </span>
+      <div className="overflow-y-auto px-6 py-6 space-y-8">
+        {kpi.benchmark && (
+          <section>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-4">
+              {language === 'de' ? 'Referenz-Benchmarkbereich' : 'Reference Benchmark Range'}
+            </h2>
+            <div className="w-full rounded-xl border border-border/40 bg-background p-5">
               <KPIBenchmarkStudio
                 kpiKey={kpiKey}
                 benchmark={kpi.benchmark}
@@ -93,136 +78,83 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
                 language={language}
               />
             </div>
-          )}
-        </div>
+          </section>
+        )}
 
-        {/* Row 4: KPI Snapshot metadata */}
-        <div className="flex items-center gap-4 flex-wrap mt-6 pt-5 border-t border-border/30">
-          {kpi.unitOfMeasure && (
-            <div className="text-xs text-muted-foreground/60">
-              <span className="font-semibold text-muted-foreground/80 mr-1">{language === 'de' ? 'Einheit' : 'Unit'}:</span>
-              {kpi.unitOfMeasure}
-            </div>
-          )}
-          <div className="text-xs text-muted-foreground/60">
-            <span className="font-semibold text-muted-foreground/80 mr-1">{language === 'de' ? 'Richtung' : 'Direction'}:</span>
-            {directionLabel}
-          </div>
-          <div className="text-xs text-muted-foreground/60">
-            <span className="font-semibold text-muted-foreground/80 mr-1">{language === 'de' ? 'Referenztyp' : 'Reference type'}:</span>
-            {language === 'de' ? 'Branchenrichtwert' : 'Industry indicative'}
-          </div>
-          <div className="text-xs text-muted-foreground/60">
-            <span className="font-semibold text-muted-foreground/80 mr-1">{language === 'de' ? 'Bereich' : 'Scope'}:</span>
-            {deptLabel}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== 2. EXECUTIVE TAKEAWAY ===== */}
-      {kpi.executiveSummary && (
-        <section className="mb-14 mt-10">
-          <div className="rounded-xl bg-primary/[0.03] px-7 py-5">
-            <span className="text-[10px] font-semibold text-primary/50 uppercase tracking-widest block mb-2">
-              {language === 'de' ? 'Executive Takeaway' : 'Executive Takeaway'}
+        {kpi.executiveSummary && (
+          <section className="rounded-xl bg-primary/5 px-5 py-4">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide block mb-2">
+              Executive Takeaway
             </span>
-            <p className="text-sm text-foreground/75 leading-relaxed">
+            <p className="text-sm text-foreground leading-relaxed">
               {kpi.executiveSummary}
             </p>
+          </section>
+        )}
+
+        <section>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+          {language === 'de' ? 'Definition & Formel' : 'Definition & Context'}
+          </h2>
+          <p className="text-sm text-foreground leading-relaxed">{kpi.definition}</p>
+          {kpi.formula && (
+            <div className="bg-muted rounded px-3 py-2 mt-4">
+              <code className="text-sm font-mono text-foreground leading-relaxed block">{kpi.formula}</code>
+            </div>
+          )}
+        </section>
+
+        {kpi.rootCauseDiagnostics && (
+          <section>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-4">
+              {language === 'de' ? 'Zentrale diagnostische Themen' : 'Key Diagnostic Themes'}
+            </h2>
+            <div className="space-y-3">
+              {diagnosticRows.map(({ key, label, icon: Icon }) => (
+                <div key={key} className="flex items-start gap-3">
+                  <Icon className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  <p className="text-sm text-foreground leading-relaxed">
+                    <span className="font-bold mr-1">{label}:</span>
+                    {kpi.rootCauseDiagnostics?.[key]}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {displayedLevers.length > 0 && (
+          <section>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-4">
+              {language === 'de' ? 'Vorgeschlagene Verbesserungsideen' : 'Suggested Improvement Ideas'}
+            </h2>
+            <div className="space-y-3">
+              {displayedLevers.map((lever, index) => (
+                <div key={index} className="flex items-start gap-3 rounded-lg bg-muted/20 px-3 py-3">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                    {index + 1}
+                  </span>
+                  <p className="flex-1 text-sm text-foreground leading-relaxed min-w-0">{lever}</p>
+                  <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium uppercase tracking-wide text-muted-foreground hidden sm:inline-flex">
+                    {getImprovementTag(index, displayedLevers.length)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section className="border-t border-border/60 pt-4">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+            {kpi.unitOfMeasure && (
+              <span><span className="font-medium">{language === 'de' ? 'Einheit' : 'Unit'}:</span> {kpi.unitOfMeasure}</span>
+            )}
+            <span><span className="font-medium">{language === 'de' ? 'Richtung' : 'Direction'}:</span> {directionLabel}</span>
+            <span><span className="font-medium">{language === 'de' ? 'Referenztyp' : 'Reference Type'}:</span> {language === 'de' ? 'Branchenrichtwert' : 'Industry indicative'}</span>
+            <span><span className="font-medium">{language === 'de' ? 'Bereich' : 'Scope'}:</span> {deptLabel}</span>
           </div>
         </section>
-      )}
-
-      {/* ===== 3. DEFINITION & CONTEXT ===== */}
-      <section className="mb-14">
-        <h2 className="text-sm font-semibold text-foreground mb-1.5">
-          {language === 'de' ? 'Definition & Formel' : 'Definition & Context'}
-        </h2>
-        <p className="text-sm text-muted-foreground/70 mb-6 leading-relaxed">
-          {language === 'de'
-            ? 'Wie dieser KPI definiert, berechnet und interpretiert wird.'
-            : 'How this KPI is defined, calculated, and interpreted.'}
-        </p>
-
-        <div className="rounded-xl border border-border/30 bg-card p-6 sm:p-7">
-          <p className="text-sm text-foreground/80 leading-relaxed mb-5">{kpi.definition}</p>
-
-          {kpi.formula && (
-            <div className="bg-muted/30 rounded-lg px-5 py-4 mb-5">
-              <code className="text-sm font-mono text-foreground/80 leading-relaxed block">{kpi.formula}</code>
-            </div>
-          )}
-
-          {(kpi.inclusions || kpi.exclusions) && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-5 pt-5 border-t border-border/20">
-              {kpi.inclusions && kpi.inclusions.length > 0 && (
-                <div>
-                  <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider block mb-3">
-                    {language === 'de' ? 'Einschlüsse' : 'Includes'}
-                  </span>
-                  <ul className="space-y-2">
-                    {kpi.inclusions.map((item, i) => (
-                      <li key={i} className="text-sm text-foreground/70 flex items-start gap-2">
-                        <span className="text-primary/40 mt-0.5 shrink-0">✓</span>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {kpi.exclusions && kpi.exclusions.length > 0 && (
-                <div>
-                  <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider block mb-3">
-                    {language === 'de' ? 'Ausschlüsse' : 'Excludes'}
-                  </span>
-                  <ul className="space-y-2">
-                    {kpi.exclusions.map((item, i) => (
-                      <li key={i} className="text-sm text-muted-foreground/70 flex items-start gap-2">
-                        <span className="mt-0.5 shrink-0">✗</span>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Reference Benchmark Range removed — already shown inline at top of detail view */}
-
-      {/* ===== 5. KEY DIAGNOSTIC THEMES ===== */}
-      {kpi.rootCauseDiagnostics && (
-        <section className="mb-14">
-          <RootCauseIntelligenceBoard
-            diagnostics={kpi.rootCauseDiagnostics}
-            language={language}
-          />
-        </section>
-      )}
-
-      {/* ===== 6. SUGGESTED IMPROVEMENT IDEAS ===== */}
-      {kpi.improvementLevers && kpi.improvementLevers.length > 0 && (
-        <section className="mb-14">
-          <ImprovementPlaybook
-            levers={kpi.improvementLevers}
-            language={language}
-          />
-        </section>
-      )}
-
-      {/* ===== 7. PERFORMANCE INFLUENCE FRAMEWORK ===== */}
-      {kpi.interdependencies && (
-        <section className="mb-14">
-          <KpiRelationshipMap
-            interdependencies={kpi.interdependencies}
-            kpiTitle={kpi.title}
-            language={language}
-            onNavigateToKpi={onNavigateToKpi}
-          />
-        </section>
-      )}
+      </div>
     </div>
   );
 }
