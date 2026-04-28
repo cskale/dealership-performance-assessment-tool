@@ -302,7 +302,7 @@ export function KPIExplorer({ initialKpiKey }: KPIExplorerProps) {
 
       {/* KPI Detail Modal */}
       <Dialog open={!!selectedKpiKey && !!selectedItem} onOpenChange={(open) => { if (!open) handleCloseStudio(); }}>
-        <DialogContent className="max-w-3xl max-h-[85vh] p-0 gap-0 overflow-hidden rounded-xl bg-card shadow-xl">
+        <DialogContent className="w-[calc(100vw-3rem)] max-w-6xl max-h-[88vh] p-0 gap-0 overflow-hidden rounded-xl bg-card shadow-xl">
           {selectedKpiKey && selectedItem && (
             <KPIStudio
               kpiKey={selectedKpiKey}
