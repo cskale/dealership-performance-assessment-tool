@@ -260,9 +260,9 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
         {/* ── BODY ── */}
         <ScrollArea className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 160px)' }}>
           <div className="px-6 py-5">
-              <div className={cn("gap-6", mode === 'edit' ? "grid grid-cols-1 lg:grid-cols-[1fr_380px]" : "space-y-5")}>
+              <div className={cn("gap-0", mode === 'edit' ? "grid grid-cols-1 lg:grid-cols-[1fr_380px]" : "space-y-5")}>
                 {/* ── LEFT: Form ── */}
-                <div className="space-y-5">
+                <div className="space-y-5 p-4">
                   {/* Title & Description */}
                   <div className="space-y-3">
                     <div className="space-y-1.5">
@@ -419,14 +419,14 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                   {/* Support Required */}
                   <div className="space-y-2">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Support Required</p>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {SUPPORT_OPTIONS.map(s => (
                         <button key={s} disabled={readOnly}
                           onClick={() => toggleSupport(s)}
-                          className={cn("px-2.5 py-1 rounded-full text-xs border transition-colors",
+                          className={cn("px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors",
                             (formData.support_required_from || []).includes(s)
                               ? "bg-primary text-primary-foreground border-primary"
-                              : "border-border text-muted-foreground hover:bg-muted"
+                              : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
                           )}>
                           {s}
                         </button>
@@ -437,7 +437,7 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
 
                 {/* ── RIGHT: Intelligence Panel ── */}
                 {mode === 'edit' && (
-                  <div className="space-y-4">
+                  <div className="space-y-4 p-4 lg:border-l border-border">
                     {/* Context Intelligence Card */}
                     {(action?.action_context || action?.business_impact || action?.recommendation || action?.expected_benefit) && (
                       <div className="rounded-xl border border-[hsl(var(--dd-accent))]/20 bg-[hsl(var(--dd-accent-light))] p-4 space-y-3">
