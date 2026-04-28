@@ -27,31 +27,32 @@ const kpiKeyMapping: Record<string, Record<string, string>> = {
     appointmentShowRate: 'appointmentShowRate',
   },
   'used-vehicle-sales': {
-    grossPerUsedRetailed: 'grossPerUsedRetailed',
-    usedVehicleInventoryTurn: 'usedVehicleInventoryTurn',
-    reconCycleDays: 'reconCycleDays',
-    daysSupply: 'daysSupply',
-    usedRetailMix: 'usedRetailMix',
+    usedCarInventoryTurn: 'usedCarInventoryTurn',
+    daysInInventory: 'daysInInventory',
+    reconditioningCycleTime: 'reconditioningCycleTime',
+    grossPerUsedVehicle: 'grossPerUsedVehicle',
+    agedStockPercentage: 'agedStockPercentage',
   },
   'service-performance': {
-    serviceAbsorption: 'serviceAbsorption',
-    labourEfficiency: 'labourEfficiency',
-    technicianUtilization: 'technicianUtilization',
-    effectiveLabourRate: 'effectiveLabourRate',
+    technicianProductivityPct: 'technicianProductivityPct',
+    technicianEfficiencyPct: 'technicianEfficiencyPct',
+    laborUtilizationRate: 'laborUtilizationRate',
+    firstTimeFixRate: 'firstTimeFixRate',
     serviceRetention: 'serviceRetention',
   },
   'parts-inventory': {
     partsGrossProfit: 'partsGrossProfit',
-    partsInventoryTurnover: 'partsInventoryTurnover',
-    partsFillRate: 'partsFillRate',
-    partsSalesPerRo: 'partsSalesPerRo',
+    partsGrossMarginPct: 'partsGrossMarginPct',
+    partsInventoryTurn: 'partsInventoryTurn',
     partsObsolescence: 'partsObsolescence',
+    fillRateEnriched: 'fillRateEnriched',
   },
   'financial-operations': {
-    netProfitMargin: 'netProfitMargin',
-    returnOnAssets: 'returnOnAssets',
-    variableSelling: 'variableSelling',
-    inventoryTurnover: 'inventoryTurnover',
+    totalDealershipNetProfit: 'totalDealershipNetProfit',
+    operatingMarginPct: 'operatingMarginPct',
+    ebitdaMargin: 'ebitdaMargin',
+    grossProfitPerDepartment: 'grossProfitPerDepartment',
+    netProfitPerVehicleRetail: 'netProfitPerVehicleRetail',
   }
 };
 
@@ -168,7 +169,7 @@ export function IndustrialKPIDashboard({
         size="lg"
       />
 
-      {Object.entries(scores).map(([sectionId, score]) => {
+      {Object.entries(scores).sort(([, a], [, b]) => a - b).map(([sectionId, score]) => {
         const kpis = departmentKPIs[sectionId] || [];
         if (kpis.length === 0) return null;
 
