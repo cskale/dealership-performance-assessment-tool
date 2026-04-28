@@ -397,15 +397,15 @@ export default function Assessment() {
         <div className="flex gap-6 w-full">
           {/* Left Sidebar - Sections Navigation */}
           <div className="w-80 flex-shrink-0">
-            <div className="sticky top-24">
-              <Card className="shadow-card rounded-xl">
-                <CardHeader className="pb-4">
+            <div className="sticky top-24 h-[calc(100vh-6rem)] flex flex-col">
+              <Card className="shadow-card rounded-xl flex flex-col h-full overflow-hidden">
+                <CardHeader className="pb-4 flex-shrink-0">
                   <div className="flex items-center gap-2">
                     <BarChart3 className="h-5 w-5 text-primary" />
                     <CardTitle className="text-lg">{t('assessment.sections')}</CardTitle>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-3 max-h-[calc(100vh-12rem)] overflow-y-auto">
+                <CardContent className="space-y-3 overflow-y-auto flex-1">
                   {translatedSections.map((section, sectionIndex) => {
                     const sectionAnswered = section.questions.filter(q => answers[q.id] !== undefined).length;
                     const sectionTotal = section.questions.length;
