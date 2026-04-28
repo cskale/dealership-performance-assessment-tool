@@ -236,8 +236,28 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
         )}
       </section>
 
+      {isLeadResponseTime && (
+        <section className="grid grid-cols-1 border-b border-border/30 sm:grid-cols-3">
+          <div className="px-8 py-5 sm:border-r sm:border-border/30 sm:px-10 lg:px-14">
+            <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.conversionUplift}</span>
+            <strong className="block text-metric-lg text-foreground">391%</strong>
+            <span className="mt-1 block text-xs text-muted-foreground">{t.delayedResponse}</span>
+          </div>
+          <div className="px-8 py-5 sm:border-r sm:border-border/30 sm:px-10 lg:px-14">
+            <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.effectivenessLoss}</span>
+            <strong className="block text-metric-lg text-foreground">21×</strong>
+            <span className="mt-1 block text-xs text-muted-foreground">{t.immediateResponse}</span>
+          </div>
+          <div className="px-8 py-5 sm:px-10 lg:px-14">
+            <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.complianceRate}</span>
+            <strong className="block text-metric-lg text-foreground">5.5%</strong>
+            <span className="mt-1 block text-xs text-muted-foreground">{t.dealersBenchmark}</span>
+          </div>
+        </section>
+      )}
+
       <section className="grid grid-cols-1 border-b border-border/30 lg:grid-cols-2">
-        <div className="border-r border-border/30 px-10 py-7">
+        <div className="border-r border-border/30 px-8 py-7 sm:px-10 lg:px-14">
           <span className="mb-4 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.diagnosticThemes}</span>
           <div>
             {kpi.rootCauseDiagnostics ? (
@@ -266,7 +286,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
           </div>
         </div>
 
-        <div className="px-10 py-7">
+        <div className="px-8 py-7 sm:px-10 lg:px-14">
           <span className="mb-4 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.improvementActions}</span>
           <div>
             {kpi.improvementLevers?.map((lever, index) => {
@@ -286,7 +306,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
       </section>
 
       {hasInterdependencies && (
-        <section className="bg-muted/20 px-10 py-7">
+        <section className="bg-muted/20 px-8 py-7 sm:px-10 lg:px-14">
           <span className="mb-5 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.influenceFramework}</span>
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_140px_1fr]">
             <div>
