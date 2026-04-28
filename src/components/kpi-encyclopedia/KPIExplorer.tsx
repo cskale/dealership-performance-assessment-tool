@@ -165,7 +165,7 @@ export function KPIExplorer({ initialKpiKey }: KPIExplorerProps) {
         <button
           onClick={() => setActiveDepartment("all")}
           className={cn(
-            "rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-200 border",
+            "rounded-md px-3.5 py-1.5 text-label transition-all duration-200 border",
             activeDepartment === "all"
               ? "bg-primary text-primary-foreground border-primary shadow-sm"
               : "bg-background text-muted-foreground border-border hover:bg-muted/60"
@@ -181,9 +181,9 @@ export function KPIExplorer({ initialKpiKey }: KPIExplorerProps) {
               key={chip.key}
               onClick={() => setActiveDepartment(chip.key)}
               className={cn(
-                "rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-200 border",
+                "rounded-md px-3.5 py-1.5 text-label transition-all duration-200 border",
                 isActive
-                  ? cn(chip.config.bgClass, chip.config.textClass, chip.config.borderClass, "shadow-sm")
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
                   : "bg-background text-muted-foreground border-border hover:bg-muted/60"
               )}
             >
@@ -200,7 +200,7 @@ export function KPIExplorer({ initialKpiKey }: KPIExplorerProps) {
                 variant={activeInOverflow ? "secondary" : "outline"}
                 size="sm"
                 className={cn(
-                  "rounded-full h-auto px-3.5 py-1.5 text-xs font-medium gap-1",
+                  "rounded-md h-auto px-3.5 py-1.5 text-label gap-1",
                   activeInOverflow && "bg-muted text-foreground"
                 )}
               >
@@ -259,15 +259,14 @@ export function KPIExplorer({ initialKpiKey }: KPIExplorerProps) {
               <button
                 key={item.key}
                 onClick={() => handleSelect(item.key)}
-                className="group text-left bg-card rounded-xl border border-border/50 p-4 transition-all duration-200 hover:border-primary/40 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="group text-left bg-card rounded-xl p-4 shadow-card transition-all duration-200 hover:shadow-elevated hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {/* Department badge */}
                 <div className="flex items-center gap-2 mb-3">
                   <Badge
                     variant="outline"
                     className={cn(
-                      "text-[10px] font-medium border px-2 py-0.5",
-                      config.bgClass, config.textClass, config.borderClass
+                      "text-caption border border-border/40 bg-muted px-2 py-0.5 text-muted-foreground"
                     )}
                   >
                     <DeptIcon className="h-2.5 w-2.5 mr-1" />
@@ -302,7 +301,7 @@ export function KPIExplorer({ initialKpiKey }: KPIExplorerProps) {
 
       {/* KPI Detail Modal */}
       <Dialog open={!!selectedKpiKey && !!selectedItem} onOpenChange={(open) => { if (!open) handleCloseStudio(); }}>
-        <DialogContent className="w-[calc(100vw-3rem)] max-w-6xl max-h-[88vh] p-0 gap-0 overflow-hidden rounded-xl bg-card shadow-xl">
+        <DialogContent className="w-[calc(100vw-3rem)] max-w-6xl max-h-[88vh] p-0 gap-0 overflow-hidden rounded-xl bg-card shadow-elevated">
           {selectedKpiKey && selectedItem && (
             <KPIStudio
               kpiKey={selectedKpiKey}

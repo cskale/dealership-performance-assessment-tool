@@ -65,8 +65,8 @@ function computeTriageScore(action: ActionRecord): number | null {
 function getTriageBadge(score: number | null): { label: string; className: string } | null {
   if (score == null) return null;
   if (score >= 14) return { label: 'Act Now', className: 'bg-destructive/10 text-destructive border-destructive/20' };
-  if (score >= 10) return { label: 'Priority', className: 'bg-amber-500/10 text-amber-600 border-amber-200' };
-  if (score >= 6) return { label: 'Plan', className: 'bg-blue-500/10 text-blue-600 border-blue-200' };
+  if (score >= 10) return { label: 'Priority', className: 'bg-warning/10 text-warning border-warning/20' };
+  if (score >= 6) return { label: 'Plan', className: 'bg-info/10 text-info border-info/20' };
   return { label: 'Backlog', className: 'bg-muted text-muted-foreground border-border' };
 }
 
@@ -623,23 +623,18 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
                 <div key={col.key} className="bg-secondary rounded-xl p-3">
                   <div className="flex items-center justify-between mb-3 px-1">
                     <span className="text-sm font-semibold text-foreground">{col.label}</span>
-                    <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">{col.actions.length}</span>
+                    <span className="text-label text-muted-foreground bg-muted rounded-md px-2 py-0.5">{col.actions.length}</span>
                   </div>
                   <div className="space-y-2">
                     {col.actions.map(action => {
                       const overdue = isOverdue(action);
-                      const priorityBorderColor = action.priority === 'critical' ? 'border-l-destructive'
-                        : action.priority === 'high' ? 'border-l-warning'
-                        : action.priority === 'medium' ? 'border-l-primary'
-                        : 'border-l-muted-foreground';
 
                       return (
                         <div
                           key={action.id}
                           onClick={() => openEditPanel(action)}
                           className={cn(
-                            "bg-white border border-border/50 rounded-lg p-3 cursor-pointer transition-all hover:shadow-md hover:-translate-y-px border-l-[3px]",
-                            priorityBorderColor,
+                            "bg-card rounded-lg p-3 cursor-pointer transition-all shadow-card hover:shadow-elevated hover:-translate-y-px border-l-[3px] border-l-brand-500",
                             action.status === 'Completed' && "opacity-70"
                           )}
                         >
@@ -658,11 +653,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
                                 {new Date(action.target_completion_date).toLocaleDateString()}
                               </span>
                             ) : <span />}
-                            {action.responsible_person && (
-                              <div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-medium" title={action.responsible_person}>
-                                {action.responsible_person.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                              </div>
-                            )}
+
                           </div>
                         </div>
                       );
@@ -712,12 +703,12 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
                           </div>
                           <p className="text-xs text-muted-foreground line-clamp-1 mb-2">{displayDesc}</p>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs border border-border text-muted-foreground">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-label border border-border text-muted-foreground">
                               {action.department}
                             </span>
-                            <Badge className={cn("text-xs", priorityConfig.color)}>{priorityConfig.label}</Badge>
+                            <Badge variant="outline" className="text-label rounded-md border-border bg-muted text-muted-foreground">{priorityConfig.label}</Badge>
                             {triageBadge && (
-                              <Badge variant="outline" className={cn("text-xs", triageBadge.className)}>{triageBadge.label}</Badge>
+                              <Badge variant="outline" className={cn("text-label rounded-md", triageBadge.className)}>{triageBadge.label}</Badge>
                             )}
                             {kpiCount > 0 && (
                               <span className="text-xs text-muted-foreground flex items-center gap-1">

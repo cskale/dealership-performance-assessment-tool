@@ -51,9 +51,9 @@ const Dashboard = () => {
   }, [user]);
 
   const statusLabels = {
-    'excellent': t('kpi.excellent'),
-    'on-track': t('dashboard.onTrack'),
-    'needs-focus': t('kpi.needsFocus')
+    'excellent': language === 'de' ? 'Fortgeschritten' : 'Advanced',
+    'on-track': language === 'de' ? 'Leistungsfähig' : 'Performing',
+    'needs-focus': language === 'de' ? 'In Entwicklung' : 'Developing'
   };
 
   const KPICard = ({ title, value, benchmark, change, status, unit = '' }: KPICardProps) => {
@@ -101,14 +101,15 @@ const Dashboard = () => {
 
   const SectionHeader = ({ icon, title, score }: SectionHeaderProps) => {
     const getScoreStatus = (score: number) => {
-      if (score >= 80) return { label: t('kpi.excellent'), variant: 'success' as const };
-      if (score >= 60) return { label: t('kpi.good'), variant: 'warning' as const };
-      return { label: t('kpi.needsFocus'), variant: 'destructive' as const };
+      if (score >= 85) return { label: language === 'de' ? 'Fortgeschritten' : 'Advanced', variant: 'success' as const };
+      if (score >= 70) return { label: language === 'de' ? 'Leistungsfähig' : 'Performing', variant: 'default' as const };
+      if (score >= 46) return { label: language === 'de' ? 'In Entwicklung' : 'Developing', variant: 'warning' as const };
+      return { label: language === 'de' ? 'Grundlegend' : 'Foundational', variant: 'destructive' as const };
     };
     const status = getScoreStatus(score);
 
     return (
-      <div className="flex items-center justify-between p-4 rounded-lg rounded-t-lg border bg-card border-t-4" style={{ borderTopColor: title.includes('New') || title.includes('Neufahr') ? '#2563eb' : title.includes('Used') || title.includes('Gebraucht') ? '#7c3aed' : title.includes('Service') || title.includes('Aftersales') ? '#0891b2' : 'hsl(var(--border))' }}>
+      <div className="flex items-center justify-between p-4 rounded-xl bg-card shadow-card border-t-4 border-t-brand-500">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
             {icon}
@@ -127,7 +128,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-muted">
+    <div className="min-h-screen bg-neutral-50">
       
 
       {/* Context bar */}
