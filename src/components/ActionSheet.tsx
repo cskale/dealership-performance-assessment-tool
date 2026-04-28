@@ -260,9 +260,9 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
         {/* ── BODY ── */}
         <ScrollArea className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 160px)' }}>
           <div className="px-6 py-5">
-              <div className={cn("gap-6", mode === 'edit' ? "grid grid-cols-1 lg:grid-cols-[1fr_380px]" : "space-y-5")}>
+              <div className={cn("gap-0", mode === 'edit' ? "grid grid-cols-1 lg:grid-cols-[1fr_380px]" : "space-y-5")}>
                 {/* ── LEFT: Form ── */}
-                <div className="space-y-5">
+                <div className="space-y-5 p-4">
                   {/* Title & Description */}
                   <div className="space-y-3">
                     <div className="space-y-1.5">
@@ -419,14 +419,14 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                   {/* Support Required */}
                   <div className="space-y-2">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Support Required</p>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {SUPPORT_OPTIONS.map(s => (
                         <button key={s} disabled={readOnly}
                           onClick={() => toggleSupport(s)}
-                          className={cn("px-2.5 py-1 rounded-full text-xs border transition-colors",
+                          className={cn("px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors",
                             (formData.support_required_from || []).includes(s)
                               ? "bg-primary text-primary-foreground border-primary"
-                              : "border-border text-muted-foreground hover:bg-muted"
+                              : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
                           )}>
                           {s}
                         </button>
@@ -437,7 +437,7 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
 
                 {/* ── RIGHT: Intelligence Panel ── */}
                 {mode === 'edit' && (
-                  <div className="space-y-4">
+                  <div className="space-y-4 p-4 lg:border-l border-border">
                     {/* Context Intelligence Card */}
                     {(action?.action_context || action?.business_impact || action?.recommendation || action?.expected_benefit) && (
                       <div className="rounded-xl border border-[hsl(var(--dd-accent))]/20 bg-[hsl(var(--dd-accent-light))] p-4 space-y-3">
@@ -478,21 +478,21 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                     {/* KPI Intelligence */}
                     {linkedKpiDetails.length > 0 && (
                       <div className="rounded-xl border border-border/50 bg-card p-4 space-y-3">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                          <BarChart3 className="h-3.5 w-3.5 text-primary" /> KPIs This Action Will Improve
+                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5">
+                          <BarChart3 className="h-3.5 w-3.5 text-muted-foreground" /> KPIs This Action Will Improve
                         </p>
                         <div className="space-y-2">
                           {visibleKpis.map((kpi: unknown, i: number) => {
                             const k = (typeof kpi === 'object' && kpi !== null ? kpi : { name: String(kpi) }) as { name?: string; title?: string; key?: string; type?: string; reason?: string };
                             return (
-                            <div key={i} className="rounded-lg border border-border/50 p-3 bg-background">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                                  <BarChart3 className="h-3 w-3 text-primary flex-shrink-0" />
+                            <div key={i} className="w-full rounded-lg border border-border p-3 bg-card">
+                              <div className="flex items-center justify-between gap-3 mb-1">
+                                <span className="text-sm font-medium text-foreground flex items-center gap-1.5 min-w-0">
+                                  <BarChart3 className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                                   {k.name || k.title || k.key}
                                 </span>
                                 {k.type && (
-                                  <Badge variant="outline" className={cn("text-xs font-medium uppercase", getKpiBadgeStyle(k.type))}>
+                                  <Badge variant="outline" className={cn("text-xs font-medium uppercase bg-transparent shrink-0", getKpiBadgeStyle(k.type))}>
                                     {k.type}
                                   </Badge>
                                 )}
@@ -515,15 +515,15 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                     {/* Likely Drivers */}
                     {likelyDrivers.length > 0 && (
                       <div className="rounded-xl border border-border/50 bg-card p-4 space-y-2">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                          <AlertTriangle className="h-3.5 w-3.5 text-[hsl(var(--dd-amber))]" /> Likely Drivers
+                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5">
+                          <AlertTriangle className="h-3.5 w-3.5 text-muted-foreground" /> Likely Drivers
                         </p>
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="space-y-2">
                           {likelyDrivers.map((d: unknown, i: number) => {
                             const obj = (typeof d === 'object' && d !== null ? d : null) as { name?: string; label?: string; type?: string } | null;
                             return (
-                            <div key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs">
-                              <span className="text-foreground">{typeof d === 'string' ? d : (obj?.name || obj?.label || '')}</span>
+                            <div key={i} className="flex items-center gap-2">
+                              <span className="text-sm text-foreground">{typeof d === 'string' ? d : (obj?.name || obj?.label || '')}</span>
                               {obj?.type && (
                                 <span className="text-xs font-medium uppercase tracking-wide bg-muted text-muted-foreground rounded-full px-2 py-0.5">{obj.type}</span>
                               )}
@@ -537,15 +537,15 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                     {/* Likely Consequences */}
                     {likelyConsequences.length > 0 && (
                       <div className="rounded-xl border border-border/50 bg-card p-4 space-y-2">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                          <TrendingUp className="h-3.5 w-3.5 text-destructive" /> Likely Consequences
+                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5">
+                          <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" /> Likely Consequences
                         </p>
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="space-y-2">
                           {likelyConsequences.map((c: unknown, i: number) => {
                             const obj = (typeof c === 'object' && c !== null ? c : null) as { name?: string; label?: string; type?: string } | null;
                             return (
-                            <div key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs">
-                              <span className="text-foreground">{typeof c === 'string' ? c : (obj?.name || obj?.label || '')}</span>
+                            <div key={i} className="flex items-center gap-2">
+                              <span className="text-sm text-foreground">{typeof c === 'string' ? c : (obj?.name || obj?.label || '')}</span>
                               {obj?.type && (
                                 <span className="text-xs font-medium uppercase tracking-wide bg-muted text-muted-foreground rounded-full px-2 py-0.5">{obj.type}</span>
                               )}
