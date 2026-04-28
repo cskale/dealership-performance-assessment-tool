@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   CheckCircle2, Circle, Clock, Plus, Sparkles, Loader2, Pencil,
-  AlertTriangle, Target, Eye, Search, Filter, Users, X, LayoutList, GanttChart, LayoutGrid, CalendarIcon
+  AlertTriangle, Target, Eye, Search, Filter, LayoutList, GanttChart, LayoutGrid, CalendarIcon
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,7 +22,6 @@ import { generateActionsFromAssessment, formatActionsForDatabaseInsert } from '@
 import { cleanActionTitle, priorityDisplay, resetPatternUsage } from '@/lib/actionRationaleMap';
 import { cleanDescription } from '@/lib/cleanDescription';
 import { ActionSheet } from './ActionSheet';
-import { OwnerLoadPanel } from './action-plan/OwnerLoadPanel';
 import { TimelineView } from './action-plan/TimelineView';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
@@ -106,8 +105,6 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
   const [conflictDetected, setConflictDetected] = useState(false);
   const [conflictAction, setConflictAction] = useState<ActionRecord | null>(null);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
-  const [ownerPanelOpen, setOwnerPanelOpen] = useState(false);
-  const [ownerFilter, setOwnerFilter] = useState<string | null>(null);
 
   const canEdit = canPerformAction('update');
   const canCreate = canPerformAction('create');
@@ -403,10 +400,6 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
       } else if (statusFilter !== 'all' && action.status !== statusFilter) return false;
       if (filterPriority !== 'all' && action.priority !== filterPriority) return false;
       if (filterDepartment !== 'all' && action.department !== filterDepartment) return false;
-      if (ownerFilter !== null) {
-        const owner = action.responsible_person || 'Unassigned';
-        if (owner !== ownerFilter) return false;
-      }
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         if (!action.action_title.toLowerCase().includes(q) && !action.action_description.toLowerCase().includes(q) && !action.department.toLowerCase().includes(q)) return false;
@@ -427,7 +420,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
       return 0;
     });
     return result;
-  }, [actions, statusFilter, filterPriority, filterDepartment, searchQuery, sortBy, ownerFilter]);
+  }, [actions, statusFilter, filterPriority, filterDepartment, searchQuery, sortBy]);
 
   const statusTabs = [
     { key: 'all', label: 'All', count: statusCounts.all },
@@ -436,10 +429,6 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
     { key: 'Completed', label: 'Completed', count: statusCounts.Completed },
     { key: 'Overdue', label: 'Overdue', count: statusCounts.Overdue },
   ];
-
-  const handleOwnerFilter = (owner: string) => {
-    setOwnerFilter(owner === '' ? null : owner);
-  };
 
   if (loading) {
     return (
@@ -509,11 +498,6 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
                 viewMode === 'timeline' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"
               )} title="Timeline view">
               <GanttChart className="h-3.5 w-3.5" />
-            </button>
-            <button onClick={() => setOwnerPanelOpen(true)}
-              className="px-2 py-1.5 transition-colors bg-card text-muted-foreground hover:bg-muted border-l"
-              title="Owner Workload">
-              <Users className="h-3.5 w-3.5" />
             </button>
           </div>
           {canCreate && (
@@ -609,18 +593,6 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
           </PopoverContent>
         </Popover>
       </div>
-
-      {/* Owner filter indicator */}
-      {ownerFilter !== null && (
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="text-xs gap-1.5">
-            Filtered by: {ownerFilter}
-            <button onClick={() => setOwnerFilter(null)}>
-              <X className="h-3 w-3" />
-            </button>
-          </Badge>
-        </div>
-      )}
 
       {/* Content area: Kanban, List, or Timeline */}
       {viewMode === 'timeline' ? (
@@ -808,15 +780,6 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
         onSave={handleSheetSave}
         onDelete={canEdit ? handleDelete : undefined}
         readOnly={!canEdit}
-      />
-
-      {/* Owner Load Panel */}
-      <OwnerLoadPanel
-        open={ownerPanelOpen}
-        onOpenChange={setOwnerPanelOpen}
-        actions={actions}
-        onFilterByOwner={handleOwnerFilter}
-        activeOwnerFilter={ownerFilter}
       />
 
       {/* Conflict Resolution Dialog */}
