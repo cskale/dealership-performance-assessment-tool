@@ -478,21 +478,21 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                     {/* KPI Intelligence */}
                     {linkedKpiDetails.length > 0 && (
                       <div className="rounded-xl border border-border/50 bg-card p-4 space-y-3">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                          <BarChart3 className="h-3.5 w-3.5 text-primary" /> KPIs This Action Will Improve
+                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5">
+                          <BarChart3 className="h-3.5 w-3.5 text-muted-foreground" /> KPIs This Action Will Improve
                         </p>
                         <div className="space-y-2">
                           {visibleKpis.map((kpi: unknown, i: number) => {
                             const k = (typeof kpi === 'object' && kpi !== null ? kpi : { name: String(kpi) }) as { name?: string; title?: string; key?: string; type?: string; reason?: string };
                             return (
-                            <div key={i} className="rounded-lg border border-border/50 p-3 bg-background">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                                  <BarChart3 className="h-3 w-3 text-primary flex-shrink-0" />
+                            <div key={i} className="w-full rounded-lg border border-border p-3 bg-card">
+                              <div className="flex items-center justify-between gap-3 mb-1">
+                                <span className="text-sm font-medium text-foreground flex items-center gap-1.5 min-w-0">
+                                  <BarChart3 className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                                   {k.name || k.title || k.key}
                                 </span>
                                 {k.type && (
-                                  <Badge variant="outline" className={cn("text-xs font-medium uppercase", getKpiBadgeStyle(k.type))}>
+                                  <Badge variant="outline" className={cn("text-xs font-medium uppercase bg-transparent shrink-0", getKpiBadgeStyle(k.type))}>
                                     {k.type}
                                   </Badge>
                                 )}
