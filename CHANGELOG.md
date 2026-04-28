@@ -9,6 +9,18 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
 
 ---
 
+## [28 Apr 2026] — Consistency, Navigation & Copy Fixes
+
+### Fixed
+
+- fix(maturity): unify maturity label to single getMaturityLevel source
+- fix(kpi-nav): wire view-details to KPI Studio navigation
+- fix(action-sheet): title-case badges and reposition KPI panel
+- fix(action-sheet): replace support-required pills with multi-select dropdown
+- fix(kpi-defs): replace USD figures with Euro-market language
+
+---
+
 ## [28 Apr 2026] — Round 2: Assessment UX, KPI Analysis & Results Polish
 
 ### Fixed
