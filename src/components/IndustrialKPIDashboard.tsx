@@ -236,9 +236,13 @@ export function IndustrialKPIDashboard({
                         {kpi.whyItMatters}
                       </p>
                       <div className="pt-2 border-t border-border/50">
-                        <span className="text-xs text-primary hover:underline">
+                        <button
+                          type="button"
+                          className="text-xs text-primary hover:underline cursor-pointer"
+                          onClick={(e) => { e.stopPropagation(); onNavigateToEncyclopedia?.(kpi.key); }}
+                        >
                           {language === 'de' ? 'Details anzeigen →' : 'View details →'}
-                        </span>
+                        </button>
                       </div>
                     </div>
                   </CardContent>
