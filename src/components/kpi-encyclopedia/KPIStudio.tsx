@@ -146,9 +146,9 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
   );
 
   return (
-    <div className="max-h-[85vh] overflow-y-auto bg-card text-foreground [font-family:Roboto,sans-serif]">
+    <div className="max-h-[88vh] overflow-y-auto bg-card text-foreground [font-family:Roboto,sans-serif]">
       {onBack && (
-        <div className="border-b border-border/30 px-10 py-3">
+        <div className="border-b border-border/30 px-8 py-3 sm:px-10 lg:px-14">
           <Button variant="ghost" onClick={onBack} className="h-8 px-0 text-sm text-muted-foreground hover:bg-transparent hover:text-foreground">
             <ChevronLeft className="mr-1 h-4 w-4" />
             {t.back}
@@ -156,8 +156,8 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
         </div>
       )}
 
-      <section className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] border-b border-border/30">
-        <div className="flex-1 border-r border-border/30 px-10 py-8">
+      <section className="border-b border-border/30 px-8 py-9 sm:px-10 lg:px-14">
+        <div className="max-w-5xl">
           <div className="mb-5 flex items-center gap-3">
             <span className="h-[1.5px] w-6 bg-[#1D9E75]" />
             <span className="text-[10px] font-medium uppercase tracking-widest text-[#1D9E75]">{deptLabel}</span>
@@ -186,62 +186,35 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
           <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">
             {t.definition}
           </span>
-          <p className="text-body-md leading-relaxed text-muted-foreground">{kpi.definition}</p>
+          <p className="max-w-4xl text-body-md leading-relaxed text-muted-foreground">{kpi.definition}</p>
         </div>
+      </section>
 
-        <aside className="bg-muted/30 px-6 py-8">
+      <section className="space-y-6 border-b border-border/30 px-8 py-7 sm:px-10 lg:px-14">
+        <div className="max-w-5xl">
           {kpi.formula && (
             <div className="mb-5">
               <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">
                 {t.formula}
               </span>
-              <code className="block rounded-lg border border-border/30 bg-card p-3 font-mono text-sm leading-relaxed text-foreground">
+              <code className="block rounded-lg border border-border/30 bg-muted/25 p-4 font-mono text-sm leading-relaxed text-foreground">
                 {kpi.formula}
               </code>
             </div>
           )}
 
-          <div className="rounded-xl border border-primary/10 bg-primary/5 p-4">
+          <div className="rounded-lg border border-primary/10 bg-primary/5 p-5">
             <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-primary/60">
               {t.whyThisMatters}
             </span>
-            <p className="text-sm leading-relaxed text-foreground/75">
+            <p className="text-sm leading-relaxed text-foreground/75 sm:text-base">
               {kpi.executiveSummary || kpi.whyItMatters}
             </p>
           </div>
-        </aside>
+        </div>
       </section>
 
-      {kpi.benchmark && (
-        <section className="grid grid-cols-1 border-y border-border/30 md:grid-cols-4">
-          <div className="px-10 py-5 md:border-r md:border-border/30">
-            <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.referenceBenchmark}</span>
-            <strong className="block text-metric-lg text-[#1D9E75]">{kpi.benchmark}</strong>
-            <span className="mt-1 block text-xs text-muted-foreground">{t.industryLeading}</span>
-          </div>
-          {isLeadResponseTime && (
-            <>
-              <div className="px-10 py-5 md:border-r md:border-border/30">
-                <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.conversionUplift}</span>
-                <strong className="block text-metric-lg text-foreground">391%</strong>
-                <span className="mt-1 block text-xs text-muted-foreground">{t.delayedResponse}</span>
-              </div>
-              <div className="px-10 py-5 md:border-r md:border-border/30">
-                <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.effectivenessLoss}</span>
-                <strong className="block text-metric-lg text-foreground">21×</strong>
-                <span className="mt-1 block text-xs text-muted-foreground">{t.immediateResponse}</span>
-              </div>
-              <div className="px-10 py-5">
-                <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.complianceRate}</span>
-                <strong className="block text-metric-lg text-foreground">5.5%</strong>
-                <span className="mt-1 block text-xs text-muted-foreground">{t.dealersBenchmark}</span>
-              </div>
-            </>
-          )}
-        </section>
-      )}
-
-      <section className="border-b border-border/30 px-10 py-6">
+      <section className="border-b border-border/30 px-8 py-7 sm:px-10 lg:px-14">
         <div className="mb-4">
           <span className="mb-1 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.benchmarkPosition}</span>
           <p className="text-sm text-muted-foreground">
