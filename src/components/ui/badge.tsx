@@ -4,14 +4,14 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-md border px-2.5 py-1 text-label transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
         default:
           "border-border bg-primary text-primary-foreground",
         primary:
-          "border-transparent bg-primary text-primary-foreground",
+          "border-transparent bg-[hsl(var(--brand-500))] text-white",
         secondary:
           "border-transparent bg-secondary text-secondary-foreground",
         destructive:
@@ -28,17 +28,17 @@ const badgeVariants = cva(
 
         // Maturity variants — 4-level: foundational / developing / advanced / leading
         "maturity-leading":
-          "bg-success/10 text-success border-success/20",
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-green-light))] text-[hsl(160,60%,22%)] border border-[#6ee7b7] font-medium",
         "maturity-advanced":
-          "bg-primary/10 text-primary border-primary/20",
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] border border-[hsl(var(--dd-accent-mid))] font-medium",
         "maturity-developing":
-          "bg-warning/10 text-warning border-warning/20",
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-amber-light))] text-[hsl(38,70%,28%)] border border-[#fcd34d] font-medium",
         "maturity-foundational":
-          "bg-destructive/10 text-destructive border-destructive/20",
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-red-light))] text-[hsl(0,60%,35%)] border border-[#fca5a5] font-medium",
         "maturity-inconsistent":
-          "bg-warning/10 text-warning border-warning/20",
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-amber-light))] text-[hsl(38,70%,28%)] border border-[#fcd34d] font-medium",
         "maturity-critical":
-          "bg-muted text-muted-foreground border-border",
+          "text-[11px] px-2.5 py-[3px] bg-[hsl(var(--dd-fog))] text-[hsl(var(--dd-muted))] border border-[hsl(var(--dd-rule))] font-medium",
 
         // Module variants
         "module-nvs":
