@@ -340,7 +340,7 @@ export default function Results() {
             const answeredQuestions = resultsData?.answers ? Object.keys(resultsData.answers).length : 0;
 
             const cardBase = "bg-card border border-border rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]";
-            const labelClass = "text-caption uppercase tracking-widest text-muted-foreground font-semibold mb-1";
+            const labelClass = "text-xs uppercase tracking-wide text-muted-foreground mb-1";
 
             // SVG Score Ring constants
             const ringSize = 80;
@@ -382,25 +382,25 @@ export default function Results() {
                 </div>
 
                 {/* Card 2 — Maturity Level */}
-                <div className={cn(cardBase, "opacity-0 animate-fade-in")} style={{ animationDelay: '50ms', animationFillMode: 'forwards' }}>
+                <div className={cn(cardBase, "min-h-[100px] flex flex-col items-center justify-center text-center opacity-0 animate-fade-in")} style={{ animationDelay: '50ms', animationFillMode: 'forwards' }}>
                   <div className={labelClass}>{language === 'de' ? 'Reifegrad' : 'Maturity Level'}</div>
-                  <div className="text-h4 text-foreground mb-1.5">{maturityLabel}</div>
+                  <div className="text-xl font-bold text-foreground mb-1.5">{maturityLabel}</div>
                   <Badge variant={maturityBadgeVariant}>{maturityLabel}</Badge>
                 </div>
 
                 {/* Card 3 — Modules Assessed */}
-                <div className={cn(cardBase, "opacity-0 animate-fade-in")} style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
+                <div className={cn(cardBase, "min-h-[100px] flex flex-col items-center justify-center text-center opacity-0 animate-fade-in")} style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
                   <div className={labelClass}>{language === 'de' ? 'Module bewertet' : 'Modules Assessed'}</div>
-                  <div className="text-metric-lg text-foreground">{modulesAssessed}</div>
+                  <div className="text-xl font-bold text-foreground">{modulesAssessed}</div>
                   <div className="text-caption text-muted-foreground">
                     {language === 'de' ? 'von 5 Modulen' : 'of 5 modules'}
                   </div>
                 </div>
 
                 {/* Card 4 — Assessment Coverage */}
-                <div className={cn(cardBase, "opacity-0 animate-fade-in")} style={{ animationDelay: '150ms', animationFillMode: 'forwards' }}>
+                <div className={cn(cardBase, "min-h-[100px] flex flex-col items-center justify-center text-center opacity-0 animate-fade-in")} style={{ animationDelay: '150ms', animationFillMode: 'forwards' }}>
                   <div className={labelClass}>{language === 'de' ? 'Bewertungsabdeckung' : 'Assessment Coverage'}</div>
-                  <div className="text-h4 text-foreground">{answeredQuestions}/{TOTAL_QUESTIONS}</div>
+                  <div className="text-xl font-bold text-foreground">{answeredQuestions}/{TOTAL_QUESTIONS}</div>
                   <div className="text-caption text-muted-foreground mt-1">
                     {language === 'de' ? `Fragen · ${modulesAssessed} Module bewertet` : `questions · ${modulesAssessed} modules assessed`}
                   </div>
