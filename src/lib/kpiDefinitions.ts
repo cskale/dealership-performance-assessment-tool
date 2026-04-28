@@ -313,7 +313,7 @@ export const KPI_DEFINITIONS: Record<string, { en: KPIDefinition; de: KPIDefinit
     en: {
       title: 'Units Sold per Sales Executive',
       definition: 'The average number of vehicles sold by each sales executive within a defined period.',
-      executiveSummary: 'Every 1% increase in sales productivity is worth approximately $500,000 in revenue, with potential to lift sales per employee by 25% to reach 20+ units annually through optimized processes and technology.',
+      executiveSummary: 'Improving sales productivity by one percentage point is estimated to generate €350,000–550,000 in additional annual revenue for a mid-size European premium dealership. Structured process improvement and digital retailing tools typically lift units per executive by 15–25% within 12 months.',
       whyItMatters: 'Primary productivity metric driving staffing decisions, compensation planning, and operational efficiency.',
       formula: 'Units Sold per Sales Executive = Total Vehicles Sold / Number of Sales Executives',
       inclusions: ['All retail vehicle sales (new and used)', 'Full-time and FTE sales staff'],
@@ -1047,7 +1047,7 @@ export const KPI_DEFINITIONS: Record<string, { en: KPIDefinition; de: KPIDefinit
     de: {
       title: 'Lagertage',
       definition: 'Durchschnittliche Tage von Ankauf bis Verkauf eines Gebrauchtfahrzeugs.',
-      whyItMatters: 'Zeigt betriebliche Effizienz und Kapitalproduktivität. Jeder Tag kostet ~$40-50 pro Fahrzeug.',
+      whyItMatters: 'Zeigt betriebliche Effizienz und Kapitalproduktivität. Jeder Tag kostet ~€35–45 pro Fahrzeug an Finanzierungs- und Haltungskosten.',
       benchmark: '45-60 Tage'
     }
   },
