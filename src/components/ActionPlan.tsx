@@ -700,15 +700,10 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
                     key={action.id}
                     onClick={() => openEditPanel(action)}
                     className={cn(
-                      "group relative flex gap-0 rounded-lg border bg-card cursor-pointer transition-all hover:shadow-md hover:-translate-y-px",
+                      "group relative flex rounded-lg border bg-card cursor-pointer transition-all hover:shadow-md hover:-translate-y-px",
                       isCompleted && "opacity-70"
                     )}
                   >
-                    {/* Status stripe */}
-                    <div className={cn("w-1 rounded-l-lg flex-shrink-0",
-                      overdue ? "bg-destructive" : (STATUS_STRIPE[action.status] || 'bg-muted-foreground')
-                    )} />
-
                     <div className="flex-1 p-4 min-w-0">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
@@ -732,14 +727,6 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
                           </div>
                         </div>
                         <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                          {action.responsible_person && (
-                            <div className="flex items-center gap-1.5">
-                              <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-medium">
-                                {action.responsible_person.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                              </div>
-                              <span className="text-xs text-muted-foreground">{action.responsible_person}</span>
-                            </div>
-                          )}
                           {action.target_completion_date && (
                             <span className={cn("text-xs", overdue ? "text-destructive font-medium" : "text-muted-foreground")}>
                               {overdue && <AlertTriangle className="h-3 w-3 inline mr-1" />}
