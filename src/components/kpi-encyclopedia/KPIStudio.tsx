@@ -26,22 +26,25 @@ function getImprovementTag(index: number, language: string) {
   if (index < 2) {
     return {
       label: language === "de" ? "Schneller Gewinn" : "Quick win",
-      className: "bg-green-50 text-green-800 border-green-200",
+      className: "bg-primary/10 text-primary border-primary/20",
     };
   }
 
   if (index < 5) {
     return {
       label: language === "de" ? "Strukturell" : "Structural",
-      className: "bg-blue-50 text-blue-800 border-blue-200",
+      className: "bg-secondary text-secondary-foreground border-border/60",
     };
   }
 
   return {
     label: language === "de" ? "Fähigkeit" : "Capability",
-    className: "bg-purple-50 text-purple-800 border-purple-200",
+    className: "bg-muted text-muted-foreground border-border/60",
   };
 }
+
+const BENCHMARK_GOOD_TO_BAD = ["bg-[#1D9E75]", "bg-[#97C459]", "bg-[#FAC775]", "bg-[#F0997B]"];
+const BENCHMARK_BAD_TO_GOOD = [...BENCHMARK_GOOD_TO_BAD].reverse();
 
 function getUpstreamTag(driver: string, language: string) {
   const d = driver.toLowerCase();
