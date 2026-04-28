@@ -403,7 +403,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 w-full">
             {Object.entries(scores)
               .sort(([, a], [, b]) => b - a)
               .map(([dept, score]) => {
@@ -421,7 +421,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
                   ? inferPositionStatement(dept, score, moduleBenchmark, language as 'en' | 'de')
                   : null;
                 return (
-                  <div key={dept} className={`rounded-lg border p-4 text-center ${statusColor}`}>
+                  <div key={dept} className={`flex-1 w-full rounded-lg border p-4 text-center ${statusColor}`}>
                     <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">
                       {getDepartmentName(dept, language)}
                     </div>
