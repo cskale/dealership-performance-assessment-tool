@@ -295,42 +295,46 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
               </p>
             </div>
           )}
-          {topSignals.map((signal, i) => {
-            const severityColor = signal.severity === 'HIGH'
-              ? 'border-l-destructive bg-destructive/5'
-              : signal.severity === 'MEDIUM'
-              ? 'border-l-warning bg-warning/5'
-              : 'border-l-info bg-info/5';
+          {topSignals.length > 0 && (
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 mb-3">
+                {language === 'de' ? 'Abteilungsbefunde' : 'Department Findings'}
+              </div>
+              <div>
+                {topSignals.map((signal, i) => {
             const severityLabel = signal.severity === 'HIGH' ? (language === 'de' ? 'Kritisch' : 'Critical')
-              : signal.severity === 'MEDIUM' ? (language === 'de' ? 'Mittel' : 'Moderate') : (language === 'de' ? 'Beobachten' : 'Monitor');
+              : (language === 'de' ? 'Beobachten' : 'Watch');
             const severityBadge = signal.severity === 'HIGH'
-              ? 'bg-destructive/10 text-destructive border-destructive/20'
-              : signal.severity === 'MEDIUM'
-              ? 'bg-warning/10 text-warning-foreground border-warning/20'
-              : 'bg-info/10 text-info border-info/20';
+              ? 'bg-red-50 text-red-700 border-red-200'
+              : 'bg-amber-50 text-amber-700 border-amber-200';
             const deptName = getDepartmentName(signal.moduleKey, language);
             const triggerCount = signal.triggeringQuestionIds?.length ?? 1;
             return (
-              <div key={`finding-${i}`} className={`border-l-4 rounded-r-lg p-4 ${severityColor}`}>
-                <div className="flex items-start justify-between gap-3">
+              <div key={`finding-${i}`} className="border-b border-neutral-100 py-3 flex items-start justify-between gap-4 last:border-b-0">
                   <div className="flex-1">
-                    <div className="text-sm font-semibold text-foreground">
+                    <div className="text-sm font-semibold text-neutral-900">
                       {signalLabels[signal.signalCode] ?? signal.signalCode}
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">
+                    <div className="text-xs text-neutral-500 mt-0.5">
                       {deptName} · {triggerCount} {language === 'de' ? (triggerCount > 1 ? 'Fragen markiert' : 'Frage markiert') : (triggerCount > 1 ? 'questions flagged' : 'question flagged')}
                     </div>
                   </div>
-                  <Badge variant="outline" className={`text-xs shrink-0 ${severityBadge}`}>
+                  <Badge variant="outline" className={`text-xs shrink-0 px-2 py-0.5 rounded-md ${severityBadge}`}>
                     {severityLabel}
                   </Badge>
-                </div>
               </div>
             );
-          })}
-          {systemicPatterns.map((p) => {
+                })}
+              </div>
+            </div>
+          )}
+          {systemicPatterns.length > 0 && (
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 mb-3 mt-6">
+                {language === 'de' ? 'Abteilungsübergreifende Muster' : 'Cross-Department Patterns'}
+              </div>
+              {systemicPatterns.map((p) => {
             const isSystemic = p.severity === 'systemic';
-            const accent = isSystemic ? 'hsl(0 72% 51%)' : 'hsl(38 92% 50%)';
             const badgeLabel = isSystemic
               ? (language === 'de' ? 'Systemisch' : 'Systemic')
               : (language === 'de' ? 'Wiederkehrend' : 'Recurring');
@@ -344,45 +348,34 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
             return (
               <div
                 key={`pattern-${p.signalCode}`}
-                className="rounded-md p-4 border-l-[3px]"
-                style={{
-                  borderLeftColor: accent,
-                  backgroundColor: `${accent.replace(')', ' / 0.04)')}`,
-                }}
+                className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 mb-2"
               >
                 <div className="flex items-center gap-2 mb-2">
                   <span
-                    className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white"
-                    style={{ backgroundColor: accent }}
+                    className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-semibold text-white mr-2 ${isSystemic ? 'bg-red-600' : 'bg-amber-500'}`}
                   >
                     {badgeLabel}
                   </span>
-                  <span className="text-[13px] font-medium text-foreground">{title}</span>
+                  <span className="text-sm font-semibold text-neutral-900">{title}</span>
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-2">
-                  {p.departments.map((d: string) => {
-                    const color = DEPT_COLORS_ES[d] ?? 'hsl(var(--muted-foreground))';
-                    return (
-                      <div
-                        key={d}
-                        className="rounded-[20px] px-2.5 py-[3px] text-[11px] font-medium border"
-                        style={{
-                          backgroundColor: `${color.replace(')', ' / 0.10)')}`,
-                          borderColor: `${color.replace(')', ' / 0.40)')}`,
-                          color,
-                        }}
-                      >
-                        {MODULE_LABELS[d] ?? d}
-                      </div>
-                    );
-                  })}
+                  {p.departments.map((d: string) => (
+                    <div
+                      key={d}
+                      className="rounded-full px-2 py-0.5 text-[11px] border border-neutral-200 bg-neutral-100 text-neutral-700"
+                    >
+                      {MODULE_LABELS[d] ?? d}
+                    </div>
+                  ))}
                 </div>
-                <p className="text-[12px] text-muted-foreground leading-relaxed">
+                <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
                   {p.description || fallbackDesc}
                 </p>
               </div>
             );
-          })}
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 
