@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Search, BookOpen, ArrowRight, ChevronDown } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { KPI_DEFINITIONS, KPIDefinition } from "@/lib/kpiDefinitions";
 import { ORDERED_DEPARTMENTS, getDepartmentConfig } from "@/lib/departmentConfig";
 import { KPIStudio } from "./KPIStudio";
@@ -15,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface KPIExplorerProps {
   scores: Record<string, number>;
@@ -44,9 +43,8 @@ function highlightMatch(text: string, search: string) {
 // Primary visible chips (max 6) + overflow into dropdown
 const PRIMARY_CHIP_COUNT = 6;
 
-export function KPIExplorer({ scores, initialKpiKey }: KPIExplorerProps) {
+export function KPIExplorer({ initialKpiKey }: KPIExplorerProps) {
   const { language } = useLanguage();
-  const isMobile = useIsMobile();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [activeDepartment, setActiveDepartment] = useState<string>("all");
@@ -117,16 +115,9 @@ export function KPIExplorer({ scores, initialKpiKey }: KPIExplorerProps) {
     setSelectedKpiKey(null);
   }, []);
 
-  const handleNavigateToKpi = useCallback((name: string) => {
-    const found = allItems.find(
-      (i) => i.kpi.title.toLowerCase() === name.toLowerCase()
-    );
-    if (found) setSelectedKpiKey(found.key);
-  }, [allItems]);
-
   const resultCount = filteredItems.length;
 
-  // Detail view now opens in a right-side Sheet (rendered at bottom of component)
+  // Detail view opens in a centered modal (rendered at bottom of component)
 
 
   // Check if active department is in overflow
@@ -309,31 +300,19 @@ export function KPIExplorer({ scores, initialKpiKey }: KPIExplorerProps) {
         </div>
       )}
 
-      {/* KPI Detail Sheet (right-side drawer) */}
-      <Sheet open={!!selectedKpiKey && !!selectedItem} onOpenChange={(open) => { if (!open) handleCloseStudio(); }}>
-        <SheetContent
-          side="right"
-          className="w-full sm:max-w-none p-0 overflow-y-auto sm:w-[40vw] sm:min-w-[600px]"
-        >
+      {/* KPI Detail Modal */}
+      <Dialog open={!!selectedKpiKey && !!selectedItem} onOpenChange={(open) => { if (!open) handleCloseStudio(); }}>
+        <DialogContent className="max-w-3xl max-h-[85vh] p-0 gap-0 overflow-hidden rounded-xl bg-card shadow-xl">
           {selectedKpiKey && selectedItem && (
-            <div className="p-6">
-              <KPIStudio
-                kpiKey={selectedKpiKey}
-                kpi={selectedItem.kpi}
-                departmentKey={selectedItem.departmentKey}
-                language={language}
-                onBack={handleCloseStudio}
-                onNavigateToKpi={handleNavigateToKpi}
-                assessmentScore={
-                  scores[selectedItem.departmentKey] !== undefined
-                    ? Math.max(1, Math.min(5, Math.ceil((scores[selectedItem.departmentKey] / 100) * 5)))
-                    : undefined
-                }
-              />
-            </div>
+            <KPIStudio
+              kpiKey={selectedKpiKey}
+              kpi={selectedItem.kpi}
+              departmentKey={selectedItem.departmentKey}
+              language={language}
+            />
           )}
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
