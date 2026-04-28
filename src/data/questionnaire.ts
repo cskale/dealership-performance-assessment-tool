@@ -136,7 +136,7 @@ export const questionnaire: Questionnaire = {
           text: "How would customers rate their overall satisfaction with your new vehicle sales experience?",
           description: "Based on customer surveys, feedback forms, and post-purchase reviews",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<20%", "20–30%", "31–40%", "41–55%", ">55%"] },
+          scale: { min: 1, max: 5, labels: ["Very dissatisfied", "Below average", "Average", "Good", "Excellent"] },
           weight: 1.3,
           category: "satisfaction",
           purpose: "Measures customer experience quality during the sales process, which directly impacts repeat business, referrals, and brand reputation.",
@@ -150,7 +150,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Measures customer experience quality during the sales process, which directly impacts repeat business, referrals, and brand reputation.",
               situationAnalysis: "Customer satisfaction is a leading indicator of future sales performance, customer loyalty, and word-of-mouth marketing effectiveness.",
               benefits: "High customer satisfaction leads to increased referrals, repeat customers, positive online reviews, and reduced marketing costs through organic growth.",
-              scaleLabels: ["<20%", "20–30%", "31–40%", "41–55%", ">55%"]
+              scaleLabels: ["Very dissatisfied", "Below average", "Average", "Good", "Excellent"]
             },
             de: {
               text: "Wie würden Kunden ihre Gesamtzufriedenheit mit Ihrem Neuwagenverkaufserlebnis bewerten?",
@@ -158,7 +158,7 @@ export const questionnaire: Questionnaire = {
               purpose: "Misst die Qualität der Kundenerfahrung während des Verkaufsprozesses, die sich direkt auf Folgegeschäfte, Empfehlungen und Markenreputation auswirkt.",
               situationAnalysis: "Die Kundenzufriedenheit ist ein führender Indikator für zukünftige Verkaufsleistung, Kundenloyalität und Effektivität des Mund-zu-Mund-Marketings.",
               benefits: "Hohe Kundenzufriedenheit führt zu mehr Empfehlungen, wiederkehrenden Kunden, positiven Online-Bewertungen und reduzierten Marketingkosten durch organisches Wachstum.",
-              scaleLabels: ["<20%", "20–30%", "31–40%", "41–55%", ">55%"]
+              scaleLabels: ["Sehr unzufrieden", "Unter Durchschnitt", "Durchschnittlich", "Gut", "Ausgezeichnet"]
             }
           }
         },
@@ -552,7 +552,7 @@ export const questionnaire: Questionnaire = {
           text: "How do customers rate their overall satisfaction with your used vehicle purchase experience?",
           description: "Based on post-purchase surveys and feedback within 30 days of sale",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["No structured process", "Listings updated monthly", "Updated weekly, basic photos", "Updated within 48h, quality photos", "Real-time updates, professional media"] },
+          scale: { min: 1, max: 5, labels: ["Very dissatisfied", "Below average", "Average", "Good", "Excellent"] },
           weight: 1.3,
           category: "satisfaction",
           purpose: "Evaluates customer experience quality for used vehicle sales, impacting reputation, referrals, and repeat business.",
@@ -563,12 +563,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How do customers rate their overall satisfaction with your used vehicle purchase experience?",
               description: "Based on post-purchase surveys and feedback within 30 days of sale",
-              scaleLabels: ["No structured process", "Listings updated monthly", "Updated weekly, basic photos", "Updated within 48h, quality photos", "Real-time updates, professional media"]
+              scaleLabels: ["Very dissatisfied", "Below average", "Average", "Good", "Excellent"]
             },
             de: {
               text: "Wie bewerten Kunden ihre Gesamtzufriedenheit mit Ihrem Gebrauchtwagenkauferlebnis?",
               description: "Basierend auf Umfragen und Feedback nach dem Kauf innerhalb von 30 Tagen nach dem Verkauf",
-              scaleLabels: ["Kein strukturierter Prozess", "Listings monatlich aktualisiert", "Wöchentlich aktualisiert, einfache Fotos", "Aktualisierung innerhalb 48h, qualitativ", "Echtzeit-Updates, professionelle Medien"]
+              scaleLabels: ["Sehr unzufrieden", "Unter Durchschnitt", "Durchschnittlich", "Gut", "Ausgezeichnet"]
             }
           }
         },
@@ -770,7 +770,7 @@ export const questionnaire: Questionnaire = {
           text: "How do customers rate their overall experience with your service department?",
           description: "Based on post-service surveys and satisfaction ratings",
           type: "scale",
-          scale: { min: 1, max: 5, labels: ["<55 NPS", "55–65 NPS", "66–74 NPS", "75–84 NPS", ">84 NPS"] },
+          scale: { min: 1, max: 5, labels: ["Very dissatisfied", "Below average", "Average", "Good", "Excellent"] },
           weight: 1.5,
           category: "satisfaction",
           purpose: "Measures overall service experience quality, crucial for customer retention and referral generation.",
@@ -781,12 +781,12 @@ export const questionnaire: Questionnaire = {
             en: {
               text: "How do customers rate their overall experience with your service department?",
               description: "Based on post-service surveys and satisfaction ratings",
-              scaleLabels: ["<55 NPS", "55–65 NPS", "66–74 NPS", "75–84 NPS", ">84 NPS"]
+              scaleLabels: ["Very dissatisfied", "Below average", "Average", "Good", "Excellent"]
             },
             de: {
               text: "Wie bewerten Kunden ihre Gesamterfahrung mit Ihrer Serviceabteilung?",
               description: "Basierend auf Umfragen und Zufriedenheitsbewertungen nach dem Service",
-              scaleLabels: ["<55 NPS", "55–65 NPS", "66–74 NPS", "75–84 NPS", ">84 NPS"]
+              scaleLabels: ["Sehr unzufrieden", "Unter Durchschnitt", "Durchschnittlich", "Gut", "Ausgezeichnet"]
             }
           }
         },
