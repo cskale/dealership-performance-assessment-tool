@@ -4,13 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { TrendingUp, TrendingDown, Target, DollarSign, Info, BookOpen, BarChart3 } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, Info, BookOpen, BarChart3 } from "lucide-react";
 import { formatEuro, formatPercentage, formatNumber } from "@/utils/euroFormatter";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getKPILabel, KPI_DEFINITIONS } from "@/lib/kpiDefinitions";
 import { KpiTooltipContent } from "@/components/shared/KpiInsightPanel";
 import { SharedSectionHeader } from "@/components/shared/SharedSectionHeader";
-import { getScoreLabel, getScoreBadgeVariant, SCORE_THRESHOLDS } from "@/lib/constants";
+import { getScoreLabel, getScoreBadgeVariant } from "@/lib/constants";
 
 interface IndustrialKPIDashboardProps {
   scores: Record<string, number>;
@@ -94,12 +94,6 @@ export function IndustrialKPIDashboard({
     return titles[sectionId]?.[language] || sectionId;
   };
 
-  // Calculate average score for overall performance
-  const avgScore = useMemo(() => {
-    const values = Object.values(scores);
-    return Math.round(values.reduce((a, b) => a + b, 0) / Math.max(values.length, 1));
-  }, [scores]);
-
   return (
     <div className="space-y-8">
       {/* Assessment-based KPI context banner */}
@@ -119,32 +113,6 @@ export function IndustrialKPIDashboard({
                   : 'The following KPIs are relevant to your assessed areas. Benchmarks are from industry standards. Click any KPI to view details in the Encyclopedia.'}
               </p>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Performance Hero Card */}
-      <Card className="col-span-2 mb-6 bg-gradient-to-r from-primary/5 to-primary/10 shadow-card rounded-xl">
-        <CardContent className="p-6 flex items-center gap-6">
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">
-              {language === 'de' ? 'Gesamtleistung' : 'Overall Performance Score'}
-            </p>
-            <div className="text-5xl font-bold text-foreground leading-none">{avgScore}</div>
-            <Badge className={`mt-2 ${
-              avgScore >= SCORE_THRESHOLDS.excellent ? 'bg-success/20 text-success border-success/30' : 
-              avgScore >= SCORE_THRESHOLDS.good ? 'bg-warning/20 text-warning-foreground border-warning/30' : 
-              'bg-destructive/20 text-destructive border-destructive/30'
-            }`}>
-              {getScoreLabel(avgScore, language as 'en' | 'de')}
-            </Badge>
-          </div>
-          <div className="flex-1 text-sm text-muted-foreground">
-            <p>
-              {language === 'de' 
-                ? 'Aggregierte Leistung über alle bewerteten Abteilungen.'
-                : 'Aggregated performance across all assessed departments.'}
-            </p>
           </div>
         </CardContent>
       </Card>
