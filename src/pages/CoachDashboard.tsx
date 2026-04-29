@@ -300,7 +300,10 @@ export default function CoachDashboard() {
       {/* Score Trend Chart */}
       <Card className="shadow-card rounded-xl">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold">{t('coach.scoreTrend')}</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base font-semibold">
+            <TrendingUpIcon className="h-4 w-4 text-[hsl(var(--brand-500))]" />
+            {t('coach.scoreTrend')}
+          </CardTitle>
           <p className="text-xs text-muted-foreground">{t('coach.selectDealers')}</p>
         </CardHeader>
         <CardContent>
@@ -317,7 +320,9 @@ export default function CoachDashboard() {
                   disabled={!selectedDealerIds.includes(d.dealershipId) && selectedDealerIds.length >= 3}
                 />
                 <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                  className={`w-3 h-3 rounded-full shrink-0 ${
+                    selectedDealerIds.includes(d.dealershipId) ? 'ring-1 ring-offset-1 ring-white' : ''
+                  }`}
                   style={{ backgroundColor: CHART_COLORS[selectedDealerIds.indexOf(d.dealershipId)] ?? '#9ca3af' }}
                 />
                 {d.dealerName}
@@ -357,8 +362,11 @@ export default function CoachDashboard() {
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">
-              {t('coach.selectDealers')}
+            <div className="flex h-48 flex-col items-center justify-center gap-3 text-center">
+              <LineChartIcon className="h-8 w-8 text-[hsl(var(--neutral-300))]" />
+              <p className="text-sm text-[hsl(var(--neutral-500))]">
+                Select up to 3 dealers above to compare their score trends
+              </p>
             </div>
           )}
         </CardContent>
