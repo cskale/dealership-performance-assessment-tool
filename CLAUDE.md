@@ -330,33 +330,71 @@ Creating a high-quality MCP server involves four main phases:
 - **Cross-validation rules**: `src/lib/crossValidationRules.ts`
 - **Ceiling analysis**: `src/lib/ceilingAnalysis.ts`
 - **PDF generator**: `src/lib/pdfReportGenerator.ts`
-- **Role hook (broken)**: `src/hooks/useUserRole.tsx` — RoleContext disabled in production
-- **Multi-tenant hook**: `src/hooks/useMultiTenant.tsx` — current active role system
+- **Active role hook**: `src/hooks/useActiveRole.tsx` — reads `actor_type` from profiles; use this for role-gating
+- **Multi-tenant hook**: `src/hooks/useMultiTenant.tsx` — org-level scoping for dealer data
 - **i18n**: `src/lib/i18n.ts` — EN + DE complete, FR/ES/IT partial
-- **Supabase types**: `src/integrations/supabase/types.ts`
+- **Supabase types**: `src/integrations/supabase/types.ts` — auto-generated, regenerate via Supabase MCP after schema changes
 - **Edge functions**: `supabase/functions/` — CORS locked to allowlist
+- **OEM dashboard**: `src/pages/OemDashboard.tsx` — live at `/app/oem-dashboard`, gated to `actor_type='oem'`
+- **Coach dashboard**: `src/pages/CoachDashboard.tsx` — live at `/app/coach-dashboard`, gated to `actor_type='coach'`
+- **Coach action tracker**: `src/pages/CoachActions.tsx` — live at `/app/coach-actions`, gated to `actor_type='coach'`
+- **Invite team members**: `src/components/InviteTeamMembers.tsx` — dealer team invites (Account → Team tab)
+- **Invite coach**: `src/components/InviteCoach.tsx` — coach invites (Account → Team tab, below InviteTeamMembers)
+- **Protected route**: `src/components/ProtectedRoute.tsx` — supports `requiresActorType` prop
 
-## Architecture — Critical Known Issues
-1. **Role architecture is broken**: `RoleContext` is disabled in production. Two conflicting systems exist — `useMultiTenant` (active) and `useUserRole` (inactive). Item #01 on tracker — highest priority unfixed issue.
-2. **No network-level view**: Zero OEM or coach views exist. All data is scoped at dealer level only. Item #38.
-3. **evaluateCrossValidations() not wired**: Function exists in `crossValidationRules.ts` but is not called from `signalEngine.ts`. Item #11.
-4. **ceilingAnalysis not wired**: `generateCeilingInsights()` exists but not rendered on Results page. Item #15.
+## Role Architecture (implemented as of 29 Apr 2026)
 
-## Role Model (Target — not yet implemented)
+Three actor types exist in `profiles.actor_type` enum: `'dealer' | 'coach' | 'oem' | 'internal'`
+
 ```
-OEM Admin  →  sees all dealers across network, network dashboard, leaderboard
-Coach      →  sees assigned dealers only, visit log, score trends
-Dealer Owner / Staff / Viewer  →  sees own dealership only
+OEM Admin  (actor_type='oem')   →  /app/oem-dashboard — network leaderboard across all dealers
+Coach      (actor_type='coach') →  /app/coach-dashboard + /app/coach-actions — assigned dealers only
+Dealer     (actor_type='dealer')→  /app/dashboard — own dealership only
 ```
-Two new DB tables required: `oem_organisations` and `coach_assignments`.
 
-## Database Tables (existing)
-- `assessments` — dealer assessment records, answers (jsonb), scores (jsonb), overall_score
+**Route gating**: `ProtectedRoute` accepts `requiresActorType="oem"|"coach"` — redirects to `/app/dashboard` if wrong type. Both dashboard pages ALSO have an internal `actorType` check for defence-in-depth.
+
+**Sidebar**: `AppSidebar.tsx` already shows/hides OEM and Coach nav items based on `actorType`.
+
+**Provisioning**:
+- `actor_type='dealer'` — set automatically when a user accepts a dealer invite (via `accept_dealership_invite` RPC)
+- `actor_type='coach'` — set when a user accepts a coach invite (sent via `InviteCoach` component → `send-invite` Edge Function → `/invite/:token` → `accept_dealership_invite` with `invite_type='coach'`)
+- `actor_type='oem'` — set manually via Supabase SQL: `UPDATE profiles SET actor_type='oem' WHERE user_id='<uuid>';`
+- Existing users without `actor_type`: migration `20260429090200` backfilled all to `'dealer'`
+
+**`useActiveRole` hook**: reads `actor_type` + `memberships.role` from DB. Returns `{ actorType, uxRole, membershipRole, organizationId, dealerId, loading }`. Use `actorType` for role gating (not `uxRole` — `uxRole` can be null when `active_organization_id` is null, which is intentional for coaches).
+
+**Known gap**: `useMultiTenant` does not handle network-level (OEM) queries — it is org-scoped only. OEM and Coach dashboards query `coach_dealership_assignments` / `dealer_network_memberships` directly, not through `useMultiTenant`.
+
+## Database Tables
+
+### Core assessment tables
+- `assessments` — dealer assessment records, answers (jsonb), scores (jsonb), overall_score. RLS: `auth.uid() = user_id` OR coach assigned to `dealership_id`.
 - `improvement_actions` — action plan items per assessment, linked by assessment_id
 - `organizations` — dealer org records with business_model, brand_mode, network_structure enums
-- `memberships` — user ↔ org join with role enum (owner/admin/manager/analyst/viewer)
-- `profiles` — user profiles, active_organization_id, active_dealership_id
+- `memberships` — user ↔ org join with role enum (owner/admin/member/viewer)
+- `profiles` — user profiles: `active_organization_id`, `active_dealership_id`, `actor_type`
 - `dealerships` — individual outlet records under organizations
+
+### Network & coach tables (all have RLS)
+- `oem_networks` — OEM network records (`oem_brand`, `owner_org_id`, `status`). RLS: org members of `owner_org_id` can read/write; `owner` role required to delete.
+- `dealer_network_memberships` — dealership ↔ network join. RLS: scoped to owning org members.
+- `coach_dealership_assignments` — coach ↔ dealership join (`coach_user_id`, `dealership_id`, `is_active`). UNIQUE constraint on `(coach_user_id, dealership_id)`. RLS: coach reads own rows; org owner/admin reads all for their dealerships.
+
+### Invite table
+- `dealership_invites` — token, invited_email, dealership_id, organization_id, membership_role, status, expires_at, `invite_type` ('dealer'|'coach'). `invite_type='coach'` invites create a `coach_dealership_assignments` row on acceptance instead of a `memberships` row.
+
+## Coach Invite Flow (implemented 29 Apr 2026)
+
+1. Org owner opens Account → Team tab → "Invite a Coach" card
+2. Enters coach email (+ dealership picker if org has multiple dealerships)
+3. `send-invite` Edge Function creates a `dealership_invites` row with `invite_type='coach'` and sends a branded email
+4. Coach clicks the link → `/invite/:token` → `AcceptInvite.tsx`
+5. `accept_dealership_invite` RPC detects `invite_type='coach'`:
+   - Inserts `coach_dealership_assignments` row (idempotent via `ON CONFLICT DO NOTHING`)
+   - Sets `profiles.actor_type = 'coach'` (only if not already 'coach')
+   - Does NOT create a `memberships` row
+6. `AcceptInvite.tsx` reads `invite_type` from RPC response → redirects to `/app/coach-dashboard`
 
 ## Assessment Structure
 - **5 departments**: New Vehicle Sales (NVS), Used Vehicle Sales (UVS), Service (SVC), Parts (PTS), Financial Operations (FIN)
@@ -372,10 +410,12 @@ Two new DB tables required: `oem_organisations` and `coach_assignments`.
 - `buildExecutiveNarrative()` — 32 variants (4 maturity × 8 signals × single/systemic)
 - `ACTION_TEMPLATES` — 22 templates with `relevantBusinessModels[]` and `implementationSteps[]`
 
+**Still unwired**: `evaluateCrossValidations()` in `crossValidationRules.ts` (not called from signalEngine). `generateCeilingInsights()` in `ceilingAnalysis.ts` (not rendered on Results page).
+
 ## i18n
 - Supported languages: EN, DE (complete), FR, ES, IT (schema exists, translations incomplete)
 - Language context: `src/contexts/LanguageContext.tsx`
-- Translation keys: `src/lib/i18n.ts`
+- All `oem.*` and `coach.*` i18n keys are present in EN and DE.
 
 ## Development Rules
 - **Never install new npm packages** without explicit confirmation — bundle is already 1.3MB post-split
@@ -384,7 +424,8 @@ Two new DB tables required: `oem_organisations` and `coach_assignments`.
 - **Claude Code handles**: logic files, data files, DB migrations, Edge Functions, config
 - **Supabase MCP**: use for all schema changes, RLS policies, SQL migrations — never ask Lovable to write DB migrations
 - **Vercel MCP**: use for deployments and environment variable management
-- **Do not touch**: `src/integrations/supabase/types.ts` manually — regenerate via Supabase CLI after schema changes
+- **Supabase types**: regenerate via `mcp__claude_ai_Supabase__generate_typescript_types` (project_id: `xrypgosuyfdkkqafftae`) after any schema change — write output to `src/integrations/supabase/types.ts`
+- **actor_type gating**: always use `actorType` from `useActiveRole()`, not `uxRole` — `uxRole` is null when `active_organization_id` is null (valid for coaches)
 
 ## Known Pitfalls
 
@@ -408,11 +449,15 @@ Two new DB tables required: `oem_organisations` and `coach_assignments`.
   direction. Prefer two separate queries with an .in() lookup when 
   joining profiles to avoid shape mismatches.
 
-## Current Tracker Status (as of 02 Apr 2026)
+### Vitest + fake timers
+- `vi.useFakeTimers()` breaks `waitFor()` from `@testing-library/react` because it mocks `setInterval` which the library uses for polling. Workaround: reorder tests so slow tests (those needing real timers) run last, and give all `waitFor()` calls an explicit `{ timeout: 3000 }`.
+
+## Current Tracker Status (as of 29 Apr 2026)
 - Total items: 58
-- Done: ~32 (55%)
-- Pending/Partial: ~26 (45%)
-- Highest priority pending: #01 (role architecture), #13 (2S/3S/4S branching), #38 (OEM dashboard), #29 (causal chain UI), #32 (5×5 heatmap)
+- Done: ~36 (62%)
+- Pending/Partial: ~22 (38%)
+- **Completed this session**: #01 (role architecture — implemented), #38 (OEM/Coach dashboards — live), coach invite flow (new feature)
+- **Remaining priorities**: #13 (2S/3S/4S branching), #29 (causal chain UI), #32 (5×5 heatmap), OEM provisioning UI (no UI yet — manual SQL only), coach assignment management UI
 
 ## Improvement Tracker File
 - Location in repo: `improvement_tracker_updated.html`
