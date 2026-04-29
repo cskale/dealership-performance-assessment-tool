@@ -1,0 +1,13 @@
+-- Migration: coach_assignments_unique
+-- Unique constraint on (coach_user_id, dealership_id) was already present as
+-- coach_dealership_assignments_coach_user_id_dealership_id_key (created by the
+-- original table DDL). No DDL change is required; this file records the
+-- verification step for audit purposes.
+--
+-- Verified via:
+--   SELECT constraint_name FROM information_schema.table_constraints
+--   WHERE table_name = 'coach_dealership_assignments' AND constraint_type = 'UNIQUE';
+-- Result: coach_dealership_assignments_coach_user_id_dealership_id_key
+--
+-- The ON CONFLICT clause in accept_dealership_invite references this constraint.
+-- See migration 20260429100200_coach_invite_accept_on_conflict.sql.
