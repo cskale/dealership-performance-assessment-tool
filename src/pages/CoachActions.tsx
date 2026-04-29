@@ -175,14 +175,12 @@ export default function CoachActions() {
   }
 
   if (role !== 'coach') {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/app/dashboard" replace />;
   }
 
   return (
-    <div className="min-h-screen bg-neutral-bg">
-      
-      
-      <main className="container mx-auto px-4 py-8">
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <main>
         <div className="mb-8">
           <h1 className="text-2xl font-semibold text-foreground">All Actions</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -311,7 +309,7 @@ export default function CoachActions() {
             )}
           </CardContent>
         </Card>
-      </main>
+        </main>
     </div>
   );
 }

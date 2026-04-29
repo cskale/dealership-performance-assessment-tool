@@ -19,6 +19,7 @@ import AcceptInvite from "./pages/AcceptInvite";
 import KPIEncyclopediaPage from "./pages/KPIEncyclopediaPage";
 import OemDashboard from "./pages/OemDashboard";
 import CoachDashboard from "./pages/CoachDashboard";
+import CoachActions from "./pages/CoachActions";
 import { AuthProvider } from "@/hooks/useAuth";
 import { MultiTenantProvider } from "@/hooks/useMultiTenant";
 import { RoleProvider } from "@/contexts/RoleContext";
@@ -77,6 +78,11 @@ const App = () => (
                             <Route path="coach-dashboard" element={
                               <ProtectedRoute requiresActorType="coach">
                                 <CoachDashboard />
+                              </ProtectedRoute>
+                            } />
+                            <Route path="coach-actions" element={
+                              <ProtectedRoute requiresActorType="coach">
+                                <CoachActions />
                               </ProtectedRoute>
                             } />
                             <Route path="onboarding" element={<Onboarding />} />
