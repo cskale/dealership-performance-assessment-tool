@@ -639,7 +639,49 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
       </div>
 
       {/* Content area: Kanban, List, or Timeline */}
-      {viewMode === 'timeline' ? (
+      {viewMode === 'roadmap' ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {roadmapColumns.map((column) => (
+            <div key={column.key} className="bg-[hsl(var(--neutral-050))] rounded-xl p-3">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-[hsl(var(--neutral-900))]">{column.title}</h3>
+                <span className="text-xs bg-[hsl(var(--brand-100))] text-[hsl(var(--brand-700))] rounded-full px-2 py-0.5">
+                  {column.actions.length}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {column.actions.length === 0 ? (
+                  <p className="text-xs text-[hsl(var(--neutral-500))] text-center py-4">No actions in this phase yet</p>
+                ) : column.actions.map((action) => {
+                  const priorityConfig = priorityDisplay[action.priority as keyof typeof priorityDisplay] || priorityDisplay.medium;
+                  return (
+                    <div
+                      key={action.id}
+                      onClick={() => openEditPanel(action)}
+                      className="bg-card rounded-lg p-3 cursor-pointer transition-all shadow-card hover:shadow-elevated border-l-[3px] border-l-brand-500 space-y-2"
+                    >
+                      <h4 className="text-body-md font-medium text-[hsl(var(--neutral-900))] line-clamp-2">
+                        {cleanActionTitle(action.action_title)}
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        <span className="text-xs px-2 py-0.5 rounded-full border border-[hsl(var(--neutral-200))] bg-[hsl(var(--neutral-050))] text-[hsl(var(--neutral-600))]">
+                          {action.department}
+                        </span>
+                        <span className={cn("text-xs px-2 py-0.5 rounded-full border", getPriorityPillClass(action.priority))}>
+                          {priorityConfig.label}
+                        </span>
+                        <span className="text-xs px-2 py-0.5 rounded-full border border-[hsl(var(--neutral-200))] bg-[hsl(var(--neutral-050))] text-[hsl(var(--neutral-600))]">
+                          {action.status}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : viewMode === 'timeline' ? (
         <TimelineView actions={filteredActions} onActionClick={openEditPanel} />
       ) : viewMode === 'kanban' ? (
         /* Kanban Board */
