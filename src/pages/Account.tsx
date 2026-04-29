@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { OrganizationSettings } from '@/components/OrganizationSettings';
 import { InviteTeamMembers } from '@/components/InviteTeamMembers';
 import { InviteCoach } from '@/components/InviteCoach';
+import { OemModeToggle } from '@/components/OemModeToggle';
 import { 
   User, Shield, Download, Trash2, Monitor, Smartphone, Globe, 
   Mail, CheckCircle, Building2, Users, Activity, Link2, Key,
@@ -433,11 +434,14 @@ const Account = () => {
 
           {/* ── ORGANIZATION ── */}
           <TabsContent value="organization">
-            {currentOrganization && (
-              <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-5">
-                <OrganizationSettings organizationId={currentOrganization.id} isAdmin={isOrgAdmin} />
-              </div>
-            )}
+            <div className="space-y-6">
+              {currentOrganization && (
+                <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-5">
+                  <OrganizationSettings organizationId={currentOrganization.id} isAdmin={isOrgAdmin} />
+                </div>
+              )}
+              <OemModeToggle />
+            </div>
           </TabsContent>
 
           {/* ── TEAM ── */}
