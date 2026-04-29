@@ -107,12 +107,6 @@ const labels = {
     referenceType: "Industry indicative",
     referenceBenchmark: "Reference benchmark",
     industryLeading: "Industry leading threshold",
-    conversionUplift: "Conversion uplift at 1 min",
-    delayedResponse: "vs. any delayed response",
-    effectivenessLoss: "Effectiveness loss at 30 min",
-    immediateResponse: "vs. immediate response",
-    complianceRate: "Industry compliance rate",
-    dealersBenchmark: "dealers meeting benchmark",
     benchmarkPosition: "Benchmark position",
     referenceCorridor: "Reference corridor",
     leading: "Leading · <5 min",
@@ -138,12 +132,6 @@ const labels = {
     referenceType: "Branchenrichtwert",
     referenceBenchmark: "Referenz-Benchmark",
     industryLeading: "Schwelle für Branchenführer",
-    conversionUplift: "Conversion-Uplift bei 1 Min.",
-    delayedResponse: "ggü. verzögerter Antwort",
-    effectivenessLoss: "Effektivitätsverlust bei 30 Min.",
-    immediateResponse: "ggü. sofortiger Antwort",
-    complianceRate: "Branchen-Compliance-Rate",
-    dealersBenchmark: "Händler erreichen Benchmark",
     benchmarkPosition: "Benchmark-Position",
     referenceCorridor: "Referenzkorridor",
     leading: "Führend · <5 Min.",
@@ -163,7 +151,7 @@ const labels = {
   },
 };
 
-export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavigateToKpi }: KPIStudioProps) {
+export function KPIStudio({ kpi, departmentKey, language, onBack, onNavigateToKpi }: KPIStudioProps) {
   const t = labels[language === "de" ? "de" : "en"];
   const config = getDepartmentConfig(departmentKey);
   const DeptIcon = config.icon;
