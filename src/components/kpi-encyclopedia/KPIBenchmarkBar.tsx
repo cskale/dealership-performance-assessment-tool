@@ -15,26 +15,26 @@ export function KPIBenchmarkBar({ benchmark, unit, className }: KPIBenchmarkBarP
 
   return (
     <div className={cn("space-y-2", className)}>
-      <div className="flex items-center justify-between text-xs">
+      <div className="flex items-center justify-between text-label">
         <span className="text-muted-foreground font-medium">
           Benchmark
         </span>
         <span className="font-semibold text-foreground">{benchmark}</span>
       </div>
       {/* Horizontal benchmark band */}
-      <div className="relative h-2 rounded-full overflow-hidden bg-muted">
+      <div className="relative h-2 rounded-md overflow-hidden bg-muted">
         <div className="absolute inset-0 flex">
-          <div className="h-full w-1/3 bg-red-200/60" />
-          <div className="h-full w-1/3 bg-amber-200/60" />
-          <div className="h-full w-1/3 bg-emerald-200/60" />
+          <div className="h-full w-1/3 bg-destructive/15" />
+          <div className="h-full w-1/3 bg-warning/15" />
+          <div className="h-full w-1/3 bg-success/15" />
         </div>
         {/* Benchmark marker */}
         <div
-          className="absolute top-0 h-full w-0.5 bg-foreground/70 rounded-full"
+          className="absolute top-0 h-full w-0.5 rounded-md bg-foreground/70"
           style={{ left: isLowerBetter ? '25%' : '75%' }}
         />
       </div>
-      <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+      <div className="flex items-center justify-between text-caption text-muted-foreground">
         <span>{isLowerBetter ? 'Better' : 'Poor'}</span>
         <span className="italic">
           {isLowerBetter ? 'Lower is better' : 'Higher is better'}
