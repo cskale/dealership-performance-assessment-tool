@@ -28,7 +28,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { format } from 'date-fns';
-import { ArrowUpDown, Filter } from 'lucide-react';
+import { ArrowUpDown, CalendarDays, Filter, LineChart as LineChartIcon, TrendingUp as TrendingUpIcon } from 'lucide-react';
 
 interface AssignedDealer {
   dealershipId: string;
@@ -49,11 +49,11 @@ interface AssessmentRecord {
 
 const CHART_COLORS = ['#2563eb', '#7c3aed', '#0891b2'];
 
-function getScoreBadge(score: number): { className: string } {
-  if (score >= 85) return { className: 'bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20' };
-  if (score >= 70) return { className: 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20' };
-  if (score >= 46) return { className: 'bg-[#d97706]/10 text-[#d97706] border-[#d97706]/20' };
-  return { className: 'bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20' };
+function getScoreBadge(score: number): { className: string; label: string } {
+  if (score >= 85) return { className: 'bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20', label: 'Leading' };
+  if (score >= 70) return { className: 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20', label: 'Advanced' };
+  if (score >= 46) return { className: 'bg-[#d97706]/10 text-[#d97706] border-[#d97706]/20', label: 'Developing' };
+  return { className: 'bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20', label: 'Foundational' };
 }
 
 export default function CoachDashboard() {
