@@ -321,12 +321,6 @@ export default function Results() {
             const maturityLabelDe: Record<string, string> = { leading: 'Führend', advanced: 'Fortgeschritten', developing: 'Entwickelnd', foundational: 'Grundlegend' };
             const maturityLabel = language === 'de' ? maturityLabelDe[maturityKey] : maturityLabelEn[maturityKey];
 
-            const maturityBadgeVariant = ({
-              leading:      'maturity-leading',
-              advanced:     'maturity-advanced',
-              developing:   'maturity-developing',
-              foundational: 'maturity-foundational',
-            } as const)[maturityKey];
             const modulesAssessed = resultsData?.scores ? Object.keys(resultsData.scores).length : 0;
             const answeredQuestions = resultsData?.answers ? Object.keys(resultsData.answers).length : 0;
 
@@ -369,14 +363,12 @@ export default function Results() {
                     </div>
                   </div>
                   <div className={labelClass}>{language === 'de' ? 'Gesamtbewertung' : 'Overall Score'}</div>
-                  <Badge variant={scoreInfo.variant} className="mt-1">{scoreInfo.label}</Badge>
                 </div>
 
                 {/* Card 2 — Maturity Level */}
                 <div className={cn(cardBase, "min-h-[100px] flex flex-col items-center justify-center text-center opacity-0 animate-fade-in")} style={{ animationDelay: '50ms', animationFillMode: 'forwards' }}>
                   <div className={labelClass}>{language === 'de' ? 'Reifegrad' : 'Maturity Level'}</div>
-                  <div className="text-xl font-bold text-foreground mb-1.5">{maturityLabel}</div>
-                  <Badge variant={maturityBadgeVariant}>{maturityLabel}</Badge>
+                  <div className="text-xl font-bold text-foreground">{maturityLabel}</div>
                 </div>
 
                 {/* Card 3 — Modules Assessed */}
