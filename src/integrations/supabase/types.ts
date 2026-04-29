@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -1565,6 +1565,7 @@ export type Database = {
       cleanup_expired_sessions: { Args: never; Returns: undefined }
       delete_user_account: { Args: { _user_id: string }; Returns: boolean }
       export_user_data: { Args: { _user_id: string }; Returns: Json }
+      get_dealership_details: { Args: { p_ids: string[] }; Returns: Json }
       has_org_access: {
         Args: {
           _min_role?: Database["public"]["Enums"]["access_role"]
@@ -1595,6 +1596,7 @@ export type Database = {
         Args: { p_dealership_id: string }
         Returns: boolean
       }
+      lookup_dealer_by_email: { Args: { p_email: string }; Returns: Json }
       update_action_if_unchanged:
         | {
             Args: {
