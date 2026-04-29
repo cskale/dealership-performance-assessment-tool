@@ -3,6 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useActiveRole } from '@/hooks/useActiveRole';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -44,13 +55,6 @@ export function OemModeToggle() {
   };
 
   const handleDeactivate = async () => {
-    if (
-      !confirm(
-        'Deactivate OEM mode? You will lose access to the OEM Dashboard and Network Settings until you re-activate.',
-      )
-    )
-      return;
-
     setLoading(true);
     const { data } = await supabase.rpc('toggle_oem_mode', { p_activate: false });
     const result = data as { success: boolean; error?: string } | null;
@@ -102,15 +106,35 @@ export function OemModeToggle() {
             >
               Go to Network Settings
             </Button>
-            <button
-              type="button"
-              className="text-xs text-[hsl(var(--neutral-500))] hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60"
-              onClick={handleDeactivate}
-              disabled={loading}
-            >
-              {loading && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
-              Deactivate
-            </button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button
+                  type="button"
+                  className="text-xs text-[hsl(var(--neutral-500))] hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={loading}
+                >
+                  {loading && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
+                  Deactivate
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Deactivate OEM mode?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    You will lose access to the OEM Dashboard and Network Settings. Your network data is preserved and access can be restored by re-activating.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Keep OEM mode</AlertDialogCancel>
+                  <AlertDialogAction asChild>
+                    <Button variant="destructive" onClick={handleDeactivate} disabled={loading}>
+                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Yes, deactivate
+                    </Button>
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         ) : (
           <Button variant="default" onClick={handleActivate} disabled={loading}>

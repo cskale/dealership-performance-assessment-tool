@@ -28,7 +28,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { format } from 'date-fns';
-import { ArrowUpDown, Filter } from 'lucide-react';
+import { ArrowUpDown, CalendarDays, Filter, LineChart as LineChartIcon, TrendingUp as TrendingUpIcon } from 'lucide-react';
 
 interface AssignedDealer {
   dealershipId: string;
@@ -49,11 +49,11 @@ interface AssessmentRecord {
 
 const CHART_COLORS = ['#2563eb', '#7c3aed', '#0891b2'];
 
-function getScoreBadge(score: number): { className: string } {
-  if (score >= 85) return { className: 'bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20' };
-  if (score >= 70) return { className: 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20' };
-  if (score >= 46) return { className: 'bg-[#d97706]/10 text-[#d97706] border-[#d97706]/20' };
-  return { className: 'bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20' };
+function getScoreBadge(score: number): { className: string; label: string } {
+  if (score >= 85) return { className: 'bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20', label: 'Leading' };
+  if (score >= 70) return { className: 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20', label: 'Advanced' };
+  if (score >= 46) return { className: 'bg-[#d97706]/10 text-[#d97706] border-[#d97706]/20', label: 'Developing' };
+  return { className: 'bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20', label: 'Foundational' };
 }
 
 export default function CoachDashboard() {
@@ -242,7 +242,7 @@ export default function CoachDashboard() {
         {filteredDealers.map((dealer, i) => (
           <Card
             key={dealer.dealershipId}
-            className="cursor-pointer hover:shadow-md transition-shadow opacity-0 animate-fade-in shadow-card rounded-xl"
+            className="cursor-pointer hover:border-[hsl(var(--brand-300))] hover:shadow-md transition-all duration-150 opacity-0 animate-fade-in shadow-card rounded-xl"
             style={{ animationDelay: `${Math.min(i, 4) * 50}ms`, animationFillMode: 'forwards' }}
             onClick={() => {
               if (dealer.latestAssessmentId) {
@@ -253,34 +253,38 @@ export default function CoachDashboard() {
             <CardHeader className="pb-2">
               <div className="flex items-start justify-between">
                 <CardTitle className="text-base font-semibold">{dealer.dealerName}</CardTitle>
-                <Badge variant="outline" className="text-xs shrink-0">{dealer.brand}</Badge>
+                <Badge variant="outline" className="bg-[hsl(var(--neutral-100))] text-[hsl(var(--neutral-700))] border-[hsl(var(--neutral-300))] text-xs shrink-0">
+                  {dealer.brand}
+                </Badge>
               </div>
               <p className="text-xs text-muted-foreground">{dealer.location}</p>
+              {dealer.latestDate && (
+                <p className="flex items-center gap-1 text-xs text-[hsl(var(--neutral-500))]">
+                  <CalendarDays className="h-3 w-3" />
+                  {format(new Date(dealer.latestDate), 'dd MMM yyyy')}
+                </p>
+              )}
             </CardHeader>
             <CardContent className="pt-0">
               <div className="flex items-center justify-between">
                 <div>
                   {dealer.latestScore != null ? (
-                    <Badge variant="outline" className={getScoreBadge(dealer.latestScore).className}>
-                      {Math.round(dealer.latestScore)}
-                    </Badge>
+                    <div className={`inline-flex flex-col items-center rounded-lg border px-3 py-2 ${getScoreBadge(dealer.latestScore).className}`}>
+                      <span className="text-2xl font-bold leading-none">{Math.round(dealer.latestScore)}</span>
+                      <span className="mt-1 text-xs">{getScoreBadge(dealer.latestScore).label}</span>
+                    </div>
                   ) : (
                     <span className="text-xs text-muted-foreground">—</span>
                   )}
                 </div>
                 <div className="text-right">
-                  {dealer.latestDate && (
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(dealer.latestDate), 'dd MMM yyyy')}
-                    </p>
-                  )}
                   {dealer.latestStatus && (
                     <Badge
                       variant="outline"
                       className={
                         dealer.latestStatus === 'completed'
-                          ? 'bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20 text-xs'
-                          : 'bg-[#d97706]/10 text-[#d97706] border-[#d97706]/20 text-xs'
+                          ? 'bg-[hsl(var(--brand-050))] text-[hsl(var(--brand-600))] border-[hsl(var(--brand-200))] text-xs'
+                          : 'bg-[hsl(var(--dd-amber-light))] text-[hsl(var(--dd-amber))] border-[hsl(var(--dd-amber))]/20 text-xs'
                       }
                     >
                       {dealer.latestStatus === 'completed' ? t('coach.filterCompleted') : t('coach.filterInProgress')}
@@ -296,7 +300,10 @@ export default function CoachDashboard() {
       {/* Score Trend Chart */}
       <Card className="shadow-card rounded-xl">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold">{t('coach.scoreTrend')}</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base font-semibold">
+            <TrendingUpIcon className="h-4 w-4 text-[hsl(var(--brand-500))]" />
+            {t('coach.scoreTrend')}
+          </CardTitle>
           <p className="text-xs text-muted-foreground">{t('coach.selectDealers')}</p>
         </CardHeader>
         <CardContent>
@@ -313,7 +320,9 @@ export default function CoachDashboard() {
                   disabled={!selectedDealerIds.includes(d.dealershipId) && selectedDealerIds.length >= 3}
                 />
                 <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                  className={`w-3 h-3 rounded-full shrink-0 ${
+                    selectedDealerIds.includes(d.dealershipId) ? 'ring-1 ring-offset-1 ring-white' : ''
+                  }`}
                   style={{ backgroundColor: CHART_COLORS[selectedDealerIds.indexOf(d.dealershipId)] ?? '#9ca3af' }}
                 />
                 {d.dealerName}
@@ -353,8 +362,11 @@ export default function CoachDashboard() {
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">
-              {t('coach.selectDealers')}
+            <div className="flex h-48 flex-col items-center justify-center gap-3 text-center">
+              <LineChartIcon className="h-8 w-8 text-[hsl(var(--neutral-300))]" />
+              <p className="text-sm text-[hsl(var(--neutral-500))]">
+                Select up to 3 dealers above to compare their score trends
+              </p>
             </div>
           )}
         </CardContent>
