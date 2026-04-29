@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -220,12 +219,6 @@ export default function Results() {
     return 'stroke-destructive';
   };
 
-  const getScoreLabel = (score: number) => {
-    if (score >= 80) return { label: t('results.excellent'), variant: 'success' as const };
-    if (score >= 60) return { label: t('results.good'), variant: 'warning' as const };
-    return { label: t('results.needsImprovement'), variant: 'destructive' as const };
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US', {
       year: 'numeric', month: 'long', day: 'numeric'
@@ -234,8 +227,6 @@ export default function Results() {
 
   const assessmentId = resultsData?.assessmentId;
   const actionCount = pdfActions.length;
-
-  const scoreInfo = getScoreLabel(overallScore);
 
   // Loading state
   if (isLoading) {
