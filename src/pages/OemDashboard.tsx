@@ -329,6 +329,7 @@ export default function OemDashboard() {
                   {sortedDealers.map((dealer, index) => {
                     const rank = index + 1;
                     const band = dealer.latestScore != null ? getScoreBand(dealer.latestScore) : null;
+                    const rankBadgeClass = getRankBadgeClass(rank);
                     return (
                       <TableRow
                         key={dealer.dealershipId}
@@ -339,7 +340,16 @@ export default function OemDashboard() {
                           }
                         }}
                       >
-                        <TableCell className="font-medium text-muted-foreground">{rank}</TableCell>
+                        <TableCell className="font-medium">
+                          {rankBadgeClass ? (
+                            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold ${rankBadgeClass}`}>
+                              {rank === 1 && <Trophy className="h-3 w-3" />}
+                              {rank}
+                            </span>
+                          ) : (
+                            <span className="text-[hsl(var(--neutral-500))]">{rank}</span>
+                          )}
+                        </TableCell>
                         <TableCell>
                           <div>
                             <span className="font-medium text-foreground">{dealer.dealerName}</span>
@@ -375,6 +385,20 @@ export default function OemDashboard() {
                       </TableRow>
                     );
                   })}
+                  <TableRow className="bg-[hsl(var(--neutral-050))] hover:bg-[hsl(var(--neutral-050))]">
+                    <TableCell className="text-[hsl(var(--neutral-500))]">—</TableCell>
+                    <TableCell>
+                      <span className="italic text-[hsl(var(--neutral-600))]">Network average</span>
+                    </TableCell>
+                    <TableCell className="text-right font-semibold text-foreground">{stats.avg}</TableCell>
+                    <TableCell className="text-right hidden sm:table-cell text-muted-foreground">—</TableCell>
+                    <TableCell className="text-center hidden sm:table-cell text-muted-foreground">—</TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant="outline" className={getScoreBand(stats.avg).className}>
+                        {getScoreBand(stats.avg).label}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
                 </TableBody>
               </Table>
             </div>
