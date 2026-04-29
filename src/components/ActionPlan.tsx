@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   CheckCircle2, Circle, Clock, Plus, Sparkles, Loader2, Pencil,
-  AlertTriangle, Target, Eye, Search, Filter, LayoutList, GanttChart, LayoutGrid, CalendarIcon
+  AlertTriangle, Target, Eye, Search, Filter, CalendarIcon
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -554,27 +554,6 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
               <TabsTrigger value="roadmap" className="text-xs">Roadmap view</TabsTrigger>
             </TabsList>
           </Tabs>
-          {/* View toggle + workload */}
-          <div className="flex rounded-lg border overflow-hidden">
-            <button onClick={() => setViewMode('kanban')}
-              className={cn("px-2 py-1.5 transition-colors",
-                viewMode === 'kanban' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"
-              )} title="Board view">
-              <LayoutGrid className="h-3.5 w-3.5" />
-            </button>
-            <button onClick={() => setViewMode('list')}
-              className={cn("px-2 py-1.5 transition-colors",
-                viewMode === 'list' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"
-              )} title="List view">
-              <LayoutList className="h-3.5 w-3.5" />
-            </button>
-            <button onClick={() => setViewMode('timeline')}
-              className={cn("px-2 py-1.5 transition-colors",
-                viewMode === 'timeline' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"
-              )} title="Timeline view">
-              <GanttChart className="h-3.5 w-3.5" />
-            </button>
-          </div>
           {canCreate && (
             <Button onClick={openCreatePanel} variant="outline" size="sm">
               <Plus className="mr-2 h-4 w-4" /> Add Action
