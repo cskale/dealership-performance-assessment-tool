@@ -218,7 +218,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
             </Badge>
           </div>
 
-          <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">
+          <span className={cn("mb-2 block", SECTION_LABEL_CLASS)}>
             {t.definition}
           </span>
           <p className="max-w-4xl text-body-md leading-relaxed text-muted-foreground">{kpi.definition}</p>
@@ -229,20 +229,20 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
         <div className="max-w-5xl">
           {kpi.formula && (
             <div className="mb-5">
-              <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">
+              <span className={cn("mb-2 block", SECTION_LABEL_CLASS)}>
                 {t.formula}
               </span>
-              <code className="block rounded-lg border border-border/30 bg-muted/25 p-4 font-mono text-sm leading-relaxed text-foreground">
+              <code className="block rounded-lg border border-border/30 bg-muted/25 p-4 font-mono text-body-sm leading-relaxed text-foreground">
                 {kpi.formula}
               </code>
             </div>
           )}
 
           <div className="rounded-lg border border-primary/10 bg-primary/5 p-5">
-            <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-primary/60">
+            <span className="mb-2 block text-caption font-medium uppercase tracking-wider text-primary/70">
               {t.whyThisMatters}
             </span>
-            <p className="text-sm leading-relaxed text-foreground/75 sm:text-base">
+            <p className="text-body-md leading-relaxed text-foreground/75">
               {kpi.executiveSummary || kpi.whyItMatters}
             </p>
           </div>
@@ -251,8 +251,8 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
 
       <section className="border-b border-border/30 px-8 py-7 sm:px-10 lg:px-14">
         <div className="mb-4">
-          <span className="mb-1 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.benchmarkPosition}</span>
-          <p className="text-sm text-muted-foreground">
+          <span className={cn("mb-1 block", SECTION_LABEL_CLASS)}>{t.benchmarkPosition}</span>
+          <p className="text-body-sm text-muted-foreground">
             {t.referenceCorridor}: {kpi.benchmark || "—"} · {directionLabel}
           </p>
         </div>
