@@ -45,6 +45,8 @@ function getImprovementTag(index: number, language: string) {
 
 const BENCHMARK_GOOD_TO_BAD = ["bg-success", "bg-primary", "bg-warning", "bg-destructive/80"];
 const BENCHMARK_BAD_TO_GOOD = [...BENCHMARK_GOOD_TO_BAD].reverse();
+const SECTION_LABEL_CLASS = "text-caption font-medium uppercase tracking-wider text-muted-foreground/60";
+const VALUE_BADGE_CLASS = "rounded-md border border-border/40 px-2.5 py-1 text-label text-muted-foreground";
 
 function getBenchmarkLabels(benchmark: string | undefined, isLowerBetter: boolean, language: string) {
   const fallback = benchmark || "—";
@@ -167,7 +169,6 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
   const DeptIcon = config.icon;
   const deptLabel = config.label[language as "en" | "de"] || config.label.en;
 
-  const isLeadResponseTime = kpiKey === "leadResponseTime";
   const isLowerBetter = kpi.benchmark?.includes("<") ||
     kpi.unitOfMeasure?.toLowerCase()?.includes("minute") ||
     kpi.unitOfMeasure?.toLowerCase()?.includes("day");
@@ -183,7 +184,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
     <div className="max-h-[88vh] overflow-y-auto bg-card text-foreground">
       {onBack && (
         <div className="border-b border-border/30 px-8 py-3 sm:px-10 lg:px-14">
-          <Button variant="ghost" onClick={onBack} className="h-8 px-0 text-sm text-muted-foreground hover:bg-transparent hover:text-foreground">
+          <Button variant="ghost" onClick={onBack} className="h-8 px-0 text-body-sm text-muted-foreground hover:bg-transparent hover:text-foreground">
             <ChevronLeft className="mr-1 h-4 w-4" />
             {t.back}
           </Button>
@@ -194,25 +195,25 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
         <div className="max-w-5xl">
           <div className="mb-5 flex items-center gap-3">
             <span className="h-[1.5px] w-6 bg-primary" />
-            <span className="text-[10px] font-medium uppercase tracking-widest text-primary">{deptLabel}</span>
+            <span className="text-caption font-medium uppercase tracking-wider text-primary">{deptLabel}</span>
           </div>
 
           <h1 className="mb-4 text-h2 font-bold tracking-tight text-foreground">{kpi.title}</h1>
 
           <div className="mb-8 flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className={"rounded-md border border-border/40 bg-muted text-label text-muted-foreground"}>
+            <Badge variant="outline" className={cn(VALUE_BADGE_CLASS, "bg-muted")}>
               <DeptIcon className="mr-1 h-3 w-3" />
               {deptLabel}
             </Badge>
             {kpi.unitOfMeasure && (
-              <Badge variant="outline" className="rounded-md border-border/40 px-2.5 py-1 text-label text-muted-foreground">
+              <Badge variant="outline" className={VALUE_BADGE_CLASS}>
                 {kpi.unitOfMeasure}
               </Badge>
             )}
-            <Badge variant="outline" className="rounded-md border-border/40 px-2.5 py-1 text-label text-muted-foreground">
+            <Badge variant="outline" className={VALUE_BADGE_CLASS}>
               {directionLabel}
             </Badge>
-            <Badge variant="outline" className="rounded-md border-border/40 px-2.5 py-1 text-label text-muted-foreground">
+            <Badge variant="outline" className={VALUE_BADGE_CLASS}>
               {t.referenceType}
             </Badge>
           </div>
