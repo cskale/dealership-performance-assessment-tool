@@ -34,7 +34,7 @@ interface DealerStats {
 
 export default function CoachActions() {
   const { user } = useAuth();
-  const { uxRole: role, loading: roleLoading } = useActiveRole();
+  const { actorType, loading: roleLoading } = useActiveRole();
   const { toast } = useToast();
   const [actions, setActions] = useState<Action[]>([]);
   const [filteredActions, setFilteredActions] = useState<Action[]>([]);
@@ -174,7 +174,7 @@ export default function CoachActions() {
     );
   }
 
-  if (role !== 'coach') {
+  if (actorType !== 'coach') {
     return <Navigate to="/app/dashboard" replace />;
   }
 

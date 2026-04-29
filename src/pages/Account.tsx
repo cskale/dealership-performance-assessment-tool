@@ -17,6 +17,7 @@ import type { Tables } from '@/integrations/supabase/types';
 import { useToast } from '@/hooks/use-toast';
 import { OrganizationSettings } from '@/components/OrganizationSettings';
 import { InviteTeamMembers } from '@/components/InviteTeamMembers';
+import { InviteCoach } from '@/components/InviteCoach';
 import { 
   User, Shield, Download, Trash2, Monitor, Smartphone, Globe, 
   Mail, CheckCircle, Building2, Users, Activity, Link2, Key,
@@ -442,7 +443,10 @@ const Account = () => {
           {/* ── TEAM ── */}
           <TabsContent value="team">
             {canManageTeam && (
-              <InviteTeamMembers />
+              <div className="space-y-6">
+                <InviteTeamMembers />
+                <InviteCoach />
+              </div>
             )}
           </TabsContent>
 
