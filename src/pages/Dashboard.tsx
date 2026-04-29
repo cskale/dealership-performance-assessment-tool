@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  LayoutDashboard, Car, RotateCw, Wrench, Package, TrendingUp, Download,
-  ChevronRight, ArrowUp, ArrowDown, Settings, User, Target, Sparkles, Info,
-  FileText, CheckCircle2
+  Car, RotateCw, Wrench, TrendingUp, Download,
+  ChevronRight, ArrowUp, ArrowDown, Target, Sparkles, Info,
+  ClipboardList, ArrowRight, BarChart3, Zap, CheckSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -32,7 +31,6 @@ const Dashboard = () => {
   const [hasAssessments, setHasAssessments] = useState<boolean | null>(null);
   const { t, language } = useLanguage();
   const { user } = useAuth();
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (!user) { setHasAssessments(null); return; }
@@ -171,87 +169,41 @@ const Dashboard = () => {
 
       {hasAssessments === false ? (
         <main className="max-w-7xl mx-auto px-6 py-6">
-          <div className="max-w-[640px] mx-auto p-10 px-12 border rounded-[12px] bg-card">
-            <div>
-              <h1 className="text-[20px] font-semibold text-foreground">
-                {language === 'de' ? 'Starten Sie Ihre erste Händlerbewertung' : 'Start your first dealership assessment'}
-              </h1>
-              <p className="text-[14px] text-muted-foreground mt-2 leading-relaxed">
-                {language === 'de'
-                  ? 'Dieses Tool diagnostiziert die Leistung in fünf Bereichen Ihres Autohauses und erstellt in unter 30 Minuten einen priorisierten Maßnahmenplan.'
-                  : 'This tool diagnoses performance across five areas of your dealership and produces a prioritised action plan in under 30 minutes.'}
+          <Card className="max-w-xl mx-auto mt-8 shadow-card rounded-xl">
+            <CardContent className="p-8 space-y-6 text-center">
+              <ClipboardList className="h-14 w-14 text-[hsl(var(--brand-300))] mx-auto" />
+              <div className="space-y-2">
+                <h1 className="text-2xl font-semibold text-[hsl(var(--neutral-900))]">Run your first dealership diagnostic</h1>
+                <p className="text-sm text-[hsl(var(--neutral-600))] leading-relaxed">
+                  A 45-minute structured assessment across 5 departments. Get a scored performance profile, diagnostic signals, and a prioritised action plan — ready to present to your team.
+                </p>
+              </div>
+              <Button asChild size="lg" className="w-full sm:w-auto">
+                <a href="/app/assessment">
+                  Start Assessment
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </a>
+              </Button>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {[
+                  { icon: BarChart3, label: 'Scored across 5 departments' },
+                  { icon: Zap, label: 'Diagnostic signals in minutes' },
+                  { icon: CheckSquare, label: 'Prioritised action plan' },
+                ].map((benefit) => {
+                  const Icon = benefit.icon;
+                  return (
+                    <div key={benefit.label} className="bg-[hsl(var(--brand-050))] rounded-lg p-3 flex flex-col items-center gap-2">
+                      <Icon className="h-5 w-5 text-[hsl(var(--brand-400))]" />
+                      <span className="text-xs text-[hsl(var(--neutral-600))]">{benefit.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-[hsl(var(--neutral-500))] text-center">
+                What to prepare: your last 3 months of DMS sales data, service throughput figures, and parts inventory report.
               </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-              {[
-                {
-                  icon: TrendingUp,
-                  heading: language === 'de' ? 'Gewichtete Diagnosewerte' : 'Weighted diagnostic scores',
-                  desc: language === 'de'
-                    ? 'Über 5 Module: Verkauf, Gebrauchtwagen, Service, Finanzen, Teile'
-                    : 'Across 5 modules: Sales, Used Vehicles, Service, Finance, Parts',
-                },
-                {
-                  icon: Target,
-                  heading: language === 'de' ? 'Priorisierter Maßnahmenplan' : 'Prioritised action plan',
-                  desc: language === 'de'
-                    ? 'Nach Wirkung, Aufwand und Dringlichkeit sortierte Empfehlungen für Ihr Team'
-                    : 'Impact, effort, and urgency-ranked recommendations for your team',
-                },
-                {
-                  icon: FileText,
-                  heading: language === 'de' ? 'Exportierbarer PDF-Bericht' : 'Exportable PDF report',
-                  desc: language === 'de'
-                    ? 'Beratungstauglicher Bericht zum Teilen mit Geschäftsführung oder OEM'
-                    : 'Consulting-grade output ready to share with your principal or OEM',
-                },
-              ].map((b, i) => {
-                const Icon = b.icon;
-                return (
-                  <div key={i} className="flex flex-col gap-2">
-                    <Icon className="h-5 w-5 text-primary" />
-                    <h3 className="text-sm font-medium text-foreground">{b.heading}</h3>
-                    <p className="text-[12px] text-muted-foreground leading-snug">{b.desc}</p>
-                  </div>
-                );
-              })}
-            </div>
-
-            <p className="text-[12px] uppercase tracking-wider text-muted-foreground mt-8 font-medium">
-              {language === 'de' ? 'Vor dem Start — halten Sie folgendes bereit:' : 'Before you start, have these to hand:'}
-            </p>
-            <ul className="mt-3 space-y-2">
-              {(language === 'de'
-                ? [
-                    'Neuwagenverkaufsvolumen und Bruttomargen der letzten 12 Monate',
-                    'Werkstattauslastung sowie CSI/NPS-Werte',
-                    'Gebrauchtwagen-Lagerumschlag und Altersstruktur',
-                    'Aktueller Monatsabschluss (G+V-Übersicht)',
-                    'Anteil obsoleter Ersatzteile in Prozent',
-                  ]
-                : [
-                    "Last 12 months' new vehicle sales volume and gross profit figures",
-                    'Workshop utilisation rate and CSI/NPS scores',
-                    'Used vehicle stock turn and age profile',
-                    'Latest monthly management accounts (P&L summary)',
-                    'Parts obsolescence percentage',
-                  ]
-              ).map((item, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-foreground leading-[1.6]">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground mt-1 shrink-0" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-
-            <Button size="lg" className="w-full mt-8 h-11" onClick={() => navigate('/app/assessment')}>
-              {language === 'de' ? 'Bewertung starten' : 'Begin Assessment'}
-            </Button>
-            <p className="text-[11px] text-muted-foreground text-center mt-2">
-              {language === 'de' ? 'Dauer ca. 25–30 Minuten' : 'Takes approximately 25–30 minutes'}
-            </p>
-          </div>
+            </CardContent>
+          </Card>
         </main>
       ) : (
       <main className="max-w-7xl mx-auto px-6 py-6 space-y-8">

@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/table';
 import { SharedLoadingState } from '@/components/shared/SharedLoadingState';
 import { SharedEmptyState } from '@/components/shared/SharedEmptyState';
-import { Globe, TrendingUp, TrendingDown, Minus, Users, Award, ArrowDown, ArrowUp, Settings, ClipboardList } from 'lucide-react';
+import { Globe, TrendingUp, TrendingDown, Minus, Users, Award, ArrowDown, ArrowUp, Settings, ClipboardList, Trophy } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
 type OemNetwork = Tables<'oem_networks'>;
@@ -58,6 +58,13 @@ function getRankStyle(rank: number): string {
   if (rank === 2) return 'border-l-4 border-l-[#9ca3af]';
   if (rank === 3) return 'border-l-4 border-l-[#b87333]';
   return '';
+}
+
+function getRankBadgeClass(rank: number): string | null {
+  if (rank === 1) return 'bg-[#d4a017]/10 text-[#d4a017] border-[#d4a017]/30';
+  if (rank === 2) return 'bg-[#9ca3af]/10 text-[#9ca3af] border-[#9ca3af]/30';
+  if (rank === 3) return 'bg-[#b87333]/10 text-[#b87333] border-[#b87333]/30';
+  return null;
 }
 
 export default function OemDashboard() {
@@ -322,6 +329,7 @@ export default function OemDashboard() {
                   {sortedDealers.map((dealer, index) => {
                     const rank = index + 1;
                     const band = dealer.latestScore != null ? getScoreBand(dealer.latestScore) : null;
+                    const rankBadgeClass = getRankBadgeClass(rank);
                     return (
                       <TableRow
                         key={dealer.dealershipId}
@@ -332,7 +340,16 @@ export default function OemDashboard() {
                           }
                         }}
                       >
-                        <TableCell className="font-medium text-muted-foreground">{rank}</TableCell>
+                        <TableCell className="font-medium">
+                          {rankBadgeClass ? (
+                            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold ${rankBadgeClass}`}>
+                              {rank === 1 && <Trophy className="h-3 w-3" />}
+                              {rank}
+                            </span>
+                          ) : (
+                            <span className="text-[hsl(var(--neutral-500))]">{rank}</span>
+                          )}
+                        </TableCell>
                         <TableCell>
                           <div>
                             <span className="font-medium text-foreground">{dealer.dealerName}</span>
@@ -368,6 +385,20 @@ export default function OemDashboard() {
                       </TableRow>
                     );
                   })}
+                  <TableRow className="bg-[hsl(var(--neutral-050))] hover:bg-[hsl(var(--neutral-050))]">
+                    <TableCell className="text-[hsl(var(--neutral-500))]">—</TableCell>
+                    <TableCell>
+                      <span className="italic text-[hsl(var(--neutral-600))]">Network average</span>
+                    </TableCell>
+                    <TableCell className="text-right font-semibold text-foreground">{stats.avg}</TableCell>
+                    <TableCell className="text-right hidden sm:table-cell text-muted-foreground">—</TableCell>
+                    <TableCell className="text-center hidden sm:table-cell text-muted-foreground">—</TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant="outline" className={getScoreBand(stats.avg).className}>
+                        {getScoreBand(stats.avg).label}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
                 </TableBody>
               </Table>
             </div>

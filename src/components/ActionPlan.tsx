@@ -4,14 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  CheckCircle2, Circle, Clock, Plus, Sparkles, Loader2, Pencil,
-  AlertTriangle, Target, Eye, Search, Filter, LayoutList, GanttChart, LayoutGrid, CalendarIcon
+  Plus, Loader2, Pencil,
+  AlertTriangle, Target, Eye, Search, Filter, CalendarIcon
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -111,7 +112,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
   const [filterDepartment, setFilterDepartment] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('priority');
   const [filterOpen, setFilterOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'kanban' | 'list' | 'timeline'>('kanban');
+  const [viewMode, setViewMode] = useState<'kanban' | 'list' | 'timeline' | 'roadmap'>('list');
   const [lastGenerated, setLastGenerated] = useState<number | null>(null);
   const [actionPage, setActionPage] = useState(0);
   const PAGE_SIZE = 50;
@@ -439,6 +440,25 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
     return result;
   }, [actions, statusFilter, filterPriority, filterDepartment, searchQuery, sortBy]);
 
+  const roadmapColumns = useMemo(() => {
+    const columns = [
+      { key: 'quick', title: 'Quick Wins (0–30 days)', actions: [] as ActionRecord[] },
+      { key: 'process', title: 'Process Changes (31–60 days)', actions: [] as ActionRecord[] },
+      { key: 'governance', title: 'Governance & Systems (61–90 days)', actions: [] as ActionRecord[] },
+    ];
+
+    filteredActions.forEach((action) => {
+      const effort = action.effort_score;
+      const impact = action.impact_score;
+      if (effort == null || impact == null) columns[1].actions.push(action);
+      else if (effort >= 4) columns[2].actions.push(action);
+      else if (effort <= 2 && impact >= 3) columns[0].actions.push(action);
+      else columns[1].actions.push(action);
+    });
+
+    return columns;
+  }, [filteredActions]);
+
   const statusTabs = [
     { key: 'all', label: 'All', count: statusCounts.all },
     { key: 'Open', label: 'Open', count: statusCounts.Open },
@@ -528,27 +548,12 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
         </div>
 
         <div className="flex items-center gap-2 ml-auto flex-shrink-0">
-          {/* View toggle + workload */}
-          <div className="flex rounded-lg border overflow-hidden">
-            <button onClick={() => setViewMode('kanban')}
-              className={cn("px-2 py-1.5 transition-colors",
-                viewMode === 'kanban' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"
-              )} title="Board view">
-              <LayoutGrid className="h-3.5 w-3.5" />
-            </button>
-            <button onClick={() => setViewMode('list')}
-              className={cn("px-2 py-1.5 transition-colors",
-                viewMode === 'list' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"
-              )} title="List view">
-              <LayoutList className="h-3.5 w-3.5" />
-            </button>
-            <button onClick={() => setViewMode('timeline')}
-              className={cn("px-2 py-1.5 transition-colors",
-                viewMode === 'timeline' ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"
-              )} title="Timeline view">
-              <GanttChart className="h-3.5 w-3.5" />
-            </button>
-          </div>
+          <Tabs value={viewMode === 'roadmap' ? 'roadmap' : 'list'} onValueChange={(value) => setViewMode(value as 'list' | 'roadmap')}>
+            <TabsList className="h-9 bg-card border">
+              <TabsTrigger value="list" className="text-xs">List view</TabsTrigger>
+              <TabsTrigger value="roadmap" className="text-xs">Roadmap view</TabsTrigger>
+            </TabsList>
+          </Tabs>
           {canCreate && (
             <Button onClick={openCreatePanel} variant="outline" size="sm">
               <Plus className="mr-2 h-4 w-4" /> Add Action
@@ -613,7 +618,49 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
       </div>
 
       {/* Content area: Kanban, List, or Timeline */}
-      {viewMode === 'timeline' ? (
+      {viewMode === 'roadmap' ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {roadmapColumns.map((column) => (
+            <div key={column.key} className="bg-[hsl(var(--neutral-050))] rounded-xl p-3">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-[hsl(var(--neutral-900))]">{column.title}</h3>
+                <span className="text-xs bg-[hsl(var(--brand-100))] text-[hsl(var(--brand-700))] rounded-full px-2 py-0.5">
+                  {column.actions.length}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {column.actions.length === 0 ? (
+                  <p className="text-xs text-[hsl(var(--neutral-500))] text-center py-4">No actions in this phase yet</p>
+                ) : column.actions.map((action) => {
+                  const priorityConfig = priorityDisplay[action.priority as keyof typeof priorityDisplay] || priorityDisplay.medium;
+                  return (
+                    <div
+                      key={action.id}
+                      onClick={() => openEditPanel(action)}
+                      className="bg-card rounded-lg p-3 cursor-pointer transition-all shadow-card hover:shadow-elevated border-l-[3px] border-l-brand-500 space-y-2"
+                    >
+                      <h4 className="text-body-md font-medium text-[hsl(var(--neutral-900))] line-clamp-2">
+                        {cleanActionTitle(action.action_title)}
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        <span className="text-xs px-2 py-0.5 rounded-full border border-[hsl(var(--neutral-200))] bg-[hsl(var(--neutral-050))] text-[hsl(var(--neutral-600))]">
+                          {action.department}
+                        </span>
+                        <span className={cn("text-xs px-2 py-0.5 rounded-full border", getPriorityPillClass(action.priority))}>
+                          {priorityConfig.label}
+                        </span>
+                        <span className="text-xs px-2 py-0.5 rounded-full border border-[hsl(var(--neutral-200))] bg-[hsl(var(--neutral-050))] text-[hsl(var(--neutral-600))]">
+                          {action.status}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : viewMode === 'timeline' ? (
         <TimelineView actions={filteredActions} onActionClick={openEditPanel} />
       ) : viewMode === 'kanban' ? (
         /* Kanban Board */

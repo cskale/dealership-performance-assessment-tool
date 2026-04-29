@@ -3,7 +3,7 @@ import { type ModuleBenchmark, sectionToModuleCode } from "@/lib/benchmarkUtils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, Zap, Info, AlertCircle, TrendingUp, Award } from "lucide-react";
+import { CheckCircle, Zap, Info, AlertCircle, TrendingUp, Award, AlertTriangle } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Legend } from "recharts";
@@ -195,6 +195,34 @@ export function MaturityScoring({ scores, answers, benchmarks }: MaturityScoring
     [language]
   );
 
+  const scoreDecompositionData = useMemo(() => {
+    return Object.entries(scores)
+      .map(([deptKey, score]) => {
+        const category = DEPARTMENT_TO_CATEGORY[deptKey];
+        const weight = category ? CATEGORY_WEIGHTS[category] : 0;
+        const contribution = score * weight;
+        return {
+          deptKey,
+          department: getDepartmentName(deptKey, language),
+          score,
+          weight,
+          contribution,
+        };
+      })
+      .sort((a, b) => b.contribution - a.contribution);
+  }, [scores, language]);
+
+  const weightedSum = useMemo(
+    () => scoreDecompositionData.reduce((sum, row) => sum + row.contribution, 0),
+    [scoreDecompositionData]
+  );
+
+  const varianceReviewDepartments = useMemo(() => {
+    return Object.entries(confidenceData)
+      .filter(([, confidence]) => confidence.reviewRecommended)
+      .map(([deptKey, confidence]) => `${getDepartmentName(deptKey, language)} (${confidence.consistencyScore}% consistency)`);
+  }, [confidenceData, language]);
+
   return (
     <div className="space-y-6">
       {/* Radar Chart */}
@@ -243,6 +271,61 @@ export function MaturityScoring({ scores, answers, benchmarks }: MaturityScoring
         </CardContent>
       </Card>
 
+      <details className="group shadow-card rounded-xl bg-card">
+        <summary className="list-none cursor-pointer px-6 py-4">
+          <div className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            Score Decomposition
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type="button" className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-muted hover:bg-muted/80 transition-colors" aria-label="Score decomposition info">
+                  <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs p-3">
+                How your overall score is calculated from department scores and their weights.
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </summary>
+        <Card className="shadow-none rounded-xl border-0">
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Department</TableHead>
+                    <TableHead className="text-center">Raw Score</TableHead>
+                    <TableHead className="text-center">Weight</TableHead>
+                    <TableHead>Contribution</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {scoreDecompositionData.map((row) => (
+                    <TableRow key={row.deptKey}>
+                      <TableCell className="font-medium">{row.department}</TableCell>
+                      <TableCell className="text-center tabular-nums">{row.score.toFixed(0)}</TableCell>
+                      <TableCell className="text-center tabular-nums">{Math.round(row.weight * 100)}%</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <span className="w-12 text-sm font-semibold tabular-nums">{row.contribution.toFixed(1)}</span>
+                          <div className="h-2 flex-1 rounded-full bg-[hsl(var(--brand-200))] overflow-hidden">
+                            <div className="h-full rounded-full bg-[hsl(var(--brand-500))]" style={{ width: `${Math.min(100, row.contribution)}%` }} />
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow className="bg-[hsl(var(--neutral-050))]">
+                    <TableCell className="font-semibold">Overall Score</TableCell>
+                    <TableCell className="text-center text-muted-foreground">—</TableCell>
+                    <TableCell className="text-center font-semibold tabular-nums">100%</TableCell>
+                    <TableCell className="font-semibold tabular-nums">{weightedSum.toFixed(1)}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+      </details>
+
       {/* Gap Analysis Table */}
       <Card className="shadow-card rounded-xl">
         <CardHeader>
@@ -254,6 +337,17 @@ export function MaturityScoring({ scores, answers, benchmarks }: MaturityScoring
           </p>
         </CardHeader>
         <CardContent>
+          {varianceReviewDepartments.length > 0 && (
+            <div className="mb-4 flex items-start gap-3 bg-[hsl(var(--dd-amber-light))] border border-[hsl(var(--dd-amber))]/30 rounded-xl px-4 py-3">
+              <AlertTriangle className="h-4 w-4 text-[hsl(var(--dd-amber))] mt-0.5 shrink-0" />
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-[hsl(var(--dd-amber))]">High response variance detected</p>
+                <p className="text-sm text-[hsl(var(--neutral-700))]">
+                  {varianceReviewDepartments.join(', ')}. Review your responses in these sections before finalising — inconsistent answers may affect score accuracy.
+                </p>
+              </div>
+            </div>
+          )}
           <Table>
             <TableHeader>
               <TableRow>
