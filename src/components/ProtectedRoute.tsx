@@ -1,25 +1,31 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useOnboarding } from '@/hooks/useOnboarding';
+import { useActiveRole, type ActorType } from '@/hooks/useActiveRole';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiresOnboarding?: boolean; // If true, redirects to onboarding if not complete
+  requiresOnboarding?: boolean;
+  requiresActorType?: ActorType;
 }
 
-export const ProtectedRoute = ({ children, requiresOnboarding = false }: ProtectedRouteProps) => {
+export const ProtectedRoute = ({
+  children,
+  requiresOnboarding = false,
+  requiresActorType,
+}: ProtectedRouteProps) => {
   const { user, loading: authLoading } = useAuth();
   const { status: onboardingStatus, isLoading: onboardingLoading } = useOnboarding();
+  const { actorType, loading: roleLoading } = useActiveRole();
   const location = useLocation();
 
-  // Check if current route is the onboarding page
   const isOnboardingRoute = location.pathname.includes('/onboarding');
 
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
@@ -27,31 +33,43 @@ export const ProtectedRoute = ({ children, requiresOnboarding = false }: Protect
   }
 
   if (!user) {
-    // Set returnTo cookie for post-auth redirect
     const returnTo = location.pathname + location.search;
     if (returnTo !== '/auth') {
-      document.cookie = `returnTo=${encodeURIComponent(returnTo)}; path=/; max-age=300`; // 5 minutes
+      document.cookie = `returnTo=${encodeURIComponent(returnTo)}; path=/; max-age=300`;
     }
     return <Navigate to="/auth" replace />;
   }
 
-  // If this route requires onboarding completion, check status
   if (requiresOnboarding && !isOnboardingRoute) {
-    // Wait for onboarding check to complete
     if (onboardingLoading) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-background">
           <div className="text-center space-y-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
             <p className="text-muted-foreground">Checking setup...</p>
           </div>
         </div>
       );
     }
-
-    // Redirect to onboarding if not complete
     if (onboardingStatus === 'needs_organization' || onboardingStatus === 'needs_dealership') {
       return <Navigate to="/app/onboarding" replace />;
+    }
+  }
+
+  // Actor-type guard: wait for role to resolve, then redirect if wrong type.
+  if (requiresActorType) {
+    if (roleLoading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="text-center space-y-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+            <p className="text-muted-foreground">Checking access...</p>
+          </div>
+        </div>
+      );
+    }
+    if (actorType !== requiresActorType) {
+      return <Navigate to="/app/dashboard" replace />;
     }
   }
 
