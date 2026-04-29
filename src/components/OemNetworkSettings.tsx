@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { Button } from '@/components/ui/button';
+import { ChipInput } from '@/components/ui/ChipInput';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -55,7 +56,7 @@ export function OemNetworkSettings() {
   const [networkSaving, setNetworkSaving] = useState(false);
   const [formName, setFormName] = useState('');
   const [formBrand, setFormBrand] = useState('');
-  const [formCountries, setFormCountries] = useState('');
+  const [formCountries, setFormCountries] = useState<string[]>([]);
 
   const [lookupEmail, setLookupEmail] = useState('');
   const [lookupLoading, setLookupLoading] = useState(false);
@@ -93,7 +94,7 @@ export function OemNetworkSettings() {
       .filter((id): id is string => id != null);
 
     const { data: detailsRaw } = await supabase.rpc('get_dealership_details', { p_ids: ids });
-    const details = (detailsRaw as DealershipDetail[] | null) ?? [];
+    const details = (detailsRaw as unknown as DealershipDetail[] | null) ?? [];
     const detailMap = new Map(details.map(d => [d.id, d]));
 
     setRoster(
@@ -123,7 +124,7 @@ export function OemNetworkSettings() {
         setNetwork(data);
         setFormName(data.name);
         setFormBrand(data.oem_brand);
-        setFormCountries((data.country_scope ?? []).join(', '));
+        setFormCountries(data.country_scope ?? []);
         loadRoster(data.id);
       }
       setNetworkLoading(false);
@@ -135,10 +136,7 @@ export function OemNetworkSettings() {
     e.preventDefault();
     if (!currentOrganization?.id) return;
     setNetworkSaving(true);
-    const countryArray = formCountries
-      .split(',')
-      .map(s => s.trim())
-      .filter(Boolean);
+    const countryArray = formCountries;
 
     if (network) {
       await supabase
@@ -176,7 +174,7 @@ export function OemNetworkSettings() {
     const { data } = await supabase.rpc('lookup_dealer_by_email', {
       p_email: lookupEmail.trim().toLowerCase(),
     });
-    setLookupResult(data as LookupResult);
+    setLookupResult(data as unknown as LookupResult);
     setLookupLoading(false);
   };
 
