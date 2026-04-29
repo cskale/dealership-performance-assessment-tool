@@ -11,7 +11,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  CheckCircle2, Circle, Clock, Plus, Sparkles, Loader2, Pencil,
+  Plus, Loader2, Pencil,
   AlertTriangle, Target, Eye, Search, Filter, CalendarIcon
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
