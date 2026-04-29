@@ -202,7 +202,7 @@
 <div class="header">
   <div class="header-eyebrow">Dealer Diagnostic Platform · Munich 2026</div>
   <div class="header-title">Improvement Master Tracker</div>
-  <div class="header-sub">Last updated: 28 April 2026 (Round 2 complete) — 34/54 items done or partial (59%)</div>
+  <div class="header-sub">Last updated: 29 April 2026 (Role Architecture, OEM/Coach Platform, Coach Invite Flow, OEM Network Setup complete) — see sprint banner below for full change log</div>
 </div>
 
 <div class="summary-bar">
@@ -253,6 +253,20 @@
   </div>
 </div>
 
+<div class="sprint-banner" style="background:#f0fdf4; border-color:#bbf7d0; border-left-color:#16a34a;">
+  <div class="sprint-banner-title" style="color:#166534;">✓ April 2026 Session Complete (29 April 2026) — Role Architecture, OEM/Coach Platform, Coach Invite Flow, OEM Network Setup</div>
+  <div class="sprint-banner-items" style="color:#166534;">
+    ✓ #01 Role architecture — Done: actor_type enum (dealer/coach/oem), ProtectedRoute requiresActorType guard, AppSidebar conditional nav, actor_type backfill migration for all existing users<br>
+    ✓ #05 Network architecture — Done: oem_networks, dealer_network_memberships, coach_dealership_assignments all live with full RLS policies<br>
+    ✓ #38 OEM network dashboard — Done: OemDashboard.tsx live at /app/oem-dashboard (leaderboard with scores, trends, rank); OemSettings.tsx at /app/oem-settings (create network, add/remove dealers by email, programme tiers); OemModeToggle self-service activation in Account → Organisation tab<br>
+    ✓ #39 Coach view — Done: CoachDashboard.tsx at /app/coach-dashboard (dealer cards, score trends, sort/filter); CoachActions.tsx at /app/coach-actions (action tracker across assigned dealers); InviteCoach component in Account → Team tab<br>
+    ✓ #55 Coach invite flow — Done: invite_type='coach' in dealership_invites, send-invite Edge Function updated, accept_dealership_invite creates coach_dealership_assignments row, AcceptInvite redirects to /app/coach-dashboard<br>
+    ✓ #56 OEM data access RLS — Done: OEM admins can read assessments and dealerships for their network dealers (additive RLS policies)<br>
+    ✓ UI polish (Lovable): OemModeToggle enterprise styling, OEM Dashboard empty states with CTAs, ChipInput for country scope, Coach Dashboard score card visual hierarchy, score trend chart polish<br>
+    ✓ Various fixes: maturity label unified to single source, KPI view-details navigation wired, action-sheet badge casing + KPI panel reposition, support-required multi-select, USD → Euro market language in KPI copy, driver/consequence label title-casing
+  </div>
+</div>
+
 <div class="legend">
   <span class="legend-item"><span class="legend-dot" style="background:var(--done)"></span>Implemented</span>
   <span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>Partial</span>
@@ -279,15 +293,15 @@
     <span class="category-count" id="cat1-count"></span>
   </div>
 
-  <div class="item" data-status="partial" data-method="lovable" data-phase="now">
+  <div class="item" data-status="done" data-method="both" data-phase="done">
     <div class="item-num">01</div>
     <div class="item-body">
       <div class="item-title">Unified role architecture (3-tier: OEM → Coach → Dealer)</div>
-      <div class="item-desc">Sprint 3: Role enum unified in send-invite Edge Function and InviteTeamMembers.tsx. Still needs: OEM and Coach user-facing views, RLS policy enforcement for network tiers.</div>
+      <div class="item-desc">April 2026: Full 3-tier system implemented. profiles.actor_type enum ('dealer'|'coach'|'oem'|'internal'). useActiveRole() hook reads actor_type from DB. ProtectedRoute supports requiresActorType="oem"|"coach" prop for route-level gating. AppSidebar conditionally shows OEM and Coach nav items. actor_type stamped on invite acceptance; backfill migration sets 'dealer' for existing users. RLS on oem_networks, dealer_network_memberships, coach_dealership_assignments. OEM self-service activation via toggle_oem_mode() RPC in Account settings.</div>
     </div>
-    <div><span class="status-badge s-partial"><span class="status-dot"></span>Partial</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-now">Do now</span></div>
+    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
+    <div><span class="method-badge m-both">Both</span></div>
+    <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 
   <div class="item" data-status="done" data-method="lovable" data-phase="done">
@@ -323,15 +337,15 @@
     <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 
-  <div class="item" data-status="pending" data-method="lovable" data-phase="2">
+  <div class="item" data-status="done" data-method="both" data-phase="done">
     <div class="item-num">05</div>
     <div class="item-body">
       <div class="item-title">Multi-country / multi-outlet network architecture</div>
-      <div class="item-desc">Sprint 2: Network tables created (oem_networks, network_regions, dealer_network_memberships). Full RLS + indexes. Unblocks OEM network dashboard (item 38).</div>
+      <div class="item-desc">Sprint 2: Network tables created (oem_networks, network_regions, dealer_network_memberships). April 2026: Full RLS policies added for all 3 tables. UNIQUE constraint confirmed on coach_dealership_assignments. Additive RLS policies on assessments and dealerships allow OEM admins to read dealer data for their network. lookup_dealer_by_email() and get_dealership_details() SECURITY DEFINER functions handle cross-org data access safely.</div>
     </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-2">Phase 2</span></div>
+    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
+    <div><span class="method-badge m-both">Both</span></div>
+    <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 </div>
 
@@ -740,26 +754,26 @@
     <span class="category-count" id="cat7-count"></span>
   </div>
 
-  <div class="item" data-status="pending" data-method="lovable" data-phase="1">
+  <div class="item" data-status="done" data-method="both" data-phase="done">
     <div class="item-num">38</div>
     <div class="item-body">
       <div class="item-title">OEM network dashboard MVP</div>
-      <div class="item-desc">Zero network-level view exists. Dealer leaderboard, module heatmap, threshold alerts. Highest priority missing feature for OEM buyers. Requires role architecture fix first.</div>
+      <div class="item-desc">April 2026: OemDashboard.tsx live at /app/oem-dashboard — dealer leaderboard with latest/previous scores, trend icons, score band badges, rank medals. Clickable rows navigate to dealer's Results page. Network selector for multi-network orgs. Summary stat cards (total dealers, avg score, high/low). OemSettings.tsx at /app/oem-settings — create network (name/brand/country chips), add dealers by email lookup with programme tier (Standard/Silver/Gold/Platinum), inline tier editing, soft-delete remove. OemModeToggle in Account → Organisation tab for self-service OEM activation. Gated by requiresActorType="oem".</div>
     </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-1">Phase 1</span></div>
+    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
+    <div><span class="method-badge m-both">Both</span></div>
+    <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 
-  <div class="item" data-status="pending" data-method="lovable" data-phase="2">
+  <div class="item" data-status="done" data-method="both" data-phase="done">
     <div class="item-num">39</div>
     <div class="item-body">
       <div class="item-title">Coach view (assigned dealers, assessment history)</div>
-      <div class="item-desc">No coach-specific view. Assigned dealer list, last assessment date, score trend, open actions needed. Different home screen than dealer view.</div>
+      <div class="item-desc">April 2026: CoachDashboard.tsx at /app/coach-dashboard — assigned dealer cards (name, brand, location, latest score, last assessment date, status badge). Sort by score/name, filter by status. Score trend chart comparing up to 3 dealers (Recharts LineChart). CoachActions.tsx at /app/coach-actions — global action tracker across all assigned dealers with dealer/status filters and inline status updates. InviteCoach component in Account → Team tab (email lookup, sends invite_type='coach'). Both pages gated by requiresActorType="coach". Sidebar shows Coach Dashboard + Action Tracker for coach users.</div>
     </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-2">Phase 2</span></div>
+    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
+    <div><span class="method-badge m-both">Both</span></div>
+    <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 
   <div class="item" data-status="pending" data-method="lovable" data-phase="2">
@@ -944,6 +958,60 @@
     <div><span class="method-badge m-manual">Manual</span></div>
     <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
+</div>
+
+<!-- CATEGORY 10: APRIL 2026 NEW FEATURES -->
+<div class="category">
+  <div class="category-header">
+    <span class="category-icon">★</span>
+    <span class="category-title">April 2026 New Features</span>
+    <span class="category-count" id="cat10-count"></span>
+  </div>
+
+  <div class="item" data-status="done" data-method="both" data-phase="done">
+    <div class="item-num">55</div>
+    <div class="item-body">
+      <div class="item-title">Coach invite flow (end-to-end)</div>
+      <div class="item-desc">April 2026: invite_type column added to dealership_invites ('dealer'|'coach'). send-invite Edge Function supports invite_type='coach' with branded email copy. accept_dealership_invite RPC branches: coach path creates coach_dealership_assignments row + sets actor_type='coach'; dealer path unchanged. AcceptInvite.tsx reads invite_type from RPC response and redirects to /app/coach-dashboard for coach invites. InviteCoach.tsx component in Account → Team tab: email lookup, pending invite list, revoke. No manual SQL required to onboard a coach.</div>
+    </div>
+    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
+    <div><span class="method-badge m-both">Both</span></div>
+    <div><span class="phase-badge ph-done">Complete</span></div>
+  </div>
+
+  <div class="item" data-status="done" data-method="both" data-phase="done">
+    <div class="item-num">56</div>
+    <div class="item-body">
+      <div class="item-title">OEM self-service onboarding (no SQL required)</div>
+      <div class="item-desc">April 2026: toggle_oem_mode() SECURITY DEFINER RPC sets actor_type='oem' for org owners. OemModeToggle component in Account → Organisation tab shows current status, feature preview (Network leaderboard / Dealer score tracking / Programme tier management), Activate button, and AlertDialog-confirmed Deactivate. After activation page reloads and redirects to /app/oem-settings. Previously required manual Supabase SQL.</div>
+    </div>
+    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
+    <div><span class="method-badge m-both">Both</span></div>
+    <div><span class="phase-badge ph-done">Complete</span></div>
+  </div>
+
+  <div class="item" data-status="done" data-method="both" data-phase="done">
+    <div class="item-num">57</div>
+    <div class="item-body">
+      <div class="item-title">OEM cross-org data access (RLS + SECURITY DEFINER functions)</div>
+      <div class="item-desc">April 2026: Two additive RLS policies allow OEM admins to read dealership names and assessment scores for dealers in their network (cross-org). private.caller_is_verified_oem() guard helper. public.lookup_dealer_by_email() for dealer discovery with double guard (actor_type + active network ownership). public.get_dealership_details() for batch roster loading. All functions in private schema, callable only by verified OEM users.</div>
+    </div>
+    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
+    <div><span class="method-badge m-both">Both</span></div>
+    <div><span class="phase-badge ph-done">Complete</span></div>
+  </div>
+
+  <div class="item" data-status="pending" data-method="both" data-phase="1">
+    <div class="item-num">58</div>
+    <div class="item-body">
+      <div class="item-title">Results page "viewing as dealer" mode for OEM</div>
+      <div class="item-desc">When OEM admin clicks a dealer on the leaderboard and navigates to /app/results/:assessmentId, the Results page uses useMultiTenant scoped to the OEM's own org context. Some features (action plan counts, history) may show OEM org data rather than the dealer's. Needs a read-only "viewing as" context mode that temporarily uses the dealer's org/dealership for data display without changing the active org.</div>
+    </div>
+    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
+    <div><span class="method-badge m-both">Both</span></div>
+    <div><span class="phase-badge ph-1">Phase 1</span></div>
+  </div>
+
 </div>
 
 </div><!-- end content -->
