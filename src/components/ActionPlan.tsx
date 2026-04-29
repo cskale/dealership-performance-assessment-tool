@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -111,7 +112,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
   const [filterDepartment, setFilterDepartment] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('priority');
   const [filterOpen, setFilterOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'kanban' | 'list' | 'timeline'>('kanban');
+  const [viewMode, setViewMode] = useState<'kanban' | 'list' | 'timeline' | 'roadmap'>('list');
   const [lastGenerated, setLastGenerated] = useState<number | null>(null);
   const [actionPage, setActionPage] = useState(0);
   const PAGE_SIZE = 50;
@@ -438,6 +439,25 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
     });
     return result;
   }, [actions, statusFilter, filterPriority, filterDepartment, searchQuery, sortBy]);
+
+  const roadmapColumns = useMemo(() => {
+    const columns = [
+      { key: 'quick', title: 'Quick Wins (0–30 days)', actions: [] as ActionRecord[] },
+      { key: 'process', title: 'Process Changes (31–60 days)', actions: [] as ActionRecord[] },
+      { key: 'governance', title: 'Governance & Systems (61–90 days)', actions: [] as ActionRecord[] },
+    ];
+
+    filteredActions.forEach((action) => {
+      const effort = action.effort_score;
+      const impact = action.impact_score;
+      if (effort == null || impact == null) columns[1].actions.push(action);
+      else if (effort >= 4) columns[2].actions.push(action);
+      else if (effort <= 2 && impact >= 3) columns[0].actions.push(action);
+      else columns[1].actions.push(action);
+    });
+
+    return columns;
+  }, [filteredActions]);
 
   const statusTabs = [
     { key: 'all', label: 'All', count: statusCounts.all },
