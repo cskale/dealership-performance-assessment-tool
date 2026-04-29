@@ -20,8 +20,20 @@ function getCorsHeaders(origin: string) {
   };
 }
 
-function buildInviteEmailHtml(dealershipName: string, inviterName: string, inviteUrl: string, role: string): string {
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>You're invited to join ${dealershipName}</title></head><body style="margin:0;padding:0;background-color:#ffffff;font-family:'Roboto',Arial,sans-serif;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;"><table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;"><tr><td style="background-color:#0052CC;border-radius:12px 12px 0 0;padding:32px 40px;text-align:center;"><h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Dealership Performance Assessment</h1></td></tr><tr><td style="background-color:#f8f9fa;padding:40px;border-left:1px solid #e0e0e0;border-right:1px solid #e0e0e0;"><h2 style="margin:0 0 16px;color:#172B4D;font-size:20px;font-weight:600;">You've been invited!</h2><p style="margin:0 0 24px;color:#44546F;font-size:15px;line-height:1.6;"><strong>${inviterName}</strong> has invited you to join <strong>${dealershipName}</strong> as a <strong>${role}</strong>.</p><table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr><td style="background-color:#0052CC;border-radius:8px;"><a href="${inviteUrl}" target="_blank" style="display:inline-block;padding:14px 32px;color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;">Accept Invitation</a></td></tr></table></td></tr><tr><td style="background-color:#f0f1f3;border-radius:0 0 12px 12px;padding:24px 40px;text-align:center;border:1px solid #e0e0e0;"><p style="margin:0;color:#8993A4;font-size:12px;">This invitation expires in 7 days. If you didn't expect this, ignore this email.</p></td></tr></table></td></tr></table></body></html>`
+function buildInviteEmailHtml(dealershipName: string, inviterName: string, inviteUrl: string, role: string, inviteType: 'dealer' | 'coach' = 'dealer'): string {
+  const heading = inviteType === 'coach'
+    ? "You've been invited as a coach"
+    : "You've been invited!";
+
+  const bodyText = inviteType === 'coach'
+    ? `<strong>${inviterName}</strong> has invited you to coach <strong>${dealershipName}</strong> on the Dealer Diagnostic platform.`
+    : `<strong>${inviterName}</strong> has invited you to join <strong>${dealershipName}</strong> as a <strong>${role}</strong>.`;
+
+  const ctaText = inviteType === 'coach'
+    ? 'Accept Coach Invitation'
+    : 'Accept Invitation';
+
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>You're invited to join ${dealershipName}</title></head><body style="margin:0;padding:0;background-color:#ffffff;font-family:'Roboto',Arial,sans-serif;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;"><table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;"><tr><td style="background-color:#0052CC;border-radius:12px 12px 0 0;padding:32px 40px;text-align:center;"><h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Dealership Performance Assessment</h1></td></tr><tr><td style="background-color:#f8f9fa;padding:40px;border-left:1px solid #e0e0e0;border-right:1px solid #e0e0e0;"><h2 style="margin:0 0 16px;color:#172B4D;font-size:20px;font-weight:600;">${heading}</h2><p style="margin:0 0 24px;color:#44546F;font-size:15px;line-height:1.6;">${bodyText}</p><table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr><td style="background-color:#0052CC;border-radius:8px;"><a href="${inviteUrl}" target="_blank" style="display:inline-block;padding:14px 32px;color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;">${ctaText}</a></td></tr></table></td></tr><tr><td style="background-color:#f0f1f3;border-radius:0 0 12px 12px;padding:24px 40px;text-align:center;border:1px solid #e0e0e0;"><p style="margin:0;color:#8993A4;font-size:12px;">This invitation expires in 7 days. If you didn't expect this, ignore this email.</p></td></tr></table></td></tr></table></body></html>`
 }
 
 serve(async (req) => {
@@ -51,13 +63,16 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    let body: { invited_email?: string; dealership_id?: string; organization_id?: string; role?: string };
+    let body: { invited_email?: string; dealership_id?: string; organization_id?: string; role?: string; invite_type?: string };
     try { body = await req.json(); } catch {
       return new Response(JSON.stringify({ error: 'Invalid JSON payload' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const { invited_email, dealership_id, organization_id, role } = body;
+    const { invited_email, dealership_id, organization_id, role, invite_type } = body;
     const normalizedEmail = invited_email?.toLowerCase()?.trim()
+
+    // Validate invite_type — anything other than 'coach' defaults to 'dealer'
+    const inviteType: 'dealer' | 'coach' = invite_type === 'coach' ? 'coach' : 'dealer';
 
     if (!normalizedEmail || !dealership_id || !organization_id) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -74,16 +89,28 @@ serve(async (req) => {
     }
 
     const validRoles = ['owner', 'admin', 'member', 'viewer']
-    const inviteRole = role && validRoles.includes(role) ? role : 'viewer'
+    // Coach invites always use 'viewer' as the membership_role (unused in coach path but required by schema)
+    const inviteRole = inviteType === 'coach' ? 'viewer' : (role && validRoles.includes(role) ? role : 'viewer')
 
-    const { data: existingInvite } = await supabaseAdmin.from('dealership_invites').select('id, token').eq('dealership_id', dealership_id).eq('invited_email', normalizedEmail).eq('status', 'pending').maybeSingle()
+    const { data: existingInvite } = await supabaseAdmin
+      .from('dealership_invites')
+      .select('id, token')
+      .eq('dealership_id', dealership_id)
+      .eq('invited_email', normalizedEmail)
+      .eq('status', 'pending')
+      .eq('invite_type', inviteType)
+      .maybeSingle()
 
     let inviteToken: string
     if (existingInvite) {
       await supabaseAdmin.from('dealership_invites').update({ expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() }).eq('id', existingInvite.id)
       inviteToken = existingInvite.token
     } else {
-      const { data: newInvite, error: insertError } = await supabaseAdmin.from('dealership_invites').insert({ dealership_id, organization_id, invited_email: normalizedEmail, invited_by: user.id, membership_role: inviteRole }).select('token').single()
+      const { data: newInvite, error: insertError } = await supabaseAdmin
+        .from('dealership_invites')
+        .insert({ dealership_id, organization_id, invited_email: normalizedEmail, invited_by: user.id, membership_role: inviteRole, invite_type: inviteType })
+        .select('token')
+        .single()
       if (insertError) {
         console.error('Invite insert failed:', insertError.message);
         return new Response(JSON.stringify({ error: 'Failed to create invitation. Please try again.' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -105,7 +132,10 @@ serve(async (req) => {
         const dealershipName = dealershipRes.data?.name || 'your dealership'
         const inviterName = profileRes.data?.display_name || profileRes.data?.full_name || user.email || 'A team member'
         const roleLabel = inviteRole.charAt(0).toUpperCase() + inviteRole.slice(1)
-        const resendRes = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ from: 'Dealership Assessment <invites@notify.performance-assessment.com>', to: [normalizedEmail], subject: `You're invited to join ${dealershipName}`, html: buildInviteEmailHtml(dealershipName, inviterName, inviteUrl, roleLabel) }) })
+        const subject = inviteType === 'coach'
+          ? `You've been invited as a coach for ${dealershipName}`
+          : `You're invited to join ${dealershipName}`
+        const resendRes = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ from: 'Dealership Assessment <invites@notify.performance-assessment.com>', to: [normalizedEmail], subject, html: buildInviteEmailHtml(dealershipName, inviterName, inviteUrl, roleLabel, inviteType) }) })
         if (resendRes.ok) emailSent = true
       } catch (e) { console.error('Email error:', e) }
     }
