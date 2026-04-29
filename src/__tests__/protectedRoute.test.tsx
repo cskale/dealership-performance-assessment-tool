@@ -22,6 +22,12 @@ import { useActiveRole } from '@/hooks/useActiveRole';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 const mockUser = { id: 'u1', email: 'x@x.com' };
+const mockAuthActions = {
+  signUp: vi.fn(),
+  signIn: vi.fn(),
+  signInWithMagicLink: vi.fn(),
+  signInWithOAuth: vi.fn(),
+};
 
 function setupMocks(actorType: string | null, roleLoading = false) {
   vi.mocked(useAuth).mockReturnValue({
@@ -29,6 +35,7 @@ function setupMocks(actorType: string | null, roleLoading = false) {
     loading: false,
     signOut: vi.fn(),
     session: null as any,
+    ...mockAuthActions,
   });
   vi.mocked(useOnboarding).mockReturnValue({
     status: 'complete' as any,
@@ -93,7 +100,7 @@ describe('ProtectedRoute requiresActorType', () => {
   });
 
   it('shows loading state while role is resolving', () => {
-    vi.mocked(useAuth).mockReturnValue({ user: mockUser as any, loading: false, signOut: vi.fn(), session: null as any });
+    vi.mocked(useAuth).mockReturnValue({ user: mockUser as any, loading: false, signOut: vi.fn(), session: null as any, ...mockAuthActions });
     vi.mocked(useOnboarding).mockReturnValue({ status: 'complete' as any, isLoading: false } as any);
     vi.mocked(useActiveRole).mockReturnValue({ actorType: null, loading: true, uxRole: null, membershipRole: null, organizationId: null, dealerId: null });
 
@@ -116,7 +123,7 @@ describe('ProtectedRoute requiresActorType', () => {
   });
 
   it('redirects unauthenticated users to /auth', async () => {
-    vi.mocked(useAuth).mockReturnValue({ user: null, loading: false, signOut: vi.fn(), session: null as any });
+    vi.mocked(useAuth).mockReturnValue({ user: null, loading: false, signOut: vi.fn(), session: null as any, ...mockAuthActions });
     vi.mocked(useOnboarding).mockReturnValue({ status: 'complete' as any, isLoading: false } as any);
     vi.mocked(useActiveRole).mockReturnValue({ actorType: null, loading: false, uxRole: null, membershipRole: null, organizationId: null, dealerId: null });
 
