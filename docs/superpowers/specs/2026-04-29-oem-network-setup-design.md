@@ -34,10 +34,31 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_user_id   uuid;
-  v_profile   record;
-  v_dealer    record;
+  v_caller_id  uuid := auth.uid();
+  v_user_id    uuid;
+  v_profile    record;
+  v_dealer     record;
 BEGIN
+  -- Guard 1: caller must be authenticated with actor_type = 'oem'
+  IF v_caller_id IS NULL THEN
+    RETURN jsonb_build_object('error', 'unauthorized');
+  END IF;
+
+  IF (SELECT actor_type FROM profiles WHERE user_id = v_caller_id) != 'oem' THEN
+    RETURN jsonb_build_object('error', 'unauthorized');
+  END IF;
+
+  -- Guard 2: caller's org must own an active OEM network
+  IF NOT EXISTS (
+    SELECT 1 FROM oem_networks
+    WHERE owner_org_id = (
+      SELECT active_organization_id FROM profiles WHERE user_id = v_caller_id
+    )
+    AND status = 'active'
+  ) THEN
+    RETURN jsonb_build_object('error', 'unauthorized');
+  END IF;
+
   -- Resolve user by email
   SELECT id INTO v_user_id
   FROM auth.users
@@ -58,7 +79,7 @@ BEGIN
     RETURN jsonb_build_object('found', false, 'reason', 'no_dealership');
   END IF;
 
-  -- Get dealership details
+  -- Get dealership details (safe minimum: name + location only)
   SELECT id, name, location, organization_id
   INTO v_dealer
   FROM dealerships
@@ -79,10 +100,17 @@ END;
 $$;
 ```
 
+**Security notes:**
+- Guard 1 rejects any caller who is not `actor_type = 'oem'` — a dealer or coach calling this function gets `{ error: 'unauthorized' }` and sees nothing.
+- Guard 2 rejects OEM users whose org has no active network — prevents enumeration by accounts where `actor_type` was set but no network was created.
+- Returns only `name`, `location`, and IDs — no emails, no financial data, no assessment content.
+- This is the only intentional RLS bypass in the codebase. All other tables are RLS-enforced.
+
 Returns one of:
 - `{ found: true, dealership_id, dealership_name, location, organization_id }` — dealer found
 - `{ found: false, reason: 'no_account' }` — email not in auth.users
 - `{ found: false, reason: 'no_dealership' }` — user exists but hasn't completed onboarding
+- `{ error: 'unauthorized' }` — caller is not a verified OEM user with an active network
 
 ### 1.2 `oem_networks` — no schema changes
 
