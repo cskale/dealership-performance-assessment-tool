@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -783,6 +783,7 @@ export type Database = {
           dealership_id: string
           expires_at: string
           id: string
+          invite_type: string
           invited_by: string
           invited_email: string
           membership_role: Database["public"]["Enums"]["membership_role"]
@@ -797,6 +798,7 @@ export type Database = {
           dealership_id: string
           expires_at?: string
           id?: string
+          invite_type?: string
           invited_by: string
           invited_email: string
           membership_role: Database["public"]["Enums"]["membership_role"]
@@ -811,6 +813,7 @@ export type Database = {
           dealership_id?: string
           expires_at?: string
           id?: string
+          invite_type?: string
           invited_by?: string
           invited_email?: string
           membership_role?: Database["public"]["Enums"]["membership_role"]
