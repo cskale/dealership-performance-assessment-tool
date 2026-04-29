@@ -43,10 +43,10 @@ export function KPIRootCauseTiles({ diagnostics, language, mode = 'compact', cla
               <div className={cn("p-1 rounded-md", dim.iconBgClass)}>
                 <Icon className="h-3.5 w-3.5" />
               </div>
-              <span className="text-xs font-semibold">{label}</span>
+              <span className="text-label font-medium">{label}</span>
             </div>
             <p className={cn(
-              "text-xs leading-relaxed opacity-80",
+              "text-body-sm leading-relaxed opacity-80",
               mode === 'compact' ? 'line-clamp-2' : ''
             )}>
               {text}
