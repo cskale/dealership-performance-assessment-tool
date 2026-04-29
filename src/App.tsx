@@ -69,8 +69,16 @@ const App = () => (
                         <AuthenticatedLayout>
                           <Routes>
                             <Route path="dashboard" element={<Dashboard />} />
-                            <Route path="oem-dashboard" element={<OemDashboard />} />
-                            <Route path="coach-dashboard" element={<CoachDashboard />} />
+                            <Route path="oem-dashboard" element={
+                              <ProtectedRoute requiresActorType="oem">
+                                <OemDashboard />
+                              </ProtectedRoute>
+                            } />
+                            <Route path="coach-dashboard" element={
+                              <ProtectedRoute requiresActorType="coach">
+                                <CoachDashboard />
+                              </ProtectedRoute>
+                            } />
                             <Route path="onboarding" element={<Onboarding />} />
                             <Route path="assessment" element={
                               <ProtectedRoute requiresOnboarding>
