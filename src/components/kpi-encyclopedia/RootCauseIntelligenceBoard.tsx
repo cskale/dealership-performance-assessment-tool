@@ -20,10 +20,10 @@ interface RootCauseIntelligenceBoardProps {
 export function RootCauseIntelligenceBoard({ diagnostics, language, className }: RootCauseIntelligenceBoardProps) {
   return (
     <div className={cn("", className)}>
-      <h2 className="text-sm font-semibold text-foreground mb-1.5">
+      <h2 className="text-h5 text-foreground mb-1.5">
         {language === 'de' ? 'Zentrale Diagnosethemen' : 'Key Diagnostic Themes'}
       </h2>
-      <p className="text-sm text-muted-foreground/70 mb-8 leading-relaxed">
+      <p className="text-body-md text-muted-foreground/70 mb-8 leading-relaxed">
         {language === 'de'
           ? 'Die wiederkehrenden Dimensionen, die die Varianz dieses KPI typischerweise erklären.'
           : 'The recurring dimensions that typically explain variance in this KPI.'}
@@ -45,9 +45,9 @@ export function RootCauseIntelligenceBoard({ diagnostics, language, className }:
                 <div className={cn("h-7 w-7 rounded-lg flex items-center justify-center", dim.iconBgClass)}>
                   <Icon className={cn("h-3.5 w-3.5", dim.textClass)} />
                 </div>
-                <span className={cn("text-xs font-semibold", dim.textClass)}>{label}</span>
+                <span className={cn("text-label font-medium", dim.textClass)}>{label}</span>
               </div>
-              <p className="text-sm text-foreground/65 leading-relaxed flex-1">
+              <p className="text-body-md text-foreground/65 leading-relaxed flex-1">
                 {text}
               </p>
             </div>
