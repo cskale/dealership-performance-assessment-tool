@@ -271,13 +271,11 @@ export function OemNetworkSettings() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="net-countries">Country scope</Label>
-              <Input
-                id="net-countries"
-                placeholder="e.g. Germany, Austria, Switzerland"
+              <ChipInput
                 value={formCountries}
-                onChange={e => setFormCountries(e.target.value)}
+                onChange={setFormCountries}
+                placeholder="Add country…"
               />
-              <p className="text-xs text-muted-foreground">Comma-separated list of countries</p>
             </div>
             <Button type="submit" disabled={networkSaving || !formName || !formBrand}>
               {networkSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
