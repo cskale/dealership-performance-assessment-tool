@@ -548,6 +548,12 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
         </div>
 
         <div className="flex items-center gap-2 ml-auto flex-shrink-0">
+          <Tabs value={viewMode === 'roadmap' ? 'roadmap' : 'list'} onValueChange={(value) => setViewMode(value as 'list' | 'roadmap')}>
+            <TabsList className="h-9 bg-card border">
+              <TabsTrigger value="list" className="text-xs">List view</TabsTrigger>
+              <TabsTrigger value="roadmap" className="text-xs">Roadmap view</TabsTrigger>
+            </TabsList>
+          </Tabs>
           {/* View toggle + workload */}
           <div className="flex rounded-lg border overflow-hidden">
             <button onClick={() => setViewMode('kanban')}
