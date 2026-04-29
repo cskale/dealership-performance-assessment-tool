@@ -69,8 +69,8 @@ export function KPIBenchmarkStudio({ kpiKey, benchmark, unit, isLowerBetter, lan
     <div className={cn("", className)}>
       {/* Value display with confidence */}
       <div className="mb-1.5 flex items-center gap-2">
-        <span className="text-xl font-bold text-foreground tracking-tight">{benchmark}</span>
-        {unit && <span className="text-sm text-muted-foreground">{unit}</span>}
+        <span className="text-metric-lg tabular-nums text-foreground">{benchmark}</span>
+        {unit && <span className="text-body-sm text-muted-foreground">{unit}</span>}
         {kpiKey && (
           <BenchmarkConfidenceIndicator
             kpiKey={kpiKey}
@@ -81,7 +81,7 @@ export function KPIBenchmarkStudio({ kpiKey, benchmark, unit, isLowerBetter, lan
         )}
       </div>
       <div className="flex items-center gap-2 mb-5">
-        <span className="text-[11px] text-muted-foreground/50 italic">
+        <span className="text-caption text-muted-foreground/50">
           {language === 'de' ? 'Indikative Spanne' : 'Indicative range'}
         </span>
         {kpiKey && (
@@ -118,7 +118,7 @@ export function KPIBenchmarkStudio({ kpiKey, benchmark, unit, isLowerBetter, lan
         >
           {/* Corridor label */}
           <span
-            className="absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[9px] font-medium tracking-wide uppercase"
+            className="absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-caption font-medium uppercase tracking-wider"
             style={{ color: 'hsl(var(--primary) / 0.55)' }}
           >
             {language === 'de' ? 'Referenzkorridor' : 'Reference corridor'}
@@ -129,14 +129,14 @@ export function KPIBenchmarkStudio({ kpiKey, benchmark, unit, isLowerBetter, lan
       {/* Zone labels */}
       <div className="flex mb-3">
         {zones.map((zone, i) => (
-          <span key={i} className="flex-1 text-center text-[10px] font-medium text-muted-foreground/60">
+          <span key={i} className="flex-1 text-center text-caption font-medium text-muted-foreground/60">
             {zone.label}
           </span>
         ))}
       </div>
 
       {/* Direction note */}
-      <span className="text-[11px] text-muted-foreground/50 block">
+      <span className="text-caption text-muted-foreground/50 block">
         {isLowerBetter
           ? (language === 'de' ? '← Niedrigere Werte sind besser' : '← Lower is better')
           : (language === 'de' ? 'Höhere Werte sind besser →' : 'Higher is better →')}
