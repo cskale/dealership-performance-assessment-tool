@@ -139,7 +139,7 @@ export function KPIExplorer({ initialKpiKey }: KPIExplorerProps) {
               {language === 'de' ? 'KPI-Enzyklopädie' : 'KPI Encyclopedia'}
             </h2>
           </div>
-          <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+          <p className="text-body-md text-muted-foreground leading-relaxed max-w-2xl">
             {language === 'de'
               ? 'Erkunden Sie Autohaus-KPIs, Benchmark-Logik, Ursachendiagnostik und Verbesserungshebel über alle Geschäftsfunktionen hinweg.'
               : 'Explore dealership KPIs, benchmark logic, root cause diagnostics, and improvement levers across all business functions.'}
@@ -216,7 +216,7 @@ export function KPIExplorer({ initialKpiKey }: KPIExplorerProps) {
                     key={chip.key}
                     onClick={() => setActiveDepartment(chip.key)}
                     className={cn(
-                      "text-xs",
+                      "text-body-sm",
                       activeDepartment === chip.key && "font-semibold"
                     )}
                   >
@@ -231,7 +231,7 @@ export function KPIExplorer({ initialKpiKey }: KPIExplorerProps) {
 
       {/* Result count */}
       {(searchTerm.length >= 2 || activeDepartment !== "all") && (
-        <p className="text-sm text-muted-foreground -mt-2">
+        <p className="text-body-sm text-muted-foreground -mt-2">
           {resultCount} {language === 'de' ? 'KPIs gefunden' : 'KPIs found'}
         </p>
       )}
@@ -242,7 +242,7 @@ export function KPIExplorer({ initialKpiKey }: KPIExplorerProps) {
           <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center mb-3">
             <Search className="h-5 w-5 text-muted-foreground/50" />
           </div>
-          <p className="text-sm text-muted-foreground max-w-xs">
+          <p className="text-body-sm text-muted-foreground max-w-xs">
             {language === 'de'
               ? 'Keine KPIs gefunden. Versuchen Sie einen anderen Suchbegriff oder Filter.'
               : 'No KPIs matched your search. Try another keyword or clear filters.'}
@@ -265,9 +265,7 @@ export function KPIExplorer({ initialKpiKey }: KPIExplorerProps) {
                 <div className="flex items-center gap-2 mb-3">
                   <Badge
                     variant="outline"
-                    className={cn(
-                      "text-caption border border-border/40 bg-muted px-2 py-0.5 text-muted-foreground"
-                    )}
+                    className="rounded-md border border-border/40 bg-muted px-2.5 py-1 text-caption text-muted-foreground"
                   >
                     <DeptIcon className="h-2.5 w-2.5 mr-1" />
                     {deptLabel}
@@ -275,12 +273,12 @@ export function KPIExplorer({ initialKpiKey }: KPIExplorerProps) {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-base font-semibold text-foreground leading-snug mb-1.5 line-clamp-2 group-hover:text-primary transition-colors duration-200">
+                <h3 className="text-h5 text-foreground leading-snug mb-1.5 line-clamp-2 group-hover:text-primary transition-colors duration-200">
                   {highlightMatch(item.kpi.title, searchTerm)}
                 </h3>
 
                 {/* Definition excerpt */}
-                <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed mb-3 mt-2">
+                <p className="text-body-md text-muted-foreground line-clamp-3 leading-relaxed mb-3 mt-2">
                   {item.kpi.executiveSummary
                     ? highlightMatch(item.kpi.executiveSummary.slice(0, 140) + '…', searchTerm)
                     : highlightMatch(item.kpi.definition.slice(0, 140) + '…', searchTerm)}
@@ -288,7 +286,7 @@ export function KPIExplorer({ initialKpiKey }: KPIExplorerProps) {
 
                 {/* Bottom row */}
                 <div className="flex items-center justify-end">
-                  <span className="text-sm text-primary font-medium group-hover:text-primary/80 transition-colors duration-200 flex items-center gap-1">
+                  <span className="text-body-md text-primary font-medium group-hover:text-primary/80 transition-colors duration-200 flex items-center gap-1">
                     {language === 'de' ? 'Erkunden' : 'Explore'}
                     <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
                   </span>
