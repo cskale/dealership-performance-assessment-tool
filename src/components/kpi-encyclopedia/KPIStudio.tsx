@@ -343,10 +343,10 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
 
       {hasInterdependencies && (
         <section className="bg-muted/20 px-8 py-7 sm:px-10 lg:px-14">
-          <span className="mb-5 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.influenceFramework}</span>
+          <span className={cn("mb-5 block", SECTION_LABEL_CLASS)}>{t.influenceFramework}</span>
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_140px_1fr]">
             <div>
-              <h2 className="mb-3 text-sm font-medium text-foreground">{t.likelyDrivers}</h2>
+              <h2 className="mb-3 text-body-md font-medium text-foreground">{t.likelyDrivers}</h2>
               <div className="space-y-2">
                 {kpi.interdependencies?.upstreamDrivers.map((driver) => (
                   <button
@@ -355,20 +355,20 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
                     onClick={() => onNavigateToKpi?.(driver)}
                     className="hover-lift flex w-full items-center gap-2 rounded-r-md border border-l-2 border-border/30 border-l-primary bg-card p-2 text-left"
                   >
-                    <span className="flex-1 text-sm text-muted-foreground">{driver}</span>
-                    <span className="text-[10px] text-muted-foreground/50">{getUpstreamTag(driver, language)}</span>
+                    <span className="flex-1 text-body-sm text-muted-foreground">{driver}</span>
+                    <span className="text-caption text-muted-foreground/50">{getUpstreamTag(driver, language)}</span>
                   </button>
                 ))}
               </div>
             </div>
 
             <div className="self-center rounded-xl border border-border/40 p-4 text-center">
-              <span className="mb-1 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.coreKpi}</span>
-              <span className="block text-sm font-medium text-foreground">{kpi.title}</span>
+              <span className={cn("mb-1 block", SECTION_LABEL_CLASS)}>{t.coreKpi}</span>
+              <span className="block text-body-md font-medium text-foreground">{kpi.title}</span>
             </div>
 
             <div>
-              <h2 className="mb-3 text-sm font-medium text-foreground">{t.likelyConsequences}</h2>
+              <h2 className="mb-3 text-body-md font-medium text-foreground">{t.likelyConsequences}</h2>
               <div className="space-y-2">
                 {kpi.interdependencies?.downstreamImpacts.map((impact) => (
                   <button
@@ -377,8 +377,8 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
                     onClick={() => onNavigateToKpi?.(impact)}
                     className="hover-lift flex w-full items-center gap-2 rounded-l-md border border-r-2 border-border/30 border-r-primary bg-card p-2 text-left"
                   >
-                    <span className="flex-1 text-sm text-muted-foreground">{impact}</span>
-                    <span className="text-[10px] text-muted-foreground/50">{getDownstreamTag(impact, language)}</span>
+                    <span className="flex-1 text-body-sm text-muted-foreground">{impact}</span>
+                    <span className="text-caption text-muted-foreground/50">{getDownstreamTag(impact, language)}</span>
                   </button>
                 ))}
               </div>
