@@ -9,6 +9,27 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
 
 ---
 
+## [29 Apr 2026] — OEM Network Setup, Coach Invite Flow & Role Architecture
+
+### Features
+
+- feat(db): `lookup_dealer_by_email` and `get_dealership_details` SECURITY DEFINER functions — cross-org dealer lookup for OEM admins, guarded by `actor_type='oem'` + active network check
+- feat(ui): `OemNetworkSettings` component — create/edit OEM network, email-based dealer lookup with confirmation preview, dealer roster table with inline programme tier editing and remove
+- feat(routing): `/app/oem-settings` page gated to `actor_type='oem'`; "Network Settings" sidebar nav item for OEM users
+- feat(invite): full coach invite flow — `InviteCoach` component, `invite_type='coach'` in `dealership_invites`, `accept_dealership_invite` creates `coach_dealership_assignments` row, redirects coach to `/app/coach-dashboard`
+- feat(auth): `ProtectedRoute` `requiresActorType` prop gates OEM and Coach routes at route level
+- feat(routing): `/app/coach-actions` wired, gated to `actor_type='coach'`; Action Tracker in sidebar for coaches
+- feat(auth): backfill `actor_type='dealer'` for all existing users (migration `20260429090200`)
+- feat(db): RLS policies on `oem_networks`, `dealer_network_memberships`, `coach_dealership_assignments`
+- feat(db): UNIQUE constraint on `coach_dealership_assignments(coach_user_id, dealership_id)`, race-safe `ON CONFLICT` in accept function
+
+### Security
+
+- security: `lookup_dealer_by_email` and `get_dealership_details` reject all non-OEM callers — no cross-org data leakage possible for dealer/coach users
+- security: `private` schema helper functions (`caller_is_verified_oem`, `caller_oem_org_id`) enforce double guard: actor_type check + active network ownership check
+
+---
+
 ## [28 Apr 2026] — Consistency, Navigation & Copy Fixes
 
 ### Fixed

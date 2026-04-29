@@ -336,6 +336,7 @@ Creating a high-quality MCP server involves four main phases:
 - **Supabase types**: `src/integrations/supabase/types.ts` — auto-generated, regenerate via Supabase MCP after schema changes
 - **Edge functions**: `supabase/functions/` — CORS locked to allowlist
 - **OEM dashboard**: `src/pages/OemDashboard.tsx` — live at `/app/oem-dashboard`, gated to `actor_type='oem'`
+- **OEM settings**: `src/pages/OemSettings.tsx` + `src/components/OemNetworkSettings.tsx` — live at `/app/oem-settings`, gated to `actor_type='oem'`. Create network, email-lookup dealer add/remove.
 - **Coach dashboard**: `src/pages/CoachDashboard.tsx` — live at `/app/coach-dashboard`, gated to `actor_type='coach'`
 - **Coach action tracker**: `src/pages/CoachActions.tsx` — live at `/app/coach-actions`, gated to `actor_type='coach'`
 - **Invite team members**: `src/components/InviteTeamMembers.tsx` — dealer team invites (Account → Team tab)
@@ -383,6 +384,29 @@ Dealer     (actor_type='dealer')→  /app/dashboard — own dealership only
 
 ### Invite table
 - `dealership_invites` — token, invited_email, dealership_id, organization_id, membership_role, status, expires_at, `invite_type` ('dealer'|'coach'). `invite_type='coach'` invites create a `coach_dealership_assignments` row on acceptance instead of a `memberships` row.
+
+## OEM Network Setup (implemented 29 Apr 2026)
+
+OEM admins manage their network at `/app/oem-settings` (Network Settings in sidebar).
+
+**Key files:**
+- `src/components/OemNetworkSettings.tsx` — owns all state/queries; two cards: Network Details form + Dealer Roster
+- `src/pages/OemSettings.tsx` — thin wrapper page
+
+**DB functions (cross-org, SECURITY DEFINER):**
+- `public.lookup_dealer_by_email(p_email)` — looks up a dealer by email across org boundaries. Guards: caller must be `actor_type='oem'` AND their org must own an active `oem_networks` row. Returns `{ found, dealership_id, dealership_name, location, organization_id }` or error.
+- `public.get_dealership_details(p_ids uuid[])` — returns `[{ id, name, location }]` for a list of dealership UUIDs. Same guards. Used to load the dealer roster (cross-org JOIN to `dealerships` is blocked by RLS, so this function is the only safe way to get dealership names for the roster).
+- Both call `private.caller_is_verified_oem()` as the first guard — this helper checks `actor_type='oem'` AND active network in one call.
+
+**How it works:**
+1. OEM admin fills in Network Details (name, brand, country scope) → creates/updates `oem_networks` row
+2. OEM admin enters a dealer's email → system calls `lookup_dealer_by_email` → shows confirmation chip with dealer name + location
+3. OEM admin selects Programme Tier (Standard/Silver/Gold/Platinum) → clicks "Add to network" → upsert into `dealer_network_memberships`
+4. Dealer appears on OEM Dashboard leaderboard immediately
+
+**Removing a dealer:** soft-delete — sets `dealer_network_memberships.is_active = false`. Dealer disappears from leaderboard. Re-adding re-activates the row via `ON CONFLICT DO UPDATE`.
+
+**OEM provisioning (still manual):** `UPDATE profiles SET actor_type='oem' WHERE user_id='<uuid>';` — no UI yet.
 
 ## Coach Invite Flow (implemented 29 Apr 2026)
 
@@ -454,10 +478,10 @@ Dealer     (actor_type='dealer')→  /app/dashboard — own dealership only
 
 ## Current Tracker Status (as of 29 Apr 2026)
 - Total items: 58
-- Done: ~36 (62%)
-- Pending/Partial: ~22 (38%)
-- **Completed this session**: #01 (role architecture — implemented), #38 (OEM/Coach dashboards — live), coach invite flow (new feature)
-- **Remaining priorities**: #13 (2S/3S/4S branching), #29 (causal chain UI), #32 (5×5 heatmap), OEM provisioning UI (no UI yet — manual SQL only), coach assignment management UI
+- Done: ~38 (65%)
+- Pending/Partial: ~20 (35%)
+- **Completed this session**: #01 (role architecture), #38 (OEM/Coach dashboards + settings), coach invite flow, OEM network setup (create network, add/remove dealers by email)
+- **Remaining priorities**: OEM provisioning UI (set actor_type='oem' — still manual SQL), coach assignment management UI (view/revoke assignments from dealer side), Option B network invite flow (for unonboarded dealers), `#29` causal chain UI, `#11` evaluateCrossValidations wiring
 
 ## Improvement Tracker File
 - Location in repo: `improvement_tracker_updated.html`
