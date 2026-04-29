@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/table';
 import { SharedLoadingState } from '@/components/shared/SharedLoadingState';
 import { SharedEmptyState } from '@/components/shared/SharedEmptyState';
-import { Globe, TrendingUp, TrendingDown, Minus, Users, Award, ArrowDown, ArrowUp, Settings } from 'lucide-react';
+import { Globe, TrendingUp, TrendingDown, Minus, Users, Award, ArrowDown, ArrowUp, Settings, ClipboardList } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
 type OemNetwork = Tables<'oem_networks'>;
@@ -293,8 +293,17 @@ export default function OemDashboard() {
           {loadingDealers ? (
             <div className="p-6"><SharedLoadingState /></div>
           ) : sortedDealers.length === 0 ? (
-            <div className="p-6">
-              <SharedEmptyState title={t('oem.noAssessments')} description={t('oem.noAssessments')} />
+            <div className="py-12 space-y-3 text-center">
+              <ClipboardList className="mx-auto h-8 w-8 text-[hsl(var(--neutral-400))]" />
+              <div className="space-y-1">
+                <h3 className="text-base font-semibold text-[hsl(var(--neutral-900))]">No assessments yet</h3>
+                <p className="mx-auto max-w-md text-sm text-[hsl(var(--neutral-600))]">
+                  Enrolled dealers haven't completed an assessment. Share the assessment link with your pilot dealers to get started.
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => navigate('/app/oem-settings')}>
+                Manage dealers →
+              </Button>
             </div>
           ) : (
             <div className="overflow-x-auto">
