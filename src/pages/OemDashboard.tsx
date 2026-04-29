@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -24,7 +25,7 @@ import {
 } from '@/components/ui/table';
 import { SharedLoadingState } from '@/components/shared/SharedLoadingState';
 import { SharedEmptyState } from '@/components/shared/SharedEmptyState';
-import { Globe, TrendingUp, TrendingDown, Minus, Users, Award, ArrowDown, ArrowUp } from 'lucide-react';
+import { Globe, TrendingUp, TrendingDown, Minus, Users, Award, ArrowDown, ArrowUp, Settings } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
 type OemNetwork = Tables<'oem_networks'>;
@@ -207,7 +208,21 @@ export default function OemDashboard() {
   if (networks.length === 0) {
     return (
       <div className="p-6">
-        <SharedEmptyState title={t('oem.noNetworks')} description={t('oem.noNetworks')} />
+        <Card className="mx-auto mt-16 max-w-md rounded-xl border border-[hsl(var(--neutral-200))] shadow-card">
+          <CardContent className="flex flex-col items-center gap-4 p-6 text-center">
+            <Globe className="h-12 w-12 text-[hsl(var(--brand-300))]" />
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold text-[hsl(var(--neutral-900))]">Set up your OEM network</h2>
+              <p className="text-sm text-[hsl(var(--neutral-600))]">
+                Create your dealer network in Network Settings to start tracking performance across your pilot dealerships.
+              </p>
+            </div>
+            <Button onClick={() => navigate('/app/oem-settings')}>
+              <Settings className="mr-2 h-4 w-4" />
+              Go to Network Settings
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
