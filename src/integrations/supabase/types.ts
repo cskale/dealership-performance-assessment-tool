@@ -1597,6 +1597,7 @@ export type Database = {
         Returns: boolean
       }
       lookup_dealer_by_email: { Args: { p_email: string }; Returns: Json }
+      toggle_oem_mode: { Args: { p_activate?: boolean }; Returns: Json }
       update_action_if_unchanged:
         | {
             Args: {
