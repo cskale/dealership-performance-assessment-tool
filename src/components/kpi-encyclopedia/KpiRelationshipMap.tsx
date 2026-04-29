@@ -37,10 +37,10 @@ export function KpiRelationshipMap({ interdependencies, kpiTitle, language, onNa
 
   return (
     <div className={cn("", className)}>
-      <h2 className="text-sm font-semibold text-foreground mb-1.5">
+      <h2 className="text-h5 text-foreground mb-1.5">
         {language === 'de' ? 'Performance-Einflussrahmen' : 'Performance Influence Framework'}
       </h2>
-      <p className="text-sm text-muted-foreground/70 mb-8 max-w-2xl leading-relaxed">
+      <p className="text-body-md text-muted-foreground/70 mb-8 max-w-2xl leading-relaxed">
         {language === 'de'
           ? 'Diese Ansicht zeigt die wesentlichen Treiber, die diesen KPI typischerweise formen, und die Geschäftsergebnisse, die davon betroffen sind.'
           : 'This view outlines the main drivers that typically shape this KPI and the business outcomes commonly affected by it.'}
@@ -50,7 +50,7 @@ export function KpiRelationshipMap({ interdependencies, kpiTitle, language, onNa
         {/* Left: Likely drivers */}
         {hasUpstream && (
           <div className="min-w-0 overflow-hidden">
-            <span className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider block mb-4">
+            <span className="text-caption font-medium text-muted-foreground/70 uppercase tracking-wider block mb-4">
               {language === 'de' ? 'Wahrscheinliche Treiber' : 'Likely drivers'}
             </span>
             <div className="space-y-2">
@@ -61,8 +61,8 @@ export function KpiRelationshipMap({ interdependencies, kpiTitle, language, onNa
                     key={i}
                     className="w-full text-left flex items-center gap-3 rounded-xl px-4 py-3 bg-muted/25 overflow-hidden"
                   >
-                    <span className="flex-1 text-sm text-foreground/80 truncate min-w-0">{driver}</span>
-                    <span className="text-[9px] font-medium text-muted-foreground/50 uppercase tracking-wider shrink-0 hidden sm:block">
+                    <span className="flex-1 text-body-sm text-foreground/80 truncate min-w-0">{driver}</span>
+                    <span className="text-caption font-medium text-muted-foreground/50 uppercase tracking-wider shrink-0 hidden sm:block">
                       {language === 'de' ? tag.de : tag.en}
                     </span>
                   </div>
@@ -77,20 +77,20 @@ export function KpiRelationshipMap({ interdependencies, kpiTitle, language, onNa
           <div className="flex flex-col items-center gap-2">
             {hasUpstream && (
               <div className="hidden lg:flex items-center gap-1 text-muted-foreground/20">
-                <span className="text-xs">→</span>
+                <span className="text-caption">→</span>
               </div>
             )}
             <div className="rounded-xl border-2 border-primary/15 bg-primary/[0.03] px-6 py-5 text-center w-[180px]">
-              <span className="text-[10px] font-semibold text-primary/50 uppercase tracking-wider block mb-1.5">
+              <span className="text-caption font-medium text-primary/60 uppercase tracking-wider block mb-1.5">
                 {language === 'de' ? 'Kern-KPI' : 'Core KPI'}
               </span>
-              <span className="text-sm font-bold text-foreground leading-tight block">
+              <span className="text-body-md font-medium text-foreground leading-tight block">
                 {kpiTitle}
               </span>
             </div>
             {hasDownstream && (
               <div className="hidden lg:flex items-center gap-1 text-muted-foreground/20">
-                <span className="text-xs">→</span>
+                <span className="text-caption">→</span>
               </div>
             )}
           </div>
@@ -99,7 +99,7 @@ export function KpiRelationshipMap({ interdependencies, kpiTitle, language, onNa
         {/* Right: Likely consequences */}
         {hasDownstream && (
           <div className="min-w-0 overflow-hidden">
-            <span className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider block mb-4">
+            <span className="text-caption font-medium text-muted-foreground/70 uppercase tracking-wider block mb-4">
               {language === 'de' ? 'Wahrscheinliche Auswirkungen' : 'Likely consequences'}
             </span>
             <div className="space-y-2">
@@ -110,8 +110,8 @@ export function KpiRelationshipMap({ interdependencies, kpiTitle, language, onNa
                     key={i}
                     className="w-full text-left flex items-center gap-3 rounded-xl px-4 py-3 bg-muted/25 overflow-hidden"
                   >
-                    <span className="flex-1 text-sm text-foreground/80 truncate min-w-0">{impact}</span>
-                    <span className="text-[9px] font-medium text-muted-foreground/50 uppercase tracking-wider shrink-0 hidden sm:block">
+                    <span className="flex-1 text-body-sm text-foreground/80 truncate min-w-0">{impact}</span>
+                    <span className="text-caption font-medium text-muted-foreground/50 uppercase tracking-wider shrink-0 hidden sm:block">
                       {language === 'de' ? tag.de : tag.en}
                     </span>
                   </div>
@@ -123,7 +123,7 @@ export function KpiRelationshipMap({ interdependencies, kpiTitle, language, onNa
       </div>
 
       {/* Context note */}
-      <p className="text-[10px] text-muted-foreground/40 mt-8 leading-relaxed">
+      <p className="text-caption text-muted-foreground/40 mt-8 leading-relaxed">
         {language === 'de'
           ? 'Allgemeine Geschäftsergebnisse dieses KPIs umfassen Umsatzproduktivität, Bruttomarge, Kundenbindung und Kundenzufriedenheit.'
           : 'Common business outcomes linked to this KPI include revenue productivity, gross profit, retention, and customer experience.'}

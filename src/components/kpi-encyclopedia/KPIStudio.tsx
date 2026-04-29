@@ -45,6 +45,8 @@ function getImprovementTag(index: number, language: string) {
 
 const BENCHMARK_GOOD_TO_BAD = ["bg-success", "bg-primary", "bg-warning", "bg-destructive/80"];
 const BENCHMARK_BAD_TO_GOOD = [...BENCHMARK_GOOD_TO_BAD].reverse();
+const SECTION_LABEL_CLASS = "text-caption font-medium uppercase tracking-wider text-muted-foreground/60";
+const VALUE_BADGE_CLASS = "rounded-md border border-border/40 px-2.5 py-1 text-label text-muted-foreground";
 
 function getBenchmarkLabels(benchmark: string | undefined, isLowerBetter: boolean, language: string) {
   const fallback = benchmark || "—";
@@ -105,12 +107,6 @@ const labels = {
     referenceType: "Industry indicative",
     referenceBenchmark: "Reference benchmark",
     industryLeading: "Industry leading threshold",
-    conversionUplift: "Conversion uplift at 1 min",
-    delayedResponse: "vs. any delayed response",
-    effectivenessLoss: "Effectiveness loss at 30 min",
-    immediateResponse: "vs. immediate response",
-    complianceRate: "Industry compliance rate",
-    dealersBenchmark: "dealers meeting benchmark",
     benchmarkPosition: "Benchmark position",
     referenceCorridor: "Reference corridor",
     leading: "Leading · <5 min",
@@ -136,12 +132,6 @@ const labels = {
     referenceType: "Branchenrichtwert",
     referenceBenchmark: "Referenz-Benchmark",
     industryLeading: "Schwelle für Branchenführer",
-    conversionUplift: "Conversion-Uplift bei 1 Min.",
-    delayedResponse: "ggü. verzögerter Antwort",
-    effectivenessLoss: "Effektivitätsverlust bei 30 Min.",
-    immediateResponse: "ggü. sofortiger Antwort",
-    complianceRate: "Branchen-Compliance-Rate",
-    dealersBenchmark: "Händler erreichen Benchmark",
     benchmarkPosition: "Benchmark-Position",
     referenceCorridor: "Referenzkorridor",
     leading: "Führend · <5 Min.",
@@ -161,13 +151,12 @@ const labels = {
   },
 };
 
-export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavigateToKpi }: KPIStudioProps) {
+export function KPIStudio({ kpi, departmentKey, language, onBack, onNavigateToKpi }: KPIStudioProps) {
   const t = labels[language === "de" ? "de" : "en"];
   const config = getDepartmentConfig(departmentKey);
   const DeptIcon = config.icon;
   const deptLabel = config.label[language as "en" | "de"] || config.label.en;
 
-  const isLeadResponseTime = kpiKey === "leadResponseTime";
   const isLowerBetter = kpi.benchmark?.includes("<") ||
     kpi.unitOfMeasure?.toLowerCase()?.includes("minute") ||
     kpi.unitOfMeasure?.toLowerCase()?.includes("day");
@@ -183,7 +172,7 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
     <div className="max-h-[88vh] overflow-y-auto bg-card text-foreground">
       {onBack && (
         <div className="border-b border-border/30 px-8 py-3 sm:px-10 lg:px-14">
-          <Button variant="ghost" onClick={onBack} className="h-8 px-0 text-sm text-muted-foreground hover:bg-transparent hover:text-foreground">
+          <Button variant="ghost" onClick={onBack} className="h-8 px-0 text-body-sm text-muted-foreground hover:bg-transparent hover:text-foreground">
             <ChevronLeft className="mr-1 h-4 w-4" />
             {t.back}
           </Button>
@@ -194,30 +183,30 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
         <div className="max-w-5xl">
           <div className="mb-5 flex items-center gap-3">
             <span className="h-[1.5px] w-6 bg-primary" />
-            <span className="text-[10px] font-medium uppercase tracking-widest text-primary">{deptLabel}</span>
+            <span className="text-caption font-medium uppercase tracking-wider text-primary">{deptLabel}</span>
           </div>
 
           <h1 className="mb-4 text-h2 font-bold tracking-tight text-foreground">{kpi.title}</h1>
 
           <div className="mb-8 flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className={"rounded-md border border-border/40 bg-muted text-label text-muted-foreground"}>
+            <Badge variant="outline" className={cn(VALUE_BADGE_CLASS, "bg-muted")}>
               <DeptIcon className="mr-1 h-3 w-3" />
               {deptLabel}
             </Badge>
             {kpi.unitOfMeasure && (
-              <Badge variant="outline" className="rounded-md border-border/40 px-2.5 py-1 text-label text-muted-foreground">
+              <Badge variant="outline" className={VALUE_BADGE_CLASS}>
                 {kpi.unitOfMeasure}
               </Badge>
             )}
-            <Badge variant="outline" className="rounded-md border-border/40 px-2.5 py-1 text-label text-muted-foreground">
+            <Badge variant="outline" className={VALUE_BADGE_CLASS}>
               {directionLabel}
             </Badge>
-            <Badge variant="outline" className="rounded-md border-border/40 px-2.5 py-1 text-label text-muted-foreground">
+            <Badge variant="outline" className={VALUE_BADGE_CLASS}>
               {t.referenceType}
             </Badge>
           </div>
 
-          <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">
+          <span className={cn("mb-2 block", SECTION_LABEL_CLASS)}>
             {t.definition}
           </span>
           <p className="max-w-4xl text-body-md leading-relaxed text-muted-foreground">{kpi.definition}</p>
@@ -228,20 +217,20 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
         <div className="max-w-5xl">
           {kpi.formula && (
             <div className="mb-5">
-              <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">
+              <span className={cn("mb-2 block", SECTION_LABEL_CLASS)}>
                 {t.formula}
               </span>
-              <code className="block rounded-lg border border-border/30 bg-muted/25 p-4 font-mono text-sm leading-relaxed text-foreground">
+              <code className="block rounded-lg border border-border/30 bg-muted/25 p-4 font-mono text-body-sm leading-relaxed text-foreground">
                 {kpi.formula}
               </code>
             </div>
           )}
 
           <div className="rounded-lg border border-primary/10 bg-primary/5 p-5">
-            <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-primary/60">
+            <span className="mb-2 block text-caption font-medium uppercase tracking-wider text-primary/70">
               {t.whyThisMatters}
             </span>
-            <p className="text-sm leading-relaxed text-foreground/75 sm:text-base">
+            <p className="text-body-md leading-relaxed text-foreground/75">
               {kpi.executiveSummary || kpi.whyItMatters}
             </p>
           </div>
@@ -250,8 +239,8 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
 
       <section className="border-b border-border/30 px-8 py-7 sm:px-10 lg:px-14">
         <div className="mb-4">
-          <span className="mb-1 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.benchmarkPosition}</span>
-          <p className="text-sm text-muted-foreground">
+          <span className={cn("mb-1 block", SECTION_LABEL_CLASS)}>{t.benchmarkPosition}</span>
+          <p className="text-body-sm text-muted-foreground">
             {t.referenceCorridor}: {kpi.benchmark || "—"} · {directionLabel}
           </p>
         </div>
@@ -269,51 +258,51 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
 
       <section className="grid grid-cols-1 border-b border-border/30 sm:grid-cols-3">
         <div className="px-8 py-5 sm:border-r sm:border-border/30 sm:px-10 lg:px-14">
-          <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">
-            {isLeadResponseTime ? t.conversionUplift : t.referenceBenchmark}
+          <span className={cn("mb-2 block", SECTION_LABEL_CLASS)}>
+            {t.referenceBenchmark}
           </span>
-          <strong className="block text-metric-lg tabular-nums text-foreground">{isLeadResponseTime ? "391%" : kpi.benchmark || "—"}</strong>
-          <span className="mt-1 block text-body-sm text-muted-foreground">{isLeadResponseTime ? t.delayedResponse : t.referenceType}</span>
+          <strong className="block text-metric-lg tabular-nums text-foreground">{kpi.benchmark || "—"}</strong>
+          <span className="mt-1 block text-body-sm text-muted-foreground">{t.referenceType}</span>
         </div>
         <div className="px-8 py-5 sm:border-r sm:border-border/30 sm:px-10 lg:px-14">
-          <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">
-            {isLeadResponseTime ? t.effectivenessLoss : language === "de" ? "Messgröße" : "Measurement unit"}
+          <span className={cn("mb-2 block", SECTION_LABEL_CLASS)}>
+            {language === "de" ? "Messgröße" : "Measurement unit"}
           </span>
-          <strong className="block text-metric-lg tabular-nums text-foreground">{isLeadResponseTime ? "21×" : kpi.unitOfMeasure || "—"}</strong>
-          <span className="mt-1 block text-body-sm text-muted-foreground">{isLeadResponseTime ? t.immediateResponse : kpi.title}</span>
+          <strong className="block text-metric-lg tabular-nums text-foreground">{kpi.unitOfMeasure || "—"}</strong>
+          <span className="mt-1 block text-body-sm text-muted-foreground">{kpi.title}</span>
         </div>
         <div className="px-8 py-5 sm:px-10 lg:px-14">
-          <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">
-            {isLeadResponseTime ? t.complianceRate : language === "de" ? "Leistungsrichtung" : "Performance direction"}
+          <span className={cn("mb-2 block", SECTION_LABEL_CLASS)}>
+            {language === "de" ? "Leistungsrichtung" : "Performance direction"}
           </span>
-          <strong className="block text-metric-lg tabular-nums text-foreground">{isLeadResponseTime ? "5.5%" : directionLabel}</strong>
-          <span className="mt-1 block text-body-sm text-muted-foreground">{isLeadResponseTime ? t.dealersBenchmark : t.referenceCorridor}</span>
+          <strong className="block text-metric-lg tabular-nums text-foreground">{directionLabel}</strong>
+          <span className="mt-1 block text-body-sm text-muted-foreground">{t.referenceCorridor}</span>
         </div>
       </section>
 
       <section className="grid grid-cols-1 border-b border-border/30 lg:grid-cols-2">
         <div className="border-r border-border/30 px-8 py-7 sm:px-10 lg:px-14">
-          <span className="mb-4 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.diagnosticThemes}</span>
+          <span className={cn("mb-4 block", SECTION_LABEL_CLASS)}>{t.diagnosticThemes}</span>
           <div>
             {kpi.rootCauseDiagnostics ? (
               diagnosticRows.map((row) => (
                 <div key={row.key} className="grid grid-cols-[80px_minmax(0,1fr)] gap-4 border-b border-border/20 py-3 last:border-b-0">
-                  <span className="text-sm font-medium text-foreground">{row.label[language === "de" ? "de" : "en"]}</span>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{kpi.rootCauseDiagnostics?.[row.key]}</p>
+                  <span className="text-body-sm font-medium text-foreground">{row.label[language === "de" ? "de" : "en"]}</span>
+                  <p className="text-body-sm leading-relaxed text-muted-foreground">{kpi.rootCauseDiagnostics?.[row.key]}</p>
                 </div>
               ))
             ) : (
               <>
                 {kpi.inclusions && (
                   <div className="grid grid-cols-[80px_minmax(0,1fr)] gap-4 border-b border-border/20 py-3">
-                    <span className="text-sm font-medium text-foreground">{t.inclusions}</span>
-                    <p className="text-sm leading-relaxed text-muted-foreground">{kpi.inclusions.join("; ")}</p>
+                    <span className="text-body-sm font-medium text-foreground">{t.inclusions}</span>
+                    <p className="text-body-sm leading-relaxed text-muted-foreground">{kpi.inclusions.join("; ")}</p>
                   </div>
                 )}
                 {kpi.exclusions && (
                   <div className="grid grid-cols-[80px_minmax(0,1fr)] gap-4 border-b border-border/20 py-3 last:border-b-0">
-                    <span className="text-sm font-medium text-foreground">{t.exclusions}</span>
-                    <p className="text-sm leading-relaxed text-muted-foreground">{kpi.exclusions.join("; ")}</p>
+                    <span className="text-body-sm font-medium text-foreground">{t.exclusions}</span>
+                    <p className="text-body-sm leading-relaxed text-muted-foreground">{kpi.exclusions.join("; ")}</p>
                   </div>
                 )}
               </>
@@ -322,15 +311,15 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
         </div>
 
         <div className="px-8 py-7 sm:px-10 lg:px-14">
-          <span className="mb-4 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.improvementActions}</span>
+          <span className={cn("mb-4 block", SECTION_LABEL_CLASS)}>{t.improvementActions}</span>
           <div>
             {kpi.improvementLevers?.map((lever, index) => {
               const tag = getImprovementTag(index, language);
               return (
                 <div key={lever} className="flex items-start gap-3 border-b border-border/20 py-3 last:border-b-0">
-                  <span className="w-4 shrink-0 text-xs text-muted-foreground/50">{index + 1}</span>
-                  <p className="flex-1 text-sm leading-relaxed text-foreground">{lever}</p>
-                  <span className={cn("shrink-0 rounded-md border px-2 py-0.5 font-sans text-caption leading-4", tag.className)}>
+                  <span className="w-4 shrink-0 text-caption text-muted-foreground/50">{index + 1}</span>
+                  <p className="flex-1 text-body-sm leading-relaxed text-foreground">{lever}</p>
+                  <span className={cn("inline-flex shrink-0 items-center rounded-md border px-2.5 py-1 text-caption font-medium", tag.className)}>
                     {tag.label}
                   </span>
                 </div>
@@ -342,10 +331,10 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
 
       {hasInterdependencies && (
         <section className="bg-muted/20 px-8 py-7 sm:px-10 lg:px-14">
-          <span className="mb-5 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.influenceFramework}</span>
+          <span className={cn("mb-5 block", SECTION_LABEL_CLASS)}>{t.influenceFramework}</span>
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_140px_1fr]">
             <div>
-              <h2 className="mb-3 text-sm font-medium text-foreground">{t.likelyDrivers}</h2>
+              <h2 className="mb-3 text-body-md font-medium text-foreground">{t.likelyDrivers}</h2>
               <div className="space-y-2">
                 {kpi.interdependencies?.upstreamDrivers.map((driver) => (
                   <button
@@ -354,20 +343,20 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
                     onClick={() => onNavigateToKpi?.(driver)}
                     className="hover-lift flex w-full items-center gap-2 rounded-r-md border border-l-2 border-border/30 border-l-primary bg-card p-2 text-left"
                   >
-                    <span className="flex-1 text-sm text-muted-foreground">{driver}</span>
-                    <span className="text-[10px] text-muted-foreground/50">{getUpstreamTag(driver, language)}</span>
+                    <span className="flex-1 text-body-sm text-muted-foreground">{driver}</span>
+                    <span className="text-caption text-muted-foreground/50">{getUpstreamTag(driver, language)}</span>
                   </button>
                 ))}
               </div>
             </div>
 
             <div className="self-center rounded-xl border border-border/40 p-4 text-center">
-              <span className="mb-1 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.coreKpi}</span>
-              <span className="block text-sm font-medium text-foreground">{kpi.title}</span>
+              <span className={cn("mb-1 block", SECTION_LABEL_CLASS)}>{t.coreKpi}</span>
+              <span className="block text-body-md font-medium text-foreground">{kpi.title}</span>
             </div>
 
             <div>
-              <h2 className="mb-3 text-sm font-medium text-foreground">{t.likelyConsequences}</h2>
+              <h2 className="mb-3 text-body-md font-medium text-foreground">{t.likelyConsequences}</h2>
               <div className="space-y-2">
                 {kpi.interdependencies?.downstreamImpacts.map((impact) => (
                   <button
@@ -376,8 +365,8 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
                     onClick={() => onNavigateToKpi?.(impact)}
                     className="hover-lift flex w-full items-center gap-2 rounded-l-md border border-r-2 border-border/30 border-r-primary bg-card p-2 text-left"
                   >
-                    <span className="flex-1 text-sm text-muted-foreground">{impact}</span>
-                    <span className="text-[10px] text-muted-foreground/50">{getDownstreamTag(impact, language)}</span>
+                    <span className="flex-1 text-body-sm text-muted-foreground">{impact}</span>
+                    <span className="text-caption text-muted-foreground/50">{getDownstreamTag(impact, language)}</span>
                   </button>
                 ))}
               </div>
