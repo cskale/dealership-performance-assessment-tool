@@ -294,27 +294,27 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
 
       <section className="grid grid-cols-1 border-b border-border/30 lg:grid-cols-2">
         <div className="border-r border-border/30 px-8 py-7 sm:px-10 lg:px-14">
-          <span className="mb-4 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.diagnosticThemes}</span>
+          <span className={cn("mb-4 block", SECTION_LABEL_CLASS)}>{t.diagnosticThemes}</span>
           <div>
             {kpi.rootCauseDiagnostics ? (
               diagnosticRows.map((row) => (
                 <div key={row.key} className="grid grid-cols-[80px_minmax(0,1fr)] gap-4 border-b border-border/20 py-3 last:border-b-0">
-                  <span className="text-sm font-medium text-foreground">{row.label[language === "de" ? "de" : "en"]}</span>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{kpi.rootCauseDiagnostics?.[row.key]}</p>
+                  <span className="text-body-sm font-medium text-foreground">{row.label[language === "de" ? "de" : "en"]}</span>
+                  <p className="text-body-sm leading-relaxed text-muted-foreground">{kpi.rootCauseDiagnostics?.[row.key]}</p>
                 </div>
               ))
             ) : (
               <>
                 {kpi.inclusions && (
                   <div className="grid grid-cols-[80px_minmax(0,1fr)] gap-4 border-b border-border/20 py-3">
-                    <span className="text-sm font-medium text-foreground">{t.inclusions}</span>
-                    <p className="text-sm leading-relaxed text-muted-foreground">{kpi.inclusions.join("; ")}</p>
+                    <span className="text-body-sm font-medium text-foreground">{t.inclusions}</span>
+                    <p className="text-body-sm leading-relaxed text-muted-foreground">{kpi.inclusions.join("; ")}</p>
                   </div>
                 )}
                 {kpi.exclusions && (
                   <div className="grid grid-cols-[80px_minmax(0,1fr)] gap-4 border-b border-border/20 py-3 last:border-b-0">
-                    <span className="text-sm font-medium text-foreground">{t.exclusions}</span>
-                    <p className="text-sm leading-relaxed text-muted-foreground">{kpi.exclusions.join("; ")}</p>
+                    <span className="text-body-sm font-medium text-foreground">{t.exclusions}</span>
+                    <p className="text-body-sm leading-relaxed text-muted-foreground">{kpi.exclusions.join("; ")}</p>
                   </div>
                 )}
               </>
@@ -323,15 +323,15 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
         </div>
 
         <div className="px-8 py-7 sm:px-10 lg:px-14">
-          <span className="mb-4 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">{t.improvementActions}</span>
+          <span className={cn("mb-4 block", SECTION_LABEL_CLASS)}>{t.improvementActions}</span>
           <div>
             {kpi.improvementLevers?.map((lever, index) => {
               const tag = getImprovementTag(index, language);
               return (
                 <div key={lever} className="flex items-start gap-3 border-b border-border/20 py-3 last:border-b-0">
-                  <span className="w-4 shrink-0 text-xs text-muted-foreground/50">{index + 1}</span>
-                  <p className="flex-1 text-sm leading-relaxed text-foreground">{lever}</p>
-                  <span className={cn("shrink-0 rounded-md border px-2 py-0.5 font-sans text-caption leading-4", tag.className)}>
+                  <span className="w-4 shrink-0 text-caption text-muted-foreground/50">{index + 1}</span>
+                  <p className="flex-1 text-body-sm leading-relaxed text-foreground">{lever}</p>
+                  <span className={cn("inline-flex shrink-0 items-center rounded-md border px-2.5 py-1 text-caption font-medium", tag.className)}>
                     {tag.label}
                   </span>
                 </div>
