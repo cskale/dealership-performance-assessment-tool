@@ -242,7 +242,7 @@ export default function CoachDashboard() {
         {filteredDealers.map((dealer, i) => (
           <Card
             key={dealer.dealershipId}
-            className="cursor-pointer hover:shadow-md transition-shadow opacity-0 animate-fade-in shadow-card rounded-xl"
+            className="cursor-pointer hover:border-[hsl(var(--brand-300))] hover:shadow-md transition-all duration-150 opacity-0 animate-fade-in shadow-card rounded-xl"
             style={{ animationDelay: `${Math.min(i, 4) * 50}ms`, animationFillMode: 'forwards' }}
             onClick={() => {
               if (dealer.latestAssessmentId) {
@@ -253,34 +253,38 @@ export default function CoachDashboard() {
             <CardHeader className="pb-2">
               <div className="flex items-start justify-between">
                 <CardTitle className="text-base font-semibold">{dealer.dealerName}</CardTitle>
-                <Badge variant="outline" className="text-xs shrink-0">{dealer.brand}</Badge>
+                <Badge variant="outline" className="bg-[hsl(var(--neutral-100))] text-[hsl(var(--neutral-700))] border-[hsl(var(--neutral-300))] text-xs shrink-0">
+                  {dealer.brand}
+                </Badge>
               </div>
               <p className="text-xs text-muted-foreground">{dealer.location}</p>
+              {dealer.latestDate && (
+                <p className="flex items-center gap-1 text-xs text-[hsl(var(--neutral-500))]">
+                  <CalendarDays className="h-3 w-3" />
+                  {format(new Date(dealer.latestDate), 'dd MMM yyyy')}
+                </p>
+              )}
             </CardHeader>
             <CardContent className="pt-0">
               <div className="flex items-center justify-between">
                 <div>
                   {dealer.latestScore != null ? (
-                    <Badge variant="outline" className={getScoreBadge(dealer.latestScore).className}>
-                      {Math.round(dealer.latestScore)}
-                    </Badge>
+                    <div className={`inline-flex flex-col items-center rounded-lg border px-3 py-2 ${getScoreBadge(dealer.latestScore).className}`}>
+                      <span className="text-2xl font-bold leading-none">{Math.round(dealer.latestScore)}</span>
+                      <span className="mt-1 text-xs">{getScoreBadge(dealer.latestScore).label}</span>
+                    </div>
                   ) : (
                     <span className="text-xs text-muted-foreground">—</span>
                   )}
                 </div>
                 <div className="text-right">
-                  {dealer.latestDate && (
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(dealer.latestDate), 'dd MMM yyyy')}
-                    </p>
-                  )}
                   {dealer.latestStatus && (
                     <Badge
                       variant="outline"
                       className={
                         dealer.latestStatus === 'completed'
-                          ? 'bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20 text-xs'
-                          : 'bg-[#d97706]/10 text-[#d97706] border-[#d97706]/20 text-xs'
+                          ? 'bg-[hsl(var(--brand-050))] text-[hsl(var(--brand-600))] border-[hsl(var(--brand-200))] text-xs'
+                          : 'bg-[hsl(var(--dd-amber-light))] text-[hsl(var(--dd-amber))] border-[hsl(var(--dd-amber))]/20 text-xs'
                       }
                     >
                       {dealer.latestStatus === 'completed' ? t('coach.filterCompleted') : t('coach.filterInProgress')}
