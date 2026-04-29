@@ -271,24 +271,23 @@ export function MaturityScoring({ scores, answers, benchmarks }: MaturityScoring
         </CardContent>
       </Card>
 
-      <details className="group">
-        <summary className="list-none cursor-pointer">
-          <Card className="shadow-card rounded-xl">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                Score Decomposition
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button type="button" className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-muted hover:bg-muted/80 transition-colors" aria-label="Score decomposition info">
-                      <Info className="h-3.5 w-3.5 text-muted-foreground" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-xs p-3">
-                    How your overall score is calculated from department scores and their weights.
-                  </TooltipContent>
-                </Tooltip>
-              </CardTitle>
-            </CardHeader>
+      <details className="group shadow-card rounded-xl bg-card">
+        <summary className="list-none cursor-pointer px-6 py-4">
+          <div className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            Score Decomposition
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type="button" className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-muted hover:bg-muted/80 transition-colors" aria-label="Score decomposition info">
+                  <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs p-3">
+                How your overall score is calculated from department scores and their weights.
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </summary>
+        <Card className="shadow-none rounded-xl border-0">
             <CardContent>
               <Table>
                 <TableHeader>
@@ -325,7 +324,6 @@ export function MaturityScoring({ scores, answers, benchmarks }: MaturityScoring
               </Table>
             </CardContent>
           </Card>
-        </summary>
       </details>
 
       {/* Gap Analysis Table */}
