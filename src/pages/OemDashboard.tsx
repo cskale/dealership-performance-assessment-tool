@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/table';
 import { SharedLoadingState } from '@/components/shared/SharedLoadingState';
 import { SharedEmptyState } from '@/components/shared/SharedEmptyState';
-import { Globe, TrendingUp, TrendingDown, Minus, Users, Award, ArrowDown, ArrowUp, Settings, ClipboardList } from 'lucide-react';
+import { Globe, TrendingUp, TrendingDown, Minus, Users, Award, ArrowDown, ArrowUp, Settings, ClipboardList, Trophy } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
 type OemNetwork = Tables<'oem_networks'>;
@@ -58,6 +58,13 @@ function getRankStyle(rank: number): string {
   if (rank === 2) return 'border-l-4 border-l-[#9ca3af]';
   if (rank === 3) return 'border-l-4 border-l-[#b87333]';
   return '';
+}
+
+function getRankBadgeClass(rank: number): string | null {
+  if (rank === 1) return 'bg-[#d4a017]/10 text-[#d4a017] border-[#d4a017]/30';
+  if (rank === 2) return 'bg-[#9ca3af]/10 text-[#9ca3af] border-[#9ca3af]/30';
+  if (rank === 3) return 'bg-[#b87333]/10 text-[#b87333] border-[#b87333]/30';
+  return null;
 }
 
 export default function OemDashboard() {
