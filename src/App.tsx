@@ -18,6 +18,7 @@ import NotFound from "./pages/NotFound";
 import AcceptInvite from "./pages/AcceptInvite";
 import KPIEncyclopediaPage from "./pages/KPIEncyclopediaPage";
 import OemDashboard from "./pages/OemDashboard";
+import OemSettings from "./pages/OemSettings";
 import CoachDashboard from "./pages/CoachDashboard";
 import CoachActions from "./pages/CoachActions";
 import { AuthProvider } from "@/hooks/useAuth";
@@ -73,6 +74,11 @@ const App = () => (
                             <Route path="oem-dashboard" element={
                               <ProtectedRoute requiresActorType="oem">
                                 <OemDashboard />
+                              </ProtectedRoute>
+                            } />
+                            <Route path="oem-settings" element={
+                              <ProtectedRoute requiresActorType="oem">
+                                <OemSettings />
                               </ProtectedRoute>
                             } />
                             <Route path="coach-dashboard" element={
