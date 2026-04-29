@@ -47,7 +47,7 @@ export default function AcceptInvite() {
     try {
       const { data, error } = await supabase.rpc('accept_dealership_invite', { p_token: token! });
 
-      const result = data as { success: boolean; error?: string } | null;
+      const result = data as { success: boolean; error?: string; invite_type?: string } | null;
 
       if (error || !result?.success) {
         setErrorKey(result?.error || 'invite_not_found');
@@ -57,7 +57,8 @@ export default function AcceptInvite() {
 
       localStorage.removeItem('pending_invite_token');
       setState('success');
-      setTimeout(() => navigate('/app/assessment', { replace: true }), 1800);
+      const destination = result?.invite_type === 'coach' ? '/app/coach-dashboard' : '/app/assessment';
+      setTimeout(() => navigate(destination, { replace: true }), 1800);
     } catch {
       setErrorKey('invite_not_found');
       setState('error');
