@@ -270,25 +270,25 @@ export function KPIStudio({ kpiKey, kpi, departmentKey, language, onBack, onNavi
 
       <section className="grid grid-cols-1 border-b border-border/30 sm:grid-cols-3">
         <div className="px-8 py-5 sm:border-r sm:border-border/30 sm:px-10 lg:px-14">
-          <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">
-            {isLeadResponseTime ? t.conversionUplift : t.referenceBenchmark}
+          <span className={cn("mb-2 block", SECTION_LABEL_CLASS)}>
+            {t.referenceBenchmark}
           </span>
-          <strong className="block text-metric-lg tabular-nums text-foreground">{isLeadResponseTime ? "391%" : kpi.benchmark || "—"}</strong>
-          <span className="mt-1 block text-body-sm text-muted-foreground">{isLeadResponseTime ? t.delayedResponse : t.referenceType}</span>
+          <strong className="block text-metric-lg tabular-nums text-foreground">{kpi.benchmark || "—"}</strong>
+          <span className="mt-1 block text-body-sm text-muted-foreground">{t.referenceType}</span>
         </div>
         <div className="px-8 py-5 sm:border-r sm:border-border/30 sm:px-10 lg:px-14">
-          <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">
-            {isLeadResponseTime ? t.effectivenessLoss : language === "de" ? "Messgröße" : "Measurement unit"}
+          <span className={cn("mb-2 block", SECTION_LABEL_CLASS)}>
+            {language === "de" ? "Messgröße" : "Measurement unit"}
           </span>
-          <strong className="block text-metric-lg tabular-nums text-foreground">{isLeadResponseTime ? "21×" : kpi.unitOfMeasure || "—"}</strong>
-          <span className="mt-1 block text-body-sm text-muted-foreground">{isLeadResponseTime ? t.immediateResponse : kpi.title}</span>
+          <strong className="block text-metric-lg tabular-nums text-foreground">{kpi.unitOfMeasure || "—"}</strong>
+          <span className="mt-1 block text-body-sm text-muted-foreground">{kpi.title}</span>
         </div>
         <div className="px-8 py-5 sm:px-10 lg:px-14">
-          <span className="mb-2 block text-[10px] font-medium uppercase tracking-[0.09em] text-muted-foreground/60">
-            {isLeadResponseTime ? t.complianceRate : language === "de" ? "Leistungsrichtung" : "Performance direction"}
+          <span className={cn("mb-2 block", SECTION_LABEL_CLASS)}>
+            {language === "de" ? "Leistungsrichtung" : "Performance direction"}
           </span>
-          <strong className="block text-metric-lg tabular-nums text-foreground">{isLeadResponseTime ? "5.5%" : directionLabel}</strong>
-          <span className="mt-1 block text-body-sm text-muted-foreground">{isLeadResponseTime ? t.dealersBenchmark : t.referenceCorridor}</span>
+          <strong className="block text-metric-lg tabular-nums text-foreground">{directionLabel}</strong>
+          <span className="mt-1 block text-body-sm text-muted-foreground">{t.referenceCorridor}</span>
         </div>
       </section>
 
