@@ -476,12 +476,13 @@ OEM admins manage their network at `/app/oem-settings` (Network Settings in side
 ### Vitest + fake timers
 - `vi.useFakeTimers()` breaks `waitFor()` from `@testing-library/react` because it mocks `setInterval` which the library uses for polling. Workaround: reorder tests so slow tests (those needing real timers) run last, and give all `waitFor()` calls an explicit `{ timeout: 3000 }`.
 
-## Current Tracker Status (as of 29 Apr 2026)
-- Total items: 58
-- Done: ~38 (65%)
-- Pending/Partial: ~20 (35%)
-- **Completed this session**: #01 (role architecture), #38 (OEM/Coach dashboards + settings), coach invite flow, OEM network setup (create network, add/remove dealers by email)
-- **Remaining priorities**: OEM provisioning UI (set actor_type='oem' — still manual SQL), coach assignment management UI (view/revoke assignments from dealer side), Option B network invite flow (for unonboarded dealers), `#29` causal chain UI, `#11` evaluateCrossValidations wiring
+## Current Tracker Status (as of 30 Apr 2026)
+- Total items: 62 (58 original + 4 new: #55 coach invite, #56 OEM activation, #57 OEM RLS, #58 Results OEM context)
+- Done: ~47 (76%)
+- Pending/Partial: ~15 (24%)
+- **Completed (April 2026 sessions)**: #01 role architecture, #05 network tables + RLS, #31 score decomposition, #35 30/60/90 roadmap, #38 OEM dashboard + settings, #39 coach dashboard + action tracker, #41 OEM peer rank, #45 confidence variance warning, #47 dashboard empty state/onboarding, #55 coach invite flow, #56 OEM self-service activation, #57 OEM cross-org RLS + lookup functions
+- **Remaining priorities (Claude Code)**: #58 Results page OEM "viewing as dealer" context, #36 delta scoring (needs DB design), #12 context intake questionnaire, coach assignment management UI
+- **Remaining priorities (Lovable)**: #42 neutral option tiles (anchoring bias), #44 scrollable single-page results, #48 score trajectory card (blocked on #36), #14 modular assessment
 
 ## Improvement Tracker File
 - Location in repo: `improvement_tracker_updated.html`

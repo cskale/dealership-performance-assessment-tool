@@ -267,6 +267,17 @@
   </div>
 </div>
 
+<div class="sprint-banner" style="background:#f0fdf4; border-color:#bbf7d0; border-left-color:#16a34a;">
+  <div class="sprint-banner-title" style="color:#166534;">✓ Round 3 UI Complete (30 April 2026) — Dashboard Onboarding, Score Decomposition, Roadmap, Confidence Warning, OEM Rank</div>
+  <div class="sprint-banner-items" style="color:#166534;">
+    ✓ #47 Dashboard empty state — onboarding card with icon, headline, 3 benefit tiles, CTA, "What to prepare" footer<br>
+    ✓ #31 Score decomposition panel — dept × weight × contribution table with mini bars in MaturityScoring<br>
+    ✓ #45 Confidence variance warning — amber banner surfaces reviewRecommended departments with consistency %<br>
+    ✓ #35 30/60/90 day roadmap view — Quick Wins / Process Changes / Governance columns in ActionPlan; List/Roadmap toggle<br>
+    ✓ #41 OEM leaderboard rank badges — gold/silver/bronze for top 3; Network average row in leaderboard table
+  </div>
+</div>
+
 <div class="legend">
   <span class="legend-item"><span class="legend-dot" style="background:var(--done)"></span>Implemented</span>
   <span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>Partial</span>
@@ -668,15 +679,15 @@
     <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 
-  <div class="item" data-status="pending" data-method="lovable" data-phase="1">
+  <div class="item" data-status="done" data-method="lovable" data-phase="done">
     <div class="item-num">31</div>
     <div class="item-body">
       <div class="item-title">Score decomposition transparency panel</div>
-      <div class="item-desc">CATEGORY_WEIGHTS documented but never visualised. Waterfall/stacked bar showing each dept's weighted contribution needed.</div>
+      <div class="item-desc">Apr 2026: Table in MaturityScoring.tsx showing Dept × Raw Score × Weight × Contribution with mini horizontal bar per row and weighted-sum footer. Sorted by contribution descending. Uses CATEGORY_WEIGHTS + DEPARTMENT_TO_CATEGORY from scoringEngine.</div>
     </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
+    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
     <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-1">Phase 1</span></div>
+    <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 
   <div class="item" data-status="done" data-method="both" data-phase="done">
@@ -712,15 +723,15 @@
     <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 
-  <div class="item" data-status="pending" data-method="lovable" data-phase="1">
+  <div class="item" data-status="done" data-method="lovable" data-phase="done">
     <div class="item-num">35</div>
     <div class="item-body">
       <div class="item-title">30/60/90 day priority roadmap</div>
-      <div class="item-desc">Triage scores exist. Restructuring into 3 time-phased columns (Quick wins / Process changes / Governance) is UX only.</div>
+      <div class="item-desc">Apr 2026: Roadmap view in ActionPlan.tsx — List/Roadmap tab toggle. Three columns: Quick Wins (effort≤2 + impact≥3), Process Changes (effort=3 or medium), Governance & Systems (effort≥4). Actions with null triage scores default to Process Changes. Existing list view unchanged.</div>
     </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
+    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
     <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-1">Phase 1</span></div>
+    <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 
   <div class="item" data-status="pending" data-method="lovable" data-phase="2">
@@ -787,15 +798,15 @@
     <div><span class="phase-badge ph-2">Phase 2</span></div>
   </div>
 
-  <div class="item" data-status="pending" data-method="lovable" data-phase="3">
+  <div class="item" data-status="done" data-method="lovable" data-phase="done">
     <div class="item-num">41</div>
     <div class="item-body">
       <div class="item-title">Network peer rank display</div>
-      <div class="item-desc">Dealer sees rank within peer group. Requires peer segmentation and min dealer count. Most powerful retention mechanism.</div>
+      <div class="item-desc">Apr 2026: OEM Dashboard leaderboard rank badges — gold/silver/bronze styled badges with Trophy icon for top 3 ranks; plain number for rank 4+. Network average row appended to leaderboard table showing stats.avg score and band badge. OemDashboard.tsx.</div>
     </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
+    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
     <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-3">Phase 3</span></div>
+    <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 </div>
 
@@ -840,15 +851,15 @@
     <div><span class="phase-badge ph-1">Phase 1</span></div>
   </div>
 
-  <div class="item" data-status="pending" data-method="lovable" data-phase="1">
+  <div class="item" data-status="done" data-method="lovable" data-phase="done">
     <div class="item-num">45</div>
     <div class="item-body">
       <div class="item-title">Confidence variance warning in results</div>
-      <div class="item-desc">calculateConfidenceMetrics runs, reviewRecommended flag exists. Not surfaced. Should show: "High variance in Service – review Q3 and Q7 before finalising."</div>
+      <div class="item-desc">Apr 2026: Amber banner in MaturityScoring.tsx above Gap Analysis table when any department has reviewRecommended=true. Lists affected departments with consistency %. Uses existing confidenceData useMemo — no new engine calls.</div>
     </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
+    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
     <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-1">Phase 1</span></div>
+    <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 
   <div class="item" data-status="pending" data-method="manual" data-phase="now">
@@ -862,15 +873,15 @@
     <div><span class="phase-badge ph-now">Do now</span></div>
   </div>
 
-  <div class="item" data-status="pending" data-method="lovable" data-phase="1">
+  <div class="item" data-status="done" data-method="lovable" data-phase="done">
     <div class="item-num">47</div>
     <div class="item-body">
       <div class="item-title">Dashboard empty state and onboarding funnel</div>
-      <div class="item-desc">No designed empty state. Needs: single CTA, 3 benefit callouts, "What to prepare" checklist. Converts dead-end to onboarding experience.</div>
+      <div class="item-desc">Apr 2026: Dashboard.tsx empty state — ClipboardList icon, "Run your first dealership diagnostic" heading, 3 benefit callout tiles (BarChart3/Zap/CheckSquare), Start Assessment CTA button, "What to prepare" footer note. Replaces blank first-login experience.</div>
     </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
+    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
     <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-1">Phase 1</span></div>
+    <div><span class="phase-badge ph-done">Complete</span></div>
   </div>
 
   <div class="item" data-status="pending" data-method="lovable" data-phase="2">

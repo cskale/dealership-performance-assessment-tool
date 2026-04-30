@@ -9,6 +9,22 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
 
 ---
 
+## [30 Apr 2026] — Round 3 UI: Dashboard Onboarding, Score Decomposition, 30/60/90 Roadmap, Confidence Warning, OEM Peer Rank
+
+### Features (Lovable)
+
+- feat(dashboard): #47 empty-state onboarding card — icon, headline, 3 benefit callouts, "What to prepare" checklist, Start Assessment CTA
+- feat(maturity): #31 score decomposition table — dept × weight × contribution with mini contribution bar, weighted sum footer row
+- feat(maturity): #45 confidence variance warning banner — surfaces `reviewRecommended` departments with consistency % before Gap Analysis
+- feat(actions): #35 30/60/90 day roadmap view — Quick Wins / Process Changes / Governance & Systems columns based on triage scores; toggled via List/Roadmap tab
+- feat(oem): #41 OEM leaderboard rank badges — gold/silver/bronze styled badges for top 3; Network average row appended to table
+
+### Tracker
+
+- docs(tracker): #47 #31 #45 #35 #41 marked done; tracker updated to 30 Apr 2026
+
+---
+
 ## [29 Apr 2026] — OEM Network Setup, Coach Invite Flow & Role Architecture
 
 ### Features
