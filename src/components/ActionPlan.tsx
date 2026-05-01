@@ -158,6 +158,18 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
 
   useEffect(() => { loadActions(); }, [loadActions]);
 
+  const handleKanbanStatusChange = useCallback(async (
+    actionId: string,
+    newStatus: 'Open' | 'In Progress' | 'Completed'
+  ) => {
+    const { error } = await supabase
+      .from('improvement_actions')
+      .update({ status: newStatus, updated_at: new Date().toISOString() })
+      .eq('id', actionId);
+    if (error) throw error;
+    await loadActions();
+  }, [loadActions]);
+
   const handleGenerateClick = () => {
     const now = Date.now();
     if (lastGenerated && now - lastGenerated < 30000) {
