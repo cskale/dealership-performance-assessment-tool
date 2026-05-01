@@ -450,6 +450,7 @@ OEM admins manage their network at `/app/oem-settings` (Network Settings in side
 - **Vercel MCP**: use for deployments and environment variable management
 - **Supabase types**: regenerate via `mcp__claude_ai_Supabase__generate_typescript_types` (project_id: `xrypgosuyfdkkqafftae`) after any schema change — write output to `src/integrations/supabase/types.ts`
 - **actor_type gating**: always use `actorType` from `useActiveRole()`, not `uxRole` — `uxRole` is null when `active_organization_id` is null (valid for coaches)
+- **Claude Code owned files** (Lovable must not edit): `src/data/questionnaire.ts`, `src/data/signalTypes.ts`, `src/data/signalMappings.ts`, `src/lib/signalEngine.ts` — any changes require TypeScript validation and signal mapping consistency check
 
 ## Known Pitfalls
 
@@ -476,12 +477,21 @@ OEM admins manage their network at `/app/oem-settings` (Network Settings in side
 ### Vitest + fake timers
 - `vi.useFakeTimers()` breaks `waitFor()` from `@testing-library/react` because it mocks `setInterval` which the library uses for polling. Workaround: reorder tests so slow tests (those needing real timers) run last, and give all `waitFor()` calls an explicit `{ timeout: 3000 }`.
 
-## Current Tracker Status (as of 30 Apr 2026)
+### RLS Recursion (dealer_network_memberships)
+- Any RLS policy that directly joins `dealer_network_memberships` inside a policy on `dealerships` or `assessments` causes infinite recursion — the policy re-evaluates itself. Always wrap such logic in a `SECURITY DEFINER` function in the `private` schema and call that from the policy instead.
+
+### Known Non-Blocking Issues (as of 1 May 2026)
+- `action_audit_log`: client makes a direct REST call that returns 403 — inserts should happen via DB trigger only, not from client code.
+- ActionSheet PATCH: `new_value` sent as URL-encoded query param (`%22new_value%22`) instead of JSON body — body serialisation bug in the action update call.
+- `DialogContent` without `DialogTitle`: multiple dialogs missing accessible title — triggers React accessibility warnings in dev but does not break functionality.
+- `useOnboarding` RLS false negatives: RLS timing can make a valid `active_dealership_id` appear inaccessible on first load. The hook now logs a warning and preserves the stored value instead of nulling it — but the root cause (RLS propagation delay) is not fixed.
+
+## Current Tracker Status (as of 1 May 2026)
 - Total items: 62 (58 original + 4 new: #55 coach invite, #56 OEM activation, #57 OEM RLS, #58 Results OEM context)
-- Done: ~47 (76%)
-- Pending/Partial: ~15 (24%)
-- **Completed (April 2026 sessions)**: #01 role architecture, #05 network tables + RLS, #31 score decomposition, #35 30/60/90 roadmap, #38 OEM dashboard + settings, #39 coach dashboard + action tracker, #41 OEM peer rank, #45 confidence variance warning, #47 dashboard empty state/onboarding, #55 coach invite flow, #56 OEM self-service activation, #57 OEM cross-org RLS + lookup functions
-- **Remaining priorities (Claude Code)**: #58 Results page OEM "viewing as dealer" context, #36 delta scoring (needs DB design), #12 context intake questionnaire, coach assignment management UI
+- Done: ~49 (79%)
+- Pending/Partial: ~13 (21%)
+- **Completed (April–May 2026 sessions)**: #01 role architecture, #05 network tables + RLS, #31 score decomposition, #35 30/60/90 roadmap, #38 OEM dashboard + settings, #39 coach dashboard + action tracker, #41 OEM peer rank, #45 confidence variance warning, #47 dashboard empty state/onboarding, #55 coach invite flow, #56 OEM self-service activation, #57 OEM cross-org RLS + lookup functions, signal mapping refactor (question-driven architecture), 11 KPI-proxy questions added (61 total)
+- **Remaining priorities (Claude Code)**: #58 Results page OEM "viewing as dealer" context, #36 delta scoring (needs DB design), #12 context intake questionnaire, coach assignment management UI, action_audit_log client call fix, ActionSheet PATCH body serialisation fix, DialogContent accessibility titles
 - **Remaining priorities (Lovable)**: #42 neutral option tiles (anchoring bias), #44 scrollable single-page results, #48 score trajectory card (blocked on #36), #14 modular assessment
 
 ## Improvement Tracker File

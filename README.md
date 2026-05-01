@@ -4,6 +4,23 @@ A comprehensive, enterprise-grade dealership performance assessment platform wit
 
 ## 🚀 Features
 
+### Assessment Engine
+- **61-question assessment** across 5 modules (NVS, UVS, SVC, PTS, FIN) with weighted scoring
+- **Question-driven signal architecture** — adding questions requires zero engine changes; each question carries `primarySignalCode`, `secondarySignalCode`, `rootCauseDimension` directly
+- **Three-tier signal resolution**: question metadata → SIGNAL_MAPPINGS lookup → category-based derivation
+- **OEM network leaderboard** — cross-dealership benchmarking with programme tier tracking
+- **Coach portal** — assigned dealer dashboards and cross-dealer action tracking
+- **PDF + Excel export** of assessment results and action plans
+
+### Known Issues (non-blocking)
+- `action_audit_log` direct REST call returns 403 — inserts should be trigger-only
+- ActionSheet PATCH URL encoding bug — `new_value` serialised as query param instead of body
+- `DialogContent` missing `DialogTitle` — accessibility warnings in dev (non-breaking)
+
+### Architecture Notes
+- **RLS policy rule**: any policy joining `dealer_network_memberships` inside a `dealerships` or `assessments` policy must use a `SECURITY DEFINER` function — direct joins cause infinite recursion
+- **File ownership**: `src/data/questionnaire.ts`, `signalTypes.ts`, `signalMappings.ts`, `signalEngine.ts` are Claude Code owned — do not edit via Lovable
+
 ### Authentication & Security
 - **Multiple Sign-in Methods**: Email/password, magic links, Google OAuth, Apple Sign In, Facebook Login
 - **Enterprise Session Management**: Track and manage active sessions across devices

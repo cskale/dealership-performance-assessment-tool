@@ -9,6 +9,54 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
 
 ---
 
+## [1 May 2026] — RLS Recursion Fixes, Signal Architecture Refactor
+
+### Fixed
+- RLS infinite recursion on `dealerships` table — `"OEM admins can view network dealerships"` 
+  policy was directly joining `dealer_network_memberships`, which triggered a recursive 
+  policy chain. Replaced with `user_can_access_dealership_as_oem()` SECURITY DEFINER function.
+- RLS infinite recursion on `assessments` table — same pattern. Replaced with 
+  `user_can_access_assessment_as_oem()` SECURITY DEFINER function.
+- `useOnboarding` hook self-healing null — hook was writing `active_dealership_id = null` 
+  back to `profiles` on RLS false negatives, creating a redirect loop to the Setup Wizard. 
+  Removed both null-write paths; now logs warning only and preserves stored value.
+- `active_dealership_id` null on profile row — patched via SQL for demo account.
+- Full assessment → save → results → action plan flow confirmed working end-to-end.
+
+### Changed — Signal Architecture (zero-maintenance scaling)
+- `signalTypes.ts` — `RootCauseDimension` exported as single source of truth; 
+  removed duplicate local definitions from `signalMappings.ts` and `actionTemplates.ts`.
+- `questionnaire.ts` — `Question` interface extended with three optional fields: 
+  `primarySignalCode`, `secondarySignalCode`, `rootCauseDimension`. All 61 questions 
+  backfilled (50 existing from `signalMappings.ts` values, 11 new KPI-proxy questions 
+  from explicit mapping table).
+- `signalEngine.ts` — replaced single-tier `getSignalMapping()` lookup with three-tier 
+  resolver `getResolvedSignalMapping()`: (1) question object direct read, (2) SIGNAL_MAPPINGS 
+  fallback, (3) category-based derivation. O(1) question Map built once outside loop. 
+  DEV-only tier resolution logging added.
+- `signalMappings.ts` — retained as Tier 2 fallback; local `RootCauseDimension` 
+  definition removed, now imports from `signalTypes.ts`.
+
+### Added
+- 11 new KPI-proxy assessment questions (nvs-11 to nvs-13, uvs-11 to uvs-13, 
+  svc-13 to svc-15, fin-9 to fin-10) with explicit signal mappings. KPIs proxied: 
+  Lead Response Time, Units Per Sales Executive, Staff Turnover, Trade-In Capture Rate, 
+  Stock-to-Sales Ratio, Used Car Staff Expertise, First Time Fix Rate, Upsell Conversion, 
+  Service Retention Rate, Fixed Ops Overhead, Performance Review Cadence.
+
+### Known Issues (non-blocking)
+- `action_audit_log` 403 — client making direct REST call; should route via trigger only.
+- ActionSheet PATCH — malformed URL encoding (`%22new_value%22`); body serialisation bug.
+- `DialogContent` missing `DialogTitle` — accessibility warnings across multiple dialogs.
+
+### Commits
+- fix(onboarding): remove self-healing active_dealership_id nulls
+- fix(rls): wrap OEM dealership and assessment policies in SECURITY DEFINER functions
+- feat(questions): add 11 KPI-proxy assessment questions across NVS, UVS, SVC, FIN
+- refactor(signals): make signal mapping question-driven for zero-maintenance scaling
+
+---
+
 ## [30 Apr 2026] — Round 3 UI: Dashboard Onboarding, Score Decomposition, 30/60/90 Roadmap, Confidence Warning, OEM Peer Rank
 
 ### Features (Lovable)

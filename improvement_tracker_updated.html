@@ -278,6 +278,17 @@
   </div>
 </div>
 
+<div class="sprint-banner" style="background:#f0fdf4; border-color:#bbf7d0; border-left-color:#16a34a;">
+  <div class="sprint-banner-title" style="color:#166534;">✓ 1 May 2026 — RLS Fixes, Signal Architecture Refactor, 61 Questions</div>
+  <div class="sprint-banner-items" style="color:#166534;">
+    ✓ RLS infinite recursion fixed — dealerships + assessments OEM policies now use SECURITY DEFINER functions<br>
+    ✓ useOnboarding self-healing null removed — active_dealership_id preserved on RLS false negatives<br>
+    ✓ Signal mapping refactored to question-driven architecture — Question interface carries primarySignalCode, secondarySignalCode, rootCauseDimension; three-tier resolver in signalEngine.ts<br>
+    ✓ 11 new KPI-proxy questions added (nvs-11 to nvs-13, uvs-11 to uvs-13, svc-13 to svc-15, fin-9 to fin-10) — 61 questions total<br>
+    ✓ Full assessment → save → results → action plan flow confirmed end-to-end
+  </div>
+</div>
+
 <div class="legend">
   <span class="legend-item"><span class="legend-dot" style="background:var(--done)"></span>Implemented</span>
   <span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>Partial</span>
