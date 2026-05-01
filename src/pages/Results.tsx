@@ -342,8 +342,9 @@ export default function Results() {
 
             return (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <style>{`@keyframes resultsCardCascade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}.results-cascade-card{opacity:0;animation:resultsCardCascade 300ms ease-out forwards}`}</style>
                 {/* Card 1 — Overall Score with SVG Ring */}
-                <div className={cn(cardBase, "flex flex-col items-center text-center opacity-0 animate-fade-in")} style={{ animationDelay: '0ms', animationFillMode: 'forwards' }}>
+                <div className={cn(cardBase, "results-cascade-card flex flex-col items-center text-center")} style={{ animationDelay: '1300ms' }}>
                   <div className="relative flex-shrink-0 mb-2" style={{ width: ringSize, height: ringSize }}>
                     <svg width={ringSize} height={ringSize} className="-rotate-90">
                       <circle
@@ -368,13 +369,13 @@ export default function Results() {
                 </div>
 
                 {/* Card 2 — Maturity Level */}
-                <div className={cn(cardBase, "min-h-[100px] flex flex-col items-center justify-center text-center opacity-0 animate-fade-in")} style={{ animationDelay: '50ms', animationFillMode: 'forwards' }}>
+                <div className={cn(cardBase, "results-cascade-card min-h-[100px] flex flex-col items-center justify-center text-center")} style={{ animationDelay: '1450ms' }}>
                   <div className={labelClass}>{language === 'de' ? 'Reifegrad' : 'Maturity Level'}</div>
                   <div className="text-xl font-bold text-foreground">{maturityLabel}</div>
                 </div>
 
                 {/* Card 3 — Modules Assessed */}
-                <div className={cn(cardBase, "min-h-[100px] flex flex-col items-center justify-center text-center opacity-0 animate-fade-in")} style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
+                <div className={cn(cardBase, "results-cascade-card min-h-[100px] flex flex-col items-center justify-center text-center")} style={{ animationDelay: '1600ms' }}>
                   <div className={labelClass}>{language === 'de' ? 'Module bewertet' : 'Modules Assessed'}</div>
                   <div className="text-xl font-bold text-foreground">{modulesAssessed}</div>
                   <div className="text-caption text-muted-foreground">
@@ -383,7 +384,7 @@ export default function Results() {
                 </div>
 
                 {/* Card 4 — Assessment Coverage */}
-                <div className={cn(cardBase, "min-h-[100px] flex flex-col items-center justify-center text-center opacity-0 animate-fade-in")} style={{ animationDelay: '150ms', animationFillMode: 'forwards' }}>
+                <div className={cn(cardBase, "results-cascade-card min-h-[100px] flex flex-col items-center justify-center text-center")} style={{ animationDelay: '1750ms' }}>
                   <div className={labelClass}>{language === 'de' ? 'Bewertungsabdeckung' : 'Assessment Coverage'}</div>
                   <div className="text-xl font-bold text-foreground">{answeredQuestions}/{TOTAL_QUESTIONS}</div>
                   <div className="text-caption text-muted-foreground mt-1">
