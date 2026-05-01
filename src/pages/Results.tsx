@@ -152,8 +152,10 @@ export default function Results() {
     return evaluateCrossValidations(resultsData.answers as Record<string, number>);
   }, [resultsData]);
 
+  const hasAnimated = useRef(false);
   useEffect(() => {
-    if (overallScore > 0 && !isLoading) {
+    if (overallScore > 0 && !isLoading && !hasAnimated.current) {
+      hasAnimated.current = true;
       const duration = 1200;
       const startTime = Date.now();
       const animate = () => {
