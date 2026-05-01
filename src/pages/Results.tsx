@@ -30,6 +30,8 @@ import { generateCeilingInsights } from "@/lib/ceilingAnalysis";
 import { fetchModuleBenchmarks, STATIC_BENCHMARKS, type ModuleBenchmark } from "@/lib/benchmarkUtils";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { cn } from "@/lib/utils";
+import { FreshnessBadge } from "@/components/ui/FreshnessBadge";
+import { getAssessmentFreshness } from "@/lib/assessmentFreshness";
 
 export default function Results() {
   useEffect(() => { document.title = 'Results — Dealer Diagnostic'; }, []);
@@ -315,7 +317,57 @@ export default function Results() {
             <p className="text-body-sm text-muted-foreground mt-0.5">
               {language === 'de' ? 'Umfassende Analyse abgeschlossen am' : 'Comprehensive analysis completed on'} {formatDate(resultsData.completedAt)}
             </p>
+            <div className="mt-2">
+              <FreshnessBadge
+                completedAt={resultsData.completedAt}
+                onReassess={() => navigate('/app/assessment')}
+              />
+            </div>
           </div>
+
+          {/* Stale assessment banner */}
+          {(() => {
+            const freshness = getAssessmentFreshness(resultsData.completedAt);
+            if (freshness.status !== 'stale') return null;
+            return (
+              <div
+                style={{
+                  background: '#fef6e4',
+                  borderLeft: '3px solid #d97706',
+                  borderRadius: 6,
+                  padding: '10px 16px',
+                  fontSize: 12,
+                  color: '#92610a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 12,
+                  marginBottom: 16,
+                }}
+              >
+                <span>
+                  This assessment is {freshness.daysSince} days old. Market conditions and team changes may mean your diagnostic no longer reflects current reality. Consider running a refresh assessment.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => navigate('/app/assessment')}
+                  style={{
+                    fontSize: 11,
+                    color: '#92610a',
+                    border: '1px solid #d97706',
+                    background: 'transparent',
+                    padding: '4px 10px',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    fontWeight: 500,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Reassess
+                </button>
+              </div>
+            );
+          })()}
 
           {/* Summary metric cards */}
           {(() => {
