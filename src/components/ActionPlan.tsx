@@ -527,11 +527,11 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
           <h2 className="text-lg font-semibold text-foreground">Action Plan</h2>
           {totalCount > 0 && (
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 min-w-[180px]">
-                <Progress value={progressPercent} className="h-2 flex-1" />
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  {completedCount}/{totalCount}
+              <div className="flex flex-col gap-1 min-w-[220px]">
+                <span style={{ fontSize: 11, color: '#5c5a54' }}>
+                  {completedCount} of {totalCount} actions complete — {progressPercent}%
                 </span>
+                <Progress value={progressPercent} className="h-2" />
               </div>
               {overdueCount > 0 && (
                 <Badge variant="destructive" className="text-xs flex items-center gap-1">
