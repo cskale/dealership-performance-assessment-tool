@@ -549,12 +549,29 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
         </div>
 
         <div className="flex items-center gap-2 ml-auto flex-shrink-0">
-          <Tabs value={viewMode === 'roadmap' ? 'roadmap' : 'list'} onValueChange={(value) => setViewMode(value as 'list' | 'roadmap')}>
-            <TabsList className="h-9 bg-card border">
-              <TabsTrigger value="list" className="text-xs">List view</TabsTrigger>
-              <TabsTrigger value="roadmap" className="text-xs">Roadmap view</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className="inline-flex h-9 items-center rounded-md bg-card border p-0.5">
+            {([
+              { key: 'list', label: 'List', Icon: ListIcon },
+              { key: 'kanban', label: 'Kanban', Icon: LayoutGrid },
+              { key: 'timeline', label: 'Timeline', Icon: CalendarIcon },
+              { key: 'roadmap', label: 'Roadmap', Icon: Target },
+            ] as const).map(({ key, label, Icon }) => (
+              <button
+                key={key}
+                onClick={() => setViewMode(key)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-2.5 h-8 rounded text-xs transition-colors",
+                  viewMode === key
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                aria-pressed={viewMode === key}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+              </button>
+            ))}
+          </div>
           {canCreate && (
             <Button onClick={openCreatePanel} variant="outline" size="sm">
               <Plus className="mr-2 h-4 w-4" /> Add Action
