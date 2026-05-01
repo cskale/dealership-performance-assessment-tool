@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { FreshnessBadge } from "@/components/ui/FreshnessBadge";
 
 
 interface KPICardProps {
@@ -29,8 +31,10 @@ const Dashboard = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("month");
   const [selectedDealer, setSelectedDealer] = useState("main");
   const [hasAssessments, setHasAssessments] = useState<boolean | null>(null);
+  const [latestCompletedAt, setLatestCompletedAt] = useState<string | null>(null);
   const { t, language } = useLanguage();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!user) { setHasAssessments(null); return; }
@@ -38,12 +42,16 @@ const Dashboard = () => {
     (async () => {
       const { data, error } = await supabase
         .from('assessments')
-        .select('id')
+        .select('id, completed_at')
         .eq('user_id', user.id)
+        .eq('status', 'completed')
+        .order('completed_at', { ascending: false })
         .limit(1);
       if (cancelled) return;
       if (error) { setHasAssessments(true); return; }
-      setHasAssessments((data?.length ?? 0) > 0);
+      const rows = data ?? [];
+      setHasAssessments(rows.length > 0);
+      setLatestCompletedAt(rows[0]?.completed_at ?? null);
     })();
     return () => { cancelled = true; };
   }, [user]);
@@ -226,6 +234,14 @@ const Dashboard = () => {
         <div>
           <h1 className="text-h1 text-foreground">{t('dashboard.title')}</h1>
           <p className="text-body-md text-muted-foreground mt-1">{t('dashboard.subtitle')}</p>
+          {latestCompletedAt && (
+            <div className="mt-2">
+              <FreshnessBadge
+                completedAt={latestCompletedAt}
+                onReassess={() => navigate('/app/assessment')}
+              />
+            </div>
+          )}
         </div>
 
         {/* New Vehicle Sales */}

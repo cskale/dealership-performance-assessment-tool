@@ -12,7 +12,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   Plus, Loader2, Pencil,
-  AlertTriangle, Target, Eye, Search, Filter, CalendarIcon, LayoutGrid, List as ListIcon
+  AlertTriangle, Target, Eye, Search, Filter, CalendarIcon, LayoutGrid, List as ListIcon,
+  CheckCircle2, X
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -124,6 +125,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
   const [conflictDetected, setConflictDetected] = useState(false);
   const [conflictAction, setConflictAction] = useState<ActionRecord | null>(null);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+  const [dismissedMilestone, setDismissedMilestone] = useState<number | null>(null);
 
   const canEdit = canPerformAction('update');
   const canCreate = canPerformAction('create');
@@ -132,6 +134,18 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
   const totalCount = actions.length;
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
   const overdueCount = actions.filter(a => isOverdue(a)).length;
+
+  const currentMilestone = useMemo(() => {
+    if (totalCount === 0) return null;
+    const pct = progressPercent;
+    if (pct >= 100) return { pct: 100, message: 'All actions complete — ready for your next assessment.', cta: true };
+    if (pct >= 75) return { pct: 75, message: '75% complete — excellent pace. Time to reassess which remaining actions have highest impact.', cta: false };
+    if (pct >= 50) return { pct: 50, message: 'Halfway there. Keep the momentum — the second half drives the score improvement.', cta: false };
+    if (pct >= 25) return { pct: 25, message: 'Good start — 25% complete. Consistency now will compound into score gains.', cta: false };
+    return null;
+  }, [progressPercent, totalCount]);
+
+  const showMilestoneBanner = currentMilestone !== null && currentMilestone.pct !== dismissedMilestone;
 
   const loadActions = useCallback(async () => {
     if (!user) return;
@@ -513,11 +527,11 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
           <h2 className="text-lg font-semibold text-foreground">Action Plan</h2>
           {totalCount > 0 && (
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 min-w-[180px]">
-                <Progress value={progressPercent} className="h-2 flex-1" />
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  {completedCount}/{totalCount}
+              <div className="flex flex-col gap-1 min-w-[220px]">
+                <span style={{ fontSize: 11, color: '#5c5a54' }}>
+                  {completedCount} of {totalCount} actions complete — {progressPercent}%
                 </span>
+                <Progress value={progressPercent} className="h-2" />
               </div>
               {overdueCount > 0 && (
                 <Badge variant="destructive" className="text-xs flex items-center gap-1">
@@ -646,6 +660,66 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
           </Popover>
         </div>
       </div>
+
+      {/* Milestone Banner */}
+      {showMilestoneBanner && currentMilestone && (
+        <div
+          style={{
+            background: '#e1f5ee',
+            border: '1px solid #9fe1cb',
+            borderLeft: '3px solid #1D9E75',
+            borderRadius: 8,
+            padding: '12px 16px',
+            marginBottom: 12,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <CheckCircle2 size={16} color="#1D9E75" />
+            <span style={{ fontSize: 13, color: '#0f6e56', fontWeight: 500, marginLeft: 10 }}>
+              {currentMilestone.message}
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {currentMilestone.cta && (
+              <button
+                type="button"
+                onClick={() => window.location.assign('/app/assessment')}
+                style={{
+                  fontSize: 12,
+                  color: '#0052CC',
+                  border: '1px solid #0052CC',
+                  background: 'transparent',
+                  padding: '4px 10px',
+                  borderRadius: 6,
+                  cursor: 'pointer',
+                  fontWeight: 500,
+                }}
+              >
+                Schedule Reassessment
+              </button>
+            )}
+            <button
+              type="button"
+              aria-label="Dismiss milestone"
+              onClick={() => setDismissedMilestone(currentMilestone.pct)}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 4,
+                cursor: 'pointer',
+                color: '#96948e',
+                display: 'inline-flex',
+              }}
+            >
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Content area: Kanban, List, or Timeline */}
       {viewMode === 'roadmap' ? (
