@@ -1,4 +1,5 @@
 import { Language } from '@/contexts/LanguageContext';
+import { SignalCode, RootCauseDimension } from '@/data/signalTypes';
 
 export interface QuestionTranslation {
   text: string;
@@ -26,6 +27,9 @@ export interface Question {
   situationAnalysis?: string;
   linkedKPIs?: string[];
   benefits?: string;
+  primarySignalCode?: SignalCode;
+  secondarySignalCode?: SignalCode;
+  rootCauseDimension?: RootCauseDimension;
   translations?: Record<Language, QuestionTranslation>;
 }
 
@@ -81,6 +85,9 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Higher volume indicates stronger market position, better inventory management, and more consistent customer flow. It helps identify if you're maximizing your market opportunity.",
           linkedKPIs: ["Monthly Revenue", "Market Share", "Sales Growth Rate", "Inventory Turnover"],
           benefits: "Optimizing sales volume leads to better economies of scale, stronger manufacturer relationships, increased negotiating power, and higher overall profitability.",
+          primarySignalCode: 'CAPACITY_MISALIGNED',
+          secondarySignalCode: 'KPI_NOT_REVIEWED',
+          rootCauseDimension: 'structure',
           translations: {
             en: {
               text: "How many new vehicles does your dealership sell on average per month?",
@@ -112,6 +119,9 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Low closing ratios indicate potential issues in sales training, lead quality, pricing strategy, or customer experience that need immediate attention.",
           linkedKPIs: ["Lead Conversion Rate", "Sales Efficiency", "Cost Per Acquisition", "Revenue Per Lead"],
           benefits: "Improving closing ratios directly increases revenue without additional marketing spend, reduces customer acquisition costs, and maximizes the ROI of your lead generation efforts.",
+          primarySignalCode: 'PROCESS_NOT_EXECUTED',
+          secondarySignalCode: 'KPI_NOT_REVIEWED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "What percentage of your sales leads successfully convert into actual vehicle purchases?",
@@ -143,6 +153,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Customer satisfaction is a leading indicator of future sales performance, customer loyalty, and word-of-mouth marketing effectiveness.",
           linkedKPIs: ["Net Promoter Score", "Customer Retention Rate", "Referral Rate", "Online Review Ratings"],
           benefits: "High customer satisfaction leads to increased referrals, repeat customers, positive online reviews, and reduced marketing costs through organic growth.",
+          primarySignalCode: 'KPI_NOT_REVIEWED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "How would customers rate their overall satisfaction with your new vehicle sales experience?",
@@ -174,6 +186,9 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Profit margins indicate your competitive positioning, pricing power, and ability to add value during the sales process.",
           linkedKPIs: ["Gross Profit Margin", "Price Realization", "Discount Rate", "Profitability Per Unit"],
           benefits: "Optimizing gross profit per unit significantly improves overall dealership profitability, cash flow, and ability to invest in growth initiatives.",
+          primarySignalCode: 'KPI_NOT_REVIEWED',
+          secondarySignalCode: 'PROCESS_NOT_STANDARDISED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "What is the average gross profit your dealership earns on each new vehicle sold?",
@@ -205,6 +220,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Faster delivery times improve customer satisfaction, reduce deal fallout, and enhance competitive positioning in the market.",
           linkedKPIs: ["Cycle Time", "Process Efficiency", "Customer Wait Time", "Deal Completion Rate"],
           benefits: "Reducing delivery time increases customer satisfaction, reduces cancellations, improves cash flow, and creates competitive differentiation.",
+          primarySignalCode: 'PROCESS_NOT_EXECUTED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "How long does it typically take from a customer's initial inquiry to vehicle delivery?",
@@ -236,6 +253,9 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Digital lead conversion indicates how well your online presence and digital sales funnel are performing in today's digital-first marketplace.",
           linkedKPIs: ["Digital Marketing ROI", "Online Lead Quality", "Website Conversion Rate", "Digital Channel Performance"],
           benefits: "Improving digital conversion reduces marketing costs, increases lead quality, and positions you ahead of competitors in the digital space.",
+          primarySignalCode: 'TOOL_UNDERUTILISED',
+          secondarySignalCode: 'PROCESS_NOT_EXECUTED',
+          rootCauseDimension: 'tools',
           translations: {
             en: {
               text: "What percentage of your online leads result in actual showroom visits?",
@@ -267,6 +287,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Regular training ensures your team stays updated with product knowledge, sales techniques, and industry best practices.",
           linkedKPIs: ["Sales Performance", "Employee Retention", "Skill Development Index", "Training ROI"],
           benefits: "Consistent training improves sales results, reduces staff turnover, enhances customer experience, and builds long-term competitive advantage.",
+          primarySignalCode: 'ROLE_OWNERSHIP_MISSING',
+          rootCauseDimension: 'people',
           translations: {
             en: {
               text: "How frequently does your sales team receive formal training and skill development?",
@@ -298,6 +320,9 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Fast inventory turnover indicates good demand planning, effective pricing, and strong sales execution.",
           linkedKPIs: ["Inventory Days Supply", "Carrying Costs", "Cash Flow", "Working Capital Efficiency"],
           benefits: "Optimizing inventory turnover improves cash flow, reduces interest expenses, minimizes obsolescence risk, and increases profitability.",
+          primarySignalCode: 'PROCESS_NOT_STANDARDISED',
+          secondarySignalCode: 'GOVERNANCE_WEAK',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "How many times per year does your new vehicle inventory completely turn over?",
@@ -329,6 +354,9 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "High F&I penetration indicates strong customer relationship building and effective product presentation skills.",
           linkedKPIs: ["F&I Revenue Per Unit", "Product Penetration Rate", "Customer Protection Rate", "Profit Per Deal"],
           benefits: "Increasing F&I penetration significantly boosts per-unit profitability, enhances customer protection, and creates recurring revenue streams.",
+          primarySignalCode: 'KPI_NOT_REVIEWED',
+          secondarySignalCode: 'PROCESS_NOT_EXECUTED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "What percentage of your new vehicle customers purchase finance and insurance products?",
@@ -360,6 +388,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Effective CRM usage indicates systematic approach to customer management, improved follow-up processes, and data-driven decision making.",
           linkedKPIs: ["Lead Management Efficiency", "Follow-up Rate", "Customer Data Quality", "Sales Process Consistency"],
           benefits: "Better CRM utilization improves lead conversion, enhances customer relationships, increases repeat business, and provides valuable insights for growth.",
+          primarySignalCode: 'TOOL_UNDERUTILISED',
+          rootCauseDimension: 'tools',
           translations: {
             en: {
               text: "How effectively does your team utilize the CRM system for lead management and follow-up?",
@@ -391,6 +421,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Dealerships that respond within 30 minutes are significantly more likely to convert a lead than those who wait hours. This question surfaces the actual operating standard, not just stated intent.",
           linkedKPIs: ["Lead Response Time", "Lead Conversion Rate", "Cost Per Acquisition", "Digital Channel Performance"],
           benefits: "Systematic fast response compresses the sales cycle, reduces lead leakage to competitors, and improves ROI on every marketing pound spent.",
+          primarySignalCode: 'PROCESS_NOT_EXECUTED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "How quickly and consistently does your team engage with incoming sales enquiries across all channels?",
@@ -422,6 +454,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Low units per consultant often signals over-staffing relative to demand, weak closing technique, poor lead allocation, or insufficient management coaching — all addressable with the right interventions.",
           linkedKPIs: ["Units Per Sales Executive", "Sales Productivity Index", "Revenue Per Headcount", "Staffing Efficiency"],
           benefits: "Optimising consultant productivity improves margin per sale, allows leaner staffing models, and pinpoints exactly where coaching investment will yield the fastest return.",
+          primarySignalCode: 'CAPACITY_MISALIGNED',
+          rootCauseDimension: 'structure',
           translations: {
             en: {
               text: "On average, how many new vehicle sales does each active sales consultant close per month?",
@@ -453,6 +487,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "High sales team turnover destroys institutional knowledge, inflates recruitment and training costs, disrupts customer relationships, and suppresses volume during ramp-up periods for new hires.",
           linkedKPIs: ["Staff Turnover Rate", "Employee Retention Rate", "Recruitment Cost Per Hire", "Sales Consistency Index"],
           benefits: "Stable teams close more, retain more customers, deliver better satisfaction scores, and cost significantly less to maintain than high-churn environments.",
+          primarySignalCode: 'ROLE_OWNERSHIP_MISSING',
+          rootCauseDimension: 'people',
           translations: {
             en: {
               text: "How stable has your sales team composition been over the past 12 months?",
@@ -502,6 +538,9 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Fast turnover indicates effective market pricing, good vehicle selection, and strong sales execution in the used vehicle market.",
           linkedKPIs: ["Days in Inventory", "Carrying Costs", "Interest Expense", "Market Share"],
           benefits: "Faster turnover reduces carrying costs, improves cash flow, minimizes depreciation losses, and increases inventory ROI.",
+          primarySignalCode: 'PROCESS_NOT_STANDARDISED',
+          secondarySignalCode: 'GOVERNANCE_WEAK',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "On average, how many days do used vehicles remain in your inventory before being sold?",
@@ -527,6 +566,9 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Higher margins indicate strong appraisal skills, effective reconditioning processes, and successful value proposition communication.",
           linkedKPIs: ["Gross Profit Per Unit", "Margin Percentage", "Price Realization", "Competitive Positioning"],
           benefits: "Optimizing used vehicle margins significantly improves dealership profitability and provides flexibility for competitive pricing strategies.",
+          primarySignalCode: 'KPI_NOT_REVIEWED',
+          secondarySignalCode: 'PROCESS_NOT_STANDARDISED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "What is the average gross profit margin your dealership achieves on used vehicle sales?",
@@ -552,6 +594,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Accurate appraisals indicate strong market knowledge, effective valuation tools, and experienced appraisal staff.",
           linkedKPIs: ["Appraisal Accuracy Rate", "Acquisition Cost Variance", "Profit Margin Consistency", "Market Value Alignment"],
           benefits: "Improved appraisal accuracy reduces financial risk, enhances customer satisfaction, and increases predictable profit margins.",
+          primarySignalCode: 'PROCESS_NOT_STANDARDISED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "How accurate are your initial trade-in valuations compared to the final selling prices achieved?",
@@ -577,6 +621,9 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Lower reconditioning costs indicate efficient processes, good vendor relationships, and effective quality control.",
           linkedKPIs: ["Reconditioning Cost Per Unit", "Time to Market", "Quality Standards", "Vendor Performance"],
           benefits: "Controlling reconditioning costs improves margins, reduces time to sale, and enhances overall operational efficiency.",
+          primarySignalCode: 'GOVERNANCE_WEAK',
+          secondarySignalCode: 'PROCESS_NOT_EXECUTED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "What is your average cost per vehicle for reconditioning and preparing used vehicles for sale?",
@@ -602,6 +649,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Quality online listings drive more qualified leads, reduce time to sale, and improve competitive positioning.",
           linkedKPIs: ["Online Lead Generation", "Listing View Rate", "Inquiry Conversion", "Digital Market Penetration"],
           benefits: "Optimized online listings increase visibility, attract more qualified buyers, and accelerate sales velocity.",
+          primarySignalCode: 'TOOL_UNDERUTILISED',
+          rootCauseDimension: 'tools',
           translations: {
             en: {
               text: "How would you rate the quality and effectiveness of your online used vehicle listings?",
@@ -627,6 +676,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "High success rates indicate strong market knowledge, disciplined buying practices, and effective inventory planning.",
           linkedKPIs: ["Acquisition Success Rate", "Purchase Cost Accuracy", "Inventory Quality", "Sourcing Efficiency"],
           benefits: "Improved auction success reduces acquisition risks, ensures quality inventory, and maintains consistent profit margins.",
+          primarySignalCode: 'CAPACITY_MISALIGNED',
+          rootCauseDimension: 'structure',
           translations: {
             en: {
               text: "What percentage of vehicles you purchase at auctions turn out to be profitable after resale?",
@@ -652,6 +703,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "High satisfaction in used vehicle sales builds trust, generates referrals, and establishes long-term customer relationships.",
           linkedKPIs: ["Customer Satisfaction Score", "Repeat Customer Rate", "Referral Rate", "Online Review Ratings"],
           benefits: "Excellent customer satisfaction drives organic growth through referrals, improves online reputation, and increases customer lifetime value.",
+          primarySignalCode: 'KPI_NOT_REVIEWED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "How do customers rate their overall satisfaction with your used vehicle purchase experience?",
@@ -677,6 +730,9 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Higher penetration rates indicate effective value communication and strong customer relationship building.",
           linkedKPIs: ["Product Penetration Rate", "Revenue Per Unit", "Customer Protection Rate", "Profit Margin Enhancement"],
           benefits: "Increased warranty penetration boosts profitability, enhances customer confidence, and creates additional revenue streams.",
+          primarySignalCode: 'TOOL_UNDERUTILISED',
+          secondarySignalCode: 'PROCESS_NOT_EXECUTED',
+          rootCauseDimension: 'tools',
           translations: {
             en: {
               text: "What percentage of used vehicle buyers purchase extended warranties or service contracts?",
@@ -702,6 +758,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Competitive pricing ensures market relevance while maintaining profitability and sales velocity.",
           linkedKPIs: ["Price Competitiveness Index", "Market Position", "Sales Velocity", "Profit Margin"],
           benefits: "Optimal pricing balances profitability with competitiveness, maximizing both sales volume and unit profits.",
+          primarySignalCode: 'PROCESS_NOT_STANDARDISED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "How does your used vehicle pricing compare to similar vehicles in your local market?",
@@ -727,6 +785,9 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Effective aged inventory management prevents excessive carrying costs and minimizes depreciation losses.",
           linkedKPIs: ["Aged Inventory Percentage", "Carrying Cost Management", "Loss Prevention", "Cash Flow Optimization"],
           benefits: "Proactive aged inventory management reduces financial risk, improves cash flow, and maintains inventory freshness.",
+          primarySignalCode: 'GOVERNANCE_WEAK',
+          secondarySignalCode: 'PROCESS_NOT_STANDARDISED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "How effective is your strategy for managing vehicles that remain unsold for more than 60 days?",
@@ -752,6 +813,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Dealers who embed appraisals into every new vehicle conversation secure cheaper, better-conditioned stock than auction alternatives while retaining the customer across both transactions.",
           linkedKPIs: ["Trade-In Capture Rate", "Used Vehicle Sourcing Mix", "Gross Per Used Vehicle", "Customer Retention Rate"],
           benefits: "Higher trade-in capture improves used vehicle margin (vs auction cost), secures known-history stock, and deepens the customer relationship across multiple departments.",
+          primarySignalCode: 'PROCESS_NOT_EXECUTED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "When customers buy a new vehicle from you, how often do they trade in their existing car with the dealership rather than selling it privately?",
@@ -783,6 +846,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Both under- and over-stocking destroy profitability — the former through lost sales and the latter through interest costs, depreciation, and discounted clearance. A disciplined supply target is a key operational discipline.",
           linkedKPIs: ["Stock-to-Sales Ratio", "Days Supply", "Carrying Cost Per Unit", "Working Capital Efficiency"],
           benefits: "Maintaining a disciplined stock-to-sales ratio reduces floor plan costs, minimises aged stock risk, and ensures consistent availability without capital over-commitment.",
+          primarySignalCode: 'PROCESS_NOT_STANDARDISED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "How does your current used vehicle stock level relate to the number of units you typically sell per month?",
@@ -814,6 +879,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Used vehicle profitability is disproportionately manager-dependent because margins are determined deal-by-deal through appraisal, sourcing, and pricing decisions that require deep market knowledge.",
           linkedKPIs: ["Gross Per Used Vehicle", "Appraisal Accuracy Rate", "Stock Sourcing Efficiency", "Staff Expertise Index"],
           benefits: "Investing in specialist used vehicle management pays back rapidly through improved appraisal accuracy, better buying, tighter inventory control, and higher per-unit gross.",
+          primarySignalCode: 'ROLE_OWNERSHIP_MISSING',
+          rootCauseDimension: 'people',
           translations: {
             en: {
               text: "How would you describe the experience level and specialist knowledge of the people managing your used vehicle operation?",
@@ -863,6 +930,9 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Higher efficiency indicates better workflow management, adequate staffing, and optimized processes.",
           linkedKPIs: ["Labor Utilization Rate", "Productive Hours", "Technician Efficiency", "Revenue Per Hour"],
           benefits: "Improved labor efficiency increases profitability, reduces customer wait times, and maximizes revenue potential from existing resources.",
+          primarySignalCode: 'CAPACITY_MISALIGNED',
+          secondarySignalCode: 'PROCESS_NOT_EXECUTED',
+          rootCauseDimension: 'structure',
           translations: {
             en: {
               text: "What percentage of your technicians' available hours are spent on billable, productive work?",
@@ -888,6 +958,9 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "High rate utilization indicates strong value proposition, competitive pricing, and effective customer communication.",
           linkedKPIs: ["Effective Labor Rate", "Price Realization", "Service Revenue", "Profit Margin"],
           benefits: "Maximizing labor rate utilization significantly improves service department profitability and competitive positioning.",
+          primarySignalCode: 'PROCESS_NOT_STANDARDISED',
+          secondarySignalCode: 'KPI_NOT_REVIEWED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "What percentage of your posted labor rate do you actually realize on customer-pay work?",
@@ -913,6 +986,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Short wait times indicate optimal capacity management and strong operational efficiency.",
           linkedKPIs: ["Appointment Lead Time", "Capacity Utilization", "Customer Convenience", "Service Accessibility"],
           benefits: "Better appointment availability improves customer satisfaction, increases service retention, and enhances competitive advantage.",
+          primarySignalCode: 'CAPACITY_MISALIGNED',
+          rootCauseDimension: 'structure',
           translations: {
             en: {
               text: "How soon can customers typically get an appointment for routine service at your dealership?",
@@ -938,6 +1013,9 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "High first-time fix rates indicate skilled technicians, proper diagnostic procedures, and quality parts.",
           linkedKPIs: ["Quality Index", "Rework Rate", "Customer Satisfaction", "Diagnostic Accuracy"],
           benefits: "Improving first-time fix rates enhances customer trust, reduces costs, increases efficiency, and builds long-term loyalty.",
+          primarySignalCode: 'PROCESS_NOT_EXECUTED',
+          secondarySignalCode: 'ROLE_OWNERSHIP_MISSING',
+          rootCauseDimension: 'people',
           translations: {
             en: {
               text: "What percentage of repairs are completed correctly on the first visit without requiring a return?",
@@ -963,6 +1041,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "High satisfaction scores indicate excellent customer experience, quality work, and effective communication.",
           linkedKPIs: ["Net Promoter Score", "Customer Retention Rate", "Referral Rate", "Service Loyalty"],
           benefits: "Excellent service satisfaction drives customer loyalty, generates referrals, and creates sustainable competitive advantage.",
+          primarySignalCode: 'KPI_NOT_REVIEWED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "How do customers rate their overall experience with your service department?",
@@ -988,6 +1068,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "High recovery rates indicate proper documentation, process compliance, and effective manufacturer relationships.",
           linkedKPIs: ["Warranty Recovery Rate", "Process Compliance", "Administrative Efficiency", "Profit Recovery"],
           benefits: "Maximizing warranty recovery improves profitability, ensures proper compensation for work performed, and maintains cash flow.",
+          primarySignalCode: 'PROCESS_NOT_EXECUTED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "What percentage of your warranty claims are successfully approved and reimbursed by the manufacturer?",
@@ -1013,6 +1095,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Higher certification levels indicate investment in training, technical competency, and professional standards.",
           linkedKPIs: ["Certification Rate", "Technical Competency", "Training Investment", "Service Quality"],
           benefits: "Higher certification levels improve service quality, enhance customer confidence, and support premium pricing strategies.",
+          primarySignalCode: 'ROLE_OWNERSHIP_MISSING',
+          rootCauseDimension: 'people',
           translations: {
             en: {
               text: "What percentage of your technicians hold current ASE certifications or equivalent manufacturer credentials?",
@@ -1038,6 +1122,9 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "High retention rates indicate satisfied customers, quality service, and effective customer relationship management.",
           linkedKPIs: ["Customer Retention Rate", "Service Loyalty", "Repeat Business", "Customer Lifetime Value"],
           benefits: "Strong service retention creates predictable revenue, reduces marketing costs, and builds sustainable business growth.",
+          primarySignalCode: 'KPI_NOT_REVIEWED',
+          secondarySignalCode: 'GOVERNANCE_WEAK',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "What percentage of your service customers return for additional service within 12 months?",
@@ -1063,6 +1150,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "High parts availability indicates effective inventory planning, supplier relationships, and demand forecasting.",
           linkedKPIs: ["Parts Fill Rate", "Service Efficiency", "Customer Wait Time", "Inventory Management"],
           benefits: "Better parts availability improves service efficiency, reduces customer wait times, and enhances overall satisfaction.",
+          primarySignalCode: 'CAPACITY_MISALIGNED',
+          rootCauseDimension: 'structure',
           translations: {
             en: {
               text: "When a technician needs a part, how often is it immediately available in your parts inventory?",
@@ -1088,6 +1177,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Digital communication tools improve customer experience, reduce phone calls, and enhance transparency.",
           linkedKPIs: ["Digital Adoption Rate", "Customer Communication", "Process Efficiency", "Customer Experience"],
           benefits: "Digital communication improves customer experience, increases efficiency, and differentiates your service offering.",
+          primarySignalCode: 'TOOL_UNDERUTILISED',
+          rootCauseDimension: 'tools',
           translations: {
             en: {
               text: "How effectively do you use digital tools to keep customers informed about their vehicle's service status?",
@@ -1113,6 +1204,9 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Higher productivity indicates efficient processes, good training, and effective customer management systems.",
           linkedKPIs: ["Advisor Productivity", "Service Capacity", "Revenue Per Advisor", "Customer Throughput"],
           benefits: "Improved advisor productivity increases revenue capacity, reduces wait times, and maximizes staff efficiency.",
+          primarySignalCode: 'CAPACITY_MISALIGNED',
+          secondarySignalCode: 'PROCESS_NOT_EXECUTED',
+          rootCauseDimension: 'structure',
           translations: {
             en: {
               text: "How many repair orders does each service advisor typically process per day?",
@@ -1138,6 +1232,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Efficient express service improves customer convenience, increases throughput, and enhances competitive positioning.",
           linkedKPIs: ["Express Service Volume", "Customer Convenience", "Service Speed", "Operational Efficiency"],
           benefits: "Optimized express service increases customer satisfaction, improves efficiency, and captures more quick-turn business.",
+          primarySignalCode: 'PROCESS_NOT_EXECUTED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "How would you rate the efficiency and throughput of your express or quick service lane?",
@@ -1163,6 +1259,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Every comeback consumes a bay slot, a technician's time, and a service advisor's capacity while delivering zero revenue and damaging customer confidence. A single repeat repair can cost 3–5× the original job in hidden operational cost.",
           linkedKPIs: ["First Time Fix Rate", "Repair Comeback Rate", "Customer Satisfaction Score", "Workshop Efficiency"],
           benefits: "Reducing comebacks frees bay capacity without adding headcount, protects CSI scores, reduces warranty exposure, and is one of the most cost-effective improvements available in fixed operations.",
+          primarySignalCode: 'PROCESS_NOT_EXECUTED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "How often do vehicles return to your service department within 30 days for the same reported fault?",
@@ -1194,6 +1292,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Customers often arrive unaware of developing maintenance needs. A confident, evidence-based presentation (e.g. tyre tread video, brake wear photo) converts significantly better than verbal-only recommendations — and is a trainable, measurable skill.",
           linkedKPIs: ["Service Advisor Upsell Rate", "Labour Revenue Per Repair Order", "Additional Work Approval Rate", "Workshop Revenue Yield"],
           benefits: "A 10-percentage-point improvement in approval rate typically adds 8–15% to total service revenue with zero increase in marketing spend or customer count.",
+          primarySignalCode: 'PROCESS_NOT_STANDARDISED',
+          rootCauseDimension: 'incentives',
           translations: {
             en: {
               text: "When a service advisor recommends additional work or maintenance items beyond what a customer originally booked for, how often do customers approve that work?",
@@ -1225,6 +1325,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Every vehicle sold but not retained in service represents lost parts margin, lost labour revenue, lost repeat purchase influence, and lost visibility into the customer's next buying cycle. Retention is typically highest in the first 12 months after purchase — the window where investment matters most.",
           linkedKPIs: ["Service Retention Rate", "Customer Lifetime Value", "Service Plan Penetration", "Fixed Operations Revenue"],
           benefits: "Each percentage point improvement in service retention translates directly to recurring fixed operations revenue, higher customer lifetime value, and stronger influencing position for the next vehicle purchase.",
+          primarySignalCode: 'KPI_NOT_REVIEWED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "Of the customers who bought a vehicle from you in the last two years, what proportion regularly return to your workshop for servicing?",
@@ -1542,6 +1644,9 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Profitability trends indicate business health, market position effectiveness, and operational efficiency.",
           linkedKPIs: ["Net Profit Margin", "ROI", "Revenue Growth", "Operating Efficiency"],
           benefits: "Strong profitability ensures business sustainability, enables growth investments, and provides financial security.",
+          primarySignalCode: 'KPI_NOT_REVIEWED',
+          secondarySignalCode: 'GOVERNANCE_WEAK',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "How would you describe your dealership's overall profitability trend over the past 12 months?",
@@ -1567,6 +1672,9 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Consistent cash flow indicates effective financial management, predictable operations, and good planning.",
           linkedKPIs: ["Cash Flow Consistency", "Working Capital", "Liquidity Ratios", "Financial Stability"],
           benefits: "Stable cash flow ensures operational continuity, enables strategic investments, and reduces financial stress.",
+          primarySignalCode: 'KPI_NOT_REVIEWED',
+          secondarySignalCode: 'GOVERNANCE_WEAK',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "How consistent and predictable is your dealership's monthly cash flow?",
@@ -1592,6 +1700,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Efficient floor plan management reduces interest costs and optimizes inventory investment.",
           linkedKPIs: ["Interest Cost Management", "Inventory Efficiency", "Days in Stock", "Financing Optimization"],
           benefits: "Optimized floor plan management reduces costs, improves cash flow, and maximizes inventory ROI.",
+          primarySignalCode: 'GOVERNANCE_WEAK',
+          rootCauseDimension: 'structure',
           translations: {
             en: {
               text: "How effectively do you manage your floor plan financing to minimize interest costs?",
@@ -1617,6 +1727,9 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Effective cost control ensures competitive pricing capability while maintaining service quality.",
           linkedKPIs: ["Operating Expense Ratio", "Cost Per Unit", "Expense Management", "Operational Efficiency"],
           benefits: "Superior cost control improves profitability, enables competitive pricing, and provides operational flexibility.",
+          primarySignalCode: 'GOVERNANCE_WEAK',
+          secondarySignalCode: 'PROCESS_NOT_STANDARDISED',
+          rootCauseDimension: 'process',
           translations: {
             en: {
               text: "How effectively does your dealership control and manage operational expenses?",
@@ -1642,6 +1755,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "High employee productivity indicates effective management, good systems, and motivated workforce.",
           linkedKPIs: ["Revenue Per Employee", "Staff Efficiency", "Productivity Index", "Human Resource ROI"],
           benefits: "Higher employee productivity improves profitability, enhances competitiveness, and creates better work environment.",
+          primarySignalCode: 'CAPACITY_MISALIGNED',
+          rootCauseDimension: 'structure',
           translations: {
             en: {
               text: "How does your revenue per employee compare to industry benchmarks for your market?",
@@ -1667,6 +1782,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Strong technology ROI indicates effective digital strategy, good vendor selection, and successful implementation.",
           linkedKPIs: ["Technology ROI", "Digital Efficiency", "System Utilization", "Innovation Index"],
           benefits: "Effective technology investment improves efficiency, enhances customer experience, and builds competitive advantage.",
+          primarySignalCode: 'TOOL_UNDERUTILISED',
+          rootCauseDimension: 'tools',
           translations: {
             en: {
               text: "What return are you achieving on your technology and equipment investments?",
@@ -1692,6 +1809,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Efficient facility utilization maximizes productivity, enhances customer experience, and optimizes space investment.",
           linkedKPIs: ["Facility Utilization Rate", "Space Productivity", "Asset Efficiency", "Layout Optimization"],
           benefits: "Optimized facility utilization improves productivity, reduces costs, and enhances customer experience.",
+          primarySignalCode: 'CAPACITY_MISALIGNED',
+          rootCauseDimension: 'structure',
           translations: {
             en: {
               text: "How efficiently are you utilizing your showroom floor space and service bay capacity?",
@@ -1717,6 +1836,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "High-quality customer data enables better decision making, targeted marketing, and improved customer service.",
           linkedKPIs: ["Data Quality Index", "Customer Insights", "Marketing Effectiveness", "Business Intelligence"],
           benefits: "Valuable customer data improves marketing ROI, enhances customer relationships, and enables data-driven decision making.",
+          primarySignalCode: 'TOOL_UNDERUTILISED',
+          rootCauseDimension: 'tools',
           translations: {
             en: {
               text: "How well do you maintain and leverage your customer database for marketing and retention?",
@@ -1742,6 +1863,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Dealerships with high fixed absorption weather economic downturns, supply disruptions, and margin compression far better than those reliant on variable vehicle gross. OEM programmes and financial institutions use this ratio to assess dealer viability.",
           linkedKPIs: ["Fixed Absorption Rate", "Fixed Operations Gross Profit", "Overhead Coverage Ratio", "Dealership Resilience Index"],
           benefits: "Every percentage point of absorption improvement represents direct overhead coverage that reduces the volume of vehicle sales needed to break even — materially de-risking the entire business.",
+          primarySignalCode: 'GOVERNANCE_WEAK',
+          rootCauseDimension: 'structure',
           translations: {
             en: {
               text: "To what extent does the gross profit generated by your service and parts departments cover the total fixed overhead of your dealership?",
@@ -1773,6 +1896,8 @@ export const questionnaire: Questionnaire = {
           situationAnalysis: "Dealerships without structured performance management cannot diagnose whether underperformance is a skill, will, or process issue. Without clear targets and regular feedback, even capable staff drift, and top performers leave for environments that recognise them.",
           linkedKPIs: ["Staff Performance Index", "Employee Retention Rate", "Variable Pay Alignment", "Management Effectiveness Score"],
           benefits: "Structured performance management improves productivity without headcount increases, reduces turnover through recognition and development clarity, and creates the management infrastructure needed to scale consistently.",
+          primarySignalCode: 'GOVERNANCE_WEAK',
+          rootCauseDimension: 'incentives',
           translations: {
             en: {
               text: "How structured and consistent is the way your dealership reviews individual staff performance and links it to development and compensation?",

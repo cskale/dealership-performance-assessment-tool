@@ -16,9 +16,7 @@
  * enabling KPI-specific action template selection.
  */
 
-import { SignalMapping, SignalCode } from './signalTypes';
-
-export type RootCauseDimension = 'people' | 'process' | 'tools' | 'structure' | 'incentives';
+import { SignalMapping, SignalCode, RootCauseDimension } from './signalTypes';
 
 export interface EnrichedSignalMapping extends SignalMapping {
   rootCauseDimension?: RootCauseDimension;

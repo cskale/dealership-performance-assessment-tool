@@ -20,6 +20,8 @@ export type Severity = 'LOW' | 'MEDIUM' | 'HIGH';
 
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
 
+export type RootCauseDimension = 'people' | 'process' | 'tools' | 'structure' | 'incentives';
+
 export interface Signal {
   signalCode: SignalCode;
   severity: Severity;

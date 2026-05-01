@@ -12,6 +12,7 @@
 
 import { Signal, SignalCode, Severity } from '@/data/signalTypes';
 import { SIGNAL_MAPPINGS, getSignalMapping } from '@/data/signalMappings';
+import { questionnaire, Question } from '@/data/questionnaire';
 import { ACTION_TEMPLATES, getTemplatesForSignal, ActionTemplate, ImplementationStep } from '@/data/actionTemplates';
 import { getTemplateIdsForSignal, getMaxActionsForSignal, getKPISpecificTemplateIds } from '@/data/signalToActionMap';
 import {
@@ -160,6 +161,95 @@ function buildKPIRationale(linkedKPIs: string[], moduleKey: string): string {
   return rationale;
 }
 
+/** Derive module key from question ID prefix */
+function deriveModuleFromId(questionId: string): string {
+  const prefix = questionId.split('-')[0];
+  const map: Record<string, string> = {
+    nvs: 'new-vehicle-sales',
+    uvs: 'used-vehicle-sales',
+    svc: 'service-performance',
+    pts: 'parts-inventory',
+    fin: 'financial-operations',
+  };
+  return map[prefix] ?? 'unknown';
+}
+
+/** Derive signal code from category (mirrors CATEGORY_SIGNAL_MAP in signalMappings.ts) */
+function deriveSignalFromCategory(category: string): SignalCode {
+  const map: Record<string, SignalCode> = {
+    volume: 'CAPACITY_MISALIGNED', conversion: 'PROCESS_NOT_EXECUTED',
+    satisfaction: 'KPI_NOT_REVIEWED', profitability: 'KPI_NOT_REVIEWED',
+    efficiency: 'PROCESS_NOT_EXECUTED', digital: 'TOOL_UNDERUTILISED',
+    technology: 'TOOL_UNDERUTILISED', training: 'ROLE_OWNERSHIP_MISSING',
+    certification: 'ROLE_OWNERSHIP_MISSING', inventory: 'PROCESS_NOT_STANDARDISED',
+    turnover: 'PROCESS_NOT_STANDARDISED', obsolete: 'GOVERNANCE_WEAK',
+    financial: 'KPI_NOT_REVIEWED', cashflow: 'KPI_NOT_REVIEWED',
+    floorplan: 'GOVERNANCE_WEAK', costs: 'GOVERNANCE_WEAK',
+    pricing: 'PROCESS_NOT_STANDARDISED', quality: 'PROCESS_NOT_EXECUTED',
+    accuracy: 'PROCESS_NOT_STANDARDISED', availability: 'CAPACITY_MISALIGNED',
+    warranty: 'PROCESS_NOT_EXECUTED', retention: 'KPI_NOT_REVIEWED',
+    parts: 'CAPACITY_MISALIGNED', emergency: 'CAPACITY_MISALIGNED',
+    vendor: 'GOVERNANCE_WEAK', wholesale: 'PROCESS_NOT_STANDARDISED',
+    returns: 'PROCESS_NOT_EXECUTED', counter: 'PROCESS_NOT_EXECUTED',
+    productivity: 'CAPACITY_MISALIGNED', express: 'PROCESS_NOT_EXECUTED',
+    facility: 'CAPACITY_MISALIGNED', data: 'TOOL_UNDERUTILISED',
+  };
+  return map[category.toLowerCase()] ?? 'NONE';
+}
+
+/**
+ * Three-tier signal resolution:
+ * Tier 1 — question object's own primarySignalCode (question-driven, zero-maintenance)
+ * Tier 2 — SIGNAL_MAPPINGS lookup (legacy explicit mapping)
+ * Tier 3 — category-based derivation (catch-all)
+ */
+function getResolvedSignalMapping(
+  questionId: string,
+  allQuestions: Map<string, Question>
+): { primarySignalCode: SignalCode; moduleKey: string; rootCauseDimension: string; linkedKPIs: string[]; tier: 1 | 2 | 3 } | null {
+  const question = allQuestions.get(questionId);
+
+  // Tier 1: question object
+  if (question?.primarySignalCode && question.primarySignalCode !== 'NONE') {
+    const mapping = getSignalMapping(questionId);
+    return {
+      primarySignalCode: question.primarySignalCode,
+      moduleKey: mapping?.moduleKey ?? deriveModuleFromId(questionId),
+      rootCauseDimension: question.rootCauseDimension ?? 'process',
+      linkedKPIs: question.linkedKPIs ?? [],
+      tier: 1,
+    };
+  }
+
+  // Tier 2: SIGNAL_MAPPINGS
+  const mapping = getSignalMapping(questionId);
+  if (mapping && mapping.primarySignalCode !== 'NONE') {
+    return {
+      primarySignalCode: mapping.primarySignalCode,
+      moduleKey: mapping.moduleKey,
+      rootCauseDimension: mapping.rootCauseDimension ?? 'process',
+      linkedKPIs: question?.linkedKPIs ?? [],
+      tier: 2,
+    };
+  }
+
+  // Tier 3: category-based derivation
+  if (question) {
+    const derived = deriveSignalFromCategory(question.category);
+    if (derived !== 'NONE') {
+      return {
+        primarySignalCode: derived,
+        moduleKey: deriveModuleFromId(questionId),
+        rootCauseDimension: 'process',
+        linkedKPIs: question.linkedKPIs ?? [],
+        tier: 3,
+      };
+    }
+  }
+
+  return null;
+}
+
 /**
  * Main signal generation function
  */
@@ -172,6 +262,16 @@ export function generateSignals(
   if (!config.enableAutoActions) {
     return [];
   }
+
+  // Build O(1) question lookup — done once per call, not inside the per-answer loop
+  const allQuestions = new Map<string, Question>();
+  for (const section of questionnaire.sections) {
+    for (const q of section.questions) {
+      allQuestions.set(q.id, q);
+    }
+  }
+
+  const tierCounts: [number, number, number] = [0, 0, 0];
 
   const signalGroups: Map<string, {
     signalCode: Exclude<SignalCode, 'NONE'>;
@@ -187,20 +287,19 @@ export function generateSignals(
       continue;
     }
 
-    const mapping = getSignalMapping(questionId);
-    if (!mapping || mapping.primarySignalCode === 'NONE') {
-      continue;
-    }
+    const resolved = getResolvedSignalMapping(questionId, allQuestions);
+    if (!resolved) continue;
+    tierCounts[resolved.tier - 1]++;
 
     const weight = questionWeights[questionId] || 1.0;
     const severity = determineSeverity(score, weight, config);
 
-    const groupKey = `${mapping.primarySignalCode}::${mapping.moduleKey}`;
+    const groupKey = `${resolved.primarySignalCode}::${resolved.moduleKey}`;
 
     if (!signalGroups.has(groupKey)) {
       signalGroups.set(groupKey, {
-        signalCode: mapping.primarySignalCode,
-        moduleKey: mapping.moduleKey,
+        signalCode: resolved.primarySignalCode,
+        moduleKey: resolved.moduleKey,
         questionIds: [],
         scores: {},
         maxSeverity: severity,
@@ -211,16 +310,18 @@ export function generateSignals(
     const group = signalGroups.get(groupKey)!;
     group.questionIds.push(questionId);
     group.scores[questionId] = score;
-    
+
     if (severity === 'HIGH' || (severity === 'MEDIUM' && group.maxSeverity === 'LOW')) {
       group.maxSeverity = severity;
     }
 
     // Collect linked KPIs from question metadata
-    const kpis = questionLinkedKPIs?.[questionId];
-    if (kpis) {
-      kpis.forEach(k => group.linkedKPIs.add(k));
-    }
+    const kpis = questionLinkedKPIs?.[questionId] ?? resolved.linkedKPIs;
+    kpis.forEach(k => group.linkedKPIs.add(k));
+  }
+
+  if (import.meta.env.DEV) {
+    console.log(`[SignalEngine] Resolution tiers — T1 (question): ${tierCounts[0]}, T2 (mappings): ${tierCounts[1]}, T3 (category): ${tierCounts[2]}`);
   }
 
   // Ceiling pass: score exactly 4 on high-weight questions in high-performing modules
