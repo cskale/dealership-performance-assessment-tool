@@ -9,6 +9,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { ExecutiveSummary } from "@/components/ExecutiveSummary";
 import { CeilingInsightsPanel } from "@/components/results/CeilingInsightsPanel";
+import { RadarBenchmarkChart } from "@/components/results/RadarBenchmarkChart";
 import { IndustrialKPIDashboard } from "@/components/IndustrialKPIDashboard";
 import { MaturityScoring } from "@/components/MaturityScoring";
 import { ActionPlan } from "@/components/ActionPlan";
