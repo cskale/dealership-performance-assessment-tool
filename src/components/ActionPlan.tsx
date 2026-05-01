@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   Plus, Loader2, Pencil,
-  AlertTriangle, Target, Eye, Search, Filter, CalendarIcon
+  AlertTriangle, Target, Eye, Search, Filter, CalendarIcon, LayoutGrid, List as ListIcon
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
