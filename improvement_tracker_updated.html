@@ -3,1090 +3,444 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dealer Diagnostic – Improvement Master Tracker</title>
+<title>Dealer Diagnostic – Master Tracker v2</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #f4f3ef;
-    --surface: #ffffff;
-    --border: #e4e2db;
-    --border-strong: #c8c5bc;
-    --text-primary: #1c1b18;
-    --text-secondary: #6b6860;
-    --text-muted: #9c9890;
-    --done: #1a6b3c;
-    --done-bg: #e8f5ee;
-    --done-border: #b8dfc8;
-    --partial: #92610a;
-    --partial-bg: #fef6e4;
-    --partial-border: #f0d59a;
-    --pending: #1d4ed8;
-    --pending-bg: #eff6ff;
-    --pending-border: #bfdbfe;
-    --blocked: #991b1b;
-    --blocked-bg: #fef2f2;
-    --blocked-border: #fecaca;
-    --lovable: #7c3aed;
-    --lovable-bg: #f5f3ff;
-    --manual: #065f46;
-    --manual-bg: #ecfdf5;
-    --both: #92610a;
-    --both-bg: #fffbeb;
-    --accent: #2563eb;
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f2f1ed;--surface:#fff;--surface2:#f8f7f3;--border:#e2e0d8;--border-strong:#c4c2b8;
+    --text-primary:#1a1916;--text-secondary:#5c5a54;--text-muted:#96948e;
+    --done:#1a6b3c;--done-bg:#e8f5ee;--done-border:#b8dfc8;--done-dot:#16a34a;
+    --partial:#92610a;--partial-bg:#fef6e4;--partial-border:#f0d59a;--partial-dot:#d97706;
+    --pending:#1d4ed8;--pending-bg:#eff6ff;--pending-border:#bfdbfe;--pending-dot:#2563eb;
+    --new:#0f6e56;--new-bg:#e1f5ee;--new-border:#9fe1cb;--new-dot:#1D9E75;
+    --accent:#0052CC;
   }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text-primary);
-    min-height: 100vh;
-    line-height: 1.5;
-  }
-
-  .header {
-    background: var(--text-primary);
-    color: #fff;
-    padding: 32px 40px 28px;
-  }
-  .header-eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: #9ca3af; margin-bottom: 8px; }
-  .header-title { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 4px; }
-  .header-sub { font-size: 13px; color: #9ca3af; }
-
-  .summary-bar {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 18px 40px;
-    display: flex;
-    align-items: center;
-    gap: 32px;
-    flex-wrap: wrap;
-  }
-  .stat { display: flex; align-items: baseline; gap: 6px; }
-  .stat-num { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
-  .stat-label { font-size: 12px; color: var(--text-secondary); }
-  .stat-num.green { color: var(--done); }
-  .stat-num.amber { color: var(--partial); }
-  .stat-num.blue { color: var(--pending); }
-  .stat-num.red { color: var(--blocked); }
-  .summary-divider { width: 1px; height: 32px; background: var(--border); }
-  .progress-wrap { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px; }
-  .progress-track { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; display: flex; }
-  .progress-seg { height: 100%; }
-  .seg-done { background: var(--done); }
-  .seg-partial { background: #f59e0b; }
-  .seg-pending { background: var(--pending); }
-  .seg-blocked { background: var(--blocked); }
-  .progress-label { font-size: 11px; color: var(--text-secondary); white-space: nowrap; }
-
-  .filter-bar {
-    padding: 14px 40px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-  }
-  .filter-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-right: 4px; }
-  .filter-btn {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border);
-    background: var(--bg); color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
-    font-weight: 400;
-  }
-  .filter-btn:hover { border-color: var(--border-strong); color: var(--text-primary); }
-  .filter-btn.active { background: var(--text-primary); color: #fff; border-color: var(--text-primary); }
-
-  .content { padding: 24px 40px 60px; }
-
-  .category { margin-bottom: 28px; }
-  .category-header {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 0; margin-bottom: 8px;
-    border-bottom: 2px solid var(--text-primary);
-  }
-  .category-icon { font-size: 14px; }
-  .category-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-primary); }
-  .category-count { font-size: 11px; color: var(--text-muted); margin-left: auto; }
-
-  .item {
-    display: grid;
-    grid-template-columns: 28px 1fr 110px 110px 130px;
-    gap: 12px;
-    align-items: start;
-    padding: 12px 14px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    margin-bottom: 6px;
-    transition: border-color 0.15s;
-  }
-  .item:hover { border-color: var(--border-strong); }
-  .item.hidden { display: none; }
-
-  .item-num {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px; color: var(--text-muted); padding-top: 2px;
-  }
-
-  .item-title { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 3px; }
-  .item-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
-
-  .status-badge {
-    display: inline-flex; align-items: center; gap: 4px;
-    font-size: 11px; font-weight: 500; padding: 4px 9px;
-    border-radius: 20px; border: 1px solid; white-space: nowrap;
-  }
-  .status-dot { width: 5px; height: 5px; border-radius: 50%; }
-  .s-done { background: var(--done-bg); color: var(--done); border-color: var(--done-border); }
-  .s-done .status-dot { background: var(--done); }
-  .s-partial { background: var(--partial-bg); color: var(--partial); border-color: var(--partial-border); }
-  .s-partial .status-dot { background: var(--partial); }
-  .s-pending { background: var(--pending-bg); color: var(--pending); border-color: var(--pending-border); }
-  .s-pending .status-dot { background: var(--pending); }
-  .s-blocked { background: var(--blocked-bg); color: var(--blocked); border-color: var(--blocked-border); }
-  .s-blocked .status-dot { background: var(--blocked); }
-
-  .method-badge {
-    display: inline-flex; align-items: center; gap: 4px;
-    font-size: 11px; font-weight: 500; padding: 4px 9px;
-    border-radius: 6px; white-space: nowrap;
-  }
-  .m-lovable { background: var(--lovable-bg); color: var(--lovable); }
-  .m-manual { background: var(--manual-bg); color: var(--manual); }
-  .m-both { background: var(--both-bg); color: var(--both); }
-  .m-na { background: var(--bg); color: var(--text-muted); }
-
-  .phase-badge {
-    font-size: 10px; font-weight: 600; padding: 3px 8px;
-    border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em;
-    display: inline-block; white-space: nowrap;
-  }
-  .ph-now { background: #fee2e2; color: #991b1b; }
-  .ph-1 { background: #dcfce7; color: #166534; }
-  .ph-2 { background: #dbeafe; color: #1e40af; }
-  .ph-3 { background: #ede9fe; color: #6d28d9; }
-  .ph-done { background: #f3f4f6; color: #6b7280; }
-
-  .legend {
-    display: flex; gap: 20px; flex-wrap: wrap;
-    padding: 14px 40px 0;
-    font-size: 11px; color: var(--text-secondary);
-  }
-  .legend-item { display: flex; align-items: center; gap: 5px; }
-  .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
-
-  .sprint-banner {
-    margin: 20px 40px;
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    border-left: 4px solid #2563eb;
-    border-radius: 8px;
-    padding: 16px;
-  }
-  .sprint-banner-title { font-size: 12px; font-weight: 600; color: #1e40af; margin-bottom: 6px; }
-  .sprint-banner-items { font-size: 11px; color: #1e40af; line-height: 1.6; }
-
-  @media (max-width: 900px) {
-    .header, .summary-bar, .filter-bar, .content, .legend, .sprint-banner { padding-left: 16px; padding-right: 16px; }
-    .item { grid-template-columns: 24px 1fr; }
-    .item > :nth-child(3), .item > :nth-child(4), .item > :nth-child(5) { display: none; }
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-primary);min-height:100vh;line-height:1.5}
+  .header{background:var(--text-primary);color:#fff;padding:32px 44px 28px;position:relative;overflow:hidden}
+  .header::after{content:'v2';position:absolute;right:44px;top:50%;transform:translateY(-50%);font-size:100px;font-weight:700;color:rgba(255,255,255,0.04);letter-spacing:-0.05em;pointer-events:none}
+  .header-eyebrow{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:8px}
+  .header-title{font-size:26px;font-weight:600;letter-spacing:-.02em;margin-bottom:4px;display:flex;align-items:center;gap:12px}
+  .v2-badge{font-size:11px;font-weight:700;background:var(--accent);color:#fff;padding:2px 10px;border-radius:99px;letter-spacing:.04em}
+  .header-sub{font-size:13px;color:#9ca3af}
+  .summary-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:18px 44px;display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+  .stat{display:flex;align-items:baseline;gap:6px}
+  .stat-num{font-size:24px;font-weight:600;letter-spacing:-.02em}
+  .stat-label{font-size:12px;color:var(--text-secondary)}
+  .stat-num.green{color:var(--done)}.stat-num.amber{color:var(--partial)}.stat-num.blue{color:var(--pending)}.stat-num.teal{color:var(--new)}
+  .summary-divider{width:1px;height:32px;background:var(--border)}
+  .progress-wrap{display:flex;align-items:center;gap:10px;flex:1;min-width:200px}
+  .progress-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;display:flex}
+  .progress-seg{height:100%;transition:width .4s}
+  .seg-done{background:var(--done-dot)}.seg-partial{background:var(--partial-dot)}.seg-pending{background:var(--pending-dot)}.seg-new{background:var(--new-dot)}
+  .progress-label{font-size:11px;color:var(--text-secondary);white-space:nowrap;font-weight:500}
+  .banners{padding:0 44px;margin-top:16px;display:flex;flex-direction:column;gap:8px}
+  .sprint-banner{background:#f0fdf4;border:1px solid #bbf7d0;border-left:4px solid #16a34a;border-radius:8px;padding:12px 16px}
+  .sprint-banner-title{font-size:12px;font-weight:600;color:#166534;margin-bottom:4px}
+  .sprint-banner-items{font-size:11px;color:#166534;line-height:1.7}
+  .filter-bar{padding:14px 44px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--surface);border-top:1px solid var(--border);margin-top:16px}
+  .filter-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-right:4px}
+  .filter-btn{font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--bg);color:var(--text-secondary);cursor:pointer;transition:all .15s;font-weight:400}
+  .filter-btn:hover{border-color:var(--border-strong);color:var(--text-primary)}
+  .filter-btn.active{background:var(--text-primary);color:#fff;border-color:var(--text-primary)}
+  .search-wrap{margin-left:auto}
+  .search-input{font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text-primary);width:200px}
+  .search-input:focus{outline:none;border-color:var(--accent)}
+  .search-input::placeholder{color:var(--text-muted)}
+  .content{padding:24px 44px 64px}
+  .section-head{display:flex;align-items:center;gap:12px;padding:24px 0 12px;border-bottom:2px solid var(--text-primary);margin-bottom:16px;flex-wrap:wrap}
+  .section-icon{font-size:14px}
+  .section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.07em}
+  .section-subtitle{font-size:11px;color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0}
+  .section-tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;letter-spacing:.04em;text-transform:uppercase}
+  .tag-carry{background:#e0e7ff;color:#3730a3}.tag-ux{background:#fce7f3;color:#9d174d}.tag-notify{background:#fef3c7;color:#92400e}.tag-coach{background:#d1fae5;color:#065f46}
+  .section-count{margin-left:auto;font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace}
+  .category{margin-bottom:20px}
+  .category-header{display:flex;align-items:center;gap:8px;padding:7px 0;margin-bottom:6px;border-bottom:1px solid var(--border)}
+  .category-icon{font-size:11px;color:var(--text-muted)}
+  .category-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary)}
+  .category-count{font-size:10px;color:var(--text-muted);margin-left:auto;font-family:'DM Mono',monospace}
+  .item{display:grid;grid-template-columns:30px 1fr 100px 90px 110px 80px;gap:10px;align-items:start;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:5px;transition:border-color .15s}
+  .item:hover{border-color:var(--border-strong)}
+  .item.hidden{display:none}
+  .item.is-new{border-left:3px solid var(--new-dot)}
+  .item-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);padding-top:3px}
+  .item-title{font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:3px;line-height:1.4}
+  .item-desc{font-size:11px;color:var(--text-secondary);line-height:1.5}
+  .dep-tag{display:inline-block;font-size:10px;background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:1px 5px;color:var(--text-muted);margin-top:4px;font-family:'DM Mono',monospace}
+  .status-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:4px 9px;border-radius:20px;border:1px solid;white-space:nowrap}
+  .status-dot{width:5px;height:5px;border-radius:50%}
+  .s-done{background:var(--done-bg);color:var(--done);border-color:var(--done-border)}.s-done .status-dot{background:var(--done-dot)}
+  .s-partial{background:var(--partial-bg);color:var(--partial);border-color:var(--partial-border)}.s-partial .status-dot{background:var(--partial-dot)}
+  .s-pending{background:var(--pending-bg);color:var(--pending);border-color:var(--pending-border)}.s-pending .status-dot{background:var(--pending-dot)}
+  .s-new{background:var(--new-bg);color:var(--new);border-color:var(--new-border)}.s-new .status-dot{background:var(--new-dot)}
+  .effort{font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;white-space:nowrap}
+  .e-low{background:#dcfce7;color:#14532d}.e-med{background:#fef9c3;color:#713f12}.e-high{background:#fee2e2;color:#7f1d1d}.e-na{background:var(--bg);color:var(--text-muted)}
+  .prio{font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;white-space:nowrap;border:1px solid transparent}
+  .p-now{background:#fef2f2;color:#991b1b;border-color:#fecaca}
+  .p-1{background:#fff7ed;color:#9a3412;border-color:#fed7aa}
+  .p-2{background:#eff6ff;color:#1e40af;border-color:#bfdbfe}
+  .p-3{background:#f5f3ff;color:#5b21b6;border-color:#ddd6fe}
+  .p-done{background:var(--bg);color:var(--text-muted);border-color:var(--border)}
+  .method-badge{display:inline-flex;align-items:center;font-size:11px;font-weight:500;padding:3px 8px;border-radius:6px;white-space:nowrap}
+  .m-lovable{background:#f5f3ff;color:#7c3aed}.m-cc{background:#eff6ff;color:#1d4ed8}.m-both{background:#fffbeb;color:#92610a}.m-manual{background:#ecfdf5;color:#065f46}.m-supa{background:#e0f2fe;color:#0369a1}.m-na{background:var(--bg);color:var(--text-muted)}
+  .col-header{display:grid;grid-template-columns:30px 1fr 100px 90px 110px 80px;gap:10px;padding:5px 14px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:4px}
+  .new-divider{margin:32px 0 0;padding:14px 16px;background:#f0fdfa;border-radius:10px;border:1px solid var(--new-border);display:flex;align-items:center;gap:10px}
+  .nsd-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--new)}
+  .nsd-desc{font-size:12px;color:var(--text-secondary)}
+  .footer{background:var(--text-primary);color:#6b7280;font-size:11px;padding:16px 44px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+  .footer strong{color:#9ca3af}
+  @media(max-width:900px){
+    .header,.summary-bar,.filter-bar,.content,.banners,.footer{padding-left:16px;padding-right:16px}
+    .item,.col-header{grid-template-columns:24px 1fr}
+    .item>:nth-child(n+3),.col-header>:nth-child(n+3){display:none}
   }
 </style>
 </head>
 <body>
-
 <div class="header">
   <div class="header-eyebrow">Dealer Diagnostic Platform · Munich 2026</div>
-  <div class="header-title">Improvement Master Tracker</div>
-  <div class="header-sub">Last updated: 29 April 2026 (Role Architecture, OEM/Coach Platform, Coach Invite Flow, OEM Network Setup complete) — see sprint banner below for full change log</div>
+  <div class="header-title">Master Improvement Tracker <span class="v2-badge">v2.0</span></div>
+  <div class="header-sub">Supersedes v1 · All 58 original items carried forward · 25 roadmap features added · 83 items total · Created 01 May 2026</div>
 </div>
 
 <div class="summary-bar">
-  <div class="stat"><span class="stat-num green" id="cnt-done">23</span><span class="stat-label">Implemented</span></div>
+  <div class="stat"><span class="stat-num green" id="cnt-done">–</span><span class="stat-label">Done</span></div>
   <div class="summary-divider"></div>
-  <div class="stat"><span class="stat-num amber" id="cnt-partial">9</span><span class="stat-label">Partially done</span></div>
+  <div class="stat"><span class="stat-num amber" id="cnt-partial">–</span><span class="stat-label">Partial</span></div>
   <div class="summary-divider"></div>
-  <div class="stat"><span class="stat-num blue" id="cnt-pending">25</span><span class="stat-label">Not yet built</span></div>
+  <div class="stat"><span class="stat-num blue" id="cnt-pending">–</span><span class="stat-label">Pending</span></div>
   <div class="summary-divider"></div>
-  <div class="stat"><span class="stat-num red" id="cnt-blocked">1</span><span class="stat-label">Blocked</span></div>
+  <div class="stat"><span class="stat-num teal" id="cnt-new">–</span><span class="stat-label">Roadmap (new)</span></div>
   <div class="summary-divider"></div>
   <div class="progress-wrap">
     <div class="progress-track">
-      <div class="progress-seg seg-done" id="bar-done" style="width:39.6%"></div>
-      <div class="progress-seg seg-partial" id="bar-partial" style="width:15.5%"></div>
-      <div class="progress-seg seg-pending" id="bar-pending" style="width:43.1%"></div>
-      <div class="progress-seg seg-blocked" id="bar-blocked" style="width:1.7%"></div>
+      <div class="progress-seg seg-done" id="bar-done"></div>
+      <div class="progress-seg seg-partial" id="bar-partial"></div>
+      <div class="progress-seg seg-pending" id="bar-pending"></div>
+      <div class="progress-seg seg-new" id="bar-new"></div>
     </div>
-    <div class="progress-label" id="pct-label">67% complete</div>
+    <div class="progress-label" id="pct-label">–</div>
   </div>
 </div>
 
-<div class="sprint-banner">
-  <div class="sprint-banner-title">✓ Sprint 3 Complete (27 March 2026)</div>
-  <div class="sprint-banner-items">
-    ✓ #01 Role enum unified (partial)<br>
-    ✓ #02 implementationSteps format verified<br>
-    ✓ #04 Cross-validation rules wired<br>
-    ✓ #07 Business model template tagging fixed<br>
-    ✓ #10 Evidence-based scale labels (46 questions now)<br>
-    ✓ #11 Score-band template selection<br>
-    ✓ #12 Ceiling analysis wired to Results<br>
-    ✓ All 52 tests passing | Auth tests 7/7 | ESLint critical violations cleared
+<div class="banners">
+  <div class="sprint-banner">
+    <div class="sprint-banner-title">✓ Sprint 3 Complete (27 March 2026)</div>
+    <div class="sprint-banner-items">✓ #01 Role enum unified · ✓ #04 Cross-validation wired · ✓ #07 Business model tagging fixed · ✓ #10 Evidence-based labels (46 questions) · ✓ #11 Score-band template selection · ✓ #12 Ceiling analysis wired · All 52 tests passing</div>
   </div>
-</div>
-
-<div class="sprint-banner" style="background:#f0fdf4; border-color:#bbf7d0; border-left-color:#16a34a;">
-  <div class="sprint-banner-title" style="color:#166534;">✓ Round 2 Complete (28 April 2026)</div>
-  <div class="sprint-banner-items" style="color:#166534;">
-    ✓ #10 Evidence-based scale labels — Done (satisfaction questions: % options replaced with qualitative labels)<br>
-    ✓ #27 KPI analysis: all assessed departments shown ordered by score ascending; View Details wired to encyclopedia modal; duplicate overall score block removed<br>
-    ✓ #33 Results: systemic patterns + top findings merged into unified Key Diagnostic Findings block; module abbreviations expanded to full names<br>
-    ✓ #43 Assessment sidebar made sticky, dead scroll space eliminated (Partial)<br>
-    ✓ #54 Design system specification (DESIGN.md) — Done<br>
-    ✓ Assessment UX: option label made primary, redundant rating instruction removed<br>
-    ✓ Results: questions answered coverage card replaces assessment confidence card<br>
-    ✓ Actions: owner workload panel and toolbar button removed
+  <div class="sprint-banner">
+    <div class="sprint-banner-title">✓ Round 2 Complete (28 April 2026)</div>
+    <div class="sprint-banner-items">✓ #10 Satisfaction labels · ✓ #27 KPI analysis all depts + View Details · ✓ #33 Unified Key Diagnostic Findings · ✓ #43 Sticky sidebar · ✓ #54 DESIGN.md · Assessment UX refinements · Actions toolbar cleanup</div>
   </div>
-</div>
-
-<div class="sprint-banner" style="background:#f0fdf4; border-color:#bbf7d0; border-left-color:#16a34a;">
-  <div class="sprint-banner-title" style="color:#166534;">✓ April 2026 Session Complete (29 April 2026) — Role Architecture, OEM/Coach Platform, Coach Invite Flow, OEM Network Setup</div>
-  <div class="sprint-banner-items" style="color:#166534;">
-    ✓ #01 Role architecture — Done: actor_type enum (dealer/coach/oem), ProtectedRoute requiresActorType guard, AppSidebar conditional nav, actor_type backfill migration for all existing users<br>
-    ✓ #05 Network architecture — Done: oem_networks, dealer_network_memberships, coach_dealership_assignments all live with full RLS policies<br>
-    ✓ #38 OEM network dashboard — Done: OemDashboard.tsx live at /app/oem-dashboard (leaderboard with scores, trends, rank); OemSettings.tsx at /app/oem-settings (create network, add/remove dealers by email, programme tiers); OemModeToggle self-service activation in Account → Organisation tab<br>
-    ✓ #39 Coach view — Done: CoachDashboard.tsx at /app/coach-dashboard (dealer cards, score trends, sort/filter); CoachActions.tsx at /app/coach-actions (action tracker across assigned dealers); InviteCoach component in Account → Team tab<br>
-    ✓ #55 Coach invite flow — Done: invite_type='coach' in dealership_invites, send-invite Edge Function updated, accept_dealership_invite creates coach_dealership_assignments row, AcceptInvite redirects to /app/coach-dashboard<br>
-    ✓ #56 OEM data access RLS — Done: OEM admins can read assessments and dealerships for their network dealers (additive RLS policies)<br>
-    ✓ UI polish (Lovable): OemModeToggle enterprise styling, OEM Dashboard empty states with CTAs, ChipInput for country scope, Coach Dashboard score card visual hierarchy, score trend chart polish<br>
-    ✓ Various fixes: maturity label unified to single source, KPI view-details navigation wired, action-sheet badge casing + KPI panel reposition, support-required multi-select, USD → Euro market language in KPI copy, driver/consequence label title-casing
+  <div class="sprint-banner">
+    <div class="sprint-banner-title">✓ April 2026 Session (29 April 2026) — Role Architecture + OEM/Coach Platform</div>
+    <div class="sprint-banner-items">✓ #01 Full 3-tier role architecture · ✓ #05 Network tables + RLS · ✓ #38 OEM Dashboard + Settings MVP · ✓ #39 Coach Dashboard + Actions · ✓ #55 Coach invite flow · ✓ #57 OEM cross-org RLS · Various UI polish + bug fixes</div>
   </div>
-</div>
-
-<div class="sprint-banner" style="background:#f0fdf4; border-color:#bbf7d0; border-left-color:#16a34a;">
-  <div class="sprint-banner-title" style="color:#166534;">✓ Round 3 UI Complete (30 April 2026) — Dashboard Onboarding, Score Decomposition, Roadmap, Confidence Warning, OEM Rank</div>
-  <div class="sprint-banner-items" style="color:#166534;">
-    ✓ #47 Dashboard empty state — onboarding card with icon, headline, 3 benefit tiles, CTA, "What to prepare" footer<br>
-    ✓ #31 Score decomposition panel — dept × weight × contribution table with mini bars in MaturityScoring<br>
-    ✓ #45 Confidence variance warning — amber banner surfaces reviewRecommended departments with consistency %<br>
-    ✓ #35 30/60/90 day roadmap view — Quick Wins / Process Changes / Governance columns in ActionPlan; List/Roadmap toggle<br>
-    ✓ #41 OEM leaderboard rank badges — gold/silver/bronze for top 3; Network average row in leaderboard table
+  <div class="sprint-banner">
+    <div class="sprint-banner-title">✓ Round 3 UI (30 April 2026)</div>
+    <div class="sprint-banner-items">✓ #47 Dashboard empty state · ✓ #31 Score decomposition panel · ✓ #45 Confidence variance warning · ✓ #35 30/60/90 roadmap · ✓ #41 OEM leaderboard rank badges</div>
   </div>
-</div>
-
-<div class="sprint-banner" style="background:#f0fdf4; border-color:#bbf7d0; border-left-color:#16a34a;">
-  <div class="sprint-banner-title" style="color:#166534;">✓ 1 May 2026 — RLS Fixes, Signal Architecture Refactor, 61 Questions</div>
-  <div class="sprint-banner-items" style="color:#166534;">
-    ✓ RLS infinite recursion fixed — dealerships + assessments OEM policies now use SECURITY DEFINER functions<br>
-    ✓ useOnboarding self-healing null removed — active_dealership_id preserved on RLS false negatives<br>
-    ✓ Signal mapping refactored to question-driven architecture — Question interface carries primarySignalCode, secondarySignalCode, rootCauseDimension; three-tier resolver in signalEngine.ts<br>
-    ✓ 11 new KPI-proxy questions added (nvs-11 to nvs-13, uvs-11 to uvs-13, svc-13 to svc-15, fin-9 to fin-10) — 61 questions total<br>
-    ✓ Full assessment → save → results → action plan flow confirmed end-to-end
+  <div class="sprint-banner">
+    <div class="sprint-banner-title">✓ 1 May 2026 — RLS Fixes + Signal Architecture Refactor + 61 Questions</div>
+    <div class="sprint-banner-items">✓ RLS infinite recursion fixed via SECURITY DEFINER functions · ✓ Signal mapping refactored to question-driven architecture · ✓ 11 new KPI-proxy questions (61 total) · ✓ End-to-end assessment flow confirmed</div>
   </div>
-</div>
-
-<div class="legend">
-  <span class="legend-item"><span class="legend-dot" style="background:var(--done)"></span>Implemented</span>
-  <span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>Partial</span>
-  <span class="legend-item"><span class="legend-dot" style="background:var(--pending)"></span>Pending</span>
-  <span class="legend-item"><span class="legend-dot" style="background:var(--blocked)"></span>Blocked</span>
 </div>
 
 <div class="filter-bar">
   <span class="filter-label">Filter:</span>
-  <button class="filter-btn active" onclick="filterItems('all')">All</button>
-  <button class="filter-btn" onclick="filterItems('done')">Done</button>
-  <button class="filter-btn" onclick="filterItems('partial')">Partial</button>
-  <button class="filter-btn" onclick="filterItems('pending')">Pending</button>
-  <button class="filter-btn" onclick="filterItems('blocked')">Blocked</button>
+  <button class="filter-btn active" onclick="filterItems('all',this)">All (83)</button>
+  <button class="filter-btn" onclick="filterItems('done',this)">Done</button>
+  <button class="filter-btn" onclick="filterItems('partial',this)">Partial</button>
+  <button class="filter-btn" onclick="filterItems('pending',this)">Pending</button>
+  <button class="filter-btn" onclick="filterItems('new',this)">Roadmap (new)</button>
+  <div class="search-wrap"><input type="text" class="search-input" placeholder="Search items..." oninput="searchItems(this.value)"></div>
 </div>
 
 <div class="content" id="main-content">
 
-<!-- CATEGORY 1: ARCHITECTURE & SECURITY -->
-<div class="category">
-  <div class="category-header">
-    <span class="category-icon">⬡</span>
-    <span class="category-title">Architecture & Security</span>
-    <span class="category-count" id="cat1-count"></span>
-  </div>
-
-  <div class="item" data-status="done" data-method="both" data-phase="done">
-    <div class="item-num">01</div>
-    <div class="item-body">
-      <div class="item-title">Unified role architecture (3-tier: OEM → Coach → Dealer)</div>
-      <div class="item-desc">April 2026: Full 3-tier system implemented. profiles.actor_type enum ('dealer'|'coach'|'oem'|'internal'). useActiveRole() hook reads actor_type from DB. ProtectedRoute supports requiresActorType="oem"|"coach" prop for route-level gating. AppSidebar conditionally shows OEM and Coach nav items. actor_type stamped on invite acceptance; backfill migration sets 'dealer' for existing users. RLS on oem_networks, dealer_network_memberships, coach_dealership_assignments. OEM self-service activation via toggle_oem_mode() RPC in Account settings.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-both">Both</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="lovable" data-phase="done">
-    <div class="item-num">02</div>
-    <div class="item-body">
-      <div class="item-title">Multi-tenant organisation management</div>
-      <div class="item-desc">Sprint 3: implementationSteps format verified complete. All 122 steps across 27 templates already using { text, primaryRole } format.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-na">Built</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="partial" data-method="both" data-phase="now">
-    <div class="item-num">03</div>
-    <div class="item-body">
-      <div class="item-title">GDPR technical controls</div>
-      <div class="item-desc">Data export (JSON) ✓, account deletion ✓, consent management ✓. Missing: assessment-level audit trail, DPA legal template, GDPR-compliant PDF notice on assessment start.</div>
-    </div>
-    <div><span class="status-badge s-partial"><span class="status-dot"></span>Partial</span></div>
-    <div><span class="method-badge m-both">Both</span></div>
-    <div><span class="phase-badge ph-now">Do now</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="lovable" data-phase="done">
-    <div class="item-num">04</div>
-    <div class="item-body">
-      <div class="item-title">Assessment-level audit trail</div>
-      <div class="item-desc">Sprint 3: evaluateCrossValidations() now called inside generateActionsFromAssessment(). Five cross-validation rules live in engine. crossValidationAlerts included in AssessmentResult.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="both" data-phase="done">
-    <div class="item-num">05</div>
-    <div class="item-body">
-      <div class="item-title">Multi-country / multi-outlet network architecture</div>
-      <div class="item-desc">Sprint 2: Network tables created (oem_networks, network_regions, dealer_network_memberships). April 2026: Full RLS policies added for all 3 tables. UNIQUE constraint confirmed on coach_dealership_assignments. Additive RLS policies on assessments and dealerships allow OEM admins to read dealer data for their network. lookup_dealer_by_email() and get_dealership_details() SECURITY DEFINER functions handle cross-org data access safely.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-both">Both</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
+<!-- ═══ SECTION 1 — CORE IMPLEMENTATION (v1 carry-forward) ═══ -->
+<div class="section-head">
+  <span class="section-icon">⬡</span>
+  <span class="section-title">Section 1 — Core Implementation</span>
+  <span class="section-subtitle">All 58 v1 items · verified against live codebase 01 May 2026</span>
+  <span class="section-tag tag-carry">v1 carry-forward</span>
+  <span class="section-count" id="s1-count"></span>
 </div>
 
-<!-- CATEGORY 2: ASSESSMENT ENGINE -->
+<div class="col-header"><div>#</div><div>Item</div><div>Status</div><div>Method</div><div>Priority</div><div>Effort</div></div>
+
+<!-- Cat 1: Architecture -->
 <div class="category">
-  <div class="category-header">
-    <span class="category-icon">⊞</span>
-    <span class="category-title">Assessment Engine</span>
-    <span class="category-count" id="cat2-count"></span>
-  </div>
-
-  <div class="item" data-status="done" data-method="na" data-phase="done">
-    <div class="item-num">06</div>
-    <div class="item-body">
-      <div class="item-title">Weighted scoring engine</div>
-      <div class="item-desc">calculateWeightedScore, calculateWeightedSectionScore, CATEGORY_WEIGHTS implemented and tested. NVS 25%, UVS 20%, Service 20%, Financial 20%, Parts 15%.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-na">Built</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="na" data-phase="done">
-    <div class="item-num">07</div>
-    <div class="item-body">
-      <div class="item-title">Confidence interval scoring</div>
-      <div class="item-desc">calculateConfidenceMetrics computes standard deviation, consistency score, high/medium/low confidence level, reviewRecommended flag.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-na">Built</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="na" data-phase="done">
-    <div class="item-num">08</div>
-    <div class="item-body">
-      <div class="item-title">Systemic pattern detection</div>
-      <div class="item-desc">detectSystemicPatterns identifies signals in 3+ departments (systemic) or 2 departments (recurring).</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-na">Built</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="na" data-phase="done">
-    <div class="item-num">09</div>
-    <div class="item-body">
-      <div class="item-title">Enhanced maturity model (5 levels)</div>
-      <div class="item-desc">Advanced requires ≥85 AND no sub-category below 60. Downgrades to Inconsistent on high variance.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-na">Built</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="manual" data-phase="done">
-    <div class="item-num">10</div>
-    <div class="item-body">
-      <div class="item-title">Evidence-based scale labels</div>
-      <div class="item-desc">Sprint 3: 33 additional questions updated (46 total). Observable criteria applied across NVS, UVS, SVC, PTS, FIN. Round 2: satisfaction questions completed — % options replaced with qualitative labels (e.g. "Very satisfied / Satisfied / Neutral / Dissatisfied / Very dissatisfied"). All questions now use observable or qualitative criteria. (923cba2)</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-manual">Manual</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="both" data-phase="done">
-    <div class="item-num">11</div>
-    <div class="item-body">
-      <div class="item-title">Cross-validation question logic</div>
-      <div class="item-desc">Sprint 3: Five cross-validation rules wired live in engine (NVS productivity, service utilisation vs CSI, parts blocking service, profit-cash disconnect, hidden dead stock).</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-both">Both</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="pending" data-method="manual" data-phase="1">
-    <div class="item-num">12</div>
-    <div class="item-body">
-      <div class="item-title">Context intake questionnaire</div>
-      <div class="item-desc">No structured pre-assessment baseline. Dealership size, headcount, DMS/CRM, GM tenure should be captured before performance questions.</div>
-    </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
-    <div><span class="method-badge m-manual">Manual</span></div>
-    <div><span class="phase-badge ph-1">Phase 1</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="both" data-phase="done">
-    <div class="item-num">13</div>
-    <div class="item-body">
-      <div class="item-title">Business model branching (2S/3S/4S module gating)</div>
-      <div class="item-desc">Fully implemented. src/lib/moduleGating.ts: MODULE_GATING_RULES drives section suppression for all 5 models. getActiveSections() + getSuppressedSectionCount() wired in Assessment.tsx. Suppression banner live. Score weights redistribute proportionally for suppressed sections (scoringEngine.ts). Organization interface typed with business_model; as any cast removed. Verified 21 Apr 2026 — ea0aef4.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-both">Both</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="pending" data-method="lovable" data-phase="1">
-    <div class="item-num">14</div>
-    <div class="item-body">
-      <div class="item-title">Modular assessment (take individual modules independently)</div>
-      <div class="item-desc">All 5 modules currently mandatory and sequential. Need module-level save and score.</div>
-    </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-1">Phase 1</span></div>
-  </div>
-
-  <div class="item" data-status="pending" data-method="lovable" data-phase="2">
-    <div class="item-num">15</div>
-    <div class="item-body">
-      <div class="item-title">Additional question types (binary, numeric input)</div>
-      <div class="item-desc">Schema supports types but no questions use them. Binary yes/no + conditional branching, numeric inputs for financial KPIs needed.</div>
-    </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-2">Phase 2</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="manual" data-phase="done">
-    <div class="item-num">16</div>
-    <div class="item-body">
-      <div class="item-title">High-scorer ceiling analysis</div>
-      <div class="item-desc">Sprint 3: generateCeilingInsights() wired to Results.tsx via useMemo; threshold updated to 55 and fallback copy improved for scanner scores 54–68.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-manual">Manual</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="lovable" data-phase="done">
-    <div class="item-num">17</div>
-    <div class="item-body">
-      <div class="item-title">Questionnaire versioning</div>
-      <div class="item-desc">Sprint 2: questionnaire_version and assessment_cycle columns added to assessments table. Composite index on (dealership_id, assessment_cycle).</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
+<div class="category-header"><span class="category-icon">⬡</span><span class="category-title">Architecture & Security</span><span class="category-count" id="c1"></span></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">01</div><div class="item-body"><div class="item-title">Unified role architecture (3-tier: OEM → Coach → Dealer)</div><div class="item-desc">April 2026: profiles.actor_type enum. useActiveRole() hook. ProtectedRoute requiresActorType. AppSidebar conditional nav. actor_type backfill migration. RLS on all network tables. toggle_oem_mode() self-service RPC.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-both">Both</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">02</div><div class="item-body"><div class="item-title">Multi-tenant organisation management</div><div class="item-desc">implementationSteps format verified. 122 steps across 27 templates using {text, primaryRole}.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-na">Built</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="partial" data-section="s1"><div class="item-num">03</div><div class="item-body"><div class="item-title">GDPR technical controls</div><div class="item-desc">Data export ✓, account deletion ✓, consent ✓. Missing: assessment audit trail, DPA legal template, GDPR PDF notice on assessment start.</div></div><div><span class="status-badge s-partial"><span class="status-dot"></span>Partial</span></div><div><span class="method-badge m-both">Both</span></div><div><span class="prio p-now">Do now</span></div><div><span class="effort e-med">Medium</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">04</div><div class="item-body"><div class="item-title">Assessment-level audit trail</div><div class="item-desc">Sprint 3: evaluateCrossValidations() wired in generateActionsFromAssessment(). Five cross-validation rules live. crossValidationAlerts in AssessmentResult.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">05</div><div class="item-body"><div class="item-title">Multi-country / multi-outlet network architecture</div><div class="item-desc">oem_networks, network_regions, dealer_network_memberships. Full RLS. SECURITY DEFINER functions: lookup_dealer_by_email(), get_dealership_details(). Additive OEM read policies on assessments + dealerships.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-both">Both</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
 </div>
 
-<!-- CATEGORY 3: SIGNAL → ACTION PIPELINE -->
+<!-- Cat 2: Assessment Engine -->
 <div class="category">
-  <div class="category-header">
-    <span class="category-icon">▶</span>
-    <span class="category-title">Signal → Action Pipeline</span>
-    <span class="category-count" id="cat3-count"></span>
-  </div>
-
-  <div class="item" data-status="done" data-method="na" data-phase="done">
-    <div class="item-num">18</div>
-    <div class="item-body">
-      <div class="item-title">Deterministic signal engine</div>
-      <div class="item-desc">generateSignals → instantiateActions. KPI-aware template selection, severity escalation, linked KPI rationale building.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-na">Built</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="na" data-phase="done">
-    <div class="item-num">19</div>
-    <div class="item-body">
-      <div class="item-title">Root-cause diagnostics (5-dimension)</div>
-      <div class="item-desc">People/Process/Tools/Structure/Incentives covered for all KPIs. RootCauseIntelligenceBoard renders in KPI Studio.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-na">Built</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="na" data-phase="done">
-    <div class="item-num">20</div>
-    <div class="item-body">
-      <div class="item-title">Triage scoring (impact / effort / urgency)</div>
-      <div class="item-desc">Sprint 2: 27 tiered templates with 3 score-band variants per signal (foundational/developing/optimising). Exports getTieredTemplate(), scoreToBand(), getAllBandsForSignal().</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-na">Built</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="manual" data-phase="done">
-    <div class="item-num">21</div>
-    <div class="item-body">
-      <div class="item-title">Tiered action templates (score-band variants)</div>
-      <div class="item-desc">Sprint 2: actionTemplatesTiered.ts created. 27 templates across 9 signal codes × 3 bands. getScoreBand() helper added. Band-aware filtering with graceful fallback.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-manual">Manual</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="manual" data-phase="done">
-    <div class="item-num">22</div>
-    <div class="item-body">
-      <div class="item-title">Business model filtering on templates</div>
-      <div class="item-desc">Sprint 3: 3 incorrectly tagged templates corrected (ACT-PNS-INV, ACT-CMA-PRD, ACT-CMA-ASR). Business model filter in selectTemplates() operational.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-manual">Manual</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="manual" data-phase="done">
-    <div class="item-num">23</div>
-    <div class="item-body">
-      <div class="item-title">Role-addressed implementation steps</div>
-      <div class="item-desc">Sprint 2: 122 role-addressed steps across 27 templates. Every step uses { text, primaryRole } format. 11 dealership roles covered.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-manual">Manual</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
+<div class="category-header"><span class="category-icon">⊞</span><span class="category-title">Assessment Engine</span><span class="category-count" id="c2"></span></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">06</div><div class="item-body"><div class="item-title">Weighted scoring engine</div><div class="item-desc">calculateWeightedScore, calculateWeightedSectionScore, CATEGORY_WEIGHTS. NVS 25%, UVS 20%, Service 20%, Financial 20%, Parts 15%.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-na">Built</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">07</div><div class="item-body"><div class="item-title">Confidence interval scoring</div><div class="item-desc">calculateConfidenceMetrics: std dev, consistency score, high/medium/low confidence, reviewRecommended flag.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-na">Built</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">08</div><div class="item-body"><div class="item-title">Systemic pattern detection</div><div class="item-desc">detectSystemicPatterns identifies signals in 3+ departments (systemic) or 2 departments (recurring).</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-na">Built</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">09</div><div class="item-body"><div class="item-title">Enhanced maturity model (5 levels)</div><div class="item-desc">Advanced requires ≥85 AND no sub-category below 60. Downgrades to Inconsistent on high variance.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-na">Built</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">10</div><div class="item-body"><div class="item-title">Evidence-based scale labels (all 61 questions)</div><div class="item-desc">All questions use observable or qualitative criteria. Satisfaction questions: % options → qualitative labels. Verified Round 2 + 1 May 2026.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-manual">Manual</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">11</div><div class="item-body"><div class="item-title">Cross-validation question logic</div><div class="item-desc">Five rules live: NVS productivity, service utilisation vs CSI, parts blocking service, profit-cash disconnect, hidden dead stock.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-both">Both</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="pending" data-section="s1"><div class="item-num">12</div><div class="item-body"><div class="item-title">Context intake questionnaire (pre-assessment baseline)</div><div class="item-desc">No structured pre-assessment baseline. Dealership size, headcount, DMS/CRM, GM tenure to be captured before performance questions.</div></div><div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div><div><span class="method-badge m-manual">Manual</span></div><div><span class="prio p-1">Phase 1</span></div><div><span class="effort e-med">Medium</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">13</div><div class="item-body"><div class="item-title">Business model branching (2S/3S/4S module gating)</div><div class="item-desc">moduleGating.ts with MODULE_GATING_RULES. Score weights redistribute proportionally. Suppression banner live. Verified 21 Apr 2026 — ea0aef4.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-both">Both</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="pending" data-section="s1"><div class="item-num">14</div><div class="item-body"><div class="item-title">Modular assessment (individual modules independently)</div><div class="item-desc">All 5 modules currently mandatory and sequential. Module-level save and score needed for standalone runs.</div></div><div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-1">Phase 1</span></div><div><span class="effort e-high">High</span></div></div>
+<div class="item" data-status="pending" data-section="s1"><div class="item-num">15</div><div class="item-body"><div class="item-title">Additional question types (binary, numeric input)</div><div class="item-desc">Schema supports types but no questions use them. Binary yes/no + conditional branching, numeric inputs for financial KPIs.</div></div><div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-2">Phase 2</span></div><div><span class="effort e-high">High</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">16</div><div class="item-body"><div class="item-title">High-scorer ceiling analysis</div><div class="item-desc">generateCeilingInsights() wired to Results.tsx. Threshold 55. Fallback copy improved for 54–68 scanner scores.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-manual">Manual</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">17</div><div class="item-body"><div class="item-title">Questionnaire versioning</div><div class="item-desc">questionnaire_version and assessment_cycle columns on assessments table. Composite index on (dealership_id, assessment_cycle).</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
 </div>
 
-<!-- CATEGORY 4: BENCHMARKING -->
+<!-- Cat 3: Signal → Action -->
 <div class="category">
-  <div class="category-header">
-    <span class="category-icon">◆</span>
-    <span class="category-title">Benchmarking</span>
-    <span class="category-count" id="cat4-count"></span>
-  </div>
-
-  <div class="item" data-status="done" data-method="manual" data-phase="done">
-    <div class="item-num">24</div>
-    <div class="item-body">
-      <div class="item-title">Benchmark governance</div>
-      <div class="item-desc">Sprint 1: benchmarkGovernance.ts classifies sources. UI disclaimer exists. Peer_segmentation_keys VIEW computes 4-dimension composite key.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-manual">Manual</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="lovable" data-phase="done">
-    <div class="item-num">25</div>
-    <div class="item-body">
-      <div class="item-title">Self-learning benchmark engine (Phase 1 complete)</div>
-      <div class="item-desc">Sprint 2: benchmark_snapshots table created with p25/p50/p75/mean/std_dev stats. 16 Phase 1 static seed rows with positioning × business_model × network_structure × volume_band segmentation.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="lovable" data-phase="done">
-    <div class="item-num">26</div>
-    <div class="item-body">
-      <div class="item-title">Peer segmentation composite key</div>
-      <div class="item-desc">Sprint 2: peer_segmentation_keys VIEW created. Computes 4-dimension composite key per organisation. Volume band derived from annual_unit_sales (micro/small/medium/large/enterprise).</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
+<div class="category-header"><span class="category-icon">▶</span><span class="category-title">Signal → Action Pipeline</span><span class="category-count" id="c3"></span></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">18</div><div class="item-body"><div class="item-title">Deterministic signal engine</div><div class="item-desc">generateSignals → instantiateActions. KPI-aware template selection, severity escalation. 1 May: refactored to question-driven architecture — primarySignalCode, secondarySignalCode, rootCauseDimension on Question interface. Three-tier resolver in signalEngine.ts.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-na">Built</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">19</div><div class="item-body"><div class="item-title">Root-cause diagnostics (5-dimension)</div><div class="item-desc">People / Process / Tools / Structure / Incentives for all KPIs. RootCauseIntelligenceBoard renders in KPI Studio.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-na">Built</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">20</div><div class="item-body"><div class="item-title">Triage scoring (impact / effort / urgency)</div><div class="item-desc">27 tiered templates × 3 score-band variants. getTieredTemplate(), scoreToBand(), getAllBandsForSignal().</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-na">Built</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">21</div><div class="item-body"><div class="item-title">Tiered action templates (score-band variants)</div><div class="item-desc">actionTemplatesTiered.ts. 27 templates × 9 signal codes × 3 bands. getScoreBand() with graceful fallback.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-manual">Manual</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">22</div><div class="item-body"><div class="item-title">Business model filtering on templates</div><div class="item-desc">3 incorrectly tagged templates corrected. Business model filter in selectTemplates() operational.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-manual">Manual</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">23</div><div class="item-body"><div class="item-title">Role-addressed implementation steps</div><div class="item-desc">122 steps across 27 templates. Every step uses {text, primaryRole}. 11 dealership roles covered.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-manual">Manual</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
 </div>
 
-<!-- CATEGORY 5: KPI SYSTEM -->
+<!-- Cat 4: Benchmarking -->
 <div class="category">
-  <div class="category-header">
-    <span class="category-icon">⬡</span>
-    <span class="category-title">KPI System & Encyclopedia</span>
-    <span class="category-count" id="cat5-count"></span>
-  </div>
-
-  <div class="item" data-status="done" data-method="na" data-phase="done">
-    <div class="item-num">27</div>
-    <div class="item-body">
-      <div class="item-title">KPI Encyclopedia</div>
-      <div class="item-desc">kpiDefinitions.ts (355KB): formula, inclusions/exclusions, executiveSummary, rootCauseDiagnostics, improvementLevers, interdependencies. KPIStudio renders all sections. Round 2: KPI analysis tab now shows sections for all assessed departments ordered by score ascending; View Details links wired to KPI encyclopedia modal; duplicate overall score block removed. (e4b43d7, 315281a, f4a53c8)</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-na">Built</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="manual" data-phase="done">
-    <div class="item-num">28</div>
-    <div class="item-body">
-      <div class="item-title">KPI position statement</div>
-      <div class="item-desc">Sprint 1: ceilingAnalysis.ts with generateCeilingInsights(). KPI position inference from assessment score. Benchmark corridor chart working.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-manual">Manual</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="lovable" data-phase="done">
-    <div class="item-num">29</div>
-    <div class="item-body">
-      <div class="item-title">Causal chain visualisation</div>
-      <div class="item-desc">Sprint 3: CausalChainDiagram.tsx component live in src/components/results/. Mounted in ExecutiveSummary.tsx (Section 1C). Reads top-3 signals from generateSignals(); groups by shared root-cause dimension via SIGNAL_MAPPINGS. Renders dimension-grouped chain nodes with arrows. Empty-state handled. Note: uses shared-cause chain model (not KPI upstream/downstream from kpiDefinitions) — valid design decision. Verified 21 Apr 2026.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
+<div class="category-header"><span class="category-icon">◆</span><span class="category-title">Benchmarking</span><span class="category-count" id="c4"></span></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">24</div><div class="item-body"><div class="item-title">Benchmark governance</div><div class="item-desc">benchmarkGovernance.ts classifies sources. UI disclaimer exists. peer_segmentation_keys VIEW computes 4-dimension composite key.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-manual">Manual</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">25</div><div class="item-body"><div class="item-title">Self-learning benchmark engine (Phase 1)</div><div class="item-desc">benchmark_snapshots table with p25/p50/p75/mean/std_dev. 16 seed rows segmented by positioning × business_model × network_structure × volume_band.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">26</div><div class="item-body"><div class="item-title">Peer segmentation composite key</div><div class="item-desc">peer_segmentation_keys VIEW. 4-dimension composite key per org. Volume band derived from annual_unit_sales.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
 </div>
 
-<!-- CATEGORY 6: RESULTS & REPORTING -->
+<!-- Cat 5: KPI System -->
 <div class="category">
-  <div class="category-header">
-    <span class="category-icon">▦</span>
-    <span class="category-title">Results & Reporting</span>
-    <span class="category-count" id="cat6-count"></span>
-  </div>
-
-  <div class="item" data-status="done" data-method="na" data-phase="done">
-    <div class="item-num">30</div>
-    <div class="item-body">
-      <div class="item-title">PDF and Excel export</div>
-      <div class="item-desc">ExportPDFModal and pdfReportGenerator.ts working. Cover page, department scores, KPI analytics, action plan included. Excel export also operational.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-na">Built</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="lovable" data-phase="done">
-    <div class="item-num">31</div>
-    <div class="item-body">
-      <div class="item-title">Score decomposition transparency panel</div>
-      <div class="item-desc">Apr 2026: Table in MaturityScoring.tsx showing Dept × Raw Score × Weight × Contribution with mini horizontal bar per row and weighted-sum footer. Sorted by contribution descending. Uses CATEGORY_WEIGHTS + DEPARTMENT_TO_CATEGORY from scoringEngine.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="both" data-phase="done">
-    <div class="item-num">32</div>
-    <div class="item-body">
-      <div class="item-title">Department × root-cause heatmap (5×5 maturity grid)</div>
-      <div class="item-desc">Sprint 3 + 21 Apr fix: DepartmentHeatmap.tsx component live in src/components/results/. Mounted in ExecutiveSummary.tsx (Section 1B). 5 depts × 5 KPIs per dept, colour-coded by score band (0–45 red, 46–69 amber, 70–84 blue, 85–100 green). Fix 21 Apr: data source corrected — cell values now read from calculateSubCategoryScores() output (engine-weighted) via subCategoryData prop; raw answer fallback retained for unmatched cells. categoryKey added to each DEPT_KPIS entry. Commit 9f2c44d. Verified 21 Apr 2026.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-both">Both</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="lovable" data-phase="done">
-    <div class="item-num">33</div>
-    <div class="item-body">
-      <div class="item-title">Systemic pattern cards in results UI</div>
-      <div class="item-desc">Sprint 3: Systemic and recurring pattern cards rendered in ExecutiveSummary.tsx, mounted on Results page. Both severity variants live: systemic (3+ depts) and recurring (2 depts). Verified 20 Apr 2026. Round 2: merged with top findings into unified Key Diagnostic Findings block for cleaner hierarchy; module abbreviations (NVS/UVS/SVC/PTS/FIN) expanded to full department names in pattern cards. (160f1bc, 35fef31)</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="manual" data-phase="done">
-    <div class="item-num">34</div>
-    <div class="item-body">
-      <div class="item-title">Executive narrative paragraph</div>
-      <div class="item-desc">Sprint 1: narrativeTemplates.ts with 32 narrative variants (4 maturity × 8 signal × single/systemic). buildExecutiveNarrative() function ready.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-manual">Manual</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="lovable" data-phase="done">
-    <div class="item-num">35</div>
-    <div class="item-body">
-      <div class="item-title">30/60/90 day priority roadmap</div>
-      <div class="item-desc">Apr 2026: Roadmap view in ActionPlan.tsx — List/Roadmap tab toggle. Three columns: Quick Wins (effort≤2 + impact≥3), Process Changes (effort=3 or medium), Governance & Systems (effort≥4). Actions with null triage scores default to Process Changes. Existing list view unchanged.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="pending" data-method="lovable" data-phase="2">
-    <div class="item-num">36</div>
-    <div class="item-body">
-      <div class="item-title">Delta scoring (score movement between cycles)</div>
-      <div class="item-desc">No repeat assessment or delta view exists. Assessment cycles, version tracking, and action-linked delta to be built.</div>
-    </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-2">Phase 2</span></div>
-  </div>
-
-  <div class="item" data-status="pending" data-method="lovable" data-phase="2">
-    <div class="item-num">37</div>
-    <div class="item-body">
-      <div class="item-title">White-label PDF template registry</div>
-      <div class="item-desc">PDF export is hardcoded. Template registry needed per OEM tenant: logo, colour palette, cover copy, section order.</div>
-    </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-2">Phase 2</span></div>
-  </div>
+<div class="category-header"><span class="category-icon">⬡</span><span class="category-title">KPI System & Encyclopedia</span><span class="category-count" id="c5"></span></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">27</div><div class="item-body"><div class="item-title">KPI Encyclopedia</div><div class="item-desc">kpiDefinitions.ts (355KB): formula, executiveSummary, rootCauseDiagnostics, improvementLevers, interdependencies. KPIStudio. View Details wired. All depts shown ascending by score. Duplicate score block removed. Driver/consequence labels title-cased.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-na">Built</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">28</div><div class="item-body"><div class="item-title">KPI position statement</div><div class="item-desc">ceilingAnalysis.ts with generateCeilingInsights(). KPI position inference. Benchmark corridor chart working.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-manual">Manual</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">29</div><div class="item-body"><div class="item-title">Causal chain visualisation</div><div class="item-desc">CausalChainDiagram.tsx in ExecutiveSummary.tsx. Top-3 signals grouped by shared root-cause dimension. Dimension-grouped chain nodes with arrows. Empty state handled. Verified 21 Apr 2026.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
 </div>
 
-<!-- CATEGORY 7: NETWORK & OEM VIEWS -->
+<!-- Cat 6: Results & Reporting -->
 <div class="category">
-  <div class="category-header">
-    <span class="category-icon">⟡</span>
-    <span class="category-title">Network & OEM Views</span>
-    <span class="category-count" id="cat7-count"></span>
-  </div>
-
-  <div class="item" data-status="done" data-method="both" data-phase="done">
-    <div class="item-num">38</div>
-    <div class="item-body">
-      <div class="item-title">OEM network dashboard MVP</div>
-      <div class="item-desc">April 2026: OemDashboard.tsx live at /app/oem-dashboard — dealer leaderboard with latest/previous scores, trend icons, score band badges, rank medals. Clickable rows navigate to dealer's Results page. Network selector for multi-network orgs. Summary stat cards (total dealers, avg score, high/low). OemSettings.tsx at /app/oem-settings — create network (name/brand/country chips), add dealers by email lookup with programme tier (Standard/Silver/Gold/Platinum), inline tier editing, soft-delete remove. OemModeToggle in Account → Organisation tab for self-service OEM activation. Gated by requiresActorType="oem".</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-both">Both</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="both" data-phase="done">
-    <div class="item-num">39</div>
-    <div class="item-body">
-      <div class="item-title">Coach view (assigned dealers, assessment history)</div>
-      <div class="item-desc">April 2026: CoachDashboard.tsx at /app/coach-dashboard — assigned dealer cards (name, brand, location, latest score, last assessment date, status badge). Sort by score/name, filter by status. Score trend chart comparing up to 3 dealers (Recharts LineChart). CoachActions.tsx at /app/coach-actions — global action tracker across all assigned dealers with dealer/status filters and inline status updates. InviteCoach component in Account → Team tab (email lookup, sends invite_type='coach'). Both pages gated by requiresActorType="coach". Sidebar shows Coach Dashboard + Action Tracker for coach users.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-both">Both</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="pending" data-method="lovable" data-phase="2">
-    <div class="item-num">40</div>
-    <div class="item-body">
-      <div class="item-title">Coach visit workflow</div>
-      <div class="item-desc">Pre-visit briefing, during-visit annotations, post-visit PDF. Requires coach view to exist first.</div>
-    </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-2">Phase 2</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="lovable" data-phase="done">
-    <div class="item-num">41</div>
-    <div class="item-body">
-      <div class="item-title">Network peer rank display</div>
-      <div class="item-desc">Apr 2026: OEM Dashboard leaderboard rank badges — gold/silver/bronze styled badges with Trophy icon for top 3 ranks; plain number for rank 4+. Network average row appended to leaderboard table showing stats.avg score and band badge. OemDashboard.tsx.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
+<div class="category-header"><span class="category-icon">▦</span><span class="category-title">Results & Reporting</span><span class="category-count" id="c6"></span></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">30</div><div class="item-body"><div class="item-title">PDF and Excel export</div><div class="item-desc">ExportPDFModal + pdfReportGenerator.ts. Cover page, dept scores, KPI analytics, action plan. Excel export operational.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-na">Built</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">31</div><div class="item-body"><div class="item-title">Score decomposition transparency panel</div><div class="item-desc">Table in MaturityScoring.tsx: Dept × Raw Score × Weight × Contribution with mini bars. Sorted by contribution descending.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">32</div><div class="item-body"><div class="item-title">Department × root-cause heatmap (5×5)</div><div class="item-desc">DepartmentHeatmap.tsx in ExecutiveSummary.tsx. 5 depts × 5 KPIs. Colour by score band. Data from calculateSubCategoryScores(). Commit 9f2c44d.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-both">Both</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">33</div><div class="item-body"><div class="item-title">Systemic pattern cards in results UI</div><div class="item-desc">Systemic + recurring cards in ExecutiveSummary.tsx. Merged into unified Key Diagnostic Findings block. Module abbreviations expanded to full department names. Commits 160f1bc, 35fef31.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">34</div><div class="item-body"><div class="item-title">Executive narrative paragraph</div><div class="item-desc">narrativeTemplates.ts with 32 variants (4 maturity × 8 signal × single/systemic). buildExecutiveNarrative() live.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-manual">Manual</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">35</div><div class="item-body"><div class="item-title">30/60/90 day priority roadmap</div><div class="item-desc">Roadmap view in ActionPlan.tsx. List/Roadmap toggle. Quick Wins / Process Changes / Governance columns. Triage score–based bucketing.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="pending" data-section="s1"><div class="item-num">36</div><div class="item-body"><div class="item-title">Delta scoring (score movement between cycles)</div><div class="item-desc">No repeat assessment or delta view. Assessment cycles, version tracking, action-linked delta to build. Depends on repeat assessment infrastructure.</div></div><div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-2">Phase 2</span></div><div><span class="effort e-high">High</span></div></div>
+<div class="item" data-status="pending" data-section="s1"><div class="item-num">37</div><div class="item-body"><div class="item-title">White-label PDF template registry</div><div class="item-desc">PDF is hardcoded. Template registry per OEM tenant: logo, colour palette, cover copy, section order. Build post-pilot when OEM format is known.</div></div><div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-2">Phase 2</span></div><div><span class="effort e-high">High</span></div></div>
 </div>
 
-<!-- CATEGORY 8: UX / UI -->
+<!-- Cat 7: Network & OEM -->
 <div class="category">
-  <div class="category-header">
-    <span class="category-icon">◈</span>
-    <span class="category-title">UX / UI</span>
-    <span class="category-count" id="cat8-count"></span>
-  </div>
-
-  <div class="item" data-status="pending" data-method="lovable" data-phase="1">
-    <div class="item-num">42</div>
-    <div class="item-body">
-      <div class="item-title">Neutral option tiles (remove anchoring bias)</div>
-      <div class="item-desc">Current coloured buttons (red=1-2, yellow=3, green=4-5) create anchoring bias. Replace with neutral white tiles, left-border accent on selected only.</div>
-    </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-1">Phase 1</span></div>
-  </div>
-
-  <div class="item" data-status="partial" data-method="lovable" data-phase="1">
-    <div class="item-num">43</div>
-    <div class="item-body">
-      <div class="item-title">Always-visible context panel</div>
-      <div class="item-desc">Purpose, situation analysis, linked KPIs, benchmark hidden behind accordion. Move to persistent right-column panel. Mobile: bottom drawer. Round 2 partial: section sidebar made sticky and dead scroll space eliminated — context stays visible as user scrolls through questions. Right-column panel and mobile drawer still pending. (fc89216)</div>
-    </div>
-    <div><span class="status-badge s-partial"><span class="status-dot"></span>Partial</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-1">Phase 1</span></div>
-  </div>
-
-  <div class="item" data-status="pending" data-method="lovable" data-phase="1">
-    <div class="item-num">44</div>
-    <div class="item-body">
-      <div class="item-title">Scrollable single-page results (replace 5-tab structure)</div>
-      <div class="item-desc">Five equal-weight tabs flatten hierarchy. Replace with sticky ToC + anchor-linked scroll: Diagnosis → Heatmap → Patterns → Actions → KPIs → Resources.</div>
-    </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-1">Phase 1</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="lovable" data-phase="done">
-    <div class="item-num">45</div>
-    <div class="item-body">
-      <div class="item-title">Confidence variance warning in results</div>
-      <div class="item-desc">Apr 2026: Amber banner in MaturityScoring.tsx above Gap Analysis table when any department has reviewRecommended=true. Lists affected departments with consistency %. Uses existing confidenceData useMemo — no new engine calls.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="pending" data-method="manual" data-phase="now">
-    <div class="item-num">46</div>
-    <div class="item-body">
-      <div class="item-title">Remove emoji icons from B2B UI</div>
-      <div class="item-desc">🎯 🔍 📊 🏢 used as section markers. Replace with Lucide SVG icons from existing library.</div>
-    </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
-    <div><span class="method-badge m-manual">Manual</span></div>
-    <div><span class="phase-badge ph-now">Do now</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="lovable" data-phase="done">
-    <div class="item-num">47</div>
-    <div class="item-body">
-      <div class="item-title">Dashboard empty state and onboarding funnel</div>
-      <div class="item-desc">Apr 2026: Dashboard.tsx empty state — ClipboardList icon, "Run your first dealership diagnostic" heading, 3 benefit callout tiles (BarChart3/Zap/CheckSquare), Start Assessment CTA button, "What to prepare" footer note. Replaces blank first-login experience.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="pending" data-method="lovable" data-phase="2">
-    <div class="item-num">48</div>
-    <div class="item-body">
-      <div class="item-title">Score trajectory card (retention hook)</div>
-      <div class="item-desc">After 2 assessments: dashboard hero shows delta. Requires delta scoring. Design now, wire Phase 2.</div>
-    </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
-    <div><span class="method-badge m-lovable">Lovable</span></div>
-    <div><span class="phase-badge ph-2">Phase 2</span></div>
-  </div>
+<div class="category-header"><span class="category-icon">⟡</span><span class="category-title">Network & OEM Views</span><span class="category-count" id="c7"></span></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">38</div><div class="item-body"><div class="item-title">OEM network dashboard MVP</div><div class="item-desc">OemDashboard.tsx at /app/oem-dashboard: leaderboard, score trends, rank medals (gold/silver/bronze), stat cards. OemSettings.tsx: create network, add dealers by email, programme tiers. Gated by requiresActorType="oem".</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-both">Both</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">39</div><div class="item-body"><div class="item-title">Coach view (assigned dealers, assessment history)</div><div class="item-desc">CoachDashboard.tsx: dealer cards, score trends, sort/filter. CoachActions.tsx: cross-dealer action tracker. InviteCoach component. Gated by requiresActorType="coach".</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-both">Both</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="pending" data-section="s1"><div class="item-num">40</div><div class="item-body"><div class="item-title">Coach visit workflow</div><div class="item-desc">Pre-visit briefing, during-visit annotations, post-visit PDF. Requires coach view (done — now unblocked). See also #79 in Section 4.</div></div><div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-2">Phase 2</span></div><div><span class="effort e-high">High</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">41</div><div class="item-body"><div class="item-title">Network peer rank display</div><div class="item-desc">OEM Dashboard: gold/silver/bronze badges for top 3 ranks. Network average row in leaderboard table. OemDashboard.tsx.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
 </div>
 
-<!-- CATEGORY 9: CONTENT & METHODOLOGY -->
+<!-- Cat 8: UX/UI -->
 <div class="category">
-  <div class="category-header">
-    <span class="category-icon">◈</span>
-    <span class="category-title">Content & Methodology</span>
-    <span class="category-count" id="cat9-count"></span>
-  </div>
-
-  <div class="item" data-status="done" data-method="na" data-phase="done">
-    <div class="item-num">49</div>
-    <div class="item-body">
-      <div class="item-title">2S/3S/4S business model awareness in KPIs</div>
-      <div class="item-desc">Business model captured in OrganizationSettings. KPI definitions reference it contextually. Benchmark notes acknowledge model variation.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-na">Built</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="pending" data-method="manual" data-phase="now">
-    <div class="item-num">50</div>
-    <div class="item-body">
-      <div class="item-title">Benchmark methodology document (1 page)</div>
-      <div class="item-desc">OEM procurement requires it. Sample source categories, geographic scope, date range, confidence classification, update cadence. Non-code task.</div>
-    </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
-    <div><span class="method-badge m-manual">Manual</span></div>
-    <div><span class="phase-badge ph-now">Do now</span></div>
-  </div>
-
-  <div class="item" data-status="pending" data-method="manual" data-phase="now">
-    <div class="item-num">51</div>
-    <div class="item-body">
-      <div class="item-title">GDPR Data Processing Agreement template</div>
-      <div class="item-desc">Procurement blocker for European OEM contracts. Munich data protection lawyer required (~€2–4K). Parallel legal task, not development.</div>
-    </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
-    <div><span class="method-badge m-manual">Manual</span></div>
-    <div><span class="phase-badge ph-now">Do now</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="manual" data-phase="done">
-    <div class="item-num">52</div>
-    <div class="item-body">
-      <div class="item-title">Executive narrative templates (situation synthesis)</div>
-      <div class="item-desc">Duplicate of item #34 — completed Sprint 1. narrativeTemplates.ts contains 32 variants (4 maturity × 8 signal codes × single/systemic). buildExecutiveNarrative() exported and live. Verified 20 Apr 2026.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-manual">Manual</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
-
-  <div class="item" data-status="partial" data-method="na" data-phase="done">
-    <div class="item-num">53</div>
-    <div class="item-body">
-      <div class="item-title">i18n translations (EN + DE complete, FR/ES/IT partial)</div>
-      <div class="item-desc">English and German fully implemented. French, Spanish, Italian language strings exist in schema but translation content incomplete.</div>
-    </div>
-    <div><span class="status-badge s-partial"><span class="status-dot"></span>Partial</span></div>
-    <div><span class="method-badge m-manual">Manual</span></div>
-    <div><span class="phase-badge ph-1">Phase 1</span></div>
-  </div>
-
-  <div class="item" data-status="done" data-method="manual" data-phase="done">
-    <div class="item-num">54</div>
-    <div class="item-body">
-      <div class="item-title">Design system specification (DESIGN.md)</div>
-      <div class="item-desc">Sprint 2: DESIGN.md created at project root — 630-line visual design system specification derived from live production CSS. Covers: colour system (brand/neutral/semantic/department/score-band tokens), typography scale, spacing and layout rules, component specs (score ring, question tiles, action cards, benchmark corridor, 5×5 heatmap, systemic pattern cards), chart/animation/icon rules, scrollable results layout spec, Lovable prompt template, and anti-patterns list. All Lovable prompts must reference this file.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-manual">Manual</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
+<div class="category-header"><span class="category-icon">◈</span><span class="category-title">UX / UI</span><span class="category-count" id="c8"></span></div>
+<div class="item" data-status="pending" data-section="s1"><div class="item-num">42</div><div class="item-body"><div class="item-title">Neutral option tiles (remove anchoring bias)</div><div class="item-desc">Coloured buttons (red=1-2, yellow=3, green=4-5) create anchoring bias. Replace with neutral white tiles, blue left-border on selected only.</div></div><div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-1">Phase 1</span></div><div><span class="effort e-low">Low</span></div></div>
+<div class="item" data-status="partial" data-section="s1"><div class="item-num">43</div><div class="item-body"><div class="item-title">Always-visible context panel</div><div class="item-desc">Round 2 partial: sidebar sticky, dead scroll eliminated. Right-column panel and mobile drawer still pending.</div></div><div><span class="status-badge s-partial"><span class="status-dot"></span>Partial</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-1">Phase 1</span></div><div><span class="effort e-med">Medium</span></div></div>
+<div class="item" data-status="pending" data-section="s1"><div class="item-num">44</div><div class="item-body"><div class="item-title">Scrollable single-page results (replace 5-tab structure)</div><div class="item-desc">Replace equal-weight tabs with sticky ToC + anchor-linked scroll: Diagnosis → Heatmap → Patterns → Actions → KPIs → Resources.</div></div><div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-2">Phase 2</span></div><div><span class="effort e-high">High</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">45</div><div class="item-body"><div class="item-title">Confidence variance warning in results</div><div class="item-desc">Amber banner in MaturityScoring.tsx when any dept has reviewRecommended=true. Lists affected depts with consistency %.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="pending" data-section="s1"><div class="item-num">46</div><div class="item-body"><div class="item-title">Remove emoji icons from B2B UI</div><div class="item-desc">🎯 🔍 📊 🏢 used as section markers. Replace with Lucide SVG icons from existing library.</div></div><div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div><div><span class="method-badge m-manual">Manual</span></div><div><span class="prio p-now">Do now</span></div><div><span class="effort e-low">Low</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">47</div><div class="item-body"><div class="item-title">Dashboard empty state and onboarding funnel</div><div class="item-desc">ClipboardList icon, 3 benefit tiles, Start Assessment CTA, "What to prepare" footer. Replaces blank first-login experience.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="pending" data-section="s1"><div class="item-num">48</div><div class="item-body"><div class="item-title">Score trajectory card (retention hook)</div><div class="item-desc">After 2 assessments: dashboard hero shows delta. Depends on #36 delta scoring infrastructure.</div></div><div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-2">Phase 2</span></div><div><span class="effort e-med">Medium</span></div></div>
 </div>
 
-<!-- CATEGORY 10: APRIL 2026 NEW FEATURES -->
+<!-- Cat 9: Content & Methodology -->
 <div class="category">
-  <div class="category-header">
-    <span class="category-icon">★</span>
-    <span class="category-title">April 2026 New Features</span>
-    <span class="category-count" id="cat10-count"></span>
-  </div>
+<div class="category-header"><span class="category-icon">◈</span><span class="category-title">Content & Methodology</span><span class="category-count" id="c9"></span></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">49</div><div class="item-body"><div class="item-title">2S/3S/4S business model awareness in KPIs</div><div class="item-desc">Business model in OrganizationSettings. KPI definitions reference contextually. Benchmark notes acknowledge model variation.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-na">Built</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="pending" data-section="s1"><div class="item-num">50</div><div class="item-body"><div class="item-title">Benchmark methodology document (1-pager)</div><div class="item-desc">OEM procurement requires it. Source categories, geographic scope, date range, confidence classification, update cadence. Non-code task — produce in Google Docs.</div></div><div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div><div><span class="method-badge m-manual">Manual</span></div><div><span class="prio p-now">Do now</span></div><div><span class="effort e-low">Low</span></div></div>
+<div class="item" data-status="pending" data-section="s1"><div class="item-num">51</div><div class="item-body"><div class="item-title">GDPR Data Processing Agreement template</div><div class="item-desc">Procurement blocker for European OEM contracts. Munich data protection lawyer required (~€2–4K). Parallel legal task, not development.</div></div><div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div><div><span class="method-badge m-manual">Manual</span></div><div><span class="prio p-now">Do now</span></div><div><span class="effort e-low">Low</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">52</div><div class="item-body"><div class="item-title">Executive narrative templates (situation synthesis)</div><div class="item-desc">Duplicate of #34 — narrativeTemplates.ts: 32 variants. buildExecutiveNarrative() live. Verified 20 Apr 2026.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-manual">Manual</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="partial" data-section="s1"><div class="item-num">53</div><div class="item-body"><div class="item-title">i18n translations (EN + DE complete, FR/ES/IT partial)</div><div class="item-desc">English and German fully implemented. French, Spanish, Italian strings exist in schema but translation content incomplete.</div></div><div><span class="status-badge s-partial"><span class="status-dot"></span>Partial</span></div><div><span class="method-badge m-na">–</span></div><div><span class="prio p-3">Phase 3</span></div><div><span class="effort e-med">Medium</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">54</div><div class="item-body"><div class="item-title">Design system specification (DESIGN.md)</div><div class="item-desc">630-line visual design system at project root. Colour tokens, typography scale, component specs, chart rules, Lovable prompt template, anti-patterns list.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-manual">Manual</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+</div>
 
-  <div class="item" data-status="done" data-method="both" data-phase="done">
-    <div class="item-num">55</div>
-    <div class="item-body">
-      <div class="item-title">Coach invite flow (end-to-end)</div>
-      <div class="item-desc">April 2026: invite_type column added to dealership_invites ('dealer'|'coach'). send-invite Edge Function supports invite_type='coach' with branded email copy. accept_dealership_invite RPC branches: coach path creates coach_dealership_assignments row + sets actor_type='coach'; dealer path unchanged. AcceptInvite.tsx reads invite_type from RPC response and redirects to /app/coach-dashboard for coach invites. InviteCoach.tsx component in Account → Team tab: email lookup, pending invite list, revoke. No manual SQL required to onboard a coach.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-both">Both</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
+<!-- Cat 10: April 2026 Features -->
+<div class="category">
+<div class="category-header"><span class="category-icon">★</span><span class="category-title">April 2026 New Features</span><span class="category-count" id="c10"></span></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">55</div><div class="item-body"><div class="item-title">Coach invite flow (end-to-end)</div><div class="item-desc">invite_type in dealership_invites. send-invite Edge Function updated. accept_dealership_invite creates coach_dealership_assignments. AcceptInvite redirects to /app/coach-dashboard. InviteCoach component in Account → Team tab.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-both">Both</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">56</div><div class="item-body"><div class="item-title">OEM self-service onboarding</div><div class="item-desc">toggle_oem_mode() SECURITY DEFINER RPC. OemModeToggle in Account → Organisation tab. Feature preview, activate/deactivate with AlertDialog confirmation. No manual SQL required.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-both">Both</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s1"><div class="item-num">57</div><div class="item-body"><div class="item-title">OEM cross-org data access (RLS + SECURITY DEFINER)</div><div class="item-desc">Additive RLS policies for OEM read on dealer assessments + dealerships. private.caller_is_verified_oem() guard. lookup_dealer_by_email() + get_dealership_details() SECURITY DEFINER functions.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-both">Both</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="pending" data-section="s1"><div class="item-num">58</div><div class="item-body"><div class="item-title">Results page "viewing as dealer" mode for OEM</div><div class="item-desc">OEM clicking a dealer on leaderboard needs read-only "viewing as" context that temporarily scopes data to dealer's org without changing active org.</div></div><div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div><div><span class="method-badge m-both">Both</span></div><div><span class="prio p-1">Phase 1</span></div><div><span class="effort e-med">Medium</span></div></div>
+</div>
 
-  <div class="item" data-status="done" data-method="both" data-phase="done">
-    <div class="item-num">56</div>
-    <div class="item-body">
-      <div class="item-title">OEM self-service onboarding (no SQL required)</div>
-      <div class="item-desc">April 2026: toggle_oem_mode() SECURITY DEFINER RPC sets actor_type='oem' for org owners. OemModeToggle component in Account → Organisation tab shows current status, feature preview (Network leaderboard / Dealer score tracking / Programme tier management), Activate button, and AlertDialog-confirmed Deactivate. After activation page reloads and redirects to /app/oem-settings. Previously required manual Supabase SQL.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-both">Both</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
+<!-- ═══ NEW SECTIONS DIVIDER ═══ -->
+<div class="new-divider">
+  <span class="nsd-label">New in v2</span>
+  <span class="nsd-desc">Sections 2–4 are net-new roadmap items added 01 May 2026 · none existed in v1</span>
+</div>
 
-  <div class="item" data-status="done" data-method="both" data-phase="done">
-    <div class="item-num">57</div>
-    <div class="item-body">
-      <div class="item-title">OEM cross-org data access (RLS + SECURITY DEFINER functions)</div>
-      <div class="item-desc">April 2026: Two additive RLS policies allow OEM admins to read dealership names and assessment scores for dealers in their network (cross-org). private.caller_is_verified_oem() guard helper. public.lookup_dealer_by_email() for dealer discovery with double guard (actor_type + active network ownership). public.get_dealership_details() for batch roster loading. All functions in private schema, callable only by verified OEM users.</div>
-    </div>
-    <div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div>
-    <div><span class="method-badge m-both">Both</span></div>
-    <div><span class="phase-badge ph-done">Complete</span></div>
-  </div>
+<!-- ═══ SECTION 2 — UX & RETENTION FEATURES ═══ -->
+<div class="section-head" style="margin-top:20px">
+  <span class="section-icon">◈</span>
+  <span class="section-title">Section 2 — UX & Retention Features</span>
+  <span class="section-subtitle">Interactive and engagement-driving UI improvements</span>
+  <span class="section-tag tag-ux">WOW / UX</span>
+  <span class="section-count" id="s2-count"></span>
+</div>
+<div class="col-header"><div>#</div><div>Item</div><div>Status</div><div>Method</div><div>Priority</div><div>Effort</div></div>
 
-  <div class="item" data-status="pending" data-method="both" data-phase="1">
-    <div class="item-num">58</div>
-    <div class="item-body">
-      <div class="item-title">Results page "viewing as dealer" mode for OEM</div>
-      <div class="item-desc">When OEM admin clicks a dealer on the leaderboard and navigates to /app/results/:assessmentId, the Results page uses useMultiTenant scoped to the OEM's own org context. Some features (action plan counts, history) may show OEM org data rather than the dealer's. Needs a read-only "viewing as" context mode that temporarily uses the dealer's org/dealership for data display without changing the active org.</div>
-    </div>
-    <div><span class="status-badge s-pending"><span class="status-dot"></span>Pending</span></div>
-    <div><span class="method-badge m-both">Both</span></div>
-    <div><span class="phase-badge ph-1">Phase 1</span></div>
-  </div>
+<div class="category">
+<div class="category-header"><span class="category-icon">◈</span><span class="category-title">Assessment phase</span></div>
+<div class="item is-new" data-status="new" data-section="s2"><div class="item-num">59</div><div class="item-body"><div class="item-title">Live score preview as user answers</div><div class="item-desc">Module score updates in real time after each answer. Call scoring engine client-side on each onAnswer event and animate the score change. No new infra — engine already runs client-side. Highest impact, lowest effort WOW item in the entire list.</div><span class="dep-tag">no deps</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-now">Do now</span></div><div><span class="effort e-low">Low</span></div></div>
+<div class="item is-new" data-status="new" data-section="s2"><div class="item-num">60</div><div class="item-body"><div class="item-title">Benchmark whisper per question</div><div class="item-desc">On rating selection: subtle inline text — "Top-quartile dealers in your segment score 4–5 here." Uses benchmark_snapshots data. Calibration nudge, not a warning. OEM differentiator in demos.</div><span class="dep-tag">depends: #25 benchmarks</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-1">Phase 1</span></div><div><span class="effort e-low">Low</span></div></div>
+<div class="item is-new" data-status="new" data-section="s2"><div class="item-num">61</div><div class="item-body"><div class="item-title">Pattern detection mid-assessment alert</div><div class="item-desc">After Q6–7 in a module, if a systemic pattern is forming, surface inline card: "We're detecting a consistent process gap in this department." Uses existing signal engine — needs mid-flight evaluation hook.</div><span class="dep-tag">depends: #18 signal engine</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-cc">Claude Code</span></div><div><span class="prio p-1">Phase 1</span></div><div><span class="effort e-med">Medium</span></div></div>
+<div class="item is-new" data-status="new" data-section="s2"><div class="item-num">62</div><div class="item-body"><div class="item-title">AI prompt for notes field on low ratings</div><div class="item-desc">When user selects 1–2 rating, notes field auto-expands with ghost prompt: "What's the root cause?" or "When did this change?" Drives qualitative data without friction. Uses existing assessment_notes infra.</div><span class="dep-tag">no deps</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-1">Phase 1</span></div><div><span class="effort e-low">Low</span></div></div>
+</div>
 
+<div class="category">
+<div class="category-header"><span class="category-icon">◈</span><span class="category-title">Results reveal</span></div>
+<div class="item" data-status="done" data-section="s2"><div class="item-num">63</div><div class="item-body"><div class="item-title">Cinematic score reveal animation</div><div class="item-desc">On first Results load: overall score counts up from 0 with circular progress animation, then module scores cascade in with staggered reveals. CSS animations only. Single highest-impact first-impression change.</div><span class="dep-tag">no deps</span></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item" data-status="done" data-section="s2"><div class="item-num">64</div><div class="item-body"><div class="item-title">Animated radar chart with benchmark ring</div><div class="item-desc">Spider/radar chart animates outward on Results load. Dashed benchmark ring beneath dealer polygon — the gap is the visual story. Recharts RadarChart already available in stack.</div><span class="dep-tag">depends: #25 benchmarks</span></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item is-new" data-status="new" data-section="s2"><div class="item-num">65</div><div class="item-body"><div class="item-title">Revenue opportunity calculator on Results</div><div class="item-desc">"If your Service score reaches benchmark: estimated additional gross €18,000/month." Score gap × volume × margin assumptions. Dynamic sliders for volume/GPU. Converts diagnostic into business case. Highest commercial conversion driver in the list.</div><span class="dep-tag">depends: #25 benchmarks</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-cc">Claude Code</span></div><div><span class="prio p-now">Do now</span></div><div><span class="effort e-med">Medium</span></div></div>
+</div>
+
+<div class="category">
+<div class="category-header"><span class="category-icon">◈</span><span class="category-title">Action plan</span></div>
+<div class="item" data-status="done" data-section="s2"><div class="item-num">66</div><div class="item-body"><div class="item-title">Kanban drag-to-prioritise board</div><div class="item-desc">Action plan as drag-and-drop board: Open → In Progress → Done. Confetti burst when action moved to Done. @dnd-kit or similar. High retention value — makes the tool feel like a real PM tool, not a report.</div><span class="dep-tag">no deps</span></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item is-new" data-status="new" data-section="s2"><div class="item-num">67</div><div class="item-body"><div class="item-title">Impact vs effort 2×2 triage scatter view</div><div class="item-desc"><strong>DEPRIORITISED</strong> — Single-action triage matrix already exists in the Action Sheet edit panel (sliders + mini 2×2). Portfolio scatter has low marginal value given existing roadmap view. Revisit post-pilot if OEM requests it.<br><br>Toggle from list to scatter plot: each action plotted by impact_score (y) vs effort_score (x). Hover shows title, click navigates to action. impact_score + effort_score already exist on all actions. Recharts ScatterChart. Looks like a McKinsey prioritisation matrix.</div><span class="dep-tag">no deps — scores already exist</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-3">Deferred</span></div><div><span class="effort e-low">Low</span></div></div>
+<div class="item" data-status="done" data-section="s2"><div class="item-num">68</div><div class="item-body"><div class="item-title">Completion milestone moment banners</div><div class="item-desc">At 25/50/75/100% action completion: full-width contextual banner with projected score improvement — "At this pace, your Service score will reach 75+ by March." Connects completion to coaching narrative.</div><span class="dep-tag">depends: #74 milestone alerts</span></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item is-new" data-status="new" data-section="s2"><div class="item-num">69</div><div class="item-body"><div class="item-title">Network health map (OEM geo / grid view)</div><div class="item-desc">Grid or geo map of all dealers in a network. Each cell/pin coloured by overall score: red/amber/green. Click opens dealer scorecard. Justifies OEM network licence in a single screen. Extends existing OEM Dashboard (#38).</div><span class="dep-tag">depends: #38 OEM dashboard</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-1">Phase 1</span></div><div><span class="effort e-med">Medium</span></div></div>
+</div>
+
+<!-- ═══ SECTION 3 — NOTIFICATION & ENGAGEMENT ENGINE ═══ -->
+<div class="section-head">
+  <span class="section-icon">◉</span>
+  <span class="section-title">Section 3 — Notification & Engagement Engine</span>
+  <span class="section-subtitle">Retention loops · pull users back via alerts, digests, and triggers</span>
+  <span class="section-tag tag-notify">Notifications</span>
+  <span class="section-count" id="s3-count"></span>
+</div>
+<div class="col-header"><div>#</div><div>Item</div><div>Status</div><div>Method</div><div>Priority</div><div>Effort</div></div>
+
+<div class="category">
+<div class="category-header"><span class="category-icon">◉</span><span class="category-title">Infrastructure — build first, unblocks all 6 items below</span></div>
+<div class="item is-new" data-status="new" data-section="s3"><div class="item-num">70</div><div class="item-body"><div class="item-title">Notification infrastructure (table + dispatcher + cron)</div><div class="item-desc">notifications table (user_id, org_id, type, entity_type, entity_id, channel: in_app|email). notification_preferences table. Supabase pg_cron daily job. Resend or SendGrid Edge Function dispatcher. Build once — items #71–75 are thin wrappers on top.</div><span class="dep-tag">no deps</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-supa">Supabase + CC</span></div><div><span class="prio p-now">Do now</span></div><div><span class="effort e-med">Medium</span></div></div>
+</div>
+
+<div class="category">
+<div class="category-header"><span class="category-icon">◉</span><span class="category-title">Action accountability</span></div>
+<div class="item is-new" data-status="new" data-section="s3"><div class="item-num">71</div><div class="item-body"><div class="item-title">Stale action nudge engine</div><div class="item-desc">Daily cron flags actions with no status update in N days (Critical=7, High=14, Medium=21). Email to responsible_person. Coach sees "Stale Actions" panel. Requires responsible_person_email + stale_nudge_sent_at columns on improvement_actions.</div><span class="dep-tag">depends: #70 notif infra</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-supa">Supabase + CC</span></div><div><span class="prio p-now">Do now</span></div><div><span class="effort e-low">Low</span></div></div>
+<div class="item is-new" data-status="new" data-section="s3"><div class="item-num">72</div><div class="item-body"><div class="item-title">Action status update via email reply (tokenised links)</div><div class="item-desc">Nudge email includes [Mark In Progress] / [Mark Complete] / [Add Note] tokenised links. Signed JWT (action_id + user_id + 72h expiry). Edge Function validates + updates status without login. Single-use tokens via nonce column.</div><span class="dep-tag">depends: #71 nudge engine</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-supa">Supabase + CC</span></div><div><span class="prio p-1">Phase 1</span></div><div><span class="effort e-med">Medium</span></div></div>
+<div class="item is-new" data-status="new" data-section="s3"><div class="item-num">73</div><div class="item-body"><div class="item-title">Weekly action digest email</div><div class="item-desc">Every Monday 07:00: open actions, overdue count, top 3 overdue by triage score. One-click update links (same token as #72). One email per org, aggregated. Gated by notification_preferences.</div><span class="dep-tag">depends: #70, #72</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-supa">Supabase + CC</span></div><div><span class="prio p-1">Phase 1</span></div><div><span class="effort e-low">Low</span></div></div>
+<div class="item is-new" data-status="new" data-section="s3"><div class="item-num">74</div><div class="item-body"><div class="item-title">Action completion milestone alerts</div><div class="item-desc">On status change to Completed: recalculate completion % for assessment_id. If crosses 25/50/75/100% milestone not yet crossed (stored in assessments.milestone_notifications_sent jsonb) → fire alert. Drives reassessment CTA at 100%.</div><span class="dep-tag">depends: #70 notif infra</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-cc">Claude Code</span></div><div><span class="prio p-1">Phase 1</span></div><div><span class="effort e-low">Low</span></div></div>
+</div>
+
+<div class="category">
+<div class="category-header"><span class="category-icon">◉</span><span class="category-title">External signal alerts</span></div>
+<div class="item is-new" data-status="new" data-section="s3"><div class="item-num">75</div><div class="item-body"><div class="item-title">Google Reviews monitoring alert</div><div class="item-desc">Daily cron compares today's Google rating vs 30-day rolling average. If drop ≥0.2 stars OR 3+ new 1–2 star reviews → in-app alert + email. Links to relevant module actions. Depends on #76 Google Reviews integration.</div><span class="dep-tag">depends: #76 Google Reviews, #70 notif infra</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-supa">Supabase + CC</span></div><div><span class="prio p-2">Phase 2</span></div><div><span class="effort e-low">Low</span></div></div>
+</div>
+
+<!-- ═══ SECTION 4 — COACH & OEM INTELLIGENCE LAYER ═══ -->
+<div class="section-head">
+  <span class="section-icon">⟡</span>
+  <span class="section-title">Section 4 — Coach & OEM Intelligence Layer</span>
+  <span class="section-subtitle">Qualitative signals, external data, enterprise audit features</span>
+  <span class="section-tag tag-coach">Coach / OEM</span>
+  <span class="section-count" id="s4-count"></span>
+</div>
+<div class="col-header"><div>#</div><div>Item</div><div>Status</div><div>Method</div><div>Priority</div><div>Effort</div></div>
+
+<div class="category">
+<div class="category-header"><span class="category-icon">⟡</span><span class="category-title">External data</span></div>
+<div class="item is-new" data-status="new" data-section="s4"><div class="item-num">76</div><div class="item-body"><div class="item-title">Google Reviews integration</div><div class="item-desc">Google Places API → Edge Function → google_reviews_snapshots table (rating, review_count, recent_reviews jsonb, negative_keywords, positive_keywords). Daily cron. Triangulation logic: if tool flags weak CSI AND Google rating &lt;4.0 → escalate actions to Critical. Keyword → module mapping. "Voice of Customer" card on Results page.</div><span class="dep-tag">needs google_place_id per dealership</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-supa">Supabase + CC</span></div><div><span class="prio p-1">Phase 1</span></div><div><span class="effort e-med">Medium</span></div></div>
+</div>
+
+<div class="category">
+<div class="category-header"><span class="category-icon">⟡</span><span class="category-title">Coach workflow</span></div>
+<div class="item is-new" data-status="new" data-section="s4"><div class="item-num">77</div><div class="item-body"><div class="item-title">Coach commentary layer</div><div class="item-desc">coach_comments table (org_id, author_id, entity_type, entity_id, comment, visibility: dealer_visible/coach_only/oem_visible). Surfaces in Action Sheet (Coach Notes tab) and Results module cards (comment icon + badge count). RLS: dealer_visible filtered to org members only.</div><span class="dep-tag">depends: #39 coach view</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-both">Both</span></div><div><span class="prio p-now">Do now</span></div><div><span class="effort e-med">Medium</span></div></div>
+<div class="item is-new" data-status="new" data-section="s4"><div class="item-num">78</div><div class="item-body"><div class="item-title">Coach commentary notifications</div><div class="item-desc">On INSERT to coach_comments: notify all owner/admin members of the dealership org. Batched daily digest (not instant) unless urgency flag set. Creates a dialogue loop that drives repeated logins.</div><span class="dep-tag">depends: #70 notif infra, #77 coach comments</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-cc">Claude Code</span></div><div><span class="prio p-1">Phase 1</span></div><div><span class="effort e-low">Low</span></div></div>
+<div class="item is-new" data-status="new" data-section="s4"><div class="item-num">79</div><div class="item-body"><div class="item-title">Site visit / coaching session log</div><div class="item-desc">coaching_visits table (coach_id, dealership_id, visit_date, visit_type, modules_reviewed[], summary, agreed_actions[], next_visit_date). Agreed actions link to improvement_actions with "Agreed in visit [date]" badge provenance. OEM SteerCo-ready: visit history feeds network reports.</div><span class="dep-tag">depends: #39 coach view</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-both">Both</span></div><div><span class="prio p-1">Phase 1</span></div><div><span class="effort e-med">Medium</span></div></div>
+</div>
+
+<div class="category">
+<div class="category-header"><span class="category-icon">⟡</span><span class="category-title">Assessment intelligence</span></div>
+<div class="item" data-status="done" data-section="s4"><div class="item-num">80</div><div class="item-body"><div class="item-title">Assessment validity / freshness indicator</div><div class="item-desc">&lt;60 days: green badge. 60–90 days: amber banner. &gt;90 days: red warning + reassess CTA with pre-filled prior answers. No new DB columns — derives from assessments.created_at. Code-only change.</div><span class="dep-tag">no deps</span></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-done">Complete</span></div><div><span class="effort e-na">–</span></div></div>
+<div class="item is-new" data-status="new" data-section="s4"><div class="item-num">81</div><div class="item-body"><div class="item-title">Assessment notes surfaced in Results + Actions</div><div class="item-desc">Notes entered during assessment currently unused downstream. Surface in: Results module cards (Field Notes collapsible), Action Sheet (note from triggering question), PDF appendix (Dealer Observations). Note indicator icon on action cards. Zero new infra — assessment_notes table already populated.</div><span class="dep-tag">no deps</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="prio p-now">Do now</span></div><div><span class="effort e-low">Low</span></div></div>
+<div class="item is-new" data-status="new" data-section="s4"><div class="item-num">82</div><div class="item-body"><div class="item-title">Sentiment analysis on coach/dealer notes</div><div class="item-desc">v1: keyword taxonomy → _sentiment_tags jsonb on coach_comments + coaching_visits. Weekly aggregation in coach dashboard: "Top themes — Understaffed (6), Waiting time (4)." v2: batch process via Claude API → sentiment_summaries table for OEM network-level theme reports.</div><span class="dep-tag">depends: #77 coach comments, #79 visit log</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-cc">Claude Code</span></div><div><span class="prio p-2">Phase 2</span></div><div><span class="effort e-med">Medium</span></div></div>
+</div>
+
+<div class="category">
+<div class="category-header"><span class="category-icon">⟡</span><span class="category-title">OEM reporting</span></div>
+<div class="item is-new" data-status="new" data-section="s4"><div class="item-num">83</div><div class="item-body"><div class="item-title">Action plan export to OEM reporting template</div><div class="item-desc">oem_export_templates table with column_mappings jsonb per OEM brand (BMW/Mercedes/VW). Export modal dropdown: Standard or OEM Format. Maps action fields to OEM column headers before xlsx generation. Near-term: hardcode 2 OEM templates as JSON. Build after first pilot when exact format is known.</div><span class="dep-tag">depends: #30 exports · first OEM pilot</span></div><div><span class="status-badge s-new"><span class="status-dot"></span>Roadmap</span></div><div><span class="method-badge m-cc">Claude Code</span></div><div><span class="prio p-2">Phase 2</span></div><div><span class="effort e-med">Medium</span></div></div>
 </div>
 
 </div><!-- end content -->
 
+<div class="footer">
+  <div><strong>v2.0</strong> · Created 01 May 2026 · 83 items total (58 carry-forward + 25 roadmap) · v1 completion: 76%</div>
+  <div>Production: dealership-performance-assessment-t.vercel.app · Supabase: xrypgosuyfdkkqafftae</div>
+</div>
+
 <script>
-  const items = document.querySelectorAll('.item');
-  let currentFilter = 'all';
-
-  function updateStats() {
-    let done=0, partial=0, pending=0, blocked=0;
-    items.forEach(item => {
-      const s = item.dataset.status;
-      if(s==='done') done++;
-      else if(s==='partial') partial++;
-      else if(s==='pending') pending++;
-      else if(s==='blocked') blocked++;
-    });
-    const total = done+partial+pending+blocked;
-    document.getElementById('cnt-done').textContent = done;
-    document.getElementById('cnt-partial').textContent = partial;
-    document.getElementById('cnt-pending').textContent = pending;
-    document.getElementById('cnt-blocked').textContent = blocked;
-    document.getElementById('bar-done').style.width = (done/total*100)+'%';
-    document.getElementById('bar-partial').style.width = (partial/total*100)+'%';
-    document.getElementById('bar-pending').style.width = (pending/total*100)+'%';
-    document.getElementById('bar-blocked').style.width = (blocked/total*100)+'%';
-    const completePct = Math.round(((done + partial*0.5)/total)*100);
-    document.getElementById('pct-label').textContent = completePct+'% complete';
-
-    document.querySelectorAll('.category').forEach(cat => {
-      const catItems = cat.querySelectorAll('.item');
-      const id = cat.querySelector('.category-count');
-      if(id) id.textContent = catItems.length + ' items';
-    });
-  }
-
-  function filterItems(filter) {
-    currentFilter = filter;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    event.target.classList.add('active');
-
-    items.forEach(item => {
-      let show = false;
-      if(filter==='all') show=true;
-      else if(filter==='done') show = item.dataset.status==='done';
-      else if(filter==='partial') show = item.dataset.status==='partial';
-      else if(filter==='pending') show = item.dataset.status==='pending';
-      else if(filter==='blocked') show = item.dataset.status==='blocked';
-      item.classList.toggle('hidden', !show);
-    });
-  }
-
-  updateStats();
+const items=document.querySelectorAll('.item');
+function updateStats(){
+  let done=0,partial=0,pending=0,newCount=0;
+  items.forEach(i=>{
+    const s=i.dataset.status;
+    if(s==='done')done++;
+    else if(s==='partial')partial++;
+    else if(s==='pending')pending++;
+    else if(s==='new')newCount++;
+  });
+  const v1Total=done+partial+pending;
+  const total=v1Total+newCount;
+  document.getElementById('cnt-done').textContent=done;
+  document.getElementById('cnt-partial').textContent=partial;
+  document.getElementById('cnt-pending').textContent=pending;
+  document.getElementById('cnt-new').textContent=newCount;
+  document.getElementById('bar-done').style.width=(done/total*100)+'%';
+  document.getElementById('bar-partial').style.width=(partial/total*100)+'%';
+  document.getElementById('bar-pending').style.width=(pending/total*100)+'%';
+  document.getElementById('bar-new').style.width=(newCount/total*100)+'%';
+  const pct=Math.round(((done+partial*0.5)/v1Total)*100);
+  document.getElementById('pct-label').textContent=pct+'% of v1 scope complete · '+newCount+' roadmap items queued';
+  ['s1','s2','s3','s4'].forEach(sec=>{
+    const el=document.getElementById(sec+'-count');
+    if(el)el.textContent=document.querySelectorAll('.item[data-section="'+sec+'"]').length+' items';
+  });
+  ['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const cat=el.closest('.category');
+    if(cat)el.textContent=cat.querySelectorAll('.item').length+' items';
+  });
+}
+function filterItems(filter,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  items.forEach(i=>{
+    let show=false;
+    if(filter==='all')show=true;
+    else if(filter==='done')show=i.dataset.status==='done';
+    else if(filter==='partial')show=i.dataset.status==='partial';
+    else if(filter==='pending')show=i.dataset.status==='pending';
+    else if(filter==='new')show=i.dataset.status==='new';
+    i.classList.toggle('hidden',!show);
+  });
+}
+function searchItems(q){
+  q=q.toLowerCase();
+  items.forEach(i=>{
+    if(!q){i.classList.remove('hidden');return;}
+    i.classList.toggle('hidden',!i.textContent.toLowerCase().includes(q));
+  });
+}
+updateStats();
 </script>
 </body>
 </html>
