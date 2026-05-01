@@ -440,6 +440,9 @@ export default function Results() {
                 }}
               />
             </ErrorBoundary>
+            <ErrorBoundary fallbackTitle={language === 'de' ? 'Performance-Radar nicht verfügbar' : 'Performance Radar unavailable'}>
+              <RadarBenchmarkChart departmentScores={resultsData.scores as Record<string, number>} />
+            </ErrorBoundary>
             {ceilingInsights.length > 0 && (
               <ErrorBoundary fallbackTitle={language === 'de' ? 'Deckenanalyse nicht verfügbar' : 'Ceiling analysis unavailable'}>
                 <CeilingInsightsPanel insights={ceilingInsights} />
