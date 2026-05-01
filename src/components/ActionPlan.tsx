@@ -12,7 +12,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   Plus, Loader2, Pencil,
-  AlertTriangle, Target, Eye, Search, Filter, CalendarIcon, LayoutGrid, List as ListIcon
+  AlertTriangle, Target, Eye, Search, Filter, CalendarIcon, LayoutGrid, List as ListIcon,
+  CheckCircle2, X
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -124,6 +125,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
   const [conflictDetected, setConflictDetected] = useState(false);
   const [conflictAction, setConflictAction] = useState<ActionRecord | null>(null);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+  const [dismissedMilestone, setDismissedMilestone] = useState<number | null>(null);
 
   const canEdit = canPerformAction('update');
   const canCreate = canPerformAction('create');
@@ -132,6 +134,18 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
   const totalCount = actions.length;
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
   const overdueCount = actions.filter(a => isOverdue(a)).length;
+
+  const currentMilestone = useMemo(() => {
+    if (totalCount === 0) return null;
+    const pct = progressPercent;
+    if (pct >= 100) return { pct: 100, message: 'All actions complete — ready for your next assessment.', cta: true };
+    if (pct >= 75) return { pct: 75, message: '75% complete — excellent pace. Time to reassess which remaining actions have highest impact.', cta: false };
+    if (pct >= 50) return { pct: 50, message: 'Halfway there. Keep the momentum — the second half drives the score improvement.', cta: false };
+    if (pct >= 25) return { pct: 25, message: 'Good start — 25% complete. Consistency now will compound into score gains.', cta: false };
+    return null;
+  }, [progressPercent, totalCount]);
+
+  const showMilestoneBanner = currentMilestone !== null && currentMilestone.pct !== dismissedMilestone;
 
   const loadActions = useCallback(async () => {
     if (!user) return;
