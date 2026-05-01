@@ -24,6 +24,7 @@ import { cleanActionTitle, priorityDisplay, resetPatternUsage } from '@/lib/acti
 import { cleanDescription } from '@/lib/cleanDescription';
 import { ActionSheet } from './ActionSheet';
 import { TimelineView } from './action-plan/TimelineView';
+import { KanbanBoard } from './action-plan/KanbanBoard';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 
