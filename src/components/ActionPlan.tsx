@@ -661,6 +661,66 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
         </div>
       </div>
 
+      {/* Milestone Banner */}
+      {showMilestoneBanner && currentMilestone && (
+        <div
+          style={{
+            background: '#e1f5ee',
+            border: '1px solid #9fe1cb',
+            borderLeft: '3px solid #1D9E75',
+            borderRadius: 8,
+            padding: '12px 16px',
+            marginBottom: 12,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <CheckCircle2 size={16} color="#1D9E75" />
+            <span style={{ fontSize: 13, color: '#0f6e56', fontWeight: 500, marginLeft: 10 }}>
+              {currentMilestone.message}
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {currentMilestone.cta && (
+              <button
+                type="button"
+                onClick={() => window.location.assign('/app/assessment')}
+                style={{
+                  fontSize: 12,
+                  color: '#0052CC',
+                  border: '1px solid #0052CC',
+                  background: 'transparent',
+                  padding: '4px 10px',
+                  borderRadius: 6,
+                  cursor: 'pointer',
+                  fontWeight: 500,
+                }}
+              >
+                Schedule Reassessment
+              </button>
+            )}
+            <button
+              type="button"
+              aria-label="Dismiss milestone"
+              onClick={() => setDismissedMilestone(currentMilestone.pct)}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 4,
+                cursor: 'pointer',
+                color: '#96948e',
+                display: 'inline-flex',
+              }}
+            >
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Content area: Kanban, List, or Timeline */}
       {viewMode === 'roadmap' ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
