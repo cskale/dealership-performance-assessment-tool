@@ -1627,6 +1627,14 @@ export type Database = {
             }
             Returns: Json
           }
+      user_can_access_assessment_as_oem: {
+        Args: { _dealership_id: string }
+        Returns: boolean
+      }
+      user_can_access_dealership_as_oem: {
+        Args: { _dealership_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       access_role: "owner" | "admin" | "member" | "viewer"

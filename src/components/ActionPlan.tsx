@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+// Tabs no longer used after view-toggle redesign
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   Plus, Loader2, Pencil,
-  AlertTriangle, Target, Eye, Search, Filter, CalendarIcon
+  AlertTriangle, Target, Eye, Search, Filter, CalendarIcon, LayoutGrid, List as ListIcon
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,6 +24,7 @@ import { cleanActionTitle, priorityDisplay, resetPatternUsage } from '@/lib/acti
 import { cleanDescription } from '@/lib/cleanDescription';
 import { ActionSheet } from './ActionSheet';
 import { TimelineView } from './action-plan/TimelineView';
+import { KanbanBoard } from './action-plan/KanbanBoard';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 
@@ -156,6 +157,18 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
   }, [user, assessmentId, currentOrganization, actionPage]);
 
   useEffect(() => { loadActions(); }, [loadActions]);
+
+  const handleKanbanStatusChange = useCallback(async (
+    actionId: string,
+    newStatus: 'Open' | 'In Progress' | 'Completed'
+  ) => {
+    const { error } = await supabase
+      .from('improvement_actions')
+      .update({ status: newStatus, updated_at: new Date().toISOString() })
+      .eq('id', actionId);
+    if (error) throw error;
+    await loadActions();
+  }, [loadActions]);
 
   const handleGenerateClick = () => {
     const now = Date.now();
@@ -548,12 +561,29 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
         </div>
 
         <div className="flex items-center gap-2 ml-auto flex-shrink-0">
-          <Tabs value={viewMode === 'roadmap' ? 'roadmap' : 'list'} onValueChange={(value) => setViewMode(value as 'list' | 'roadmap')}>
-            <TabsList className="h-9 bg-card border">
-              <TabsTrigger value="list" className="text-xs">List view</TabsTrigger>
-              <TabsTrigger value="roadmap" className="text-xs">Roadmap view</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className="inline-flex h-9 items-center rounded-md bg-card border p-0.5">
+            {([
+              { key: 'list', label: 'List', Icon: ListIcon },
+              { key: 'kanban', label: 'Kanban', Icon: LayoutGrid },
+              { key: 'timeline', label: 'Timeline', Icon: CalendarIcon },
+              { key: 'roadmap', label: 'Roadmap', Icon: Target },
+            ] as const).map(({ key, label, Icon }) => (
+              <button
+                key={key}
+                onClick={() => setViewMode(key)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-2.5 h-8 rounded text-xs transition-colors",
+                  viewMode === key
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                aria-pressed={viewMode === key}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+              </button>
+            ))}
+          </div>
           {canCreate && (
             <Button onClick={openCreatePanel} variant="outline" size="sm">
               <Plus className="mr-2 h-4 w-4" /> Add Action
@@ -663,71 +693,11 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
       ) : viewMode === 'timeline' ? (
         <TimelineView actions={filteredActions} onActionClick={openEditPanel} />
       ) : viewMode === 'kanban' ? (
-        /* Kanban Board */
-        (() => {
-          const columns: { key: string; label: string; actions: typeof filteredActions }[] = [
-            { key: 'Open', label: 'Open', actions: filteredActions.filter(a => a.status === 'Open') },
-            { key: 'In Progress', label: 'In Progress', actions: filteredActions.filter(a => a.status === 'In Progress') },
-            { key: 'Completed', label: 'Completed', actions: filteredActions.filter(a => a.status === 'Completed') },
-          ];
-
-          if (filteredActions.length === 0) {
-            return (
-              <div className="text-center py-16 text-muted-foreground">
-                <Target className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                <p className="font-medium">No actions found</p>
-                <p className="text-sm mt-1">Generate actions from your assessment or add them manually.</p>
-              </div>
-            );
-          }
-
-          return (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 min-h-[400px]">
-              {columns.map(col => (
-                <div key={col.key} className="bg-secondary rounded-xl p-3">
-                  <div className="flex items-center justify-between mb-3 px-1">
-                    <span className="text-sm font-semibold text-foreground">{col.label}</span>
-                    <span className="text-label text-muted-foreground bg-muted rounded-md px-2 py-0.5">{col.actions.length}</span>
-                  </div>
-                  <div className="space-y-2">
-                    {col.actions.map(action => {
-                      const overdue = isOverdue(action);
-
-                      return (
-                        <div
-                          key={action.id}
-                          onClick={() => openEditPanel(action)}
-                          className={cn(
-                            "bg-card rounded-lg p-3 cursor-pointer transition-all shadow-card hover:shadow-elevated hover:-translate-y-px border-l-[3px] border-l-brand-500",
-                            action.status === 'Completed' && "opacity-70"
-                          )}
-                        >
-                          <div className="flex items-start justify-between gap-2 mb-1.5">
-                            <h4 className="text-sm font-medium text-foreground line-clamp-2 flex-1">
-                              {cleanActionTitle(action.action_title)}
-                            </h4>
-                            <Badge variant="outline" className="text-[10px] flex-shrink-0 px-1.5 py-0">
-                              {action.department}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center justify-between mt-2">
-                            {action.target_completion_date ? (
-                              <span className={cn("text-xs flex items-center gap-1", overdue ? "text-destructive font-medium" : "text-muted-foreground")}>
-                                <CalendarIcon className="h-3 w-3" />
-                                {new Date(action.target_completion_date).toLocaleDateString()}
-                              </span>
-                            ) : <span />}
-
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          );
-        })()
+        <KanbanBoard
+          actions={filteredActions}
+          onStatusChange={handleKanbanStatusChange}
+          onActionClick={openEditPanel}
+        />
       ) : (
         <>
           {filteredActions.length === 0 ? (
