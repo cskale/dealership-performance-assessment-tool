@@ -166,11 +166,9 @@ export function useOnboarding(): UseOnboardingReturn {
         .single();
 
       if (dealershipError || !dealership) {
-        await supabase
-          .from('profiles')
-          .update({ active_dealership_id: null })
-          .eq('user_id', user.id);
-        
+        // Do NOT null active_dealership_id here — RLS timing can cause false negatives
+        // Log and surface as needs_dealership without destroying the stored value
+        console.warn('[Onboarding] Could not verify dealership via RLS:', dealershipError?.message);
         setStatus('needs_dealership');
         setContext({
           organizationId: profile.active_organization_id,
@@ -183,11 +181,8 @@ export function useOnboarding(): UseOnboardingReturn {
       }
 
       if (dealership.organization_id !== profile.active_organization_id) {
-        await supabase
-          .from('profiles')
-          .update({ active_dealership_id: null })
-          .eq('user_id', user.id);
-        
+        // Do NOT null active_dealership_id here — RLS timing can cause false negatives on org_id mismatch
+        console.warn('[Onboarding] Dealership org_id mismatch — RLS may be lagging:', dealership.organization_id, '!==', profile.active_organization_id);
         setStatus('needs_dealership');
         setContext({
           organizationId: profile.active_organization_id,
