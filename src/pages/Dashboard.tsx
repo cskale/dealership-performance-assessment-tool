@@ -234,6 +234,14 @@ const Dashboard = () => {
         <div>
           <h1 className="text-h1 text-foreground">{t('dashboard.title')}</h1>
           <p className="text-body-md text-muted-foreground mt-1">{t('dashboard.subtitle')}</p>
+          {latestCompletedAt && (
+            <div className="mt-2">
+              <FreshnessBadge
+                completedAt={latestCompletedAt}
+                onReassess={() => navigate('/app/assessment')}
+              />
+            </div>
+          )}
         </div>
 
         {/* New Vehicle Sales */}
