@@ -378,6 +378,99 @@ export const questionnaire: Questionnaire = {
               scaleLabels: ["Kein CRM, <30% erfasst", "30–60% erfasst, keine Auto.", "Meiste erfasst, kaum Auto.", "Konst. Nutzung, Auto-Follow-ups", "Volle Adoption, Pipeline-Mgmt."]
             }
           }
+        },
+        {
+          id: "nvs-11",
+          text: "How quickly and consistently does your team engage with incoming sales enquiries across all channels?",
+          description: "Consider phone, email, website form, and third-party listing leads during and outside business hours",
+          type: "scale",
+          scale: { min: 1, max: 5, labels: ["No process — leads handled when convenient", "Most leads contacted within a working day", "2-hour response target during business hours, tracked inconsistently", "<1-hour response with CRM routing, tracked weekly", "<15-min auto-acknowledgement + <30-min personal follow-up, 95%+ SLA tracked daily"] },
+          weight: 1.4,
+          category: "conversion",
+          purpose: "Lead response speed is one of the highest-impact conversion levers in automotive retail — every hour of delay reduces contact and conversion probability materially.",
+          situationAnalysis: "Dealerships that respond within 30 minutes are significantly more likely to convert a lead than those who wait hours. This question surfaces the actual operating standard, not just stated intent.",
+          linkedKPIs: ["Lead Response Time", "Lead Conversion Rate", "Cost Per Acquisition", "Digital Channel Performance"],
+          benefits: "Systematic fast response compresses the sales cycle, reduces lead leakage to competitors, and improves ROI on every marketing pound spent.",
+          translations: {
+            en: {
+              text: "How quickly and consistently does your team engage with incoming sales enquiries across all channels?",
+              description: "Consider phone, email, website form, and third-party listing leads during and outside business hours",
+              purpose: "Lead response speed is one of the highest-impact conversion levers in automotive retail — every hour of delay reduces contact and conversion probability materially.",
+              situationAnalysis: "Dealerships that respond within 30 minutes are significantly more likely to convert a lead than those who wait hours. This question surfaces the actual operating standard, not just stated intent.",
+              benefits: "Systematic fast response compresses the sales cycle, reduces lead leakage to competitors, and improves ROI on every marketing pound spent.",
+              scaleLabels: ["No process — leads handled when convenient", "Most leads contacted within a working day", "2-hour response target during business hours, tracked inconsistently", "<1-hour response with CRM routing, tracked weekly", "<15-min auto-acknowledgement + <30-min personal follow-up, 95%+ SLA tracked daily"]
+            },
+            de: {
+              text: "Wie schnell und konsistent reagiert Ihr Team auf eingehende Verkaufsanfragen über alle Kanäle?",
+              description: "Berücksichtigen Sie Telefon, E-Mail, Website-Formulare und Drittanbieter-Inserate innerhalb und außerhalb der Geschäftszeiten",
+              purpose: "Die Lead-Reaktionszeit ist einer der wirkungsstärksten Konversionshebel im Automobilhandel — jede Stunde Verzögerung senkt die Kontakt- und Konversionswahrscheinlichkeit erheblich.",
+              situationAnalysis: "Autohäuser, die innerhalb von 30 Minuten antworten, konvertieren Leads signifikant häufiger als solche, die Stunden warten. Diese Frage zeigt den tatsächlichen Betriebsstandard.",
+              benefits: "Systematisch schnelle Reaktion verkürzt den Verkaufszyklus, reduziert Lead-Verluste an Wettbewerber und verbessert den ROI jedes ausgegebenen Marketingeuro.",
+              scaleLabels: ["Kein Prozess, Leads werden nach Gelegenheit bearbeitet", "Meiste Leads innerhalb eines Arbeitstages kontaktiert", "2-Std.-Ziel während Öffnungszeiten, inkonsistent verfolgt", "<1 Std. mit CRM-Routing, wöchentlich getrackt", "<15 Min. Auto-Bestätigung + <30 Min. persönliche Antwort, 95%+ SLA täglich"]
+            }
+          }
+        },
+        {
+          id: "nvs-12",
+          text: "On average, how many new vehicle sales does each active sales consultant close per month?",
+          description: "Divide total monthly new vehicle units sold by the number of active salespeople carrying a target",
+          type: "scale",
+          scale: { min: 1, max: 5, labels: ["<3 units/consultant/month", "3–4 units/consultant/month", "5–6 units/consultant/month", "7–9 units/consultant/month", "≥10 units/consultant/month"] },
+          weight: 1.3,
+          category: "productivity",
+          purpose: "Sales output per consultant is a direct measure of individual productivity, team sizing, and whether coaching and process support are translating into results.",
+          situationAnalysis: "Low units per consultant often signals over-staffing relative to demand, weak closing technique, poor lead allocation, or insufficient management coaching — all addressable with the right interventions.",
+          linkedKPIs: ["Units Per Sales Executive", "Sales Productivity Index", "Revenue Per Headcount", "Staffing Efficiency"],
+          benefits: "Optimising consultant productivity improves margin per sale, allows leaner staffing models, and pinpoints exactly where coaching investment will yield the fastest return.",
+          translations: {
+            en: {
+              text: "On average, how many new vehicle sales does each active sales consultant close per month?",
+              description: "Divide total monthly new vehicle units sold by the number of active salespeople carrying a target",
+              purpose: "Sales output per consultant is a direct measure of individual productivity, team sizing, and whether coaching and process support are translating into results.",
+              situationAnalysis: "Low units per consultant often signals over-staffing relative to demand, weak closing technique, poor lead allocation, or insufficient management coaching — all addressable with the right interventions.",
+              benefits: "Optimising consultant productivity improves margin per sale, allows leaner staffing models, and pinpoints exactly where coaching investment will yield the fastest return.",
+              scaleLabels: ["<3 units/consultant/month", "3–4 units/consultant/month", "5–6 units/consultant/month", "7–9 units/consultant/month", "≥10 units/consultant/month"]
+            },
+            de: {
+              text: "Wie viele Neuwagenverkäufe schließt jeder aktive Verkaufsberater durchschnittlich pro Monat ab?",
+              description: "Teilen Sie die monatlich verkauften Neufahrzeuge durch die Anzahl aktiver Verkäufer mit Zielvereinbarung",
+              purpose: "Der Verkaufsoutput pro Berater ist ein direktes Maß für individuelle Produktivität, Teamgröße und ob Coaching und Prozessunterstützung in Ergebnisse umgewandelt werden.",
+              situationAnalysis: "Niedrige Einheiten pro Berater signalisieren oft Überbesetzung, schwache Abschlusstechnik, schlechte Lead-Zuteilung oder unzureichendes Coaching — alles mit gezielten Maßnahmen behebbar.",
+              benefits: "Die Optimierung der Beraterproduktivität verbessert die Marge pro Verkauf, ermöglicht schlankere Personalmodelle und zeigt genau, wo Coaching-Investitionen den schnellsten Return liefern.",
+              scaleLabels: ["<3 Einh./Berater/Monat", "3–4 Einh./Berater/Monat", "5–6 Einh./Berater/Monat", "7–9 Einh./Berater/Monat", "≥10 Einh./Berater/Monat"]
+            }
+          }
+        },
+        {
+          id: "nvs-13",
+          text: "How stable has your sales team composition been over the past 12 months?",
+          description: "Think about voluntary departures, dismissals, and how long your current team has been in their roles",
+          type: "scale",
+          scale: { min: 1, max: 5, labels: ["High churn — more than half the team has changed in 12 months", "Significant churn — 3 or more departures this year", "Moderate — 1–2 departures replaced with similar experience levels", "Stable — minimal departures, most staff tenure >18 months", "Very stable — core team unchanged 2+ years, structured succession in place"] },
+          weight: 1.2,
+          category: "retention",
+          purpose: "Staff stability is a leading indicator of culture, compensation competitiveness, and management quality — and directly predicts future sales consistency and customer experience scores.",
+          situationAnalysis: "High sales team turnover destroys institutional knowledge, inflates recruitment and training costs, disrupts customer relationships, and suppresses volume during ramp-up periods for new hires.",
+          linkedKPIs: ["Staff Turnover Rate", "Employee Retention Rate", "Recruitment Cost Per Hire", "Sales Consistency Index"],
+          benefits: "Stable teams close more, retain more customers, deliver better satisfaction scores, and cost significantly less to maintain than high-churn environments.",
+          translations: {
+            en: {
+              text: "How stable has your sales team composition been over the past 12 months?",
+              description: "Think about voluntary departures, dismissals, and how long your current team has been in their roles",
+              purpose: "Staff stability is a leading indicator of culture, compensation competitiveness, and management quality — and directly predicts future sales consistency and customer experience scores.",
+              situationAnalysis: "High sales team turnover destroys institutional knowledge, inflates recruitment and training costs, disrupts customer relationships, and suppresses volume during ramp-up periods for new hires.",
+              benefits: "Stable teams close more, retain more customers, deliver better satisfaction scores, and cost significantly less to maintain than high-churn environments.",
+              scaleLabels: ["High churn — more than half the team has changed in 12 months", "Significant churn — 3 or more departures this year", "Moderate — 1–2 departures replaced with similar experience levels", "Stable — minimal departures, most staff tenure >18 months", "Very stable — core team unchanged 2+ years, structured succession in place"]
+            },
+            de: {
+              text: "Wie stabil war Ihre Verkaufsteamzusammensetzung in den letzten 12 Monaten?",
+              description: "Denken Sie an freiwillige Abgänge, Entlassungen und wie lange Ihr aktuelles Team in seinen Rollen ist",
+              purpose: "Teamstabilität ist ein Frühindikator für Unternehmenskultur, Vergütungswettbewerbsfähigkeit und Managementqualität und sagt zukünftige Verkaufskonsistenz direkt voraus.",
+              situationAnalysis: "Hohe Fluktuation im Verkaufsteam zerstört institutionelles Wissen, erhöht Rekrutierungs- und Schulungskosten, unterbricht Kundenbeziehungen und unterdrückt das Volumen in Einarbeitungsphasen.",
+              benefits: "Stabile Teams schließen mehr ab, binden mehr Kunden, erzielen bessere Zufriedenheitswerte und sind deutlich kostengünstiger zu halten als Hochfluktuationsumgebungen.",
+              scaleLabels: ["Hohe Fluktuation — mehr als die Hälfte des Teams in 12 Monaten gewechselt", "Erhebliche Fluktuation — 3 oder mehr Abgänge dieses Jahr", "Moderat — 1–2 Abgänge, mit ähnlichem Erfahrungsniveau ersetzt", "Stabil — minimale Abgänge, Betriebszugehörigkeit meist >18 Monate", "Sehr stabil — Kernteam seit 2+ Jahren unverändert, Nachfolgeplanung vorhanden"]
+            }
+          }
         }
       ]
     },
@@ -644,6 +737,99 @@ export const questionnaire: Questionnaire = {
               text: "Wie effektiv ist Ihre Strategie zur Verwaltung von Fahrzeugen, die länger als 60 Tage unverkauft bleiben?",
               description: "Beschreiben Sie Ihren Ansatz zur Reduzierung alter Bestände und Preisanpassungen",
               scaleLabels: ["Kein Prozess, Fahrzeuge altern", "Reaktiv, nur Preissenkungen", "30-Tage-Prüfung, Basisanpassung", "21-Tage-Prüfung, 45-Tage-Regel", "Echtzeit-Tracking, Auto-Preisanpassung"]
+            }
+          }
+        },
+        {
+          id: "uvs-11",
+          text: "When customers buy a new vehicle from you, how often do they trade in their existing car with the dealership rather than selling it privately?",
+          description: "Estimate the proportion of new vehicle transactions that also include an in-house trade-in appraisal and acquisition",
+          type: "scale",
+          scale: { min: 1, max: 5, labels: ["Rarely offered — customers directed elsewhere or sell privately", "Offered occasionally, <25% of buyers trade in with us", "Captured in 25–40% of new vehicle deals", "Structured appraisal presented on every deal, 41–60% capture rate", "Appraisal embedded in sales process, >60% of buyers trade in with us"] },
+          weight: 1.3,
+          category: "sourcing",
+          purpose: "Trade-in capture rate is both a used vehicle sourcing KPI and a customer retention signal — lost trade-ins represent lost gross profit, lost used vehicle stock, and a weakened customer relationship.",
+          situationAnalysis: "Dealers who embed appraisals into every new vehicle conversation secure cheaper, better-conditioned stock than auction alternatives while retaining the customer across both transactions.",
+          linkedKPIs: ["Trade-In Capture Rate", "Used Vehicle Sourcing Mix", "Gross Per Used Vehicle", "Customer Retention Rate"],
+          benefits: "Higher trade-in capture improves used vehicle margin (vs auction cost), secures known-history stock, and deepens the customer relationship across multiple departments.",
+          translations: {
+            en: {
+              text: "When customers buy a new vehicle from you, how often do they trade in their existing car with the dealership rather than selling it privately?",
+              description: "Estimate the proportion of new vehicle transactions that also include an in-house trade-in appraisal and acquisition",
+              purpose: "Trade-in capture rate is both a used vehicle sourcing KPI and a customer retention signal — lost trade-ins represent lost gross profit, lost used vehicle stock, and a weakened customer relationship.",
+              situationAnalysis: "Dealers who embed appraisals into every new vehicle conversation secure cheaper, better-conditioned stock than auction alternatives while retaining the customer across both transactions.",
+              benefits: "Higher trade-in capture improves used vehicle margin (vs auction cost), secures known-history stock, and deepens the customer relationship across multiple departments.",
+              scaleLabels: ["Rarely offered — customers directed elsewhere or sell privately", "Offered occasionally, <25% of buyers trade in with us", "Captured in 25–40% of new vehicle deals", "Structured appraisal presented on every deal, 41–60% capture rate", "Appraisal embedded in sales process, >60% of buyers trade in with us"]
+            },
+            de: {
+              text: "Wenn Kunden ein Neuwagen kaufen, wie häufig tauschen sie ihr Fahrzeug beim Autohaus ein statt es privat zu verkaufen?",
+              description: "Schätzen Sie den Anteil der Neuwagengeschäfte, bei denen auch eine Inzahlungnahme-Bewertung im Haus stattfindet",
+              purpose: "Die Inzahlungnahmequote ist sowohl ein Gebrauchtwagen-Beschaffungs-KPI als auch ein Kundenbindungssignal — verlorene Inzahlungnahmen bedeuten verlorenen Bruttogewinn und schwächere Kundenbeziehungen.",
+              situationAnalysis: "Händler, die Bewertungen in jedes Neuwagenverkaufsgespräch einbetten, sichern sich günstigere, besser gepflegte Fahrzeuge als Auktionsalternativen und binden den Kunden über beide Transaktionen.",
+              benefits: "Höhere Inzahlungnahmequote verbessert die Gebrauchtwagenmargen, sichert Fahrzeuge mit bekannter Historie und vertieft die Kundenbeziehung über mehrere Abteilungen.",
+              scaleLabels: ["Selten angeboten — Kunden werden anderswo hingewiesen", "Gelegentlich angeboten, <25% tauschen ein", "25–40% der Neuwagengeschäfte mit Inzahlungnahme", "Strukturierte Bewertung bei jedem Geschäft, 41–60% Quote", "Bewertung in Verkaufsprozess integriert, >60% tauschen ein"]
+            }
+          }
+        },
+        {
+          id: "uvs-12",
+          text: "How does your current used vehicle stock level relate to the number of units you typically sell per month?",
+          description: "Consider whether your stocking policy and current inventory depth are well-matched to your actual sales rate",
+          type: "scale",
+          scale: { min: 1, max: 5, labels: ["No stock policy — we sell whatever happens to be available", "Reactive — stock fluctuates significantly month to month with no target", "Rough target exists but stock-to-sales ratio often drifts above 75 days' supply", "Managed to a 45–60 day supply target, reviewed monthly", "Actively managed to a 30–45 day supply, reviewed weekly with real-time market data"] },
+          weight: 1.2,
+          category: "inventory",
+          purpose: "Stock-to-sales ratio governs cash deployment efficiency, carrying cost exposure, and whether the business has the right depth to support consistent sales without over-investing in ageing units.",
+          situationAnalysis: "Both under- and over-stocking destroy profitability — the former through lost sales and the latter through interest costs, depreciation, and discounted clearance. A disciplined supply target is a key operational discipline.",
+          linkedKPIs: ["Stock-to-Sales Ratio", "Days Supply", "Carrying Cost Per Unit", "Working Capital Efficiency"],
+          benefits: "Maintaining a disciplined stock-to-sales ratio reduces floor plan costs, minimises aged stock risk, and ensures consistent availability without capital over-commitment.",
+          translations: {
+            en: {
+              text: "How does your current used vehicle stock level relate to the number of units you typically sell per month?",
+              description: "Consider whether your stocking policy and current inventory depth are well-matched to your actual sales rate",
+              purpose: "Stock-to-sales ratio governs cash deployment efficiency, carrying cost exposure, and whether the business has the right depth to support consistent sales without over-investing in ageing units.",
+              situationAnalysis: "Both under- and over-stocking destroy profitability — the former through lost sales and the latter through interest costs, depreciation, and discounted clearance. A disciplined supply target is a key operational discipline.",
+              benefits: "Maintaining a disciplined stock-to-sales ratio reduces floor plan costs, minimises aged stock risk, and ensures consistent availability without capital over-commitment.",
+              scaleLabels: ["No stock policy — we sell whatever happens to be available", "Reactive — stock fluctuates significantly month to month with no target", "Rough target exists but stock-to-sales ratio often drifts above 75 days' supply", "Managed to a 45–60 day supply target, reviewed monthly", "Actively managed to a 30–45 day supply, reviewed weekly with real-time market data"]
+            },
+            de: {
+              text: "Wie verhält sich Ihr aktueller Gebrauchtwagenbestand zur Anzahl der Einheiten, die Sie typischerweise pro Monat verkaufen?",
+              description: "Überlegen Sie, ob Ihre Lagerpolitik und aktuelle Bestandstiefe gut zu Ihrer tatsächlichen Verkaufsrate passen",
+              purpose: "Das Bestands-zu-Verkaufs-Verhältnis steuert die Kapitaleffizienz, Lagerkosten und ob das Unternehmen die richtige Tiefe für konsistente Verkäufe ohne Überinvestition in alternde Einheiten hat.",
+              situationAnalysis: "Sowohl Unter- als auch Überbevorratung zerstören die Rentabilität — ersteres durch verlorene Verkäufe, letzteres durch Zinskosten, Wertverlust und Abverkauf mit Rabatt.",
+              benefits: "Ein diszipliniertes Bestands-zu-Verkaufs-Verhältnis reduziert Finanzierungskosten, minimiert das Altbestandsrisiko und sichert konsistente Verfügbarkeit ohne Kapitalüberengagement.",
+              scaleLabels: ["Keine Lagerpolitik — wir verkaufen was verfügbar ist", "Reaktiv — Bestand schwankt stark ohne Ziel", "Grob-Ziel vorhanden, aber oft >75 Tage Vorrat", "Auf 45–60 Tage Vorrat gesteuert, monatlich überprüft", "Aktiv auf 30–45 Tage gesteuert, wöchentlich mit Echtzeit-Marktdaten überprüft"]
+            }
+          }
+        },
+        {
+          id: "uvs-13",
+          text: "How would you describe the experience level and specialist knowledge of the people managing your used vehicle operation?",
+          description: "Think about your used car manager's tenure, market knowledge, and how independently the function operates",
+          type: "scale",
+          scale: { min: 1, max: 5, labels: ["No dedicated used car manager — handled by new car team", "Used car function managed as a secondary responsibility by an existing manager", "Dedicated used car manager, but relatively new (<2 years in role)", "Experienced used car manager (2–5 years in role) with clear pricing and sourcing process", "Specialist used car leadership with 5+ years' experience, own P&L accountability, and market intelligence tools"] },
+          weight: 1.1,
+          category: "retention",
+          purpose: "Specialist expertise in used vehicles is one of the strongest predictors of used vehicle gross performance — experienced managers appraise better, source cheaper, and price more accurately than generalists.",
+          situationAnalysis: "Used vehicle profitability is disproportionately manager-dependent because margins are determined deal-by-deal through appraisal, sourcing, and pricing decisions that require deep market knowledge.",
+          linkedKPIs: ["Gross Per Used Vehicle", "Appraisal Accuracy Rate", "Stock Sourcing Efficiency", "Staff Expertise Index"],
+          benefits: "Investing in specialist used vehicle management pays back rapidly through improved appraisal accuracy, better buying, tighter inventory control, and higher per-unit gross.",
+          translations: {
+            en: {
+              text: "How would you describe the experience level and specialist knowledge of the people managing your used vehicle operation?",
+              description: "Think about your used car manager's tenure, market knowledge, and how independently the function operates",
+              purpose: "Specialist expertise in used vehicles is one of the strongest predictors of used vehicle gross performance — experienced managers appraise better, source cheaper, and price more accurately than generalists.",
+              situationAnalysis: "Used vehicle profitability is disproportionately manager-dependent because margins are determined deal-by-deal through appraisal, sourcing, and pricing decisions that require deep market knowledge.",
+              benefits: "Investing in specialist used vehicle management pays back rapidly through improved appraisal accuracy, better buying, tighter inventory control, and higher per-unit gross.",
+              scaleLabels: ["No dedicated used car manager — handled by new car team", "Used car function managed as a secondary responsibility by an existing manager", "Dedicated used car manager, but relatively new (<2 years in role)", "Experienced used car manager (2–5 years in role) with clear pricing and sourcing process", "Specialist used car leadership with 5+ years' experience, own P&L accountability, and market intelligence tools"]
+            },
+            de: {
+              text: "Wie würden Sie das Erfahrungsniveau und Spezialwissen der Personen beschreiben, die Ihr Gebrauchtwagengeschäft leiten?",
+              description: "Denken Sie an die Amtszeit Ihres Gebrauchtwagenmanagers, Marktkenntnisse und wie eigenständig die Funktion arbeitet",
+              purpose: "Spezialkenntnisse im Gebrauchtwagenbereich sind einer der stärksten Prädiktoren für Gebrauchtwagenbrutto-Leistung — erfahrene Manager bewerten, beschaffen und preisen genauer.",
+              situationAnalysis: "Gebrauchtwagen-Rentabilität ist überproportional managerabhängig, da Margen deal-für-deal durch Bewertungs-, Beschaffungs- und Preisentscheidungen bestimmt werden, die tiefes Marktwissen erfordern.",
+              benefits: "Investitionen in spezialisiertes Gebrauchtwagenmanagement zahlen sich schnell durch verbesserte Bewertungsgenauigkeit, bessere Einkäufe, engere Bestandskontrolle und höheres Einheitenbrutto aus.",
+              scaleLabels: ["Kein dedizierter Gebrauchtwagenmanager — vom Neuwagenteam gehandhabt", "Gebrauchtwagenfunktion als Nebenaufgabe eines bestehenden Managers", "Dedizierter Gebrauchtwagenmanager, aber relativ neu (<2 Jahre)", "Erfahrener Manager (2–5 Jahre) mit klarem Preis- und Beschaffungsprozess", "Spezialist mit 5+ Jahren Erfahrung, eigener P&L-Verantwortung und Markt-Intelligence-Tools"]
             }
           }
         }
@@ -962,6 +1148,99 @@ export const questionnaire: Questionnaire = {
               text: "Wie würden Sie die Effizienz und den Durchsatz Ihrer Express- oder Schnellservice-Spur bewerten?",
               description: "Berücksichtigen Sie Wartezeiten, Servicegeschwindigkeit und Kundenzufriedenheit für Schnellservice",
               scaleLabels: ["Kein digitaler Prozess", "Nur E-Mail-Updates", "SMS-Updates auf Anfrage", "Proaktive SMS/App-Updates", "Vollständige digitale Journey mit Video"]
+            }
+          }
+        },
+        {
+          id: "svc-13",
+          text: "How often do vehicles return to your service department within 30 days for the same reported fault?",
+          description: "Think about repair comebacks — cases where the original repair did not resolve the customer's complaint",
+          type: "scale",
+          scale: { min: 1, max: 5, labels: [">8% of repairs result in a comeback — no tracking in place", "5–8% comeback rate, reviewed informally", "3–5% comeback rate, root causes discussed in team meetings", "1–3% comeback rate, technician-level tracking and structured review", "<1% comeback rate, first-time fix tracked daily and embedded in technician KPIs"] },
+          weight: 1.4,
+          category: "quality",
+          purpose: "First-time fix rate (inverse of comeback rate) is the primary quality metric for a service department — it directly drives customer trust, workshop efficiency, and warranty cost exposure.",
+          situationAnalysis: "Every comeback consumes a bay slot, a technician's time, and a service advisor's capacity while delivering zero revenue and damaging customer confidence. A single repeat repair can cost 3–5× the original job in hidden operational cost.",
+          linkedKPIs: ["First Time Fix Rate", "Repair Comeback Rate", "Customer Satisfaction Score", "Workshop Efficiency"],
+          benefits: "Reducing comebacks frees bay capacity without adding headcount, protects CSI scores, reduces warranty exposure, and is one of the most cost-effective improvements available in fixed operations.",
+          translations: {
+            en: {
+              text: "How often do vehicles return to your service department within 30 days for the same reported fault?",
+              description: "Think about repair comebacks — cases where the original repair did not resolve the customer's complaint",
+              purpose: "First-time fix rate (inverse of comeback rate) is the primary quality metric for a service department — it directly drives customer trust, workshop efficiency, and warranty cost exposure.",
+              situationAnalysis: "Every comeback consumes a bay slot, a technician's time, and a service advisor's capacity while delivering zero revenue and damaging customer confidence. A single repeat repair can cost 3–5× the original job in hidden operational cost.",
+              benefits: "Reducing comebacks frees bay capacity without adding headcount, protects CSI scores, reduces warranty exposure, and is one of the most cost-effective improvements available in fixed operations.",
+              scaleLabels: [">8% of repairs result in a comeback — no tracking in place", "5–8% comeback rate, reviewed informally", "3–5% comeback rate, root causes discussed in team meetings", "1–3% comeback rate, technician-level tracking and structured review", "<1% comeback rate, first-time fix tracked daily and embedded in technician KPIs"]
+            },
+            de: {
+              text: "Wie häufig kehren Fahrzeuge innerhalb von 30 Tagen wegen desselben gemeldeten Fehlers in Ihre Serviceabteilung zurück?",
+              description: "Denken Sie an Reparatur-Rückkehrer — Fälle, bei denen die ursprüngliche Reparatur die Beschwerde des Kunden nicht behoben hat",
+              purpose: "Die First-Time-Fix-Rate (Umkehrung der Comeback-Rate) ist die primäre Qualitätsmetrik für eine Serviceabteilung und treibt direkt Kundenvertrauen, Werkstattffizienz und Garantiekostenexposition.",
+              situationAnalysis: "Jeder Rückkehrer verbraucht einen Stellplatz, die Zeit eines Technikers und die Kapazität eines Serviceberaters bei null Umsatz und Schädigung des Kundenvertrauens. Eine einzelne Wiederholungsreparatur kann 3–5-fach die ursprünglichen Kosten in versteckten Betriebskosten verursachen.",
+              benefits: "Die Reduzierung von Rückkehrern gibt Hallenkapazität frei ohne zusätzliches Personal, schützt CSI-Scores, reduziert Garantieexposition und ist eine der kosteneffektivsten Verbesserungen im Fixed Operations-Bereich.",
+              scaleLabels: [">8% der Reparaturen führen zu Rückkehrern — kein Tracking", "5–8% Comeback-Rate, informell überprüft", "3–5% Comeback-Rate, Ursachen in Teammeetings", "1–3% Comeback-Rate, Techniker-Tracking und strukturierte Überprüfung", "<1% Comeback-Rate, täglich getrackt und in Techniker-KPIs eingebettet"]
+            }
+          }
+        },
+        {
+          id: "svc-14",
+          text: "When a service advisor recommends additional work or maintenance items beyond what a customer originally booked for, how often do customers approve that work?",
+          description: "Consider all upsell and additional repair recommendations made at the point of vehicle check-in or mid-service",
+          type: "scale",
+          scale: { min: 1, max: 5, labels: ["We rarely make recommendations beyond the booked service", "Recommendations made ad-hoc, approval rate not tracked", "Recommendations made consistently but approval rate below 20%", "Structured menu-based recommendations, 20–35% approval rate tracked monthly", "Consultative value-led recommendations with photo/video evidence, >35% approval rate tracked per advisor"] },
+          weight: 1.3,
+          category: "productivity",
+          purpose: "Service advisor recommendation approval rate captures both the quality of needs-presentation skills and the trust customers place in your service team — it is the primary lever for growing labour revenue per visit without increasing vehicle count.",
+          situationAnalysis: "Customers often arrive unaware of developing maintenance needs. A confident, evidence-based presentation (e.g. tyre tread video, brake wear photo) converts significantly better than verbal-only recommendations — and is a trainable, measurable skill.",
+          linkedKPIs: ["Service Advisor Upsell Rate", "Labour Revenue Per Repair Order", "Additional Work Approval Rate", "Workshop Revenue Yield"],
+          benefits: "A 10-percentage-point improvement in approval rate typically adds 8–15% to total service revenue with zero increase in marketing spend or customer count.",
+          translations: {
+            en: {
+              text: "When a service advisor recommends additional work or maintenance items beyond what a customer originally booked for, how often do customers approve that work?",
+              description: "Consider all upsell and additional repair recommendations made at the point of vehicle check-in or mid-service",
+              purpose: "Service advisor recommendation approval rate captures both the quality of needs-presentation skills and the trust customers place in your service team — it is the primary lever for growing labour revenue per visit without increasing vehicle count.",
+              situationAnalysis: "Customers often arrive unaware of developing maintenance needs. A confident, evidence-based presentation (e.g. tyre tread video, brake wear photo) converts significantly better than verbal-only recommendations — and is a trainable, measurable skill.",
+              benefits: "A 10-percentage-point improvement in approval rate typically adds 8–15% to total service revenue with zero increase in marketing spend or customer count.",
+              scaleLabels: ["We rarely make recommendations beyond the booked service", "Recommendations made ad-hoc, approval rate not tracked", "Recommendations made consistently but approval rate below 20%", "Structured menu-based recommendations, 20–35% approval rate tracked monthly", "Consultative value-led recommendations with photo/video evidence, >35% approval rate tracked per advisor"]
+            },
+            de: {
+              text: "Wenn ein Serviceberater zusätzliche Arbeiten oder Wartungspunkte über das ursprünglich gebuchte hinaus empfiehlt, wie oft stimmen Kunden diesen Arbeiten zu?",
+              description: "Berücksichtigen Sie alle Upsell- und Zusatzreparaturempfehlungen beim Fahrzeug-Check-in oder während des Services",
+              purpose: "Die Genehmigungsrate für Serviceberater-Empfehlungen erfasst die Qualität der Bedarfspräsentationsfähigkeiten und das Vertrauen der Kunden — der primäre Hebel für wachsende Arbeitserlöse pro Besuch ohne Erhöhung der Fahrzeugzahl.",
+              situationAnalysis: "Kunden kommen oft unwissend über sich entwickelnde Wartungsbedürfnisse. Eine selbstbewusste, evidenzbasierte Präsentation (z.B. Reifenprofil-Video, Bremsenverschleiß-Foto) konvertiert deutlich besser als nur verbale Empfehlungen — eine trainierbare, messbare Fähigkeit.",
+              benefits: "Eine Verbesserung der Genehmigungsrate um 10 Prozentpunkte fügt typischerweise 8–15% zum Gesamtserviceumsatz hinzu ohne Erhöhung von Marketing oder Kundenzahl.",
+              scaleLabels: ["Wir machen selten Empfehlungen über den gebuchten Service hinaus", "Ad-hoc Empfehlungen, Genehmigungsrate nicht verfolgt", "Konsistente Empfehlungen, aber Genehmigungsrate unter 20%", "Menübasierte Empfehlungen, 20–35% Genehmigungsrate monatlich", "Beratende wertbasierte Empfehlungen mit Foto/Video, >35% pro Berater verfolgt"]
+            }
+          }
+        },
+        {
+          id: "svc-15",
+          text: "Of the customers who bought a vehicle from you in the last two years, what proportion regularly return to your workshop for servicing?",
+          description: "Think about vehicle owners who could service with you but choose a competitor, an independent, or not at all",
+          type: "scale",
+          scale: { min: 1, max: 5, labels: ["No visibility — we don't track this", "We believe <30% return, but no active retention programme", "Roughly 30–50% service retention, occasional reminder campaigns", "50–70% service retention with structured service plan or reminder programme", ">70% service retention, active loyalty programme, service plan penetration >40%"] },
+          weight: 1.5,
+          category: "retention",
+          purpose: "Service retention from vehicle sales is one of the most critical long-term revenue metrics in automotive — a retained service customer generates 2–4× the lifetime value of a sales-only customer.",
+          situationAnalysis: "Every vehicle sold but not retained in service represents lost parts margin, lost labour revenue, lost repeat purchase influence, and lost visibility into the customer's next buying cycle. Retention is typically highest in the first 12 months after purchase — the window where investment matters most.",
+          linkedKPIs: ["Service Retention Rate", "Customer Lifetime Value", "Service Plan Penetration", "Fixed Operations Revenue"],
+          benefits: "Each percentage point improvement in service retention translates directly to recurring fixed operations revenue, higher customer lifetime value, and stronger influencing position for the next vehicle purchase.",
+          translations: {
+            en: {
+              text: "Of the customers who bought a vehicle from you in the last two years, what proportion regularly return to your workshop for servicing?",
+              description: "Think about vehicle owners who could service with you but choose a competitor, an independent, or not at all",
+              purpose: "Service retention from vehicle sales is one of the most critical long-term revenue metrics in automotive — a retained service customer generates 2–4× the lifetime value of a sales-only customer.",
+              situationAnalysis: "Every vehicle sold but not retained in service represents lost parts margin, lost labour revenue, lost repeat purchase influence, and lost visibility into the customer's next buying cycle. Retention is typically highest in the first 12 months after purchase — the window where investment matters most.",
+              benefits: "Each percentage point improvement in service retention translates directly to recurring fixed operations revenue, higher customer lifetime value, and stronger influencing position for the next vehicle purchase.",
+              scaleLabels: ["No visibility — we don't track this", "We believe <30% return, but no active retention programme", "Roughly 30–50% service retention, occasional reminder campaigns", "50–70% service retention with structured service plan or reminder programme", ">70% service retention, active loyalty programme, service plan penetration >40%"]
+            },
+            de: {
+              text: "Von den Kunden, die in den letzten zwei Jahren ein Fahrzeug bei Ihnen gekauft haben, welcher Anteil kehrt regelmäßig für die Wartung in Ihre Werkstatt zurück?",
+              description: "Denken Sie an Fahrzeugeigentümer, die bei Ihnen warten könnten, aber einen Wettbewerber, einen Freien oder niemanden wählen",
+              purpose: "Servicebindung aus Fahrzeugverkäufen ist eine der kritischsten langfristigen Umsatzmetriken — ein gebundener Servicekunde generiert 2–4-fachen Lifetime Value gegenüber einem reinen Verkaufskunden.",
+              situationAnalysis: "Jedes verkaufte, aber nicht im Service gebundene Fahrzeug bedeutet verlorene Teile- und Arbeitsumsätze, verlorenen Kaufeinfluss und fehlende Sichtbarkeit für den nächsten Kaufzyklus. Bindung ist typischerweise in den ersten 12 Monaten nach dem Kauf am höchsten.",
+              benefits: "Jeder Prozentpunkt Verbesserung der Servicebindung übersetzt sich direkt in wiederkehrende Fixed-Operations-Umsätze, höheren Customer Lifetime Value und stärkere Kaufeinflussposition.",
+              scaleLabels: ["Keine Sichtbarkeit — wir tracken das nicht", "Wir glauben <30% kehren zurück, kein aktives Bindungsprogramm", "Ca. 30–50% Servicebindung, gelegentliche Erinnerungskampagnen", "50–70% Bindung mit strukturiertem Serviceplan oder Erinnerungsprogramm", ">70% Bindung, aktives Loyalitätsprogramm, Serviceplan-Penetration >40%"]
             }
           }
         }
@@ -1448,6 +1727,68 @@ export const questionnaire: Questionnaire = {
               text: "Wie gut pflegen und nutzen Sie Ihre Kundendatenbank für Marketing und Kundenbindung?",
               description: "Berücksichtigen Sie Datenqualität, Segmentierungsfähigkeiten und Nutzung für zielgerichtete Kampagnen",
               scaleLabels: [">30 Tage Ø", "21–30 Tage", "14–20 Tage", "8–13 Tage", "≤7 Tage Ø"]
+            }
+          }
+        },
+        {
+          id: "fin-9",
+          text: "To what extent does the gross profit generated by your service and parts departments cover the total fixed overhead of your dealership?",
+          description: "Think about whether fixed operations alone could sustain the business if vehicle sales had a poor month — without relying on variable sales gross",
+          type: "scale",
+          scale: { min: 1, max: 5, labels: ["Fixed ops covers <40% of overhead — heavily dependent on vehicle sales gross", "40–55% absorption — vulnerable to any sales downturn", "56–70% absorption — partially buffered but still exposed to sales volatility", "71–85% absorption — strong fixed ops base providing meaningful protection", ">85% absorption — fixed ops effectively self-fund the business; vehicle sales are pure profit"] },
+          weight: 1.5,
+          category: "profitability",
+          purpose: "Fixed absorption rate is the single most important structural health indicator for a dealership — it measures whether the business model is genuinely resilient or structurally dependent on vehicle sales margin to survive.",
+          situationAnalysis: "Dealerships with high fixed absorption weather economic downturns, supply disruptions, and margin compression far better than those reliant on variable vehicle gross. OEM programmes and financial institutions use this ratio to assess dealer viability.",
+          linkedKPIs: ["Fixed Absorption Rate", "Fixed Operations Gross Profit", "Overhead Coverage Ratio", "Dealership Resilience Index"],
+          benefits: "Every percentage point of absorption improvement represents direct overhead coverage that reduces the volume of vehicle sales needed to break even — materially de-risking the entire business.",
+          translations: {
+            en: {
+              text: "To what extent does the gross profit generated by your service and parts departments cover the total fixed overhead of your dealership?",
+              description: "Think about whether fixed operations alone could sustain the business if vehicle sales had a poor month — without relying on variable sales gross",
+              purpose: "Fixed absorption rate is the single most important structural health indicator for a dealership — it measures whether the business model is genuinely resilient or structurally dependent on vehicle sales margin to survive.",
+              situationAnalysis: "Dealerships with high fixed absorption weather economic downturns, supply disruptions, and margin compression far better than those reliant on variable vehicle gross. OEM programmes and financial institutions use this ratio to assess dealer viability.",
+              benefits: "Every percentage point of absorption improvement represents direct overhead coverage that reduces the volume of vehicle sales needed to break even — materially de-risking the entire business.",
+              scaleLabels: ["Fixed ops covers <40% of overhead — heavily dependent on vehicle sales gross", "40–55% absorption — vulnerable to any sales downturn", "56–70% absorption — partially buffered but still exposed to sales volatility", "71–85% absorption — strong fixed ops base providing meaningful protection", ">85% absorption — fixed ops effectively self-fund the business; vehicle sales are pure profit"]
+            },
+            de: {
+              text: "In welchem Ausmaß deckt der Bruttogewinn Ihrer Service- und Teileabteilungen die gesamten Fixkosten Ihres Autohauses?",
+              description: "Überlegen Sie, ob Fixed Operations allein das Geschäft aufrechterhalten könnten, wenn der Fahrzeugverkauf einen schlechten Monat hätte — ohne auf variablen Verkaufsbrutto angewiesen zu sein",
+              purpose: "Die Fixed-Absorption-Rate ist der einzeln wichtigste strukturelle Gesundheitsindikator für ein Autohaus — sie misst, ob das Geschäftsmodell wirklich widerstandsfähig oder strukturell abhängig von Fahrzeugverkaufsmargen ist.",
+              situationAnalysis: "Autohäuser mit hoher Fixed Absorption überstehen wirtschaftliche Abschwünge, Versorgungsunterbrechungen und Margenkompression weit besser als solche, die auf variablen Fahrzeugbrutto angewiesen sind.",
+              benefits: "Jeder Prozentpunkt Verbesserung der Absorption stellt direkte Gemeinkostendeckung dar, die das nötige Fahrzeugverkaufsvolumen zur Gewinnzone reduziert — das Gesamtrisiko materiell verringernd.",
+              scaleLabels: ["Fixed Ops deckt <40% der Gemeinkosten — stark abhängig von Fahrzeugverkauf", "40–55% Absorption — anfällig bei Absatzschwächen", "56–70% Absorption — teilweise gepuffert, aber noch exponiert", "71–85% Absorption — starke Fixed-Ops-Basis mit bedeutendem Schutz", ">85% Absorption — Fixed Ops finanzieren das Geschäft effektiv selbst"]
+            }
+          }
+        },
+        {
+          id: "fin-10",
+          text: "How structured and consistent is the way your dealership reviews individual staff performance and links it to development and compensation?",
+          description: "Consider whether targets are clear, reviews happen on schedule, and outcomes actually influence pay, coaching, or role progression",
+          type: "scale",
+          scale: { min: 1, max: 5, labels: ["No formal review process — performance discussed informally or not at all", "Annual appraisal only, limited connection to pay or development", "Semi-annual reviews with basic targets, some link to variable pay", "Quarterly structured reviews with clear KPIs, variable pay tied to results, development plans in place", "Monthly 1:1 KPI reviews + quarterly appraisals, full variable pay alignment, personal development plans actively managed"] },
+          weight: 1.3,
+          category: "efficiency",
+          purpose: "Performance management cadence is a staff KPI proxy that predicts retention, productivity output, and the dealership's ability to improve through people — the single variable that differentiates consistently high-performing dealerships.",
+          situationAnalysis: "Dealerships without structured performance management cannot diagnose whether underperformance is a skill, will, or process issue. Without clear targets and regular feedback, even capable staff drift, and top performers leave for environments that recognise them.",
+          linkedKPIs: ["Staff Performance Index", "Employee Retention Rate", "Variable Pay Alignment", "Management Effectiveness Score"],
+          benefits: "Structured performance management improves productivity without headcount increases, reduces turnover through recognition and development clarity, and creates the management infrastructure needed to scale consistently.",
+          translations: {
+            en: {
+              text: "How structured and consistent is the way your dealership reviews individual staff performance and links it to development and compensation?",
+              description: "Consider whether targets are clear, reviews happen on schedule, and outcomes actually influence pay, coaching, or role progression",
+              purpose: "Performance management cadence is a staff KPI proxy that predicts retention, productivity output, and the dealership's ability to improve through people — the single variable that differentiates consistently high-performing dealerships.",
+              situationAnalysis: "Dealerships without structured performance management cannot diagnose whether underperformance is a skill, will, or process issue. Without clear targets and regular feedback, even capable staff drift, and top performers leave for environments that recognise them.",
+              benefits: "Structured performance management improves productivity without headcount increases, reduces turnover through recognition and development clarity, and creates the management infrastructure needed to scale consistently.",
+              scaleLabels: ["No formal review process — performance discussed informally or not at all", "Annual appraisal only, limited connection to pay or development", "Semi-annual reviews with basic targets, some link to variable pay", "Quarterly structured reviews with clear KPIs, variable pay tied to results, development plans in place", "Monthly 1:1 KPI reviews + quarterly appraisals, full variable pay alignment, personal development plans actively managed"]
+            },
+            de: {
+              text: "Wie strukturiert und konsistent ist die Art und Weise, wie Ihr Autohaus die individuelle Mitarbeiterleistung bewertet und mit Entwicklung und Vergütung verknüpft?",
+              description: "Überlegen Sie, ob Ziele klar sind, Bewertungen planmäßig stattfinden und Ergebnisse tatsächlich Vergütung, Coaching oder Karriereentwicklung beeinflussen",
+              purpose: "Leistungsmanagement-Kadenz ist ein Mitarbeiter-KPI-Proxy, der Bindung, Produktivitätsoutput und die Fähigkeit des Autohauses vorhersagt, sich durch Menschen zu verbessern.",
+              situationAnalysis: "Autohäuser ohne strukturiertes Leistungsmanagement können nicht diagnostizieren, ob Unterleistung ein Fähigkeits-, Willens- oder Prozessproblem ist. Ohne klare Ziele und regelmäßiges Feedback driften selbst fähige Mitarbeiter ab.",
+              benefits: "Strukturiertes Leistungsmanagement verbessert die Produktivität ohne Personalaufstockung, reduziert Fluktuation durch Anerkennung und Entwicklungsklarheit und schafft die Managementinfrastruktur für konsistentes Wachstum.",
+              scaleLabels: ["Kein formaler Bewertungsprozess — Leistung informell oder gar nicht besprochen", "Nur Jahresgespräch, kaum Verbindung zu Vergütung oder Entwicklung", "Halbjährliche Bewertungen mit Grundzielen, teilweise variable Vergütung", "Vierteljährliche strukturierte Bewertungen mit KPIs, variable Vergütung an Ergebnisse gekoppelt", "Monatliche 1:1 KPI-Reviews + vierteljährliche Beurteilungen, vollständige variable Vergütungsausrichtung"]
             }
           }
         }
