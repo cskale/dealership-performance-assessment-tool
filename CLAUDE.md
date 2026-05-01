@@ -451,6 +451,7 @@ OEM admins manage their network at `/app/oem-settings` (Network Settings in side
 - **Supabase types**: regenerate via `mcp__claude_ai_Supabase__generate_typescript_types` (project_id: `xrypgosuyfdkkqafftae`) after any schema change — write output to `src/integrations/supabase/types.ts`
 - **actor_type gating**: always use `actorType` from `useActiveRole()`, not `uxRole` — `uxRole` is null when `active_organization_id` is null (valid for coaches)
 - **Claude Code owned files** (Lovable must not edit): `src/data/questionnaire.ts`, `src/data/signalTypes.ts`, `src/data/signalMappings.ts`, `src/lib/signalEngine.ts` — any changes require TypeScript validation and signal mapping consistency check
+- **Lovable owned files** (Claude Code must not edit): `src/components/results/RadarBenchmarkChart.tsx` (radar chart with benchmark ring), `src/components/action-plan/KanbanBoard.tsx` (kanban drag-and-drop board), `src/components/ui/FreshnessBadge.tsx` (assessment freshness pill), `src/lib/assessmentFreshness.ts` (freshness utility, no scoring logic)
 
 ## Known Pitfalls
 
@@ -476,6 +477,9 @@ OEM admins manage their network at `/app/oem-settings` (Network Settings in side
 
 ### Vitest + fake timers
 - `vi.useFakeTimers()` breaks `waitFor()` from `@testing-library/react` because it mocks `setInterval` which the library uses for polling. Workaround: reorder tests so slow tests (those needing real timers) run last, and give all `waitFor()` calls an explicit `{ timeout: 3000 }`.
+
+### KanbanBoard — HTML5 DnD
+- KanbanBoard uses the HTML5 Drag and Drop API — do not replace with `@dnd-kit` or any external DnD library without a full rewrite. Status updates write directly to `improvement_actions` via `handleKanbanStatusChange` in `ActionPlan.tsx`.
 
 ### RLS Recursion (dealer_network_memberships)
 - Any RLS policy that directly joins `dealer_network_memberships` inside a policy on `dealerships` or `assessments` causes infinite recursion — the policy re-evaluates itself. Always wrap such logic in a `SECURITY DEFINER` function in the `private` schema and call that from the policy instead.

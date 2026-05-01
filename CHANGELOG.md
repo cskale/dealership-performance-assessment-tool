@@ -9,6 +9,24 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
 
 ---
 
+## [2026-05-01] — UX & Retention Features Sprint (Lovable)
+
+### Added
+- **#63 Cinematic score reveal** — Overall score counts up from 0 on first Results load (hasAnimated ref). Module cards cascade with staggered 1300–1750ms delays, 12px slide-up + fade.
+- **#64 Radar chart with benchmark ring** — RadarBenchmarkChart in Results > Summary tab. Recharts radar, animated dealer polygon, dashed peer benchmark ring at 72pt.
+- **#66 Kanban board** — KanbanBoard component, fourth view mode in Action Plan (List/Kanban/Timeline/Roadmap). HTML5 DnD, Open/In Progress/Done columns, completion toast.
+- **#68 Milestone banners** — Contextual banner at 25/50/75/100% action completion. Per-milestone dismiss. 100% shows Schedule Reassessment CTA.
+- **#80 Freshness indicator** — assessmentFreshness.ts utility + FreshnessBadge component on Dashboard and Results. Stale banner (≥90d) with amber border on Results page.
+
+### Deprioritised
+- **#67 Impact vs effort scatter** — Single-action triage already exists in Action Sheet. Portfolio view deferred to post-pilot.
+
+### Notes
+- Do not edit KanbanBoard.tsx, RadarBenchmarkChart.tsx, FreshnessBadge.tsx, assessmentFreshness.ts via Claude Code
+- Pre-existing TS errors in CausalChainDiagram.tsx and signalEngine.ts are unrelated to this sprint
+
+---
+
 ## [1 May 2026] — RLS Recursion Fixes, Signal Architecture Refactor
 
 ### Fixed
