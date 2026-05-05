@@ -3,7 +3,6 @@ import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useActiveRole } from '@/hooks/useActiveRole';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -11,19 +10,24 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Calendar, Filter } from 'lucide-react';
 
+interface ActionDealership {
+  name: string;
+  location: string;
+}
+
+interface ActionAssessment {
+  dealership_id: string;
+  dealerships: ActionDealership;
+}
 
 interface Action {
   id: string;
-  title: string;
-  description: string | null;
+  action_title: string;
+  action_description: string | null;
   status: 'open' | 'in_progress' | 'completed';
-  due_date: string | null;
+  target_completion_date: string | null;
   created_at: string;
-  dealer_id: string;
-  dealerships: {
-    name: string;
-    location: string;
-  };
+  assessments: ActionAssessment;
 }
 
 interface DealerStats {
@@ -44,9 +48,7 @@ export default function CoachActions() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
   useEffect(() => {
-    if (user) {
-      fetchActions();
-    }
+    if (user) fetchActions();
   }, [user]);
 
   useEffect(() => {
@@ -56,18 +58,26 @@ export default function CoachActions() {
   const fetchActions = async () => {
     try {
       const { data, error } = await supabase
-        .from('actions')
+        .from('improvement_actions')
         .select(`
-          *,
-          dealerships (
-            name,
-            location
+          id,
+          action_title,
+          action_description,
+          status,
+          target_completion_date,
+          created_at,
+          assessments!inner (
+            dealership_id,
+            dealerships!inner (
+              name,
+              location
+            )
           )
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      const typedData = (data || []) as Action[];
+      const typedData = (data || []) as unknown as Action[];
       setActions(typedData);
       calculateDealerStats(typedData);
     } catch (error) {
@@ -75,7 +85,7 @@ export default function CoachActions() {
       toast({
         title: 'Error',
         description: 'Failed to load actions',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -84,61 +94,42 @@ export default function CoachActions() {
 
   const calculateDealerStats = (actionsData: Action[]) => {
     const statsMap = new Map<string, DealerStats>();
-    
     actionsData.forEach((action) => {
-      if (!statsMap.has(action.dealer_id)) {
-        statsMap.set(action.dealer_id, {
-          dealerId: action.dealer_id,
-          dealerName: action.dealerships.name,
-          openCount: 0
-        });
+      const dealerId = action.assessments.dealership_id;
+      const dealerName = action.assessments.dealerships.name;
+      if (!statsMap.has(dealerId)) {
+        statsMap.set(dealerId, { dealerId, dealerName, openCount: 0 });
       }
-      
-      const stats = statsMap.get(action.dealer_id)!;
       if (action.status === 'open') {
-        stats.openCount++;
+        statsMap.get(dealerId)!.openCount++;
       }
     });
-
     setDealerStats(Array.from(statsMap.values()));
   };
 
   const applyFilters = () => {
     let filtered = [...actions];
-
     if (filterDealer !== 'all') {
-      filtered = filtered.filter((action) => action.dealer_id === filterDealer);
+      filtered = filtered.filter(a => a.assessments.dealership_id === filterDealer);
     }
-
     if (filterStatus !== 'all') {
-      filtered = filtered.filter((action) => action.status === filterStatus);
+      filtered = filtered.filter(a => a.status === filterStatus);
     }
-
     setFilteredActions(filtered);
   };
 
   const updateStatus = async (actionId: string, newStatus: string) => {
     try {
       const { error } = await supabase
-        .from('actions')
+        .from('improvement_actions')
         .update({ status: newStatus })
         .eq('id', actionId);
-
       if (error) throw error;
-
-      toast({
-        title: 'Success',
-        description: 'Status updated'
-      });
-
+      toast({ title: 'Success', description: 'Status updated' });
       fetchActions();
     } catch (error) {
       console.error('Error updating status:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update status',
-        variant: 'destructive'
-      });
+      toast({ title: 'Error', description: 'Failed to update status', variant: 'destructive' });
     }
   };
 
@@ -146,15 +137,13 @@ export default function CoachActions() {
     const variants: Record<string, string> = {
       open: 'bg-blue-50 text-blue-700 border-blue-200',
       in_progress: 'bg-amber-50 text-amber-700 border-amber-200',
-      completed: 'bg-emerald-50 text-emerald-700 border-emerald-200'
+      completed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     };
-    
     const labels: Record<string, string> = {
       open: 'Open',
       in_progress: 'In Progress',
-      completed: 'Completed'
+      completed: 'Completed',
     };
-
     return (
       <Badge variant="outline" className={variants[status]}>
         {labels[status]}
@@ -163,7 +152,7 @@ export default function CoachActions() {
   };
 
   const uniqueDealers = Array.from(
-    new Map(actions.map((action) => [action.dealer_id, action.dealerships])).entries()
+    new Map(actions.map(a => [a.assessments.dealership_id, a.assessments.dealerships])).entries()
   );
 
   if (roleLoading || loading) {
@@ -238,7 +227,7 @@ export default function CoachActions() {
               </div>
             </div>
           </CardHeader>
-          
+
           <CardContent className="p-0">
             {filteredActions.length === 0 ? (
               <div className="py-12 text-center">
@@ -260,28 +249,28 @@ export default function CoachActions() {
                     <TableRow key={action.id}>
                       <TableCell>
                         <div>
-                          <div className="font-medium text-sm">{action.dealerships.name}</div>
+                          <div className="font-medium text-sm">{action.assessments.dealerships.name}</div>
                           <div className="text-xs text-muted-foreground">
-                            {action.dealerships.location}
+                            {action.assessments.dealerships.location}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium text-sm">{action.title}</div>
-                          {action.description && (
+                          <div className="font-medium text-sm">{action.action_title}</div>
+                          {action.action_description && (
                             <div className="text-xs text-muted-foreground mt-0.5">
-                              {action.description}
+                              {action.action_description}
                             </div>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>{getStatusBadge(action.status)}</TableCell>
                       <TableCell>
-                        {action.due_date ? (
+                        {action.target_completion_date ? (
                           <div className="flex items-center gap-1.5 text-sm">
                             <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                            {new Date(action.due_date).toLocaleDateString()}
+                            {new Date(action.target_completion_date).toLocaleDateString()}
                           </div>
                         ) : (
                           <span className="text-sm text-muted-foreground">-</span>
@@ -309,7 +298,7 @@ export default function CoachActions() {
             )}
           </CardContent>
         </Card>
-        </main>
+      </main>
     </div>
   );
 }

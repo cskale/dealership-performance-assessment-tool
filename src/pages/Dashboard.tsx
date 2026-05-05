@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { Navigate } from "react-router-dom";
+import { useActiveRole } from "@/hooks/useActiveRole";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,6 +37,7 @@ const Dashboard = () => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { actorType } = useActiveRole();
 
   useEffect(() => {
     if (!user) { setHasAssessments(null); return; }
@@ -133,9 +136,11 @@ const Dashboard = () => {
     );
   };
 
+  if (actorType === 'coach') return <Navigate to="/app/coach-dashboard" replace />;
+
   return (
     <div className="min-h-screen bg-neutral-50">
-      
+
 
       {/* Context bar */}
       <div className="border-b bg-card">

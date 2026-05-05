@@ -109,7 +109,7 @@ export function AppSidebar() {
     {
       label: 'Diagnostic',
       items: [
-        { path: '/app/assessment', label: 'New Assessment', icon: Plus },
+        ...(actorType !== 'coach' ? [{ path: '/app/assessment', label: 'New Assessment', icon: Plus }] : []),
         { path: '/app/results', label: 'History', icon: ClipboardList },
         { path: '/actions', label: 'Action Plans', icon: CheckSquare },
       ],
@@ -190,7 +190,7 @@ export function AppSidebar() {
             {!collapsed && (
               <div className="min-w-0 flex-1">
                 <div className="text-[12px] font-medium text-white/75 truncate">{getUserName()}</div>
-                <div className="text-[10px] text-white/35 capitalize">{currentRole || 'member'}</div>
+                <div className="text-[10px] text-white/35">{actorType === 'oem' ? 'OEM' : actorType === 'coach' ? 'Coach' : actorType === 'dealer' ? 'Dealer' : (currentRole ? currentRole.charAt(0).toUpperCase() + currentRole.slice(1) : 'Member')}</div>
               </div>
             )}
           </Link>
