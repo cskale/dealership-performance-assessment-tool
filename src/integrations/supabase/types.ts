@@ -912,6 +912,7 @@ export type Database = {
           id: string
           impact_score: number | null
           kpis_linked_to: string[] | null
+          last_status_updated_at: string | null
           likely_consequences: Json | null
           likely_drivers: Json | null
           linked_kpis: Json | null
@@ -919,6 +920,7 @@ export type Database = {
           priority: string
           recommendation: string | null
           responsible_person: string | null
+          stale_nudge_sent_at: string | null
           status: string | null
           support_required_from: string[] | null
           target_completion_date: string | null
@@ -941,6 +943,7 @@ export type Database = {
           id?: string
           impact_score?: number | null
           kpis_linked_to?: string[] | null
+          last_status_updated_at?: string | null
           likely_consequences?: Json | null
           likely_drivers?: Json | null
           linked_kpis?: Json | null
@@ -948,6 +951,7 @@ export type Database = {
           priority: string
           recommendation?: string | null
           responsible_person?: string | null
+          stale_nudge_sent_at?: string | null
           status?: string | null
           support_required_from?: string[] | null
           target_completion_date?: string | null
@@ -970,6 +974,7 @@ export type Database = {
           id?: string
           impact_score?: number | null
           kpis_linked_to?: string[] | null
+          last_status_updated_at?: string | null
           likely_consequences?: Json | null
           likely_drivers?: Json | null
           linked_kpis?: Json | null
@@ -977,6 +982,7 @@ export type Database = {
           priority?: string
           recommendation?: string | null
           responsible_person?: string | null
+          stale_nudge_sent_at?: string | null
           status?: string | null
           support_required_from?: string[] | null
           target_completion_date?: string | null
@@ -1085,6 +1091,102 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "oem_networks"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_preferences: {
+        Row: {
+          created_at: string | null
+          email_enabled: boolean
+          id: string
+          in_app_enabled: boolean
+          milestone_alerts: boolean
+          stale_action_nudge: boolean
+          updated_at: string | null
+          user_id: string
+          weekly_digest: boolean
+        }
+        Insert: {
+          created_at?: string | null
+          email_enabled?: boolean
+          id?: string
+          in_app_enabled?: boolean
+          milestone_alerts?: boolean
+          stale_action_nudge?: boolean
+          updated_at?: string | null
+          user_id: string
+          weekly_digest?: boolean
+        }
+        Update: {
+          created_at?: string | null
+          email_enabled?: boolean
+          id?: string
+          in_app_enabled?: boolean
+          milestone_alerts?: boolean
+          stale_action_nudge?: boolean
+          updated_at?: string | null
+          user_id?: string
+          weekly_digest?: boolean
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string
+          channel: string
+          created_at: string | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          organization_id: string
+          read: boolean
+          sent_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          channel?: string
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          organization_id: string
+          read?: boolean
+          sent_at?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          channel?: string
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          organization_id?: string
+          read?: boolean
+          sent_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "peer_segmentation_keys"
+            referencedColumns: ["organization_id"]
           },
         ]
       }

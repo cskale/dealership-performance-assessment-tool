@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { User, LogOut, BarChart3, ClipboardList, Home, Settings, CheckSquare, Target } from 'lucide-react';
+import { NotificationBell } from '@/components/NotificationBell';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -134,6 +135,7 @@ export function AppHeader() {
         </div>
 
         <div className="flex items-center gap-2">
+          {user && <NotificationBell headerMode />}
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
