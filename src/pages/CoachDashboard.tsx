@@ -260,6 +260,7 @@ export default function CoachDashboard() {
             style={{ animationDelay: `${Math.min(i, 4) * 50}ms`, animationFillMode: 'forwards' }}
             onClick={() => {
               if (dealer.latestAssessmentId) {
+                setSelectedDealer(dealer);
                 navigate(`/app/results/${dealer.latestAssessmentId}`);
               }
             }}
@@ -385,6 +386,7 @@ export default function CoachDashboard() {
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
