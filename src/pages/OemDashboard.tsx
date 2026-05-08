@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/table';
 import { SharedLoadingState } from '@/components/shared/SharedLoadingState';
 import { SharedEmptyState } from '@/components/shared/SharedEmptyState';
+import { TierBadge } from '@/components/shared/TierBadge';
 import { Globe, TrendingUp, TrendingDown, Minus, Users, Award, ArrowDown, ArrowUp, Settings, ClipboardList, Trophy } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
