@@ -28,7 +28,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { format } from 'date-fns';
-import { ArrowUpDown, CalendarDays, Filter, LineChart as LineChartIcon, TrendingUp as TrendingUpIcon } from 'lucide-react';
+import { ArrowUpDown, CalendarDays, Filter, LineChart as LineChartIcon, TrendingUp as TrendingUpIcon, Clock } from 'lucide-react';
 
 interface AssignedDealer {
   dealershipId: string;
@@ -45,6 +45,16 @@ interface AssessmentRecord {
   dealership_id: string;
   overall_score: number | null;
   created_at: string;
+}
+
+interface StaleAction {
+  id: string;
+  action_title: string;
+  priority: string;
+  status: string;
+  last_status_updated_at: string | null;
+  dealerName: string;
+  daysStale: number;
 }
 
 const CHART_COLORS = ['#2563eb', '#7c3aed', '#0891b2'];
@@ -68,6 +78,7 @@ export default function CoachDashboard() {
   const [sortBy, setSortBy] = useState<'score' | 'name'>('score');
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'in_progress'>('all');
   const [selectedDealerIds, setSelectedDealerIds] = useState<string[]>([]);
+  const [staleActions, setStaleActions] = useState<StaleAction[]>([]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -125,6 +136,49 @@ export default function CoachDashboard() {
       });
 
       setDealers(dealerList);
+
+      // Stale actions: improvement_actions for coached dealers with no update in ≥7 days
+      const assessmentIds = (assessments || []).map(a => a.id).filter(Boolean);
+      if (assessmentIds.length > 0) {
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        const { data: staleData } = await supabase
+          .from('improvement_actions')
+          .select('id, action_title, priority, status, last_status_updated_at, assessment_id')
+          .in('assessment_id', assessmentIds)
+          .in('status', ['Open', 'In Progress'])
+          .or(`last_status_updated_at.is.null,last_status_updated_at.lt.${sevenDaysAgo}`)
+          .order('last_status_updated_at', { ascending: true, nullsFirst: true })
+          .limit(20);
+
+        if (staleData) {
+          // Build assessment_id → dealerName lookup
+          const assessmentToDealerName = new Map<string, string>();
+          (assessments || []).forEach(a => {
+            const dealer = (dealerships || []).find(d => d.id === a.dealership_id);
+            if (dealer) assessmentToDealerName.set(a.id, dealer.name);
+          });
+
+          const now = Date.now();
+          setStaleActions(
+            staleData.map(ia => {
+              const lastMs = ia.last_status_updated_at
+                ? new Date(ia.last_status_updated_at).getTime()
+                : now - 8 * 86400000; // treat NULL as 8 days old
+              const daysStale = Math.max(1, Math.floor((now - lastMs) / 86400000));
+              return {
+                id: ia.id,
+                action_title: ia.action_title,
+                priority: ia.priority,
+                status: ia.status,
+                last_status_updated_at: ia.last_status_updated_at,
+                dealerName: assessmentToDealerName.get(ia.assessment_id) ?? 'Unknown dealer',
+                daysStale,
+              };
+            })
+          );
+        }
+      }
+
       setLoading(false);
     };
     fetchAssignments();
@@ -367,6 +421,70 @@ export default function CoachDashboard() {
               <p className="text-sm text-[hsl(var(--neutral-500))]">
                 Select up to 3 dealers above to compare their score trends
               </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Stale Actions */}
+      <Card className="shadow-card rounded-xl">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-h5">
+            <Clock className="h-4 w-4 text-warning-foreground" />
+            Stale Actions
+            {staleActions.length > 0 && (
+              <Badge variant="outline" className="ml-1 text-caption bg-warning/10 text-warning-foreground border-warning/20">
+                {staleActions.length}
+              </Badge>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {staleActions.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+              <Clock className="h-7 w-7 text-muted-foreground/30" />
+              <p className="text-body-sm text-muted-foreground">No stale actions — all items updated within 7 days</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-border">
+              {/* Table header */}
+              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 px-5 py-2 bg-muted/50">
+                <span className="text-caption uppercase tracking-wider text-muted-foreground">Action</span>
+                <span className="text-caption uppercase tracking-wider text-muted-foreground w-32 text-left">Dealership</span>
+                <span className="text-caption uppercase tracking-wider text-muted-foreground w-20 text-right">Days stale</span>
+                <span className="text-caption uppercase tracking-wider text-muted-foreground w-20 text-right">Priority</span>
+              </div>
+              {staleActions.map(action => {
+                const priorityClass =
+                  action.priority === 'critical' ? 'bg-destructive/10 text-destructive border-destructive/20' :
+                  action.priority === 'high'     ? 'bg-warning/10 text-warning-foreground border-warning/20' :
+                  action.priority === 'medium'   ? 'bg-info/10 text-info border-info/20' :
+                                                   'bg-muted text-muted-foreground border-border';
+                const daysClass =
+                  action.daysStale >= 21 ? 'text-destructive font-semibold' :
+                  action.daysStale >= 14 ? 'text-warning-foreground font-medium' :
+                                           'text-muted-foreground';
+                return (
+                  <div
+                    key={action.id}
+                    className="grid grid-cols-[1fr_auto_auto_auto] gap-3 px-5 py-3 hover:bg-muted/20 transition-colors"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-body-sm font-medium text-foreground truncate">{action.action_title}</p>
+                      <p className="text-caption text-muted-foreground mt-0.5">{action.status}</p>
+                    </div>
+                    <span className="text-body-sm text-muted-foreground w-32 self-center truncate">{action.dealerName}</span>
+                    <span className={`text-body-sm w-20 text-right self-center numeric ${daysClass}`}>
+                      {action.daysStale}d
+                    </span>
+                    <div className="w-20 flex justify-end self-center">
+                      <Badge variant="outline" className={`text-caption capitalize ${priorityClass}`}>
+                        {action.priority}
+                      </Badge>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>
