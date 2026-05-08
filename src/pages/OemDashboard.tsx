@@ -34,6 +34,7 @@ interface DealerScore {
   dealershipId: string;
   dealerName: string;
   location: string;
+  programmeTier: string | null;
   latestScore: number | null;
   previousScore: number | null;
   latestAssessmentId: string | null;
@@ -116,7 +117,7 @@ export default function OemDashboard() {
       // Get dealer memberships for this network
       const { data: memberships, error: memErr } = await supabase
         .from('dealer_network_memberships')
-        .select('dealership_id')
+        .select('dealership_id, programme_tier')
         .eq('network_id', selectedNetworkId)
         .eq('is_active', true);
 
@@ -124,6 +125,11 @@ export default function OemDashboard() {
         setDealerScores([]);
         setLoadingDealers(false);
         return;
+      }
+
+      const tierByDealer = new Map<string, string | null>();
+      for (const m of memberships) {
+        if (m.dealership_id) tierByDealer.set(m.dealership_id, m.programme_tier ?? null);
       }
 
       const dealershipIds = memberships
@@ -156,6 +162,7 @@ export default function OemDashboard() {
           dealershipId: d.id,
           dealerName: d.name,
           location: d.location,
+          programmeTier: tierByDealer.get(d.id) ?? null,
           latestScore: null,
           previousScore: null,
           latestAssessmentId: null,
