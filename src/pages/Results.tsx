@@ -460,18 +460,47 @@ export default function Results() {
                 <div className={cn(cardBase, "results-cascade-card flex flex-col items-center text-center")} style={{ animationDelay: '1300ms' }}>
                   <div className="relative flex-shrink-0 mb-2" style={{ width: ringSize, height: ringSize }}>
                     <svg width={ringSize} height={ringSize} className="-rotate-90">
+                      <defs>
+                        <linearGradient id="scoreArcGrad" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor={ringColor} stopOpacity={1} />
+                          <stop offset="100%" stopColor={ringColor} stopOpacity={0.55} />
+                        </linearGradient>
+                      </defs>
                       <circle
                         cx={ringSize / 2} cy={ringSize / 2} r={radius}
                         fill="none" stroke="hsl(var(--muted))" strokeWidth={strokeWidth}
                       />
                       <circle
                         cx={ringSize / 2} cy={ringSize / 2} r={radius}
-                        fill="none" stroke={ringColor} strokeWidth={strokeWidth}
+                        fill="none" stroke="url(#scoreArcGrad)" strokeWidth={strokeWidth}
                         strokeLinecap="round"
                         strokeDasharray={circumference}
                         strokeDashoffset={scoreOffset}
                         style={{ transition: 'stroke-dashoffset 0.3s ease-out' }}
                       />
+                      {[46, 70, 85].map(pos => {
+                        const angle = (pos / 100) * 2 * Math.PI - Math.PI / 2;
+                        const tx = ringSize / 2 + radius * Math.cos(angle);
+                        const ty = ringSize / 2 + radius * Math.sin(angle);
+                        return (
+                          <rect
+                            key={pos}
+                            x={tx - 1} y={ty - 3}
+                            width={2} height={6}
+                            fill="hsl(var(--neutral-300))"
+                            transform={`rotate(${(pos / 100) * 360 - 90}, ${tx}, ${ty})`}
+                          />
+                        );
+                      })}
+                      {animatedScore === overallScore && overallScore > 0 && (
+                        <circle
+                          cx={ringSize / 2 + radius * Math.cos((overallScore / 100) * 2 * Math.PI - Math.PI / 2)}
+                          cy={ringSize / 2 + radius * Math.sin((overallScore / 100) * 2 * Math.PI - Math.PI / 2)}
+                          r={4}
+                          fill={ringColor}
+                          className="score-terminus-glow"
+                        />
+                      )}
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                       <span className="text-h4 font-bold text-foreground">{animatedScore}</span>

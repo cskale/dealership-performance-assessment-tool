@@ -213,6 +213,14 @@
   .hover-lift:hover {
     @apply -translate-y-0.5 shadow-md;
   }
+
+  @keyframes scoreGlow {
+    0%   { opacity: 0.7; r: 3px; }
+    100% { opacity: 0;   r: 10px; }
+  }
+  .score-terminus-glow {
+    animation: scoreGlow 500ms ease-out forwards;
+  }
 }
 
 /* ── Question card two-column layout (#46) ── */
