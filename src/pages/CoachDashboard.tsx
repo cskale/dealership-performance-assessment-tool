@@ -199,7 +199,19 @@ export default function CoachDashboard() {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6">
+      {selectedDealer && (
+        <ActorContextBanner
+          dealerName={selectedDealer.dealerName}
+          location={selectedDealer.location}
+          backLabel={t('coach.title')}
+          onBack={() => {
+            setSelectedDealer(null);
+            navigate('/app/coach-dashboard');
+          }}
+        />
+      )}
+      <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold text-foreground">{t('coach.title')}</h1>
