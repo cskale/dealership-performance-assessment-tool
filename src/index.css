@@ -221,6 +221,11 @@
   .score-terminus-glow {
     animation: scoreGlow 500ms ease-out forwards;
   }
+
+  @keyframes actorBannerIn {
+    from { opacity: 0; height: 0; }
+    to   { opacity: 1; height: 40px; }
+  }
 }
 
 /* ── Question card two-column layout (#46) ── */
