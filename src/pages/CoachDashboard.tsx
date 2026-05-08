@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { SharedLoadingState } from '@/components/shared/SharedLoadingState';
 import { SharedEmptyState } from '@/components/shared/SharedEmptyState';
+import { ActorContextBanner } from '@/components/shared/ActorContextBanner';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   LineChart,
