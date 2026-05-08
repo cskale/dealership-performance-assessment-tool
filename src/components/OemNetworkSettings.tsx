@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { Loader2, Search, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Tables } from '@/integrations/supabase/types';
+import { TierBadge } from '@/components/shared/TierBadge';
 
 type OemNetwork = Tables<'oem_networks'>;
 
@@ -416,21 +417,24 @@ export function OemNetworkSettings() {
                       <TableCell className="font-medium">{entry.name}</TableCell>
                       <TableCell className="text-muted-foreground">{entry.location}</TableCell>
                       <TableCell>
-                        <Select
-                          value={entry.programmeTier}
-                          onValueChange={tier => handleTierChange(entry.membershipId, tier)}
-                        >
-                          <SelectTrigger className="h-8 w-28 text-xs">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {PROGRAMME_TIERS.map(t => (
-                              <SelectItem key={t} value={t} className="text-xs">
-                                {t}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <div className="flex items-center gap-2">
+                          <TierBadge tier={entry.programmeTier as 'Standard' | 'Silver' | 'Gold' | 'Platinum'} size="sm" />
+                          <Select
+                            value={entry.programmeTier}
+                            onValueChange={tier => handleTierChange(entry.membershipId, tier)}
+                          >
+                            <SelectTrigger className="h-8 w-28 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {PROGRAMME_TIERS.map(t => (
+                                <SelectItem key={t} value={t} className="text-xs">
+                                  {t}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
                         {entry.enrolledAt
