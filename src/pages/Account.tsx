@@ -19,10 +19,10 @@ import { OrganizationSettings } from '@/components/OrganizationSettings';
 import { InviteTeamMembers } from '@/components/InviteTeamMembers';
 import { InviteCoach } from '@/components/InviteCoach';
 import { OemModeToggle } from '@/components/OemModeToggle';
-import { 
-  User, Shield, Download, Trash2, Monitor, Smartphone, Globe, 
+import {
+  User, Shield, Download, Trash2, Monitor, Smartphone, Globe,
   Mail, CheckCircle, Building2, Users, Activity, Link2, Key,
-  ChevronRight, Pencil, Save, X
+  ChevronRight, Pencil, Save, X, Bell
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { profileSchema } from '@/lib/validationSchemas';
@@ -69,6 +69,13 @@ const Account = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const [analyticsConsent, setAnalyticsConsent] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
+  const [notifPrefs, setNotifPrefs] = useState({
+    email_enabled:      true,
+    weekly_digest:      true,
+    stale_action_nudge: true,
+    milestone_alerts:   true,
+  });
+  const [notifPrefsLoading, setNotifPrefsLoading] = useState(false);
   const [orgEditing, setOrgEditing] = useState(false);
   const [orgName, setOrgName] = useState('');
   const [orgSaving, setOrgSaving] = useState(false);
@@ -266,6 +273,28 @@ const Account = () => {
     }
   }, [currentOrganization]);
 
+  // Load notification preferences
+  useEffect(() => {
+    if (!user) return;
+    setNotifPrefsLoading(true);
+    supabase
+      .from('notification_preferences')
+      .select('email_enabled, weekly_digest, stale_action_nudge, milestone_alerts')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setNotifPrefs({
+            email_enabled:      data.email_enabled,
+            weekly_digest:      data.weekly_digest,
+            stale_action_nudge: data.stale_action_nudge,
+            milestone_alerts:   data.milestone_alerts,
+          });
+        }
+        setNotifPrefsLoading(false);
+      });
+  }, [user]);
+
   if (!user) return <Navigate to="/auth" replace />;
 
   if (profileLoading) {
@@ -343,6 +372,7 @@ const Account = () => {
             {hasActivityData && <TabsTrigger value="activity" className="gap-1.5 text-xs"><Activity className="h-3.5 w-3.5" />Activity</TabsTrigger>}
             <TabsTrigger value="security" className="gap-1.5 text-xs"><Shield className="h-3.5 w-3.5" />Password & Security</TabsTrigger>
             <TabsTrigger value="privacy" className="gap-1.5 text-xs"><Globe className="h-3.5 w-3.5" />Privacy</TabsTrigger>
+            <TabsTrigger value="notifications" className="gap-1.5 text-xs"><Bell className="h-3.5 w-3.5" />Notifications</TabsTrigger>
             <TabsTrigger value="integrations" className="gap-1.5 text-xs"><Link2 className="h-3.5 w-3.5" />Integrations</TabsTrigger>
           </TabsList>
 
@@ -658,6 +688,57 @@ const Account = () => {
                     </AlertDialogContent>
                   </AlertDialog>
                 </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* ── NOTIFICATIONS ── */}
+          <TabsContent value="notifications">
+            <div className="space-y-3">
+              <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-5">
+                <div className="text-sm font-medium mb-1">Notification preferences</div>
+                <div className="text-xs text-muted-foreground mb-4">Choose which notifications you receive</div>
+                {notifPrefsLoading ? (
+                  <div className="flex items-center justify-center py-6">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary" />
+                  </div>
+                ) : (
+                  <>
+                    {([
+                      { key: 'email_enabled'      as const, label: 'Email notifications',  desc: 'Receive notifications by email' },
+                      { key: 'weekly_digest'       as const, label: 'Weekly action digest', desc: 'Monday morning summary of open and overdue actions' },
+                      { key: 'stale_action_nudge'  as const, label: 'Stale action nudges',  desc: 'Get reminded when actions have had no update for 7+ days' },
+                      { key: 'milestone_alerts'    as const, label: 'Milestone alerts',      desc: 'Notifications when action completion milestones are reached' },
+                    ]).map(({ key, label, desc }, idx, arr) => (
+                      <div
+                        key={key}
+                        className={`flex justify-between items-center py-3 ${idx < arr.length - 1 ? 'border-b border-[hsl(var(--dd-rule))]' : ''}`}
+                      >
+                        <div>
+                          <div className="text-sm font-medium">{label}</div>
+                          <div className="text-xs text-muted-foreground">{desc}</div>
+                        </div>
+                        <Switch
+                          checked={notifPrefs[key]}
+                          onCheckedChange={async (value) => {
+                            const prev = notifPrefs[key];
+                            setNotifPrefs(p => ({ ...p, [key]: value }));
+                            const { error } = await supabase
+                              .from('notification_preferences')
+                              .upsert(
+                                { user_id: user.id, [key]: value },
+                                { onConflict: 'user_id' }
+                              );
+                            if (error) {
+                              setNotifPrefs(p => ({ ...p, [key]: prev }));
+                              toast({ title: 'Could not save preference', variant: 'destructive' });
+                            }
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </>
+                )}
               </div>
             </div>
           </TabsContent>

@@ -1700,6 +1700,7 @@ export type Database = {
       }
       lookup_dealer_by_email: { Args: { p_email: string }; Returns: Json }
       process_stale_actions: { Args: never; Returns: undefined }
+      send_weekly_digests: { Args: never; Returns: undefined }
       toggle_oem_mode: { Args: { p_activate?: boolean }; Returns: Json }
       trigger_stale_action_check: { Args: never; Returns: undefined }
       update_action_if_unchanged:
