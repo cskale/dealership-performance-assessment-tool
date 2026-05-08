@@ -69,6 +69,7 @@ export default function CoachDashboard() {
   const [sortBy, setSortBy] = useState<'score' | 'name'>('score');
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'in_progress'>('all');
   const [selectedDealerIds, setSelectedDealerIds] = useState<string[]>([]);
+  const [selectedDealer, setSelectedDealer] = useState<AssignedDealer | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
