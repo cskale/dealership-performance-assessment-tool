@@ -359,9 +359,10 @@ export default function OemDashboard() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <div>
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-medium text-foreground">{dealer.dealerName}</span>
-                            <span className="text-xs text-muted-foreground ml-2">{dealer.location}</span>
+                            <span className="text-xs text-muted-foreground">{dealer.location}</span>
+                            <TierBadge tier={dealer.programmeTier as 'Standard' | 'Silver' | 'Gold' | 'Platinum' | null} size="sm" />
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
