@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { SharedLoadingState } from '@/components/shared/SharedLoadingState';
 import { SharedEmptyState } from '@/components/shared/SharedEmptyState';
+import { ActorContextBanner } from '@/components/shared/ActorContextBanner';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   LineChart,
@@ -68,6 +69,7 @@ export default function CoachDashboard() {
   const [sortBy, setSortBy] = useState<'score' | 'name'>('score');
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'in_progress'>('all');
   const [selectedDealerIds, setSelectedDealerIds] = useState<string[]>([]);
+  const [selectedDealer, setSelectedDealer] = useState<AssignedDealer | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -197,7 +199,19 @@ export default function CoachDashboard() {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6">
+      {selectedDealer && (
+        <ActorContextBanner
+          dealerName={selectedDealer.dealerName}
+          location={selectedDealer.location}
+          backLabel={t('coach.title')}
+          onBack={() => {
+            setSelectedDealer(null);
+            navigate('/app/coach-dashboard');
+          }}
+        />
+      )}
+      <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold text-foreground">{t('coach.title')}</h1>
@@ -246,6 +260,7 @@ export default function CoachDashboard() {
             style={{ animationDelay: `${Math.min(i, 4) * 50}ms`, animationFillMode: 'forwards' }}
             onClick={() => {
               if (dealer.latestAssessmentId) {
+                setSelectedDealer(dealer);
                 navigate(`/app/results/${dealer.latestAssessmentId}`);
               }
             }}
@@ -371,6 +386,7 @@ export default function CoachDashboard() {
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
