@@ -291,7 +291,7 @@ export default function Assessment() {
   const isCompleting = completionState !== 'idle' && completionState !== 'error';
 
   return (
-    <div className="min-h-screen">
+    <div className="h-full flex flex-col overflow-hidden">
       {isCompleting && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
           <Card className="w-full max-w-md mx-4 shadow-card rounded-xl">
@@ -327,7 +327,7 @@ export default function Assessment() {
         disabled={isCompleting}
       />
 
-      <div className="px-6 pb-8">
+      <div className="flex-1 overflow-y-auto px-6 pt-6 pb-8">
         {(() => {
           const suppressedCount = getSuppressedSectionCount(questionnaire.sections, businessModel);
           const modelLabel = businessModel?.toUpperCase() ?? '';

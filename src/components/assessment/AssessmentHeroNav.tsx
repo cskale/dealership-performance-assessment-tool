@@ -43,7 +43,7 @@ export function AssessmentHeroNav({
     section.questions.every(q => answers[q.id] !== undefined);
 
   return (
-    <div className="sticky top-0 z-20 mb-8">
+    <div className="shrink-0 z-20">
       {/* ── Stat strip ── */}
       <div
         className="flex items-center h-9 px-6"
