@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MessageSquare, Save, ChevronRight, StickyNote, Check, ExternalLink, Upload } from "lucide-react";
+import { MessageSquare, Save, ChevronRight, StickyNote, Check, ExternalLink } from "lucide-react";
 import { Question, Section } from "@/data/questionnaire";
 import { useAssessmentNotes } from "@/hooks/useAssessmentNotes";
 import { useToast } from "@/hooks/use-toast";
@@ -146,7 +146,7 @@ export function CategoryAssessment({
             <div
               key={question.id}
               ref={(el) => { questionRefs.current[question.id] = el; }}
-              className="bg-white border border-[#d4dde4] rounded-xl overflow-hidden mb-4 opacity-0 animate-fade-in"
+              className="bg-white border border-[#d4dde4] rounded-xl overflow-hidden mb-8 opacity-0 animate-fade-in"
               style={{
                 animationDelay: `${index * 45}ms`,
                 animationFillMode: 'forwards',
@@ -254,8 +254,8 @@ export function CategoryAssessment({
                   }}
                 >
                   <div className="px-5 py-4">
-                    <p className="text-[12px] font-semibold text-[#172d4d] mb-1.5">Why this matters</p>
-                    <p className="text-[12px] text-[#445166] leading-relaxed">
+                    <p className="text-[13px] font-semibold text-[#172d4d] mb-1.5">Why this matters</p>
+                    <p className="text-[13px] text-[#445166] leading-relaxed">
                       {whyThisMatters || 'No context available for this question.'}
                     </p>
                   </div>
@@ -287,7 +287,7 @@ export function CategoryAssessment({
               )}
 
               {/* ── Footer: two actions ── */}
-              <div className="flex items-center gap-4 px-5 py-3 border-t border-[#eef0f3] bg-white">
+              <div className="flex items-center px-5 py-3 border-t border-[#eef0f3] bg-white">
                 <button
                   type="button"
                   onClick={() => toggleNote(question.id)}
@@ -295,15 +295,6 @@ export function CategoryAssessment({
                 >
                   <MessageSquare className="h-3.5 w-3.5" />
                   {hasNotes(question.id) ? 'Edit field coach notes' : 'Add field coach notes'}
-                </button>
-                <div className="w-px h-3.5 bg-[#e2e8f0]" />
-                <button
-                  type="button"
-                  onClick={() => {/* file upload — future sprint */}}
-                  className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#6e7e8a] hover:text-[#1D7AFC] transition-colors bg-transparent border-none cursor-pointer p-0"
-                >
-                  <Upload className="h-3.5 w-3.5" />
-                  Attach proof of performance
                 </button>
               </div>
 

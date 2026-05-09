@@ -1,29 +1,12 @@
 import { AppSidebar } from '@/components/AppSidebar';
 import { NotificationBell } from '@/components/NotificationBell';
 import { Search } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
 
 interface AuthenticatedLayoutProps {
   children: React.ReactNode;
 }
 
 export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
-  const { user } = useAuth();
-
-  const initials: string = (() => {
-    const fullName = user?.user_metadata?.full_name as string | undefined;
-    if (fullName) {
-      return fullName
-        .split(' ')
-        .map((n: string) => n[0] ?? '')
-        .join('')
-        .slice(0, 2)
-        .toUpperCase();
-    }
-    return (user?.email ?? 'U').substring(0, 2).toUpperCase();
-  })();
-
   return (
     <div className="flex min-h-screen w-full">
       <AppSidebar />
@@ -50,18 +33,9 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
             </kbd>
           </button>
 
-          {/* Right: notification bell + user avatar */}
-          <div className="flex items-center gap-3">
+          {/* Right: notification bell only — avatar lives in sidebar footer */}
+          <div className="flex items-center">
             <NotificationBell headerMode />
-            <Link
-              to="/account"
-              title="Account settings"
-              className="h-7 w-7 rounded-full bg-gradient-to-br from-brand-500 to-indigo-500
-                         flex items-center justify-center text-[11px] font-semibold text-white
-                         hover:opacity-90 transition-opacity"
-            >
-              {initials}
-            </Link>
           </div>
         </header>
 

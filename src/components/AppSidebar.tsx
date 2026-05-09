@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { useActiveRole } from '@/hooks/useActiveRole';
 import {
-  BarChart3, Building2, Plus, ClipboardList, CheckSquare,
+  BarChart3, Plus, ClipboardList, CheckSquare,
   BookOpen, FileText, LogOut, Database, Globe, Users, Settings,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
@@ -66,7 +66,6 @@ export function AppSidebar() {
           { path: '/app/coach-dashboard', label: 'Coach Dashboard', icon: Users },
           { path: '/app/coach-actions', label: 'Action Tracker', icon: CheckSquare },
         ] : []),
-        { path: '/account', label: 'My Dealership', icon: Building2 },
       ],
     },
     {
@@ -115,13 +114,16 @@ export function AppSidebar() {
             </div>
           )}
         </Link>
-        {/* Collapse toggle — always visible */}
+        {/* Collapse toggle — pokes out from right edge when collapsed */}
         <button
           type="button"
           onClick={() => setCollapsed(prev => !prev)}
-          className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full
-                     bg-white/10 flex items-center justify-center
-                     hover:bg-white/20 transition-colors shrink-0"
+          className={cn(
+            'absolute top-1/2 -translate-y-1/2 h-6 w-6 rounded-full z-10',
+            'bg-[hsl(var(--dd-midnight))] border border-white/20',
+            'flex items-center justify-center hover:bg-white/20 transition-colors shrink-0',
+            collapsed ? 'right-0 translate-x-1/2' : 'right-2'
+          )}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed
