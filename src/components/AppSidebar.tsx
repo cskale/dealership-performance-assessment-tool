@@ -8,6 +8,7 @@ import {
   BookOpen, FileText, LogOut, Database, Globe, Users, Settings,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
+import { NotificationBell } from '@/components/NotificationBell';
 import { cn } from '@/lib/utils';
 
 export function AppSidebar() {
@@ -154,6 +155,10 @@ export function AppSidebar() {
 
       {/* Footer */}
       <div className={cn('mt-auto border-t border-white/[0.06]', collapsed ? 'p-2' : 'p-5')}>
+        {/* Notification bell */}
+        <div className={cn('mb-3', collapsed ? 'flex justify-center' : '')}>
+          <NotificationBell />
+        </div>
         <div className="flex items-center gap-2.5">
           <Link
             to="/account"
