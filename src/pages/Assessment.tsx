@@ -1,22 +1,18 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, Car, Wrench, Package, BarChart3, Bot, ArrowLeft, Check, Loader2, AlertCircle } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { CategoryAssessment } from "@/components/assessment/CategoryAssessment";
-import { SmartAssistant } from "@/components/SmartAssistant";
+import { AssessmentHeroNav } from "@/components/assessment/AssessmentHeroNav";
 import { questionnaire, getTranslatedSection } from "@/data/questionnaire";
 import { useAssessmentData, OnboardingError } from "@/hooks/useAssessmentData";
 import { calculateAllSectionScores, calculateWeightedScore } from "@/lib/scoringEngine";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAutoActionGeneration } from "@/hooks/useAutoActionGeneration";
 import { useOnboarding } from "@/hooks/useOnboarding";
-import { supabase } from "@/integrations/supabase/client";
 import { useMultiTenant } from "@/hooks/useMultiTenant";
-import { getActiveSections, getSuppressedSectionCount, BusinessModel } from "@/lib/moduleGating";
+import { getActiveSections, getSuppressedSectionCount } from "@/lib/moduleGating";
 
 type CompletionState = 'idle' | 'saving' | 'generating_actions' | 'complete' | 'error';
 
@@ -24,19 +20,16 @@ export default function Assessment() {
   useEffect(() => { document.title = 'Assessment — Dealer Diagnostic'; }, []);
   const [currentSection, setCurrentSection] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [showAssistant, setShowAssistant] = useState(false);
-  const [scores, setScores] = useState<Record<string, number>>({});
   const [completionState, setCompletionState] = useState<CompletionState>('idle');
   const [completionError, setCompletionError] = useState<string | null>(null);
   
   const { toast } = useToast();
   const navigate = useNavigate();
   const { language, t } = useLanguage();
-  const { 
-    assessment, 
-    saveAssessment, 
-    loadAssessment, 
-    isLoading 
+  const {
+    assessment,
+    saveAssessment,
+    loadAssessment,
   } = useAssessmentData();
   
   const { generateActions, isEnabled: autoActionsEnabled } = useAutoActionGeneration();
@@ -58,7 +51,6 @@ export default function Assessment() {
 
   const totalQuestions = translatedSections.reduce((sum, section) => sum + section.questions.length, 0);
   const answeredQuestions = Object.keys(answers).length;
-  const progress = (answeredQuestions / totalQuestions) * 100;
 
   const currentSectionData = translatedSections[currentSection];
 
@@ -73,8 +65,7 @@ export default function Assessment() {
     
     // Calculate real-time scores
     const newScores = calculateScores(newAnswers);
-    setScores(newScores);
-    
+
     // Auto-save to local storage (in-progress, non-blocking)
     try {
       const overallScore = Object.values(newScores).length > 0 
@@ -110,31 +101,11 @@ export default function Assessment() {
     }
   };
 
-  const prevSection = () => {
-    if (currentSection > 0) {
-      setCurrentSection(currentSection - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
   const canContinue = () => {
     const sectionQuestions = currentSectionData.questions;
     return sectionQuestions.every(q => answers[q.id] !== undefined);
   };
 
-
-  const getSectionIcon = (sectionTitle: string) => {
-    if (sectionTitle.includes("New Vehicle") || sectionTitle.includes("Neuwagen")) return Car;
-    if (sectionTitle.includes("Used Vehicle") || sectionTitle.includes("Gebrauchtwagen")) return Car;
-    if (sectionTitle.includes("Service")) return Wrench;
-    if (sectionTitle.includes("Parts") || sectionTitle.includes("Teile")) return Package;
-    return BarChart3;
-  };
-
-  const getSectionColor = (index: number) => {
-    const colors = ["bg-primary", "bg-success", "bg-discovery", "bg-warning", "bg-info"];
-    return colors[index % colors.length];
-  };
 
   // Load existing assessment data on mount (only once)
   useEffect(() => {
@@ -153,7 +124,6 @@ export default function Assessment() {
   useEffect(() => {
     if (assessment) {
       setAnswers(assessment.answers || {});
-      setScores(assessment.scores || {});
     }
   }, [assessment]);
 
@@ -325,8 +295,7 @@ export default function Assessment() {
   const isCompleting = completionState !== 'idle' && completionState !== 'error';
 
   return (
-    <div className="min-h-screen bg-muted">
-      {/* Completion Overlay */}
+    <div className="min-h-screen">
       {isCompleting && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
           <Card className="w-full max-w-md mx-4 shadow-card rounded-xl">
@@ -341,7 +310,7 @@ export default function Assessment() {
                   </h3>
                   <p className="text-body-sm text-muted-foreground mt-1">
                     {completionState === 'saving' && 'Please wait while we save your assessment results.'}
-                    {completionState === 'generating_actions' && 'Analyzing responses and creating improvement actions.'}
+                    {completionState === 'generating_actions' && 'Analysing responses and creating improvement actions.'}
                     {completionState === 'complete' && 'Redirecting to your results...'}
                   </p>
                 </div>
@@ -351,38 +320,18 @@ export default function Assessment() {
         </div>
       )}
 
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-card border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/app')}
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-              disabled={isCompleting}
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {t('nav.backToDashboard')}
-            </Button>
-            <div className="flex items-center gap-2">
-              <h1 className="text-h5 text-foreground">{t('assessment.title')}</h1>
-              {onboardingContext.dealershipName && (
-                <Badge variant="secondary" className="hidden sm:inline-flex">
-                  {onboardingContext.dealershipName}
-                </Badge>
-              )}
-            </div>
-            <div className="text-center">
-              <div className="text-h4 text-foreground">
-                {Math.round(progress)}%
-              </div>
-              <div className="text-caption text-muted-foreground">{t('assessment.complete')}</div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AssessmentHeroNav
+        sections={translatedSections}
+        currentSection={currentSection}
+        answers={answers}
+        onSectionChange={(idx) => !isCompleting && handleNavigateToSection(idx, 0)}
+        totalQuestions={totalQuestions}
+        answeredQuestions={answeredQuestions}
+        dealershipName={onboardingContext.dealershipName ?? undefined}
+        disabled={isCompleting}
+      />
 
-      <div className="px-6 py-6">
+      <div className="px-6 pb-8">
         {(() => {
           const suppressedCount = getSuppressedSectionCount(questionnaire.sections, businessModel);
           const modelLabel = businessModel?.toUpperCase() ?? '';
@@ -394,159 +343,21 @@ export default function Assessment() {
             </div>
           );
         })()}
-        <div className="flex gap-6 w-full">
-          {/* Left Sidebar - Sections Navigation */}
-          <div className="w-80 flex-shrink-0">
-            <div className="sticky top-24 h-[calc(100vh-6rem)] flex flex-col">
-              <Card className="shadow-card rounded-xl flex flex-col h-full overflow-hidden">
-                <CardHeader className="pb-4 flex-shrink-0">
-                  <div className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-primary" />
-                    <CardTitle className="text-lg">{t('assessment.sections')}</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3 overflow-y-auto flex-1">
-                  {translatedSections.map((section, sectionIndex) => {
-                    const sectionAnswered = section.questions.filter(q => answers[q.id] !== undefined).length;
-                    const sectionTotal = section.questions.length;
-                    const sectionProgress = (sectionAnswered / sectionTotal) * 100;
-                    const isCurrentSection = sectionIndex === currentSection;
-                    const Icon = getSectionIcon(section.title);
-                    
-                    return (
-                      <Card
-                        key={section.id}
-                        className={`shadow-card rounded-xl transition-all duration-200 cursor-pointer ${
-                          isCurrentSection
-                            ? "border border-primary bg-primary/5"
-                            : "hover:shadow-elevated"
-                        }`}
-                        onClick={() => !isCompleting && handleNavigateToSection(sectionIndex, 0)}
-                      >
-                        <CardContent className="p-3">
-                          <div className="flex items-start gap-2 mb-2">
-                            <div className={`p-1.5 rounded ${getSectionColor(sectionIndex)}`}>
-                              <Icon className="h-4 w-4 text-white" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-medium text-sm leading-tight">
-                                {section.title}
-                              </h3>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {sectionTotal} {t('assessment.questions')}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="space-y-1.5">
-                            <div className="flex justify-between items-center text-xs">
-                              <span className="text-muted-foreground">
-                                {sectionAnswered} {t('assessment.completed')}
-                              </span>
-                              <Badge 
-                                variant={sectionProgress === 100 ? "default" : "secondary"}
-                                className="text-xs h-5"
-                              >
-                                {Math.round(sectionProgress)}%
-                              </Badge>
-                            </div>
-                            <Progress value={sectionProgress} className="h-1.5" />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                  
-                  {/* Overall Progress Card */}
-                  <Card className="bg-primary/5 mt-4 shadow-card rounded-xl">
-                    <CardContent className="p-3">
-                      <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                        <Check className="h-4 w-4" />
-                        {t('assessment.overallProgress')}
-                      </h3>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>{answeredQuestions} {t('assessment.of')} {totalQuestions}</span>
-                          <span>{Math.round(progress)}%</span>
-                        </div>
-                        <Progress value={progress} className="h-2" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
 
-          {/* Right Content - Questions */}
-          <div key={currentSection} className="flex-1 min-w-0 animate-in fade-in slide-in-from-right-4 duration-200">
-            <CategoryAssessment
-              section={currentSectionData}
-              answers={answers}
-              onAnswer={handleAnswer}
-              onContinue={nextSection}
-              canContinue={canContinue()}
-              isLastSection={currentSection === translatedSections.length - 1}
-            />
-            
-            {/* Section Navigation Buttons */}
-            {translatedSections.length > 1 && (
-              <Card className="mt-6 bg-muted/50 shadow-card rounded-xl">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <Button
-                      variant="outline"
-                      onClick={prevSection}
-                      disabled={currentSection === 0 || isCompleting}
-                      className="flex items-center gap-2"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                      {t('assessment.previousSection')}
-                    </Button>
-                    
-                    <div className="text-center">
-                      <div className="text-sm text-muted-foreground">
-                        {t('assessment.section')} {currentSection + 1} {t('assessment.of')} {translatedSections.length}
-                      </div>
-                      <div className="font-medium">{currentSectionData.title}</div>
-                    </div>
-                    
-                    <Button
-                      variant="outline"
-                      onClick={nextSection}
-                      disabled={(currentSection === translatedSections.length - 1 && !canContinue()) || isCompleting}
-                      className="flex items-center gap-2"
-                    >
-                      {currentSection === translatedSections.length - 1 ? t('assessment.finish') : t('assessment.nextSection')}
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+        <div
+          key={currentSection}
+          className="animate-in fade-in slide-in-from-right-4 duration-200"
+        >
+          <CategoryAssessment
+            section={currentSectionData}
+            answers={answers}
+            onAnswer={handleAnswer}
+            onContinue={nextSection}
+            canContinue={canContinue()}
+            isLastSection={currentSection === translatedSections.length - 1}
+          />
         </div>
       </div>
-
-      {/* Smart Assistant Button */}
-      <div className="fixed bottom-6 right-6 z-40">
-        <Button
-          onClick={() => setShowAssistant(true)}
-          className="h-14 w-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg"
-          disabled={isCompleting}
-        >
-          <Bot className="h-6 w-6" />
-        </Button>
-      </div>
-
-      {/* Smart Assistant */}
-      <SmartAssistant
-        open={showAssistant}
-        onOpenChange={setShowAssistant}
-        currentQuestion={null}
-        currentSection={currentSectionData}
-        answers={answers}
-        scores={scores}
-      />
     </div>
   );
 }
