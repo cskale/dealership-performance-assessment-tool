@@ -219,8 +219,8 @@ export default function Results() {
   } : null;
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'stroke-success';
-    if (score >= 60) return 'stroke-warning';
+    if (score >= 85) return 'stroke-success';
+    if (score >= 70) return 'stroke-warning';
     return 'stroke-destructive';
   };
 
@@ -309,21 +309,81 @@ export default function Results() {
             </Button>
           </div>
           
-          {/* Page title */}
-          <div className="mb-4">
-            <h1 className="text-h3 text-foreground">
-              {language === 'de' ? 'Bewertungsergebnisse' : 'Assessment Results'}
-            </h1>
-            <p className="text-body-sm text-muted-foreground mt-0.5">
-              {language === 'de' ? 'Umfassende Analyse abgeschlossen am' : 'Comprehensive analysis completed on'} {formatDate(resultsData.completedAt)}
-            </p>
-            <div className="mt-2">
-              <FreshnessBadge
-                completedAt={resultsData.completedAt}
-                onReassess={() => navigate('/app/assessment')}
-              />
-            </div>
-          </div>
+          {/* Precision Header (DESIGN.md §24) */}
+          {(() => {
+            const maturityKey = getMaturityLevel(overallScore);
+            const maturityLabelEn: Record<string, string> = { leading: 'Leading', advanced: 'Advanced', developing: 'Developing', foundational: 'Foundational' };
+            const maturityLabelDe: Record<string, string> = { leading: 'Führend', advanced: 'Fortgeschritten', developing: 'Entwickelnd', foundational: 'Grundlegend' };
+            const maturityLabel = language === 'de' ? maturityLabelDe[maturityKey] : maturityLabelEn[maturityKey];
+            const modulesAssessed = resultsData?.scores ? Object.keys(resultsData.scores).length : 0;
+            const answeredQuestions = resultsData?.answers ? Object.keys(resultsData.answers).length : 0;
+            const ringColor = overallScore >= 85 ? 'hsl(var(--success))'
+              : overallScore >= 70 ? 'hsl(var(--primary))'
+              : overallScore >= 30 ? 'hsl(var(--warning))'
+              : 'hsl(var(--destructive))';
+
+            return (
+              <header className="mb-6">
+                {/* Top row: label + actions */}
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-caption uppercase tracking-wider text-muted-foreground">
+                    {language === 'de' ? 'BEWERTUNGSERGEBNISSE' : 'ASSESSMENT RESULTS'}
+                  </span>
+                  <FreshnessBadge
+                    completedAt={resultsData.completedAt}
+                    onReassess={() => navigate('/app/assessment')}
+                  />
+                </div>
+
+                {/* Main heading */}
+                <h1 className="text-h2 text-foreground">
+                  {currentOrganization?.name || (language === 'de' ? 'Händler-Diagnose' : 'Dealer Diagnostic')}
+                </h1>
+
+                {/* Subtitle */}
+                <p className="text-body-sm text-muted-foreground mt-1">
+                  {language === 'de' ? 'Abgeschlossen am' : 'Completed'} {formatDate(resultsData.completedAt)}
+                </p>
+
+                {/* Dividing rule */}
+                <div className="border-t border-border mt-5 mb-5" />
+
+                {/* 4-stat strip */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  <div>
+                    <div className="text-caption uppercase tracking-wider text-muted-foreground mb-1">
+                      {language === 'de' ? 'GESAMTBEWERTUNG' : 'OVERALL SCORE'}
+                    </div>
+                    <div className="text-metric-md" style={{ color: ringColor }}>
+                      {overallScore} <span className="text-body-md text-muted-foreground font-normal">/ 100</span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-caption uppercase tracking-wider text-muted-foreground mb-1">
+                      {language === 'de' ? 'MODULE' : 'MODULES'}
+                    </div>
+                    <div className="text-metric-md text-foreground">
+                      {modulesAssessed} <span className="text-body-md text-muted-foreground font-normal">/ 5</span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-caption uppercase tracking-wider text-muted-foreground mb-1">
+                      {language === 'de' ? 'FRAGEN' : 'QUESTIONS'}
+                    </div>
+                    <div className="text-metric-md text-foreground">
+                      {answeredQuestions} <span className="text-body-md text-muted-foreground font-normal">/ {TOTAL_QUESTIONS}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-caption uppercase tracking-wider text-muted-foreground mb-1">
+                      {language === 'de' ? 'REIFEGRAD' : 'MATURITY BAND'}
+                    </div>
+                    <div className="text-metric-md text-foreground">{maturityLabel}</div>
+                  </div>
+                </div>
+              </header>
+            );
+          })()}
 
           {/* Stale assessment banner */}
           {(() => {
@@ -390,7 +450,7 @@ export default function Results() {
             const scoreOffset = circumference - (circumference * animatedScore) / 100;
             const ringColor = overallScore >= 85 ? 'hsl(var(--success))'
               : overallScore >= 70 ? 'hsl(var(--primary))'
-              : overallScore >= 30 ? 'hsl(var(--warning))'
+              : overallScore >= 46 ? 'hsl(var(--warning))'
               : 'hsl(var(--destructive))';
 
             return (
@@ -400,18 +460,47 @@ export default function Results() {
                 <div className={cn(cardBase, "results-cascade-card flex flex-col items-center text-center")} style={{ animationDelay: '1300ms' }}>
                   <div className="relative flex-shrink-0 mb-2" style={{ width: ringSize, height: ringSize }}>
                     <svg width={ringSize} height={ringSize} className="-rotate-90">
+                      <defs>
+                        <linearGradient id="scoreArcGrad" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor={ringColor} stopOpacity={1} />
+                          <stop offset="100%" stopColor={ringColor} stopOpacity={0.55} />
+                        </linearGradient>
+                      </defs>
                       <circle
                         cx={ringSize / 2} cy={ringSize / 2} r={radius}
                         fill="none" stroke="hsl(var(--muted))" strokeWidth={strokeWidth}
                       />
                       <circle
                         cx={ringSize / 2} cy={ringSize / 2} r={radius}
-                        fill="none" stroke={ringColor} strokeWidth={strokeWidth}
+                        fill="none" stroke="url(#scoreArcGrad)" strokeWidth={strokeWidth}
                         strokeLinecap="round"
                         strokeDasharray={circumference}
                         strokeDashoffset={scoreOffset}
                         style={{ transition: 'stroke-dashoffset 0.3s ease-out' }}
                       />
+                      {[46, 70, 85].map(pos => {
+                        const angle = (pos / 100) * 2 * Math.PI - Math.PI / 2;
+                        const tx = ringSize / 2 + radius * Math.cos(angle);
+                        const ty = ringSize / 2 + radius * Math.sin(angle);
+                        return (
+                          <rect
+                            key={pos}
+                            x={tx - 1} y={ty - 3}
+                            width={2} height={6}
+                            fill="hsl(var(--neutral-300))"
+                            transform={`rotate(${(pos / 100) * 360 - 90}, ${tx}, ${ty})`}
+                          />
+                        );
+                      })}
+                      {animatedScore === overallScore && overallScore > 0 && (
+                        <circle
+                          cx={ringSize / 2 + radius * Math.cos((overallScore / 100) * 2 * Math.PI - Math.PI / 2)}
+                          cy={ringSize / 2 + radius * Math.sin((overallScore / 100) * 2 * Math.PI - Math.PI / 2)}
+                          r={4}
+                          fill={ringColor}
+                          className="score-terminus-glow"
+                        />
+                      )}
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                       <span className="text-h4 font-bold text-foreground">{animatedScore}</span>

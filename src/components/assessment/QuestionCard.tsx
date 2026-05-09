@@ -155,7 +155,7 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
         {/* Rating Scale */}
         {question.type === "scale" && question.scale && (
           <div className="space-y-4">
-            {/* Rating Tiles — Neutral pattern per DESIGN.md §5.3 / §14 */}
+            {/* Rating Tiles — DESIGN.md §5.3 neutral tiles · §14 Lovable template · §17 OpenType/tracking · §31 focus rings */}
             <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
               {Array.from({ length: question.scale.max }, (_, i) => {
                 const rating = i + 1;

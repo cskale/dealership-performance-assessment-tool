@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/table';
 import { SharedLoadingState } from '@/components/shared/SharedLoadingState';
 import { SharedEmptyState } from '@/components/shared/SharedEmptyState';
+import { TierBadge } from '@/components/shared/TierBadge';
 import { Globe, TrendingUp, TrendingDown, Minus, Users, Award, ArrowDown, ArrowUp, Settings, ClipboardList, Trophy } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -34,15 +35,16 @@ interface DealerScore {
   dealershipId: string;
   dealerName: string;
   location: string;
+  programmeTier: string | null;
   latestScore: number | null;
   previousScore: number | null;
   latestAssessmentId: string | null;
 }
 
 function getScoreBand(score: number): { label: string; className: string } {
-  if (score >= 85) return { label: 'Leading',      className: 'bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20' };
-  if (score >= 65) return { label: 'Advanced',     className: 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20' };
-  if (score >= 45) return { label: 'Developing',   className: 'bg-[#d97706]/10 text-[#d97706] border-[#d97706]/20' };
+  if (score >= 85) return { label: 'Advanced',     className: 'bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20' };
+  if (score >= 70) return { label: 'Performing',   className: 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20' };
+  if (score >= 46) return { label: 'Developing',   className: 'bg-[#d97706]/10 text-[#d97706] border-[#d97706]/20' };
   return             { label: 'Foundational', className: 'bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20' };
 }
 
@@ -116,7 +118,7 @@ export default function OemDashboard() {
       // Get dealer memberships for this network
       const { data: memberships, error: memErr } = await supabase
         .from('dealer_network_memberships')
-        .select('dealership_id')
+        .select('dealership_id, programme_tier')
         .eq('network_id', selectedNetworkId)
         .eq('is_active', true);
 
@@ -124,6 +126,11 @@ export default function OemDashboard() {
         setDealerScores([]);
         setLoadingDealers(false);
         return;
+      }
+
+      const tierByDealer = new Map<string, string | null>();
+      for (const m of memberships) {
+        if (m.dealership_id) tierByDealer.set(m.dealership_id, m.programme_tier ?? null);
       }
 
       const dealershipIds = memberships
@@ -156,6 +163,7 @@ export default function OemDashboard() {
           dealershipId: d.id,
           dealerName: d.name,
           location: d.location,
+          programmeTier: tierByDealer.get(d.id) ?? null,
           latestScore: null,
           previousScore: null,
           latestAssessmentId: null,
@@ -351,9 +359,10 @@ export default function OemDashboard() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <div>
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-medium text-foreground">{dealer.dealerName}</span>
-                            <span className="text-xs text-muted-foreground ml-2">{dealer.location}</span>
+                            <span className="text-xs text-muted-foreground">{dealer.location}</span>
+                            <TierBadge tier={dealer.programmeTier as 'Standard' | 'Silver' | 'Gold' | 'Platinum' | null} size="sm" />
                           </div>
                         </TableCell>
                         <TableCell className="text-right">

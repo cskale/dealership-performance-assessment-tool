@@ -43,19 +43,19 @@ interface ExecutiveSummaryProps {
 
 function getScoreInterpretation(score: number, language: string): string {
   if (score >= 85) return language === 'de' ? 'deutlich über dem Branchendurchschnitt' : 'significantly above industry average';
-  if (score >= 75) return language === 'de' ? 'über dem Durchschnitt' : 'above average';
-  if (score >= 60) return language === 'de' ? 'im Durchschnittsbereich' : 'within the average range';
-  if (score >= 45) return language === 'de' ? 'unter dem Durchschnitt' : 'below average';
+  if (score >= 70) return language === 'de' ? 'über dem Durchschnitt' : 'above average';
+  if (score >= 46) return language === 'de' ? 'im Durchschnittsbereich' : 'within the average range';
+  if (score >= 25) return language === 'de' ? 'unter dem Durchschnitt' : 'below average';
   return language === 'de' ? 'deutlich unter dem Zielwert' : 'significantly below target';
 }
 
 function getScoreRecommendation(dept: string, score: number, language: string): string {
-  if (score >= 80) {
+  if (score >= 85) {
     return language === 'de'
       ? 'Aktuelle Best Practices beibehalten und als internes Benchmark nutzen.'
       : 'Maintain current best practices and use as internal benchmark.';
   }
-  if (score >= 60) {
+  if (score >= 70) {
     return language === 'de'
       ? 'Gezielte Prozessverbesserungen zur Optimierung einleiten.'
       : 'Initiate targeted process improvements to optimize further.';
@@ -122,9 +122,9 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
 
   const computedData = useMemo(() => {
     const getToneClassification = (score: number) => {
-      if (score >= 80) return { level: 'excellent', title: t('executive.excellentPerformance'), description: t('executive.excellentDesc') };
-      if (score >= 65) return { level: 'good', title: t('executive.goodPerformance'), description: t('executive.goodDesc') };
-      if (score >= 50) return { level: 'concerning', title: t('executive.concerningAreas'), description: t('executive.concerningDesc') };
+      if (score >= 85) return { level: 'excellent', title: t('executive.excellentPerformance'), description: t('executive.excellentDesc') };
+      if (score >= 70) return { level: 'good', title: t('executive.goodPerformance'), description: t('executive.goodDesc') };
+      if (score >= 46) return { level: 'concerning', title: t('executive.concerningAreas'), description: t('executive.concerningDesc') };
       return { level: 'critical', title: t('executive.criticalIssues'), description: t('executive.criticalDesc') };
     };
 
@@ -132,7 +132,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
     const sortedAsc = Object.entries(scores).sort(([, a], [, b]) => a - b);
 
     const getStrengths = () => sortedByScore
-      .filter(([, score]) => score >= 60)
+      .filter(([, score]) => score >= 70)
       .slice(0, 3)
       .map(([dept, score]) => ({
         dept, score,
@@ -140,7 +140,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
       }));
 
     const getWeaknesses = () => sortedAsc
-      .filter(([, score]) => score < 60)
+      .filter(([, score]) => score < 70)
       .slice(0, 3)
       .map(([dept, score]) => ({
         dept, score,
@@ -148,7 +148,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
       }));
 
     const getTopActions = () => sortedAsc
-      .filter(([, score]) => score < 60)
+      .filter(([, score]) => score < 70)
       .slice(0, 2)
       .map(([dept, score]) => ({
         dept, score,
@@ -156,8 +156,8 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
       }));
 
     const getIndustryComparison = (score: number) => {
-      if (score >= 75) return { label: language === 'de' ? 'Überdurchschnittlich' : 'Above Average', percentile: 'Top 25%' };
-      if (score >= 60) return { label: language === 'de' ? 'Durchschnittlich' : 'Average', percentile: 'Middle 50%' };
+      if (score >= 70) return { label: language === 'de' ? 'Überdurchschnittlich' : 'Above Average', percentile: 'Top 25%' };
+      if (score >= 46) return { label: language === 'de' ? 'Durchschnittlich' : 'Average', percentile: 'Middle 50%' };
       return { label: language === 'de' ? 'Unterdurchschnittlich' : 'Below Average', percentile: 'Bottom 25%' };
     };
 
@@ -397,11 +397,11 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
                 const benchmarkMean = moduleBenchmark?.meanScore ?? 70;
                 const gap = Math.round(score - benchmarkMean);
                 const isAbove = gap >= 0;
-                const statusColor = score >= 75 ? 'border-success/30 bg-success/5'
-                  : score >= 55 ? 'border-warning/30 bg-warning/5'
+                const statusColor = score >= 70 ? 'border-success/30 bg-success/5'
+                  : score >= 46 ? 'border-warning/30 bg-warning/5'
                   : 'border-destructive/30 bg-destructive/5';
-                const scoreColor = score >= 75 ? 'text-success'
-                  : score >= 55 ? 'text-warning-foreground'
+                const scoreColor = score >= 70 ? 'text-success'
+                  : score >= 46 ? 'text-warning-foreground'
                   : 'text-destructive';
                 const positionStmt = moduleBenchmark
                   ? inferPositionStatement(dept, score, moduleBenchmark, language as 'en' | 'de')

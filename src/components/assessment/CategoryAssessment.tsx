@@ -166,15 +166,16 @@ export function CategoryAssessment({
         </CardHeader>
       </Card>
 
-      <div className="space-y-4">
+      <div key={section.id} className="space-y-4">
         {section.questions.map((question, index) => {
           const value = answers[question.id];
-          
+
           return (
-            <Card 
-              key={question.id} 
+            <Card
+              key={question.id}
               ref={(el) => { questionRefs.current[question.id] = el; }}
-              className="shadow-card rounded-xl bg-white hover:shadow-elevated transition-all duration-200"
+              className="opacity-0 animate-fade-in shadow-card rounded-xl bg-white hover:shadow-elevated transition-shadow duration-200"
+              style={{ animationDelay: `${index * 45}ms`, animationFillMode: 'forwards' }}
             >
               <CardContent className="p-5">
                 <div className="space-y-3 mb-4">

@@ -9,6 +9,46 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
 
 ---
 
+## [2026-05-08] — Design System v4.0 — OEM-Grade Production Standards
+
+### docs
+- **DESIGN.md v4.0** — 18 new sections (§17–§34) added; 5 targeted fixes to existing sections; version header updated to v4.0.
+
+  **New sections (§17–§34):**
+  - **§17 Display Typography & OpenType** — Inter Display optical variant, `cv01`/`cv02` alternates (engineered single-storey glyphs), negative heading tracking, `font-optical-sizing: auto`, `.numeric` utility, brand-ink display color (`oklch(0.18 0.03 258)`)
+  - **§18 Surface Hierarchy & Elevation** — Five named surface levels; `shadow-overlay` and `shadow-floating` tokens; nesting rule; modal backdrop spec
+  - **§19 Permitted Gradient Model** — Tonal gradients permitted (score arc/sidebar/PDF); multi-hue and gradient-text banned absolutely
+  - **§20 Background Texture & Depth** — SVG grain at 3% opacity for page backgrounds; dot-grid for data surfaces; chart area inset; print stripping rule
+  - **§21 Custom Icon Language & Maturity Marks** — Technical line-art brief for 5 department SVGs; 4 geometric maturity band emblems; OEM tier emblem brief
+  - **§22 Score Ring Instrument Specification** — Tonal gradient arc; tick marks at band boundaries with ARIA titles; terminus glow animation (mount only); confidence hatch; size-per-context table
+  - **§23 Premium Motion Choreography** — ms-precise Results reveal sequence (T+0→T+1500ms); OEM Dashboard load sequence; sliding sidebar indicator; table row hover; score delta flash; `prefers-reduced-motion` override
+  - **§24 Precision Page Header Pattern** — Bloomberg-style 4-stat strip below dividing rule; per-page definitions for Results, OEM Dashboard, Coach Dashboard
+  - **§25 Number & Currency Formatting** — Locale-aware `Intl.NumberFormat` (de-DE/en-US); K/M suffixes; delta sign format; date conventions
+  - **§26 Skeleton & Loading States** — Shimmer CSS; 6 named skeleton shapes; timing rules; Loading/Empty/Error state distinction
+  - **§27 Actor-Context Banner** — Sticky 40px brand-050 banner for coach/OEM cross-actor views; mount animation; z-index coordination with AppHeader
+  - **§28 Network Tier Badge System** — OKLCH tokens for Standard/Silver/Gold/Platinum; quality-mark dot prefix; usage and read-only rules
+  - **§29 Benchmark Corridor Upgrade** — Box-and-whisker with prior-period hollow marker; tooltip spec; heights per context
+  - **§30 Data Density Modes** — Compact (`.density-compact`) and Comfortable; per-surface assignment table; minimums
+  - **§31 Focus Ring & Accessibility Tokens** — `:focus-visible` spec; WCAG AA contrast audit (warning-on-white FAILS — documented); ARIA requirements; `prefers-reduced-motion`
+  - **§32 PDF/Print Surface Specification** — A4 sizes; header/footer anatomy; PDF type scale; CMYK color mapping; watermark spec
+  - **§33 Micro-copy Tone Rules** — Error format; empty state format; score band language; button label rules; loading/confirmation copy
+  - **§34 Responsive Breakpoints** — Tailwind breakpoints; actor usage contexts; per-component collapse rules; explicit h1/h2 mobile overrides
+
+  **Fixes to existing sections:**
+  - §2.3: Canonical threshold rule box — all code must use ≥85/≥70/≥46/<46 (not ≥80/≥60)
+  - §2.5: Gradient permission reference → §19
+  - §3.3: OpenType features; mandatory negative tracking; `font-optical-sizing: auto`; `.numeric` class requirement
+  - §15: 7 new anti-pattern rows (default Inter, flat ring, wrong thresholds, inline styles, vague errors, missing focus rings)
+
+- **`.lovable/plan.md`** — v4.0 notice at top; acceptance checks extended with threshold, numeric, inline-style, focus ring, and error message requirements
+- **`src/components/assessment/QuestionCard.tsx`** — DESIGN.md reference comment updated to include §17 and §31
+
+### Notes
+- No production code changes in this commit — documentation only
+- Implementation sprint order: §2.3 threshold code fixes → §31 focus rings → §17 OpenType CSS → §22 score ring → §23 motion
+
+---
+
 ## [2026-05-01] — UX & Retention Features Sprint (Lovable)
 
 ### Added

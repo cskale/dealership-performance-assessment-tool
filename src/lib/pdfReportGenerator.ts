@@ -511,8 +511,8 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   pdf.text(l(lang, 'executiveSummary'), margin, y);
   y += 12;
 
-  const strengths = sortedDepts.filter(([, s]) => s >= 60).slice(0, 3);
-  const weaknesses = [...sortedDepts].reverse().filter(([, s]) => s < 60).slice(0, 3);
+  const strengths = sortedDepts.filter(([, s]) => s >= 70).slice(0, 3);
+  const weaknesses = [...sortedDepts].reverse().filter(([, s]) => s < 70).slice(0, 3);
 
   // Summary paragraph
   pdf.setFontSize(10);

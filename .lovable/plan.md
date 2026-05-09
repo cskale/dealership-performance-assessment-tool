@@ -1,5 +1,7 @@
 ## Plan: KPI Deep Dive consistency + final design-system cleanup
 
+> **DESIGN.md is now v4.0 (8 May 2026).** Before implementing any visual changes, read DESIGN.md in full. Sections §17–§34 are new and contain specifications that affect every visual task below: OpenType typography (§17), surface hierarchy (§18), gradient permissions (§19), score ring instrument spec (§22), motion choreography (§23), number formatting (§25), skeleton states (§26), focus rings (§31), and micro-copy rules (§33).
+
 I will start with the KPI deep dive pages, then do a focused cleanup pass for typography, badges, spacing, and colour-token compliance. I will keep this as UI/styling work only and avoid assessment/scoring/data logic.
 
 ### Scope
@@ -107,3 +109,8 @@ After implementation, I will verify:
 - Improvement Actions badges use design-system typography and sizing.
 - Design tokens/classes from `DESIGN.md` are used instead of new colours/fonts/patterns.
 - TypeScript check passes with zero errors.
+- Score thresholds use canonical bands (≥85/≥70/≥46/<46) — not ≥80/≥60 (DESIGN.md §2.3).
+- All numeric values carry `.numeric` class or `tabular-nums` (DESIGN.md §17.2, §25).
+- No inline `style={{}}` on UI surfaces — all appearance via design token classes (§15).
+- Focus rings present on all interactive elements (§31).
+- No vague error messages — all follow `[what failed] · [what to do]` format (§33).

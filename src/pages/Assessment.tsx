@@ -478,7 +478,7 @@ export default function Assessment() {
           </div>
 
           {/* Right Content - Questions */}
-          <div className="flex-1 min-w-0">
+          <div key={currentSection} className="flex-1 min-w-0 animate-in fade-in slide-in-from-right-4 duration-200">
             <CategoryAssessment
               section={currentSectionData}
               answers={answers}

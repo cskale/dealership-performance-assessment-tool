@@ -25,10 +25,10 @@ export const INDUSTRY_BENCHMARK = 75;
  * CANONICAL SOURCE for all score interpretation
  */
 export const SCORE_THRESHOLDS = {
-  excellent: 80,
-  good: 65,
-  developing: 50,
-  critical: 0,
+  excellent: 85,  // Advanced band  ≥ 85
+  good: 70,       // Performing band ≥ 70
+  developing: 46, // Developing band ≥ 46
+  critical: 0,    // Foundational band < 46
 } as const;
 
 /**
