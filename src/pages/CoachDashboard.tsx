@@ -440,7 +440,6 @@ export default function CoachDashboard() {
           )}
         </CardContent>
       </Card>
-<<<<<<< HEAD
 
       {/* Stale Actions */}
       <Card className="shadow-card rounded-xl">
@@ -505,6 +504,7 @@ export default function CoachDashboard() {
           )}
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 }
