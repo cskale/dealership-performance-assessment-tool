@@ -7,7 +7,6 @@ import {
   BarChart3, Building2, Plus, ClipboardList, CheckSquare,
   BookOpen, FileText, LogOut, Database, Globe, Users, Settings,
 } from 'lucide-react';
-import { NotificationBell } from '@/components/NotificationBell';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
@@ -195,7 +194,6 @@ export function AppSidebar() {
               </div>
             )}
           </Link>
-          <NotificationBell collapsed={collapsed} />
           {!collapsed && (
             <button
               onClick={async () => { await signOut(); }}
