@@ -1,0 +1,53 @@
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<h2>Card & Surface Style</h2>
+<p class="subtitle">How should cards and panels sit on the page?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="A" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f1f5f9;padding:20px;border-bottom:1px solid #f0f0f0">
+      <div style="font-family:'Inter',sans-serif;background:#fff;border:1px solid #dde3ee;border-radius:10px;padding:20px">
+        <div style="font-size:9px;color:#94a3b8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">New Vehicle Sales</div>
+        <div style="font-size:36px;font-weight:800;color:#1D7AFC;line-height:1;margin-bottom:12px">68</div>
+        <div style="height:4px;background:#f1f5f9;border-radius:2px;margin-bottom:12px"><div style="width:68%;height:100%;background:#1D7AFC;border-radius:2px"></div></div>
+        <div style="font-size:11px;color:#64748b">Below benchmark · 4 signals identified</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Flat Border</h3>
+      <p>1px border, no shadow, solid background colour behind cards. Clean and sharp. Used by Linear, Notion, GitHub. Cards feel part of the page, not floating above it.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="B" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8fafc;padding:20px;border-bottom:1px solid #f0f0f0">
+      <div style="font-family:'Inter',sans-serif;background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 3px rgba(15,23,42,.06),0 4px 12px rgba(15,23,42,.05)">
+        <div style="font-size:9px;color:#94a3b8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">New Vehicle Sales</div>
+        <div style="font-size:36px;font-weight:800;color:#1D7AFC;line-height:1;margin-bottom:12px">68</div>
+        <div style="height:4px;background:#f1f5f9;border-radius:2px;margin-bottom:12px"><div style="width:68%;height:100%;background:#1D7AFC;border-radius:2px"></div></div>
+        <div style="font-size:11px;color:#64748b">Below benchmark · 4 signals identified</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Soft Shadow <span style="font-size:10px;color:#1D7AFC;font-weight:600">Recommended</span></h3>
+      <p>No border, subtle multi-layer shadow. Cards float gently off a light-grey page. Feels polished and premium — used by Vercel, Stripe, Intercom. Slight elevation signals interactivity.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="C" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8fafc;padding:20px;border-bottom:1px solid #f0f0f0">
+      <div style="font-family:'Inter',sans-serif;background:#fff;border:1px solid #e8edf4;border-radius:10px;padding:20px;box-shadow:0 1px 2px rgba(15,23,42,.04)">
+        <div style="font-size:9px;color:#94a3b8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">New Vehicle Sales</div>
+        <div style="font-size:36px;font-weight:800;color:#1D7AFC;line-height:1;margin-bottom:12px">68</div>
+        <div style="height:4px;background:#f1f5f9;border-radius:2px;margin-bottom:12px"><div style="width:68%;height:100%;background:#1D7AFC;border-radius:2px"></div></div>
+        <div style="font-size:11px;color:#64748b">Below benchmark · 4 signals identified</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Border + Whisper Shadow</h3>
+      <p>Very light border plus a barely-there shadow. Best of both — structure from the border, depth from the shadow. The most common pattern in mature enterprise SaaS products.</p>
+    </div>
+  </div>
+
+</div>

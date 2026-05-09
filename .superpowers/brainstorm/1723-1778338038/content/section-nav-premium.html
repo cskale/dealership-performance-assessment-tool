@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(ellipse 65% 50% at 100% 0%, oklch(0.95 0.04 50) 0%, oklch(0.96 0.03 30) 35%, oklch(0.97 0.01 20) 60%, oklch(0.97 0 0) 85%), #f4f6f8;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding: 32px 24px;
+    min-height: 100vh;
+  }
+
+  /* ── Assessment nav shell ── */
+  .assessment-shell {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  /* ── Floating header card ── */
+  .nav-card {
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(15,23,42,0.06), 0 8px 24px rgba(15,23,42,0.07);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  /* ── Top strip: title + overall progress ── */
+  .nav-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .nav-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0b1f3a;
+    letter-spacing: -0.012em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav-title-badge {
+    font-size: 11px;
+    font-weight: 500;
+    color: #6e7e8a;
+    background: #f4f6f8;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 2px 8px;
+    letter-spacing: 0;
+  }
+  .overall-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .overall-fraction {
+    font-size: 12px;
+    font-weight: 500;
+    color: #6e7e8a;
+    font-variant-numeric: tabular-nums;
+  }
+  .overall-fraction span {
+    font-weight: 700;
+    color: #0b1f3a;
+  }
+  .progress-track {
+    width: 140px;
+    height: 5px;
+    background: #eef0f3;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #1D7AFC 0%, #4fa8ff 100%);
+    transition: width 400ms cubic-bezier(0.22,1,0.36,1);
+  }
+  .overall-pct {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1D7AFC;
+    font-variant-numeric: tabular-nums;
+    min-width: 30px;
+    text-align: right;
+  }
+
+  /* ── Tab strip ── */
+  .tab-strip {
+    display: flex;
+    padding: 0 8px;
+  }
+  .tab {
+    flex: 1;
+    padding: 12px 12px 0;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: border-color 120ms ease;
+    position: relative;
+  }
+  .tab:hover:not(.tab--active) .tab-name {
+    color: #263d57;
+  }
+  .tab--active {
+    border-bottom-color: #1D7AFC;
+  }
+  .tab--complete {
+    border-bottom-color: #d4dde4;
+  }
+  .tab-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 11px;
+  }
+  .tab-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #adbcc7;
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 120ms ease;
+  }
+  .tab--active .tab-name { color: #1D7AFC; }
+  .tab--complete .tab-name { color: #445166; }
+
+  /* Completion ring SVG */
+  .ring-wrap { flex-shrink: 0; }
+
+  /* Mini progress bar under name */
+  .tab-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-bottom: 12px;
+  }
+  .tab-bar-track {
+    flex: 1;
+    height: 3px;
+    background: #eef0f3;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .tab-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: #1D7AFC;
+  }
+  .tab--complete .tab-bar-fill { background: #16a34a; }
+  .tab-count {
+    font-size: 10px;
+    font-weight: 500;
+    color: #adbcc7;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .tab--active .tab-count { color: #1D7AFC; }
+  .tab--complete .tab-count { color: #445166; }
+
+  /* ── Section descriptor ── */
+  .section-descriptor {
+    background: #f8fafc;
+    border-top: 1px solid #eef0f3;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .section-descriptor-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #172d4d;
+    letter-spacing: -0.01em;
+  }
+  .section-descriptor-desc {
+    font-size: 12px;
+    color: #6e7e8a;
+    margin-top: 1px;
+  }
+  .section-status-chip {
+    font-size: 11px;
+    font-weight: 500;
+    color: #1D7AFC;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 99px;
+    padding: 3px 10px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ── Question card preview ── */
+  .question-card {
+    background: white;
+    border: 1px solid #d4dde4;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(15,23,42,0.06), 0 4px 12px rgba(15,23,42,0.05);
+  }
+  .q-meta {
+    font-size: 11px;
+    font-weight: 500;
+    color: #6e7e8a;
+    margin-bottom: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .q-text {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0b1f3a;
+    letter-spacing: -0.015em;
+    line-height: 1.45;
+    margin-bottom: 18px;
+  }
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .tile {
+    border: 1px solid #d4dde4;
+    background: white;
+    border-radius: 8px;
+    padding: 14px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    min-height: 80px;
+    transition: border-color 120ms ease, background 120ms ease;
+  }
+  .tile:hover { border-color: rgba(29,122,252,0.3); background: rgba(29,122,252,0.02); }
+  .tile--selected {
+    border: 1px solid rgba(29,122,252,0.30);
+    border-left: 4px solid #1D7AFC;
+    background: rgba(29,122,252,0.04);
+  }
+  .tile-num {
+    font-size: 11px;
+    font-weight: 500;
+    color: #adbcc7;
+    font-variant-numeric: tabular-nums;
+  }
+  .tile--selected .tile-num { color: #1D7AFC; }
+  .tile-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #263d57;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .tile--selected .tile-label { color: #0b1f3a; }
+  .context-strip {
+    background: #f4f6f8;
+    border: 1px solid #d4dde4;
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    gap: 0;
+    align-items: start;
+  }
+  .ctx-col { padding: 0 16px; }
+  .ctx-col:first-child { padding-left: 0; }
+  .ctx-col:last-child { padding-right: 0; }
+  .ctx-divider { background: #d4dde4; align-self: stretch; }
+  .ctx-heading { font-size: 12px; font-weight: 600; color: #172d4d; margin-bottom: 5px; }
+  .ctx-body { font-size: 12px; color: #445166; line-height: 1.55; }
+  .kpi-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: #dbeafe;
+    color: #1e40af;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 4px;
+    padding: 3px 8px;
+    text-decoration: none;
+    margin: 2px 3px 2px 0;
+  }
+  .note-btn {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #eef0f3;
+    font-size: 12px;
+    color: #6e7e8a;
+    background: none;
+    border-left: none; border-right: none; border-bottom: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: inherit;
+  }
+</style>
+</head>
+<body>
+<div class="assessment-shell">
+
+  <!-- ── Nav card ── -->
+  <div class="nav-card">
+
+    <!-- Top strip -->
+    <div class="nav-top">
+      <div class="nav-title">
+        Dealership Assessment
+        <span class="nav-title-badge">Oakwood Motors</span>
+      </div>
+      <div class="overall-progress">
+        <div class="overall-fraction"><span>0</span> / 61 questions</div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width:0%"></div>
+        </div>
+        <div class="overall-pct">0%</div>
+      </div>
+    </div>
+
+    <!-- Tab strip -->
+    <div class="tab-strip">
+
+      <!-- Tab 1 — Active -->
+      <div class="tab tab--active">
+        <div class="tab-inner">
+          <div class="tab-name">New Vehicle Sales</div>
+          <!-- Mini donut ring: 0% -->
+          <svg class="ring-wrap" width="18" height="18" viewBox="0 0 18 18">
+            <circle cx="9" cy="9" r="7" fill="none" stroke="#eef0f3" stroke-width="2.5"/>
+            <circle cx="9" cy="9" r="7" fill="none" stroke="#1D7AFC" stroke-width="2.5"
+              stroke-dasharray="0 44" stroke-linecap="round"
+              transform="rotate(-90 9 9)"/>
+          </svg>
+        </div>
+        <div class="tab-bar-row">
+          <div class="tab-bar-track"><div class="tab-bar-fill" style="width:0%"></div></div>
+          <div class="tab-count">0 / 13</div>
+        </div>
+      </div>
+
+      <!-- Tab 2 — Not started -->
+      <div class="tab" style="border-left:1px solid #f1f5f9">
+        <div class="tab-inner">
+          <div class="tab-name">Used Vehicle Sales</div>
+          <svg class="ring-wrap" width="18" height="18" viewBox="0 0 18 18">
+            <circle cx="9" cy="9" r="7" fill="none" stroke="#eef0f3" stroke-width="2.5"/>
+          </svg>
+        </div>
+        <div class="tab-bar-row">
+          <div class="tab-bar-track"><div class="tab-bar-fill" style="width:0%"></div></div>
+          <div class="tab-count">0 / 13</div>
+        </div>
+      </div>
+
+      <!-- Tab 3 — Partially complete (example) -->
+      <div class="tab tab--complete" style="border-left:1px solid #f1f5f9">
+        <div class="tab-inner">
+          <div class="tab-name">Service</div>
+          <!-- 60% filled ring -->
+          <svg class="ring-wrap" width="18" height="18" viewBox="0 0 18 18">
+            <circle cx="9" cy="9" r="7" fill="none" stroke="#eef0f3" stroke-width="2.5"/>
+            <circle cx="9" cy="9" r="7" fill="none" stroke="#16a34a" stroke-width="2.5"
+              stroke-dasharray="26.4 44" stroke-linecap="round"
+              transform="rotate(-90 9 9)"/>
+          </svg>
+        </div>
+        <div class="tab-bar-row">
+          <div class="tab-bar-track"><div class="tab-bar-fill" style="width:60%"></div></div>
+          <div class="tab-count">9 / 15</div>
+        </div>
+      </div>
+
+      <!-- Tab 4 — Not started -->
+      <div class="tab" style="border-left:1px solid #f1f5f9">
+        <div class="tab-inner">
+          <div class="tab-name">Parts</div>
+          <svg class="ring-wrap" width="18" height="18" viewBox="0 0 18 18">
+            <circle cx="9" cy="9" r="7" fill="none" stroke="#eef0f3" stroke-width="2.5"/>
+          </svg>
+        </div>
+        <div class="tab-bar-row">
+          <div class="tab-bar-track"><div class="tab-bar-fill" style="width:0%"></div></div>
+          <div class="tab-count">0 / 10</div>
+        </div>
+      </div>
+
+      <!-- Tab 5 — Not started -->
+      <div class="tab" style="border-left:1px solid #f1f5f9">
+        <div class="tab-inner">
+          <div class="tab-name">Financial Operations</div>
+          <svg class="ring-wrap" width="18" height="18" viewBox="0 0 18 18">
+            <circle cx="9" cy="9" r="7" fill="none" stroke="#eef0f3" stroke-width="2.5"/>
+          </svg>
+        </div>
+        <div class="tab-bar-row">
+          <div class="tab-bar-track"><div class="tab-bar-fill" style="width:0%"></div></div>
+          <div class="tab-count">0 / 10</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Section descriptor -->
+    <div class="section-descriptor">
+      <div>
+        <div class="section-descriptor-name">New Vehicle Sales Performance</div>
+        <div class="section-descriptor-desc">Evaluate your new vehicle sales processes, performance metrics, and customer satisfaction</div>
+      </div>
+      <div class="section-status-chip">In progress</div>
+    </div>
+
+  </div>
+
+  <!-- ── Question card ── -->
+  <div class="question-card">
+    <div class="q-meta">Q1 · New Vehicle Sales</div>
+    <div class="q-text">How many new vehicles does your dealership sell on average per month?</div>
+
+    <div class="tiles">
+      <div class="tile tile--selected">
+        <span class="tile-num">1</span>
+        <span class="tile-label">&lt;4 units / month</span>
+      </div>
+      <div class="tile">
+        <span class="tile-num">2</span>
+        <span class="tile-label">4–6 units / month</span>
+      </div>
+      <div class="tile">
+        <span class="tile-num">3</span>
+        <span class="tile-label">7–9 units / month</span>
+      </div>
+      <div class="tile">
+        <span class="tile-num">4</span>
+        <span class="tile-label">10–12 units / month</span>
+      </div>
+      <div class="tile">
+        <span class="tile-num">5</span>
+        <span class="tile-label">&gt;12 units / month</span>
+      </div>
+    </div>
+
+    <div class="context-strip">
+      <div class="ctx-col">
+        <div class="ctx-heading">Why this matters</div>
+        <div class="ctx-body">Measures your dealership's scale and market presence — volume directly correlates with revenue potential, OEM programme eligibility, and economies of scale in operations.</div>
+      </div>
+      <div class="ctx-divider"></div>
+      <div class="ctx-col">
+        <div class="ctx-heading">Linked KPIs</div>
+        <a class="kpi-chip" href="/app/kpi-encyclopedia" target="_blank">Monthly Revenue <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="#1e40af" stroke-width="1.8"><path d="M2 10 L10 2M5 2h5v5"/></svg></a>
+        <a class="kpi-chip" href="/app/kpi-encyclopedia" target="_blank">Market Share <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="#1e40af" stroke-width="1.8"><path d="M2 10 L10 2M5 2h5v5"/></svg></a>
+        <a class="kpi-chip" href="/app/kpi-encyclopedia" target="_blank">Sales Growth Rate <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="#1e40af" stroke-width="1.8"><path d="M2 10 L10 2M5 2h5v5"/></svg></a>
+      </div>
+    </div>
+
+    <button class="note-btn">
+      <span style="font-size:16px;color:#adbcc7;line-height:1">+</span> Add a note
+    </button>
+  </div>
+
+</div>
+</body>
+</html>

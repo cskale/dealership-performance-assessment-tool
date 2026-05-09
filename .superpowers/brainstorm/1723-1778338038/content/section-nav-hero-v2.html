@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..800&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(ellipse 65% 50% at 100% 0%, oklch(0.95 0.04 50) 0%, oklch(0.96 0.03 30) 35%, oklch(0.97 0.01 20) 60%, oklch(0.97 0 0) 85%), #f4f6f8;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    padding: 32px 24px;
+    min-height: 100vh;
+  }
+  .shell { max-width: 960px; margin: 0 auto; }
+
+  .hero-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(15,23,42,0.06), 0 8px 24px rgba(15,23,42,0.08);
+    padding: 28px 28px 24px;
+    margin-bottom: 16px;
+  }
+
+  /* ── Status badge — light blue, sentence case ── */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 99px;
+    padding: 5px 12px 5px 8px;
+    margin-bottom: 16px;
+    letter-spacing: 0;
+  }
+  .pulse-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #1D7AFC;
+    animation: pulse 2s ease-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0   rgba(29,122,252,0.5); }
+    70%  { box-shadow: 0 0 0 5px rgba(29,122,252,0); }
+    100% { box-shadow: 0 0 0 0   rgba(29,122,252,0); }
+  }
+
+  /* ── Hero top row ── */
+  .hero-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  .hero-left { flex: 1; }
+
+  .hero-section-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0b1f3a;
+    letter-spacing: -0.025em;
+    font-optical-sizing: auto;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "cv01" 1, "cv02" 1;
+    line-height: 1.25;
+    margin-bottom: 10px;
+  }
+  .hero-section-desc {
+    font-size: 13px;
+    font-weight: 400;
+    color: #445166;
+    line-height: 1.6;
+    max-width: 520px;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  }
+  .hero-section-desc em {
+    font-style: normal;
+    color: #1D7AFC;
+    font-weight: 500;
+  }
+
+  /* ── Overall metric card ── */
+  .hero-metric {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px 24px;
+    text-align: center;
+    min-width: 176px;
+    flex-shrink: 0;
+  }
+  .metric-pct {
+    font-size: 40px;
+    font-weight: 800;
+    color: #0b1f3a;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    font-optical-sizing: auto;
+    font-feature-settings: "kern" 1, "tnum" 1, "lnum" 1;
+  }
+  .metric-pct sup {
+    font-size: 16px;
+    font-weight: 700;
+    vertical-align: super;
+    letter-spacing: -0.02em;
+  }
+  .metric-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: #6e7e8a;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    letter-spacing: 0;
+  }
+  .metric-track {
+    width: 100%; height: 4px;
+    background: #e2e8f0; border-radius: 99px; overflow: hidden;
+    margin-bottom: 7px;
+  }
+  .metric-fill {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, #1D7AFC 0%, #4fa8ff 100%);
+  }
+  .metric-sub {
+    font-size: 11px; color: #94a3b8;
+    font-variant-numeric: tabular-nums; font-weight: 400;
+  }
+
+  /* ── Section cards ── */
+  .modules {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+  .module-card {
+    border-radius: 12px;
+    padding: 14px 14px 12px;
+    cursor: pointer;
+    border: 1px solid #e2e8f0;
+    background: white;
+    transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+    position: relative;
+  }
+  .module-card:hover:not(.module-card--active) {
+    border-color: #adbcc7;
+    box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+    transform: translateY(-1px);
+  }
+
+  /* Active: brand-blue tint, no dark navy */
+  .module-card--active {
+    background: #eff6ff;
+    border: 2px solid #1D7AFC;
+    box-shadow: 0 0 0 3px rgba(29,122,252,0.08);
+  }
+
+  /* Complete: subtle green tint */
+  .module-card--complete {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+  }
+
+  /* Section number */
+  .module-num {
+    font-size: 10px;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    letter-spacing: 0;
+  }
+  .module-card--active .module-num { color: #1e40af; }
+  .module-card--complete .module-num { color: #15803d; }
+
+  /* State indicator */
+  .state-indicator {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1.5px solid #d4dde4;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .state-indicator--active {
+    border-color: #1D7AFC;
+    background: rgba(29,122,252,0.1);
+  }
+  .state-indicator--active-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #1D7AFC;
+    animation: pulse 2s ease-out infinite;
+  }
+  .state-indicator--complete {
+    border-color: #16a34a;
+    background: #16a34a;
+  }
+
+  /* Module name */
+  .module-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #172d4d;
+    line-height: 1.35;
+    letter-spacing: -0.008em;
+    margin-bottom: 12px;
+    min-height: 36px;
+    font-feature-settings: "kern" 1, "liga" 1;
+  }
+  .module-card--active .module-name { color: #1e3a8a; }
+  .module-card--complete .module-name { color: #14532d; }
+
+  /* Progress bar */
+  .module-bar-track {
+    width: 100%; height: 3px;
+    background: #e2e8f0; border-radius: 99px; overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .module-card--active .module-bar-track { background: rgba(29,122,252,0.15); }
+  .module-card--complete .module-bar-track { background: #bbf7d0; }
+
+  .module-bar-fill {
+    height: 100%; border-radius: 99px;
+    background: #1D7AFC;
+  }
+  .module-card--complete .module-bar-fill {
+    background: #16a34a; width: 100% !important;
+  }
+
+  /* Status text */
+  .module-status {
+    font-size: 11px;
+    font-weight: 400;
+    color: #94a3b8;
+    font-variant-numeric: tabular-nums;
+  }
+  .module-card--active .module-status { color: #1D7AFC; font-weight: 500; }
+  .module-card--complete .module-status { color: #16a34a; font-weight: 500; }
+
+  /* ── Below: question card preview (same font) ── */
+  .q-card {
+    background: white;
+    border: 1px solid #d4dde4;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(15,23,42,0.06), 0 4px 12px rgba(15,23,42,0.05);
+  }
+  .q-meta { font-size: 11px; font-weight: 500; color: #6e7e8a; margin-bottom: 8px; font-variant-numeric: tabular-nums; }
+  .q-text {
+    font-size: 16px; font-weight: 700; color: #0b1f3a;
+    letter-spacing: -0.015em; line-height: 1.45; margin-bottom: 18px;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  }
+  .tiles { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-bottom: 16px; }
+  .tile {
+    border: 1px solid #d4dde4; background: white; border-radius: 8px;
+    padding: 14px 8px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 5px;
+    cursor: pointer; min-height: 80px;
+    transition: border-color 120ms ease, background 120ms ease;
+  }
+  .tile:hover { border-color: rgba(29,122,252,0.3); background: rgba(29,122,252,0.02); }
+  .tile--selected {
+    border: 1px solid rgba(29,122,252,0.3);
+    border-left: 4px solid #1D7AFC;
+    background: rgba(29,122,252,0.04);
+  }
+  .tile-num { font-size: 11px; font-weight: 500; color: #adbcc7; font-variant-numeric: tabular-nums; }
+  .tile--selected .tile-num { color: #1D7AFC; }
+  .tile-label { font-size: 13px; font-weight: 600; color: #263d57; text-align: center; line-height: 1.3; }
+  .tile--selected .tile-label { color: #0b1f3a; }
+  .ctx { background: #f4f6f8; border: 1px solid #d4dde4; border-radius: 8px; padding: 14px 16px; display: grid; grid-template-columns: 1fr 1px 1fr; align-items: start; }
+  .ctx-col { padding: 0 16px; }
+  .ctx-col:first-child { padding-left: 0; }
+  .ctx-col:last-child { padding-right: 0; }
+  .ctx-div { background: #d4dde4; align-self: stretch; }
+  .ctx-h { font-size: 12px; font-weight: 600; color: #172d4d; margin-bottom: 5px; }
+  .ctx-b { font-size: 12px; color: #445166; line-height: 1.55; }
+  .kpi-chip {
+    display: inline-flex; align-items: center; gap: 3px;
+    background: #dbeafe; color: #1e40af; font-size: 11px; font-weight: 500;
+    border-radius: 4px; padding: 3px 8px; text-decoration: none; margin: 2px 3px 2px 0;
+    font-family: inherit;
+  }
+  .note-btn {
+    margin-top: 12px; padding-top: 12px; border-top: 1px solid #eef0f3;
+    font-size: 12px; color: #6e7e8a; background: none;
+    border-left: none; border-right: none; border-bottom: none;
+    cursor: pointer; display: flex; align-items: center; gap: 5px; font-family: inherit;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ── Hero nav card ── -->
+  <div class="hero-card">
+    <div class="hero-top">
+      <div class="hero-left">
+
+        <!-- Badge: light blue, sentence case, same Inter -->
+        <div class="status-badge">
+          <div class="pulse-dot"></div>
+          Assessment in progress
+        </div>
+
+        <div class="hero-section-title">New Vehicle Sales Performance</div>
+        <p class="hero-section-desc">
+          Evaluate your dealership's <em>sales velocity</em>, <em>inventory turnover</em>,
+          and <em>market penetration</em> metrics to optimise OEM partnership tiers.
+        </p>
+      </div>
+
+      <div class="hero-metric">
+        <div class="metric-pct">13<sup>%</sup></div>
+        <div class="metric-label">Complete</div>
+        <div class="metric-track"><div class="metric-fill" style="width:13%"></div></div>
+        <div class="metric-sub">8 of 61 metrics analysed</div>
+      </div>
+    </div>
+
+    <!-- Section module cards -->
+    <div class="modules">
+
+      <div class="module-card module-card--active">
+        <div class="module-num">
+          Section 01
+          <div class="state-indicator state-indicator--active">
+            <div class="state-indicator--active-dot"></div>
+          </div>
+        </div>
+        <div class="module-name">New Vehicle Sales</div>
+        <div class="module-bar-track"><div class="module-bar-fill" style="width:23%"></div></div>
+        <div class="module-status">3 / 13 answered</div>
+      </div>
+
+      <div class="module-card">
+        <div class="module-num">
+          Section 02
+          <div class="state-indicator"></div>
+        </div>
+        <div class="module-name">Used Vehicle Sales</div>
+        <div class="module-bar-track"><div class="module-bar-fill" style="width:0%"></div></div>
+        <div class="module-status">Not started</div>
+      </div>
+
+      <div class="module-card module-card--complete">
+        <div class="module-num">
+          Section 03
+          <div class="state-indicator state-indicator--complete">
+            <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+              <path d="M2.5 6l2.5 2.5 4.5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="module-name">Service</div>
+        <div class="module-bar-track"><div class="module-bar-fill"></div></div>
+        <div class="module-status">15 / 15 complete</div>
+      </div>
+
+      <div class="module-card">
+        <div class="module-num">
+          Section 04
+          <div class="state-indicator"></div>
+        </div>
+        <div class="module-name">Parts</div>
+        <div class="module-bar-track"><div class="module-bar-fill" style="width:0%"></div></div>
+        <div class="module-status">Not started</div>
+      </div>
+
+      <div class="module-card">
+        <div class="module-num">
+          Section 05
+          <div class="state-indicator"></div>
+        </div>
+        <div class="module-name">Financial Operations</div>
+        <div class="module-bar-track"><div class="module-bar-fill" style="width:0%"></div></div>
+        <div class="module-status">Not started</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Question card — same font system ── -->
+  <div class="q-card">
+    <div class="q-meta">Q1 · New Vehicle Sales</div>
+    <div class="q-text">How many new vehicles does your dealership sell on average per month?</div>
+    <div class="tiles">
+      <div class="tile tile--selected">
+        <span class="tile-num">1</span>
+        <span class="tile-label">&lt;4 units / month</span>
+      </div>
+      <div class="tile"><span class="tile-num">2</span><span class="tile-label">4–6 units / month</span></div>
+      <div class="tile"><span class="tile-num">3</span><span class="tile-label">7–9 units / month</span></div>
+      <div class="tile"><span class="tile-num">4</span><span class="tile-label">10–12 units / month</span></div>
+      <div class="tile"><span class="tile-num">5</span><span class="tile-label">&gt;12 units / month</span></div>
+    </div>
+    <div class="ctx">
+      <div class="ctx-col">
+        <div class="ctx-h">Why this matters</div>
+        <div class="ctx-b">Measures your dealership's scale and market presence — volume directly correlates with revenue potential, OEM programme eligibility, and economies of scale in operations.</div>
+      </div>
+      <div class="ctx-div"></div>
+      <div class="ctx-col">
+        <div class="ctx-h">Linked KPIs</div>
+        <a class="kpi-chip" href="/app/kpi-encyclopedia" target="_blank">Monthly Revenue <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="#1e40af" stroke-width="1.8"><path d="M2 10L10 2M5 2h5v5"/></svg></a>
+        <a class="kpi-chip" href="/app/kpi-encyclopedia" target="_blank">Market Share <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="#1e40af" stroke-width="1.8"><path d="M2 10L10 2M5 2h5v5"/></svg></a>
+        <a class="kpi-chip" href="/app/kpi-encyclopedia" target="_blank">Sales Growth Rate <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="#1e40af" stroke-width="1.8"><path d="M2 10L10 2M5 2h5v5"/></svg></a>
+      </div>
+    </div>
+    <button class="note-btn">
+      <span style="font-size:16px;color:#adbcc7;line-height:1">+</span> Add a note
+    </button>
+  </div>
+
+</div>
+</body>
+</html>

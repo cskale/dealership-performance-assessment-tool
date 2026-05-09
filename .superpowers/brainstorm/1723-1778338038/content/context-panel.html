@@ -1,0 +1,187 @@
+<h2>Context Panel: How should "Why This Matters" work in scroll-through view?</h2>
+<p class="subtitle">All 12 questions are visible at once and user scrolls. Each question has context (purpose, situation, linked KPIs, benefits). How do we surface it?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:system-ui;font-size:12px;color:#374151;line-height:1.5;background:#f9fafb;border-radius:8px;padding:12px;border:1px solid #e5e7eb">
+        <div style="display:grid;grid-template-columns:1fr;gap:8px">
+          <!-- Question card -->
+          <div style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:12px">
+            <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Q1 · New Vehicle Sales</div>
+            <div style="font-size:12px;font-weight:600;color:#111827;margin-bottom:8px">How would you rate your current new vehicle inventory management process?</div>
+            <!-- Rating tiles -->
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:10px">
+              <div style="border:1px solid #e5e7eb;border-left:3px solid #1D7AFC;background:#f0f8ff;border-radius:6px;padding:6px 4px;text-align:center">
+                <div style="font-size:10px;color:#6b7280">1</div>
+                <div style="font-size:10px;font-weight:600;color:#111827">Ad hoc</div>
+              </div>
+              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 4px;text-align:center">
+                <div style="font-size:10px;color:#6b7280">2</div>
+                <div style="font-size:10px;color:#374151">Reactive</div>
+              </div>
+              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 4px;text-align:center">
+                <div style="font-size:10px;color:#6b7280">3</div>
+                <div style="font-size:10px;color:#374151">Managed</div>
+              </div>
+              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 4px;text-align:center">
+                <div style="font-size:10px;color:#6b7280">4</div>
+                <div style="font-size:10px;color:#374151">Optimised</div>
+              </div>
+              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 4px;text-align:center">
+                <div style="font-size:10px;color:#6b7280">5</div>
+                <div style="font-size:10px;color:#374151">Leading</div>
+              </div>
+            </div>
+            <!-- Inline context strip — always visible, no click needed -->
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;display:flex;gap:12px;flex-wrap:wrap">
+              <div>
+                <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;font-weight:500">Purpose</div>
+                <div style="font-size:10px;color:#475569;margin-top:2px">Measures stock turn efficiency vs OEM targets</div>
+              </div>
+              <div style="border-left:1px solid #e2e8f0;padding-left:12px">
+                <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;font-weight:500">Linked KPIs</div>
+                <div style="margin-top:2px;display:flex;gap:4px">
+                  <span style="background:#eff6ff;color:#1D7AFC;font-size:9px;border-radius:4px;padding:1px 6px">Days Supply</span>
+                  <span style="background:#eff6ff;color:#1D7AFC;font-size:9px;border-radius:4px;padding:1px 6px">Stock Turn</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Q2 preview -->
+          <div style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:12px;opacity:0.6">
+            <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Q2 · New Vehicle Sales</div>
+            <div style="font-size:12px;font-weight:600;color:#111827;margin-bottom:8px">How effective is your sales conversion process from enquiry to sale?</div>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:10px">
+              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 4px;text-align:center"><div style="font-size:10px;color:#6b7280">1</div></div>
+              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 4px;text-align:center"><div style="font-size:10px;color:#6b7280">2</div></div>
+              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 4px;text-align:center"><div style="font-size:10px;color:#6b7280">3</div></div>
+              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 4px;text-align:center"><div style="font-size:10px;color:#6b7280">4</div></div>
+              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 4px;text-align:center"><div style="font-size:10px;color:#6b7280">5</div></div>
+            </div>
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;display:flex;gap:12px">
+              <div><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8">Purpose</div><div style="font-size:10px;color:#475569;margin-top:2px">Tracks lead quality and sales team effectiveness</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Inline context strip</h3>
+      <p>Always-visible compact band below each question's tiles. Purpose + KPI chips always shown. No click needed. Clean and fast.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:system-ui;font-size:12px;color:#374151;line-height:1.5;background:#f9fafb;border-radius:8px;padding:12px;border:1px solid #e5e7eb">
+        <div style="display:grid;grid-template-columns:2.5fr 1fr;gap:8px">
+          <!-- Left: questions -->
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="background:white;border:1px solid #e5e7eb;border-left:2px solid #1D7AFC;border-radius:8px;padding:10px">
+              <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Q1 · NVS <span style="background:#dbeafe;color:#1D7AFC;font-size:9px;border-radius:4px;padding:1px 5px;margin-left:4px">IN FOCUS</span></div>
+              <div style="font-size:11px;font-weight:600;color:#111827;margin-bottom:6px">How would you rate your current new vehicle inventory management?</div>
+              <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:3px">
+                <div style="border:1px solid #e5e7eb;border-left:2px solid #1D7AFC;background:#f0f8ff;border-radius:5px;padding:5px 3px;text-align:center"><div style="font-size:9px;color:#6b7280">1</div><div style="font-size:9px;font-weight:600">Ad hoc</div></div>
+                <div style="border:1px solid #e5e7eb;border-radius:5px;padding:5px 3px;text-align:center"><div style="font-size:9px;color:#6b7280">2</div><div style="font-size:9px">Reactive</div></div>
+                <div style="border:1px solid #e5e7eb;border-radius:5px;padding:5px 3px;text-align:center"><div style="font-size:9px;color:#6b7280">3</div><div style="font-size:9px">Managed</div></div>
+                <div style="border:1px solid #e5e7eb;border-radius:5px;padding:5px 3px;text-align:center"><div style="font-size:9px;color:#6b7280">4</div><div style="font-size:9px">Optimised</div></div>
+                <div style="border:1px solid #e5e7eb;border-radius:5px;padding:5px 3px;text-align:center"><div style="font-size:9px;color:#6b7280">5</div><div style="font-size:9px">Leading</div></div>
+              </div>
+            </div>
+            <div style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:10px;opacity:0.7">
+              <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Q2 · NVS</div>
+              <div style="font-size:11px;font-weight:600;color:#111827;margin-bottom:6px">How effective is your sales conversion process?</div>
+              <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:3px">
+                <div style="border:1px solid #e5e7eb;border-radius:5px;padding:5px 3px;text-align:center"><div style="font-size:9px;color:#6b7280">1</div></div>
+                <div style="border:1px solid #e5e7eb;border-radius:5px;padding:5px 3px;text-align:center"><div style="font-size:9px;color:#6b7280">2</div></div>
+                <div style="border:1px solid #e5e7eb;border-radius:5px;padding:5px 3px;text-align:center"><div style="font-size:9px;color:#6b7280">3</div></div>
+                <div style="border:1px solid #e5e7eb;border-radius:5px;padding:5px 3px;text-align:center"><div style="font-size:9px;color:#6b7280">4</div></div>
+                <div style="border:1px solid #e5e7eb;border-radius:5px;padding:5px 3px;text-align:center"><div style="font-size:9px;color:#6b7280">5</div></div>
+              </div>
+            </div>
+          </div>
+          <!-- Right: sticky context panel -->
+          <div style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:10px;align-self:start;position:sticky;top:0">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;font-weight:600;margin-bottom:8px">CONTEXT · Q1</div>
+            <div style="margin-bottom:8px">
+              <div style="font-size:9px;text-transform:uppercase;color:#94a3b8;letter-spacing:0.07em;margin-bottom:3px">Purpose</div>
+              <p style="font-size:10px;color:#374151;margin:0">Measures stock turn efficiency vs OEM targets</p>
+            </div>
+            <div style="margin-bottom:8px">
+              <div style="font-size:9px;text-transform:uppercase;color:#94a3b8;letter-spacing:0.07em;margin-bottom:3px">Linked KPIs</div>
+              <div style="display:flex;flex-wrap:wrap;gap:3px">
+                <span style="background:#eff6ff;color:#1D7AFC;font-size:9px;border-radius:4px;padding:1px 5px">Days Supply</span>
+                <span style="background:#eff6ff;color:#1D7AFC;font-size:9px;border-radius:4px;padding:1px 5px">Stock Turn</span>
+              </div>
+            </div>
+            <div style="font-size:9px;color:#94a3b8;border-top:1px solid #f1f5f9;padding-top:6px;margin-top:4px">Updates as you answer ↑</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Scroll-aware sticky panel</h3>
+      <p>One context panel, fixed to the right. Updates automatically as you scroll to each question (IntersectionObserver tracks focus). Keeps screen clean.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:system-ui;font-size:12px;color:#374151;line-height:1.5;background:#f9fafb;border-radius:8px;padding:12px;border:1px solid #e5e7eb">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <!-- Q1 with expand button -->
+          <div style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:12px">
+            <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Q1 · New Vehicle Sales</div>
+            <div style="font-size:12px;font-weight:600;color:#111827;margin-bottom:8px">How would you rate your current new vehicle inventory management?</div>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:10px">
+              <div style="border:1px solid #e5e7eb;border-left:2px solid #1D7AFC;background:#f0f8ff;border-radius:6px;padding:6px 4px;text-align:center"><div style="font-size:10px;color:#6b7280">1</div><div style="font-size:10px;font-weight:600">Ad hoc</div></div>
+              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 4px;text-align:center"><div style="font-size:10px;color:#6b7280">2</div><div style="font-size:10px">Reactive</div></div>
+              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 4px;text-align:center"><div style="font-size:10px;color:#6b7280">3</div><div style="font-size:10px">Managed</div></div>
+              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 4px;text-align:center"><div style="font-size:10px;color:#6b7280">4</div><div style="font-size:10px">Optimised</div></div>
+              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 4px;text-align:center"><div style="font-size:10px;color:#6b7280">5</div><div style="font-size:10px">Leading</div></div>
+            </div>
+            <!-- Expanded context via icon click, not full accordion -->
+            <div style="background:#f0f8ff;border:1px solid #bfdbfe;border-radius:6px;padding:10px">
+              <div style="display:flex;gap:16px;flex-wrap:wrap">
+                <div style="flex:1;min-width:120px">
+                  <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:#1D7AFC;font-weight:500;margin-bottom:3px">📌 Purpose</div>
+                  <div style="font-size:10px;color:#374151">Measures stock turn efficiency vs OEM targets</div>
+                </div>
+                <div style="flex:1;min-width:120px;border-left:1px solid #bfdbfe;padding-left:12px">
+                  <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:#1D7AFC;font-weight:500;margin-bottom:3px">🔗 Linked KPIs</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:3px">
+                    <span style="background:white;border:1px solid #bfdbfe;color:#1D7AFC;font-size:9px;border-radius:4px;padding:1px 5px">Days Supply</span>
+                    <span style="background:white;border:1px solid #bfdbfe;color:#1D7AFC;font-size:9px;border-radius:4px;padding:1px 5px">Stock Turn</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Notes toggle — minimal -->
+            <div style="margin-top:8px;display:flex;align-items:center;gap:6px;cursor:pointer">
+              <span style="font-size:10px;color:#94a3b8">+ Add note</span>
+            </div>
+          </div>
+          <!-- Q2 collapsed preview -->
+          <div style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:12px;opacity:0.65">
+            <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Q2 · New Vehicle Sales</div>
+            <div style="font-size:12px;font-weight:600;color:#111827;margin-bottom:8px">How effective is your sales conversion process?</div>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px">
+              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 4px;text-align:center"><div style="font-size:10px;color:#6b7280">1</div></div>
+              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 4px;text-align:center"><div style="font-size:10px;color:#6b7280">2</div></div>
+              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 4px;text-align:center"><div style="font-size:10px;color:#6b7280">3</div></div>
+              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 4px;text-align:center"><div style="font-size:10px;color:#6b7280">4</div></div>
+              <div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px 4px;text-align:center"><div style="font-size:10px;color:#6b7280">5</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Context always open, notes collapsed</h3>
+      <p>"Why This Matters" is always expanded (never an accordion). Notes field is collapsed to a "+ Add note" link — only expands if clicked. Context visible by default, noise reduced.</p>
+    </div>
+  </div>
+
+</div>
