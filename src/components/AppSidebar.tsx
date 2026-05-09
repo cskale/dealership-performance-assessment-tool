@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
@@ -8,7 +8,6 @@ import {
   BookOpen, FileText, LogOut, Database, Globe, Users, Settings,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
 export function AppSidebar() {
@@ -16,25 +15,11 @@ export function AppSidebar() {
   const { userMemberships, currentOrganization } = useMultiTenant();
   const { actorType } = useActiveRole();
   const location = useLocation();
-  const [completedCount, setCompletedCount] = useState(0);
   const [collapsed, setCollapsed] = useState(false);
 
   // Route guard — never render on public pages
   const publicRoutes = ['/', '/auth', '/methodology', '/invite'];
   const isPublic = publicRoutes.some(r => location.pathname === r || location.pathname.startsWith(r + '/'));
-
-  useEffect(() => {
-    const fetchCount = async () => {
-      if (!user) return;
-      const { count } = await supabase
-        .from('assessments')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('status', 'completed');
-      setCompletedCount(count ?? 0);
-    };
-    fetchCount();
-  }, [user]);
 
   if (isPublic) return null;
 
