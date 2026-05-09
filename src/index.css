@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..800;1,14..32,400..800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -175,18 +175,117 @@
 
 /* ── Typography Scale ── */
 @layer utilities {
-  .text-h1 { @apply text-[32px] leading-[40px] font-bold tracking-tight; }
-  .text-h2 { @apply text-[28px] leading-[36px] font-bold tracking-tight; }
-  .text-h3 { @apply text-[24px] leading-[32px] font-bold; }
-  .text-h4 { @apply text-[20px] leading-[28px] font-bold; }
-  .text-h5 { @apply text-base leading-6 font-bold; }
+  /* Typography scale — DESIGN.md §3, §17 */
+  .text-h1 {
+    @apply text-[32px] leading-[40px] font-extrabold;
+    letter-spacing: -0.030em;
+    font-optical-sizing: auto;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "cv01" 1, "cv02" 1;
+  }
+  .text-h2 {
+    @apply text-[28px] leading-[36px] font-bold;
+    letter-spacing: -0.025em;
+    font-optical-sizing: auto;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "cv01" 1, "cv02" 1;
+  }
+  .text-h3 {
+    @apply text-[24px] leading-[32px] font-bold;
+    letter-spacing: -0.015em;
+  }
+  .text-h4 {
+    @apply text-[20px] leading-[28px] font-bold;
+    letter-spacing: -0.010em;
+  }
+  .text-h5     { @apply text-base leading-6 font-bold; }
   .text-body-lg { @apply text-base leading-6 font-normal; }
   .text-body-md { @apply text-sm leading-[22px] font-normal; }
   .text-body-sm { @apply text-xs leading-[18px] font-normal; }
-  .text-label { @apply text-xs leading-4 font-medium; }
+  .text-label   { @apply text-xs leading-4 font-medium; }
   .text-caption { @apply text-[11px] leading-4 font-medium; }
-  .text-metric-lg { @apply text-[28px] leading-8 font-bold tracking-tight; }
-  .text-metric-md { @apply text-xl leading-6 font-bold tracking-tight; }
+  .text-metric-lg {
+    @apply text-[28px] leading-8 font-bold;
+    letter-spacing: -0.025em;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+  }
+  .text-metric-md {
+    @apply text-xl leading-6 font-bold;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  /* Display typography — DESIGN.md §17.2 */
+  .font-display {
+    font-optical-sizing: auto;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "cv01" 1, "cv02" 1;
+  }
+
+  /* Numeric utility — DESIGN.md §17.2, §25. Apply to ALL numeric values. */
+  .numeric {
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+  }
+
+  /* Data density compact mode — DESIGN.md §30 */
+  .density-compact .text-h5    { @apply text-sm; }
+  .density-compact .text-body-md { @apply text-[11px]; }
+  .density-compact .text-body-sm { @apply text-[10px]; }
+  .density-compact .p-4        { @apply p-2; }
+  .density-compact .p-5        { @apply p-3; }
+  .density-compact .gap-4      { @apply gap-3; }
+  .density-compact .gap-6      { @apply gap-4; }
+
+  /* ── Canvas gradient — DESIGN.md §35 ── */
+  /* Apply to <main> in AuthenticatedLayout ONLY. Never on cards or sidebar. */
+  .bg-canvas-warm {
+    background:
+      radial-gradient(
+        ellipse 65% 50% at 100% 0%,
+        oklch(0.95 0.04 50) 0%,
+        oklch(0.96 0.03 30) 35%,
+        oklch(0.97 0.01 20) 60%,
+        oklch(0.97 0 0) 85%
+      ),
+      hsl(var(--neutral-050));
+  }
+
+  /* ── Brand blue animations — DESIGN.md §36 ── */
+
+  /* Sidebar active pill tonal gradient fill */
+  .sidebar-pill-active {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--brand-500) / 0.15) 0%,
+      hsl(var(--brand-500) / 0.07) 100%
+    );
+  }
+
+  /* Notification badge pulse — fires once on new notification */
+  @keyframes badgePulse {
+    0%   { box-shadow: 0 0 0 0   hsl(var(--destructive) / 0.5); }
+    70%  { box-shadow: 0 0 0 6px hsl(var(--destructive) / 0);   }
+    100% { box-shadow: 0 0 0 0   hsl(var(--destructive) / 0);   }
+  }
+  .badge-pulse {
+    animation: badgePulse 600ms ease-out 1;
+  }
+
+  /* Progress bar fill — grows from 0 on first render */
+  @keyframes progressGrow {
+    from { width: 0%; }
+  }
+  .progress-animate {
+    animation: progressGrow 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  /* Tab active indicator slide */
+  @keyframes tabSlide {
+    from { opacity: 0; transform: scaleX(0.6); }
+    to   { opacity: 1; transform: scaleX(1);   }
+  }
+  .tab-indicator {
+    animation: tabSlide 120ms ease-out forwards;
+    transform-origin: left center;
+  }
 }
 
 @layer base {
@@ -197,11 +296,30 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Accessible focus */
+  /* Focus rings — DESIGN.md §31 */
   *:focus-visible {
-    @apply outline-2 outline-offset-2 outline-ring;
+    outline: 2px solid hsl(var(--brand-500));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  .rounded-full:focus-visible  { border-radius: 9999px; }
+  .rounded-xl:focus-visible    { border-radius: 12px; }
+  .rounded-lg:focus-visible    { border-radius: 8px; }
+  .rounded-md:focus-visible    { border-radius: 6px; }
+
+  /* Reduced motion — DESIGN.md §23.6 / §31.4 */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
