@@ -9,6 +9,40 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
 
 ---
 
+## [2026-05-09] — Sprint 2: Assessment Flow Redesign
+
+### feat
+- **AssessmentHeroNav** — New `src/components/assessment/AssessmentHeroNav.tsx`. Replaces the 320px left sidebar. Comprises: dark navy stat strip (est. time remaining + dealership name), hero header (section title · description · pulsing "Assessment in progress" badge), large 52px % complete metric card with gradient fill bar, and 5-tab section navigation. Tab progress bar is the sole active indicator — no border underline. Blue fill = in progress, green = complete.
+- **Question card redesign** — `CategoryAssessment.tsx` fully refactored. Each card now has: `#D6E3FF` top bar with filled Q-badge + category + "Question N of M"; 18px/700 question text; 5 centered rating tiles with left-border + tint + checkmark on selection (no "Level X" labels); 2-column context strip (`#f4f6f8` bg) showing merged "Why this matters" prose and Linked KPI chips linking to KPI Encyclopedia in a new tab; "Add field coach notes" inline expand footer.
+- **assessmentUtils.ts** — Three pure utility functions extracted to `src/lib/assessmentUtils.ts`: `mergeWhyThisMatters` (joins purpose + situationAnalysis + benefits into a single paragraph), `shortenSectionName` (strips "Performance"/"& Overall Performance" suffixes for tab labels), `estimateTimeRemaining` (30s per unanswered question). 12 unit tests in `src/__tests__/assessmentUtils.test.ts`.
+- **Full-width layout** — Left sidebar removed from assessment page. Question cards span the full content width. Assessment page manages its own internal scroll so the hero nav is always visible.
+- **Notification bell relocated** — Moved from top bar to sidebar footer (above user profile link). Visible as icon when sidebar collapsed.
+- **Top bar removed** — Entire header strip (search field + bell) eliminated. Content fills from top of the canvas. Sprint 7 search placeholder removed with it.
+
+### fix
+- **CSS circular dependency** — `src/index.css:234` used `@apply gap-4` inside `.density-compact .gap-6` while `.density-compact .gap-4` was also defined, creating a PostCSS circular reference. Replaced with raw CSS values (`gap: 0.75rem` / `gap: 1rem`). Was blocking all production builds since Sprint 1 merge.
+- **Merge conflict marker** — `src/pages/CoachDashboard.tsx` had an unresolved `<<<<<<< HEAD` marker (no `=======` / `>>>>>>>` pair) left from the Sprint 1 Lovable merge. Removed marker, restored missing `</div>` closing tag.
+- **Sidebar collapse button** — Button was positioned `right-2` in both collapsed and expanded states, causing it to overlap the logo when the sidebar is collapsed to icon-only mode (56px wide). Fixed to `translate-x-1/2` when collapsed — button now pokes out from the sidebar's right edge, always visible.
+- **"My Dealership" nav item** — Removed from sidebar Overview section; it was a duplicate of the user profile link already present in the sidebar footer.
+- **User avatar in top bar** — Removed; avatar is available in the sidebar footer. Bell icon only was redundant after also moving bell to sidebar.
+- **Assessment hero nav always visible** — `sticky` positioning inside `<main overflow-y-auto>` was not resolving correctly due to `min-h-screen` on the layout root. Fixed by: (1) changing layout root to `h-screen overflow-hidden`, (2) restructuring Assessment page to `h-full flex-col` with hero nav as `shrink-0` and questions in `flex-1 overflow-y-auto`. Hero nav now never enters the scroll flow.
+
+### refactor
+- `Assessment.tsx` — Removed inline sidebar (section cards + overall progress card), bottom prev/next nav buttons, sticky assessment header, `getSectionIcon`/`getSectionColor` functions, `currentQuestion` state, `completionError` write-only state, unused imports.
+- `CategoryAssessment.tsx` — Removed accordion "Why This Matters" (DESIGN.md §15 anti-pattern). All context now always-visible in context strip. Notes toggle replaces always-visible textarea.
+
+### docs
+- Sprint 2 design spec: `docs/superpowers/specs/2026-05-09-sprint2-assessment-flow-design.md`
+- Sprint 2 implementation plan: `docs/superpowers/plans/2026-05-09-sprint2-assessment-flow.md`
+- DESIGN.md §35 (canvas gradient) / §36 (animation utilities) / §37 (sidebar nav v2) added during Sprint 1, now live.
+
+### Notes
+- Benchmark corridor deferred (needs live KPI data per question — future sprint)
+- "Attach proof of performance" footer button removed (file upload is a future sprint)
+- 76 tests passing, zero TypeScript errors on merge
+
+---
+
 ## [2026-05-08] — Design System v4.0 — OEM-Grade Production Standards
 
 ### docs
