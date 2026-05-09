@@ -1,15 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Textarea } from "@/components/ui/textarea";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { MessageSquare, Save, ChevronRight, AlertCircle, StickyNote, Target, Search, BarChart3, Briefcase, Check } from "lucide-react";
+import { MessageSquare, Save, ChevronRight, StickyNote, Check, ExternalLink, Upload } from "lucide-react";
 import { Question, Section } from "@/data/questionnaire";
 import { useAssessmentNotes } from "@/hooks/useAssessmentNotes";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { mergeWhyThisMatters } from "@/lib/assessmentUtils";
 
 interface CategoryAssessmentProps {
   section: Section;
@@ -20,22 +15,31 @@ interface CategoryAssessmentProps {
   isLastSection: boolean;
 }
 
-export function CategoryAssessment({ 
-  section, 
-  answers, 
-  onAnswer, 
-  onContinue, 
+export function CategoryAssessment({
+  section,
+  answers,
+  onAnswer,
+  onContinue,
   canContinue,
-  isLastSection 
+  isLastSection
 }: CategoryAssessmentProps) {
-  const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(new Set());
   const [notesText, setNotesText] = useState<Record<string, string>>({});
   const [autoSaveTimers, setAutoSaveTimers] = useState<Record<string, NodeJS.Timeout>>({});
+  const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
   const questionRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  
+
   const { notes, saveNote, hasNotes, getCategoryNoteCount } = useAssessmentNotes();
   const { toast } = useToast();
   const { t } = useLanguage();
+
+  const toggleNote = (questionId: string) => {
+    setExpandedNotes(prev => {
+      const next = new Set(prev);
+      if (next.has(questionId)) next.delete(questionId);
+      else next.add(questionId);
+      return next;
+    });
+  };
 
   useEffect(() => {
     const initialNotesText: Record<string, string> = {};
@@ -48,16 +52,15 @@ export function CategoryAssessment({
   }, [notes, section.questions]);
 
   const answeredQuestions = section.questions.filter(q => answers[q.id] !== undefined).length;
-  const progress = (answeredQuestions / section.questions.length) * 100;
   const noteCount = getCategoryNoteCount(section.questions.map(q => q.id));
 
   const handleRatingClick = (questionId: string, rating: number) => {
     onAnswer(questionId, rating);
-    
+
     // Find the next unanswered question and scroll to it
     const currentIndex = section.questions.findIndex(q => q.id === questionId);
     let nextQuestion = null;
-    
+
     // First, look for the next unanswered question after the current one
     for (let i = currentIndex + 1; i < section.questions.length; i++) {
       if (answers[section.questions[i].id] === undefined) {
@@ -65,7 +68,7 @@ export function CategoryAssessment({
         break;
       }
     }
-    
+
     // If no unanswered question found after current, check from the beginning
     if (!nextQuestion) {
       for (let i = 0; i < currentIndex; i++) {
@@ -75,7 +78,7 @@ export function CategoryAssessment({
         }
       }
     }
-    
+
     // If there's a next unanswered question, scroll to it smoothly
     if (nextQuestion && questionRefs.current[nextQuestion.id]) {
       setTimeout(() => {
@@ -89,11 +92,11 @@ export function CategoryAssessment({
 
   const handleNotesChange = (questionId: string, text: string) => {
     setNotesText(prev => ({ ...prev, [questionId]: text }));
-    
+
     if (autoSaveTimers[questionId]) {
       clearTimeout(autoSaveTimers[questionId]);
     }
-    
+
     const timer = setTimeout(() => {
       saveNote(questionId, text);
       toast({
@@ -102,25 +105,8 @@ export function CategoryAssessment({
         duration: 1500,
       });
     }, 2000);
-    
+
     setAutoSaveTimers(prev => ({ ...prev, [questionId]: timer }));
-  };
-
-  const toggleQuestionExpansion = (questionId: string) => {
-    setExpandedQuestions(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(questionId)) {
-        newSet.delete(questionId);
-      } else {
-        newSet.add(questionId);
-      }
-      return newSet;
-    });
-  };
-
-  const getRatingText = (question: Question, rating: number) => {
-    if (!question.scale) return "";
-    return question.scale.labels[rating - 1] || "";
   };
 
   useEffect(() => {
@@ -133,249 +119,251 @@ export function CategoryAssessment({
 
   return (
     <div className="space-y-4">
-      <Card className="bg-white shadow-card rounded-xl">
-        <CardHeader className="pb-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <CardTitle className="text-lg font-medium text-foreground mb-2">
-                {section.title}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {section.description}
-              </p>
-            </div>
-            {noteCount > 0 && (
-              <Badge variant="outline" className="flex items-center gap-1.5 text-xs font-normal">
-                <StickyNote className="h-3 w-3" />
-                {noteCount} {noteCount === 1 ? t('common.note') : t('common.notes')}
-              </Badge>
-            )}
-          </div>
-          
-          <div className="mt-4 space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">
-                {answeredQuestions} {t('assessment.of')} {section.questions.length} {t('assessment.completed')}
-              </span>
-              <span className="font-medium text-foreground">
-                {Math.round(progress)}%
-              </span>
-            </div>
-            <Progress value={progress} className="h-2" />
-          </div>
-        </CardHeader>
-      </Card>
+      {/* Section progress — thin count */}
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-[12px] font-medium text-[#6e7e8a]">
+          {answeredQuestions} of {section.questions.length} questions answered
+        </p>
+        {noteCount > 0 && (
+          <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground border border-border rounded px-2 py-0.5">
+            <StickyNote className="h-3 w-3" />
+            {noteCount} {noteCount === 1 ? 'note' : 'notes'}
+          </span>
+        )}
+      </div>
 
       <div key={section.id} className="space-y-4">
         {section.questions.map((question, index) => {
           const value = answers[question.id];
+          const isNoteOpen = expandedNotes.has(question.id);
+          const whyThisMatters = mergeWhyThisMatters(
+            question.purpose,
+            question.situationAnalysis,
+            question.benefits
+          );
 
           return (
-            <Card
+            <div
               key={question.id}
               ref={(el) => { questionRefs.current[question.id] = el; }}
-              className="opacity-0 animate-fade-in shadow-card rounded-xl bg-white hover:shadow-elevated transition-shadow duration-200"
-              style={{ animationDelay: `${index * 45}ms`, animationFillMode: 'forwards' }}
+              className="bg-white border border-[#d4dde4] rounded-xl overflow-hidden mb-4 opacity-0 animate-fade-in"
+              style={{
+                animationDelay: `${index * 45}ms`,
+                animationFillMode: 'forwards',
+                boxShadow: '0 1px 3px rgba(15,23,42,0.06), 0 4px 12px rgba(15,23,42,0.05)',
+              }}
             >
-              <CardContent className="p-5">
-                <div className="space-y-3 mb-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-1">
-                      <div className="flex items-start gap-2 mb-1">
-                        <span className="text-xs font-medium text-muted-foreground">Q{index + 1}</span>
-                        <Badge variant="outline" className="text-xs h-5 font-normal">
-                          {question.category}
-                        </Badge>
-                        {value !== undefined && (
-                          <Badge className="text-xs h-5 bg-success/10 text-success border-success/20 flex items-center gap-1">
-                            <Check className="h-3 w-3" /> Answered
-                          </Badge>
-                        )}
+              {/* ── Top bar: #D6E3FF background ── */}
+              <div
+                className="flex items-center justify-between px-5 py-2.5 border-b border-[#c7d4f0]"
+                style={{ background: '#D6E3FF' }}
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="bg-[#1D7AFC] text-white text-[11px] font-bold rounded-[5px] px-2 py-1 leading-none flex-shrink-0">
+                    Q{index + 1}
+                  </span>
+                  <span className="text-[12px] font-medium text-[#172d4d]">
+                    {question.category}
+                  </span>
+                </div>
+                <span className="text-[11px] font-medium text-[#94a3b8] tabular-nums">
+                  Question {index + 1} of {section.questions.length}
+                </span>
+              </div>
+
+              {/* ── Question body ── */}
+              <div className="px-5 pt-5 pb-0">
+                <h3
+                  className="text-[18px] font-bold text-[#0b1f3a] leading-[1.4] mb-1"
+                  style={{ letterSpacing: '-0.018em' } as React.CSSProperties}
+                >
+                  {question.text}
+                </h3>
+                {question.description && (
+                  <p className="text-[13px] text-[#445166] leading-relaxed mb-4">
+                    {question.description}
+                  </p>
+                )}
+
+                {/* ── Rating tiles ── */}
+                {question.type === 'scale' && question.scale && (
+                  <div className="grid grid-cols-5 gap-2 mt-4">
+                    {Array.from({ length: question.scale.max }, (_, i) => {
+                      const rating = i + 1;
+                      const isSelected = value === rating;
+                      const label = question.scale!.labels[i] || '';
+
+                      return (
+                        <button
+                          key={rating}
+                          type="button"
+                          onClick={() => handleRatingClick(question.id, rating)}
+                          className="relative min-h-[80px] w-full flex flex-col items-center justify-center rounded-[10px] px-2.5 py-4 text-center transition-all duration-150 focus-visible:outline-2 focus-visible:outline-[#1D7AFC] focus-visible:outline-offset-2"
+                          style={
+                            isSelected
+                              ? {
+                                  border: '1.5px solid #1D7AFC',
+                                  borderLeft: '4px solid #1D7AFC',
+                                  background: 'rgba(29,122,252,0.04)',
+                                  boxShadow: '0 0 0 3px rgba(29,122,252,0.08)',
+                                }
+                              : {
+                                  border: '1px solid #d4dde4',
+                                  background: 'white',
+                                }
+                          }
+                          onMouseEnter={(e) => {
+                            if (!isSelected) {
+                              (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(29,122,252,0.35)';
+                              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(29,122,252,0.02)';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected) {
+                              (e.currentTarget as HTMLButtonElement).style.borderColor = '#d4dde4';
+                              (e.currentTarget as HTMLButtonElement).style.background = 'white';
+                            }
+                          }}
+                        >
+                          {isSelected && (
+                            <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#1D7AFC] flex items-center justify-center">
+                              <Check className="h-2.5 w-2.5 text-white" strokeWidth={2.5} />
+                            </span>
+                          )}
+                          <span
+                            className="text-[13px] font-semibold leading-[1.35] break-words"
+                            style={{ color: isSelected ? '#0b1f3a' : '#263d57' }}
+                          >
+                            {label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* ── Context strip: Why this matters | Linked KPIs ── */}
+              {(whyThisMatters || (question.linkedKPIs && question.linkedKPIs.length > 0)) && (
+                <div
+                  className="grid mt-4 items-start"
+                  style={{
+                    background: '#f4f6f8',
+                    borderTop: '1px solid #e2e8f0',
+                    gridTemplateColumns: '1fr 1px 1fr',
+                  }}
+                >
+                  <div className="px-5 py-4">
+                    <p className="text-[12px] font-semibold text-[#172d4d] mb-1.5">Why this matters</p>
+                    <p className="text-[12px] text-[#445166] leading-relaxed">
+                      {whyThisMatters || 'No context available for this question.'}
+                    </p>
+                  </div>
+
+                  <div className="bg-[#d4dde4] self-stretch" />
+
+                  <div className="px-5 py-4">
+                    <p className="text-[12px] font-semibold text-[#172d4d] mb-1.5">Linked KPIs</p>
+                    {question.linkedKPIs && question.linkedKPIs.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {question.linkedKPIs.map((kpi) => (
+                          <a
+                            key={kpi}
+                            href="/app/kpi-encyclopedia"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 bg-[#dbeafe] text-[#1e40af] text-[11px] font-medium rounded px-2 py-1 no-underline hover:bg-[#bfdbfe] transition-colors"
+                          >
+                            {kpi}
+                            <ExternalLink className="h-2.5 w-2.5" />
+                          </a>
+                        ))}
                       </div>
-                      <h3 className="text-base font-medium text-foreground leading-relaxed">
-                        {question.text}
-                      </h3>
-                      {question.description && (
-                        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                          {question.description}
-                        </p>
-                      )}
-                    </div>
+                    ) : (
+                      <p className="text-[12px] text-muted-foreground">No linked KPIs</p>
+                    )}
                   </div>
                 </div>
+              )}
 
-                {question.type === "scale" && question.scale && (
-                  <div className="mb-4">
-                    <div className="grid grid-cols-5 gap-3">
-                      {Array.from({ length: question.scale.max }, (_, i) => {
-                        const rating = i + 1;
-                        const isSelected = value === rating;
-                        const label = getRatingText(question, rating);
+              {/* ── Footer: two actions ── */}
+              <div className="flex items-center gap-4 px-5 py-3 border-t border-[#eef0f3] bg-white">
+                <button
+                  type="button"
+                  onClick={() => toggleNote(question.id)}
+                  className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#6e7e8a] hover:text-[#1D7AFC] transition-colors bg-transparent border-none cursor-pointer p-0"
+                >
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  {hasNotes(question.id) ? 'Edit field coach notes' : 'Add field coach notes'}
+                </button>
+                <div className="w-px h-3.5 bg-[#e2e8f0]" />
+                <button
+                  type="button"
+                  onClick={() => {/* file upload — future sprint */}}
+                  className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#6e7e8a] hover:text-[#1D7AFC] transition-colors bg-transparent border-none cursor-pointer p-0"
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                  Attach proof of performance
+                </button>
+              </div>
 
-                        return (
-                          <button
-                            key={rating}
-                            onClick={() => handleRatingClick(question.id, rating)}
-                            className={`min-h-[90px] w-full rounded-xl border-2 bg-white px-3 py-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all hover:border-brand-300 hover:bg-brand-050 ${
-                              isSelected
-                                ? "border-brand-500 bg-brand-050"
-                                : "border-neutral-200"
-                            }`}
-                          >
-                            <span className={`text-[11px] font-medium text-center ${isSelected ? 'text-brand-500' : 'text-neutral-400'}`}>
-                              {rating}
-                            </span>
-                            <span className={`text-sm text-center leading-tight whitespace-normal break-words w-full overflow-visible ${
-                              isSelected ? 'text-neutral-900 font-bold' : 'text-neutral-800 font-semibold'
-                            }`}>
-                              {label}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
+              {/* Notes textarea — expands inline when open */}
+              {isNoteOpen && (
+                <div className="px-5 pb-4 border-t border-[#eef0f3]">
+                  <div className="flex items-center gap-1.5 py-3">
+                    <Save className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-[11px] text-muted-foreground">{t('assessment.autoSaves')}</span>
+                    {hasNotes(question.id) && (
+                      <span className="text-[11px] text-[#1D7AFC] font-medium ml-1">{t('assessment.saved')}</span>
+                    )}
                   </div>
-                )}
-
-                {(question.purpose || question.situationAnalysis || question.linkedKPIs || question.benefits) && (
-                  <Card className="bg-card mb-4 shadow-card rounded-xl">
-                    <CardContent className="p-0">
-                      <Collapsible 
-                        open={expandedQuestions.has(question.id)}
-                        onOpenChange={() => toggleQuestionExpansion(question.id)}
-                      >
-                        <CollapsibleTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            className="w-full justify-between p-4 h-auto text-left hover:bg-muted/50"
-                          >
-                            <div className="flex items-center gap-2">
-                              <AlertCircle className="h-4 w-4 text-primary" />
-                              <span className="font-medium text-foreground">
-                                {t('assessment.whyThisMatters')}
-                              </span>
-                            </div>
-                            <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${
-                              expandedQuestions.has(question.id) ? 'rotate-90' : ''
-                            }`} />
-                          </Button>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="px-4 pb-4">
-                          {/* P2.1: Structured sub-cards */}
-                          <div className="grid gap-3 sm:grid-cols-2">
-                            {question.purpose && (
-                              <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
-                                <h4 className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                                  <Target className="h-3.5 w-3.5 text-primary flex-shrink-0" /> {t('assessment.assessmentPurpose')}
-                                </h4>
-                                <p className="text-xs text-muted-foreground leading-relaxed">{question.purpose}</p>
-                              </div>
-                            )}
-                            {question.situationAnalysis && (
-                              <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
-                                <h4 className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                                  <Search className="h-3.5 w-3.5 text-primary flex-shrink-0" /> {t('assessment.situationAnalysis')}
-                                </h4>
-                                <p className="text-xs text-muted-foreground leading-relaxed">{question.situationAnalysis}</p>
-                              </div>
-                            )}
-                            {question.linkedKPIs && question.linkedKPIs.length > 0 && (
-                              <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
-                                <h4 className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                                  <BarChart3 className="h-3.5 w-3.5 text-primary flex-shrink-0" /> {t('assessment.linkedKPIs')}
-                                </h4>
-                                <div className="flex flex-wrap gap-1.5 mt-1">
-                                  {question.linkedKPIs.map((kpi, kpiIndex) => (
-                                    <Badge key={kpiIndex} variant="outline" className="text-xs">
-                                      {kpi}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                            {question.benefits && (
-                              <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
-                                <h4 className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                                  <Briefcase className="h-3.5 w-3.5 text-primary flex-shrink-0" /> {t('assessment.businessBenefits')}
-                                </h4>
-                                <p className="text-xs text-muted-foreground leading-relaxed">{question.benefits}</p>
-                              </div>
-                            )}
-                          </div>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    </CardContent>
-                  </Card>
-                )}
-
-                <Card className="bg-white shadow-card rounded-xl">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <MessageSquare className="h-4 w-4 text-primary" />
-                      <label className="text-sm font-medium text-foreground">
-                        {t('assessment.additionalNotes')}
-                        {hasNotes(question.id) && (
-                          <Badge variant="outline" className="ml-2 text-xs text-primary">
-                            {t('assessment.saved')}
-                          </Badge>
-                        )}
-                      </label>
-                    </div>
-                    <Textarea
-                      value={notesText[question.id] || ''}
-                      onChange={(e) => handleNotesChange(question.id, e.target.value)}
-                      placeholder={t('assessment.placeholder.notes')}
-                      rows={3}
-                      maxLength={5000}
-                      className="w-full bg-white border"
-                    />
-                    <p className="text-xs text-muted-foreground text-right mt-1">
-                      {5000 - (notesText[question.id]?.length ?? 0)} characters remaining
-                    </p>
-                    <div className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                      <Save className="h-3 w-3" />
-                      {t('assessment.autoSaves')}
-                    </div>
-                  </CardContent>
-                </Card>
-              </CardContent>
-            </Card>
+                  <textarea
+                    value={notesText[question.id] || ''}
+                    onChange={(e) => handleNotesChange(question.id, e.target.value)}
+                    placeholder={t('assessment.placeholder.notes')}
+                    rows={3}
+                    maxLength={5000}
+                    className="w-full bg-white border border-[#d4dde4] rounded-lg text-[13px] text-[#172d4d] px-3 py-2.5 resize-none focus:outline-none focus:border-[#1D7AFC] focus:ring-2 focus:ring-[#1D7AFC]/20"
+                  />
+                  <p className="text-[11px] text-muted-foreground text-right mt-1">
+                    {5000 - (notesText[question.id]?.length ?? 0)} characters remaining
+                  </p>
+                </div>
+              )}
+            </div>
           );
         })}
       </div>
 
-      <Card className="bg-primary text-primary-foreground shadow-card rounded-xl">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold">
-                {answeredQuestions === section.questions.length 
-                  ? t('assessment.sectionComplete')
-                  : `${answeredQuestions}/${section.questions.length} ${t('assessment.questionsAnswered')}`
-                }
-              </h3>
-              <p className="text-primary-foreground/80">
-                {answeredQuestions === section.questions.length
-                  ? isLastSection 
-                    ? t('assessment.readyToView')
-                    : t('assessment.continueToNext')
-                  : t('assessment.pleaseAnswer')
-                }
-              </p>
-            </div>
-            <Button
-              onClick={onContinue}
-              disabled={!canContinue}
-              size="lg"
-              variant="secondary"
-              className="flex items-center gap-2"
-            >
-              {isLastSection ? t('assessment.viewResults') : t('assessment.saveAndContinue')}
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+      <div
+        className="bg-white border border-[#d4dde4] rounded-xl p-6 mt-4"
+        style={{ boxShadow: '0 1px 3px rgba(15,23,42,0.06), 0 4px 12px rgba(15,23,42,0.05)' }}
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-[15px] font-semibold text-[#0b1f3a]">
+              {answeredQuestions === section.questions.length
+                ? t('assessment.sectionComplete')
+                : `${answeredQuestions} / ${section.questions.length} ${t('assessment.questionsAnswered')}`}
+            </h3>
+            <p className="text-[13px] text-[#6e7e8a] mt-0.5">
+              {answeredQuestions === section.questions.length
+                ? isLastSection
+                  ? t('assessment.readyToView')
+                  : t('assessment.continueToNext')
+                : t('assessment.pleaseAnswer')}
+            </p>
           </div>
-        </CardContent>
-      </Card>
+          <button
+            onClick={onContinue}
+            disabled={!canContinue}
+            className="inline-flex items-center gap-2 bg-[#1D7AFC] text-white text-[13px] font-semibold px-5 py-2.5 rounded-lg hover:bg-[#1a5fb4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {isLastSection ? t('assessment.viewResults') : t('assessment.saveAndContinue')}
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
