@@ -21,7 +21,6 @@ export default function Assessment() {
   const [currentSection, setCurrentSection] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [completionState, setCompletionState] = useState<CompletionState>('idle');
-  const [completionError, setCompletionError] = useState<string | null>(null);
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -143,7 +142,6 @@ export default function Assessment() {
     if (completionState !== 'idle') return;
 
     setCompletionState('saving');
-    setCompletionError(null);
     
     try {
       const finalScores = calculateScores(answers);
@@ -260,7 +258,6 @@ export default function Assessment() {
       
       // Handle specific error types
       if (error instanceof OnboardingError) {
-        setCompletionError(error.message);
         toast({
           title: "Setup Required",
           description: error.message,
@@ -270,7 +267,6 @@ export default function Assessment() {
         navigate('/app/onboarding');
       } else {
         const errorMessage = error instanceof Error ? error.message : "Failed to save assessment. Please try again.";
-        setCompletionError(errorMessage);
         toast({
           title: t('common.error'),
           description: errorMessage,
@@ -285,7 +281,7 @@ export default function Assessment() {
     }
   };
 
-  const handleNavigateToSection = (sectionIndex: number, questionIndex: number) => {
+  const handleNavigateToSection = (sectionIndex: number) => {
     setCurrentSection(sectionIndex);
     // Scroll to top of questions area
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -324,7 +320,7 @@ export default function Assessment() {
         sections={translatedSections}
         currentSection={currentSection}
         answers={answers}
-        onSectionChange={(idx) => !isCompleting && handleNavigateToSection(idx, 0)}
+        onSectionChange={(idx) => !isCompleting && handleNavigateToSection(idx)}
         totalQuestions={totalQuestions}
         answeredQuestions={answeredQuestions}
         dealershipName={onboardingContext.dealershipName ?? undefined}
