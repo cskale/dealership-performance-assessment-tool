@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
@@ -6,6 +6,7 @@ import { useActiveRole } from '@/hooks/useActiveRole';
 import {
   BarChart3, Building2, Plus, ClipboardList, CheckSquare,
   BookOpen, FileText, LogOut, Database, Globe, Users, Settings,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -17,7 +18,6 @@ export function AppSidebar() {
   const location = useLocation();
   const [completedCount, setCompletedCount] = useState(0);
   const [collapsed, setCollapsed] = useState(false);
-  const collapseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Route guard — never render on public pages
   const publicRoutes = ['/', '/auth', '/methodology', '/invite'];
@@ -35,28 +35,6 @@ export function AppSidebar() {
     };
     fetchCount();
   }, [user]);
-
-  // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
-      if (collapseTimer.current) clearTimeout(collapseTimer.current);
-    };
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    if (collapseTimer.current) clearTimeout(collapseTimer.current);
-    collapseTimer.current = setTimeout(() => {
-      setCollapsed(true);
-    }, 4000);
-  }, []);
-
-  const handleMouseEnter = useCallback(() => {
-    if (collapseTimer.current) {
-      clearTimeout(collapseTimer.current);
-      collapseTimer.current = null;
-    }
-    setCollapsed(false);
-  }, []);
 
   if (isPublic) return null;
 
@@ -80,11 +58,11 @@ export function AppSidebar() {
 
   const navItemClass = (path: string) =>
     cn(
-      'flex items-center gap-2.5 py-[9px] text-[13px] transition-all cursor-pointer',
-      collapsed ? 'px-0 justify-center' : 'px-5',
+      'flex items-center gap-2.5 h-9 text-[13px] transition-colors duration-100 mr-3',
+      collapsed ? 'px-0 justify-center rounded-md' : 'px-3 rounded-r-md',
       isActive(path)
-        ? 'bg-[hsl(var(--brand-500))]/10 border-r-2 border-[hsl(var(--brand-500))] text-white'
-        : 'text-white/55 hover:bg-white/[0.05] hover:text-white/85'
+        ? 'sidebar-pill-active border-l-2 border-brand-500 text-white'
+        : 'text-white/55 hover:text-white/85 hover:bg-white/5 border-l-2 border-transparent'
     );
 
   const iconClass = (path: string) =>
@@ -130,13 +108,14 @@ export function AppSidebar() {
         'shrink-0 bg-[hsl(var(--dd-midnight))] flex flex-col h-screen sticky top-0 transition-all duration-300 overflow-hidden',
         collapsed ? 'w-14' : 'w-60'
       )}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     >
-      {/* Header */}
-      <div className={cn('py-4 border-b border-white/[0.06]', collapsed ? 'px-2' : 'px-5')}>
-        <Link to="/app/dashboard" className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-[hsl(var(--brand-500))] flex items-center justify-center shrink-0">
+      {/* Header — h-14 with always-visible collapse button */}
+      <div className={cn(
+        'flex items-center h-14 border-b border-white/[0.06] shrink-0 relative',
+        collapsed ? 'px-3 justify-center' : 'px-5'
+      )}>
+        <Link to="/app/dashboard" className="flex items-center gap-2.5 flex-1 min-w-0">
+          <div className="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center shrink-0">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <rect x="1" y="1" width="5" height="5" rx="1" fill="white" />
               <rect x="8" y="1" width="5" height="5" rx="1" fill="white" />
@@ -145,12 +124,25 @@ export function AppSidebar() {
             </svg>
           </div>
           {!collapsed && (
-            <div>
-              <div className="text-[13px] font-semibold text-white leading-tight">Dealer Diagnostic</div>
+            <div className="min-w-0">
+              <div className="text-[13px] font-semibold text-white leading-tight truncate">Dealer Diagnostic</div>
               <div className="text-[10px] uppercase tracking-widest text-white/35 leading-tight">Performance Intelligence</div>
             </div>
           )}
         </Link>
+        {/* Collapse toggle — always visible */}
+        <button
+          type="button"
+          onClick={() => setCollapsed(prev => !prev)}
+          className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full
+                     bg-white/10 flex items-center justify-center
+                     hover:bg-white/20 transition-colors shrink-0"
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed
+            ? <ChevronRight className="h-3 w-3 text-white/60" />
+            : <ChevronLeft  className="h-3 w-3 text-white/60" />}
+        </button>
       </div>
 
       {/* Navigation */}
@@ -158,11 +150,11 @@ export function AppSidebar() {
         {sections.map((section) => (
           <div key={section.label}>
             {!collapsed && (
-              <div className="px-5 pt-5 pb-1.5 text-[9px] uppercase tracking-widest text-white/25">
+              <p className="px-5 pt-4 pb-0.5 text-[9px] uppercase tracking-[0.12em] text-white/25 font-medium select-none">
                 {section.label}
-              </div>
+              </p>
             )}
-            {collapsed && <div className="pt-3" />}
+            {collapsed && <div className="pt-2" />}
             {section.items.map((item) => (
               <Link key={item.path} to={item.path} className={navItemClass(item.path)}>
                 <item.icon className={iconClass(item.path)} />
