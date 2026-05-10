@@ -23,7 +23,7 @@ export const DEPT_ORDER = [
 
 /**
  * Returns a Tailwind text colour class based on maturity level.
- * Advanced (≥65) → brand blue. Leading (≥85) → green. Below 45 → red.
+ * Leading (≥85) → green. Advanced + Developing (≥45) → brand blue. Foundational (<45) → red.
  * No yellow/amber anywhere — per design system rules.
  */
 export function deptScoreColour(score: number): string {

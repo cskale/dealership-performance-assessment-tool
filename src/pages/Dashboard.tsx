@@ -249,12 +249,17 @@ function TimelineStrip({
     ? formatDisplayDate(coach.assigned_at)
     : null;
 
+  // A coach visit is "done" if valid_from is in the past, otherwise upcoming
+  const coachVisitDone = coach
+    ? isOverdue(coach.valid_from ?? coach.assigned_at)
+    : false;
+
   return (
     <div className="bg-white rounded-xl shadow-card border border-[#DFE1E6] grid grid-cols-5 overflow-hidden">
       <TimelineSlot
         label="Last Assessment"
         date={formatDisplayDate(assessment.completed_at)}
-        sub="61 questions · completed"
+        sub={`${Object.keys(assessment.answers ?? {}).length} questions · completed`}
         status="done"
         badgeText="Completed"
       />
@@ -269,8 +274,8 @@ function TimelineStrip({
         label="Last Coach Visit"
         date={coachAssignedDate ?? 'Not scheduled'}
         sub={coach ? 'Field coach assigned' : 'No coach assigned'}
-        status={coach ? 'done' : 'upcoming'}
-        badgeText={coach ? 'Assigned' : 'Not scheduled'}
+        status={coach ? (coachVisitDone ? 'done' : 'upcoming') : 'upcoming'}
+        badgeText={coach ? (coachVisitDone ? 'Completed' : 'Scheduled') : 'Not scheduled'}
       />
       <TimelineSlot
         label="Next Coach Visit"
@@ -295,9 +300,11 @@ function TimelineStrip({
 function PriorityCard({
   focusDeptName,
   focusDeptScore,
+  quarter,
 }: {
   focusDeptName: string;
   focusDeptScore: number;
+  quarter: string;
 }) {
   const navigate = useNavigate();
   return (
@@ -308,7 +315,7 @@ function PriorityCard({
         </p>
         <p className="text-[12px] text-[#253858] leading-relaxed">
           {focusDeptName} scored {Math.round(focusDeptScore)}/100 and requires immediate
-          attention. Review the open actions and assign ownership before the Q2 deadline.
+          attention. Review the open actions and assign ownership before the {quarter} deadline.
         </p>
       </div>
       <button
@@ -765,6 +772,7 @@ export default function Dashboard() {
           <PriorityCard
             focusDeptName={focusDeptName}
             focusDeptScore={focusDeptScore}
+            quarter={quarter}
           />
         )}
 
