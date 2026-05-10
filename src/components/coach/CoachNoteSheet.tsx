@@ -61,46 +61,67 @@ export function CoachNoteSheet({ open, onOpenChange, dealershipId, dealerName, o
   const fetchSheetData = async () => {
     if (!dealershipId || !user?.id) return;
     setLoadingHistory(true);
+    try {
+      const [notesRes, assessmentsRes] = await Promise.all([
+        supabase
+          .from('coach_notes')
+          .select('*')
+          .eq('dealership_id', dealershipId)
+          .eq('coach_user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(30),
+        supabase
+          .from('assessments')
+          .select('id, created_at')
+          .eq('dealership_id', dealershipId)
+          .eq('status', 'completed')
+          .order('created_at', { ascending: false })
+          .limit(5),
+      ]);
 
-    const [notesRes, assessmentsRes] = await Promise.all([
-      supabase
-        .from('coach_notes')
-        .select('*')
-        .eq('dealership_id', dealershipId)
-        .eq('coach_user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(30),
-      supabase
-        .from('assessments')
-        .select('id, created_at')
-        .eq('dealership_id', dealershipId)
-        .eq('status', 'completed')
-        .order('created_at', { ascending: false })
-        .limit(5),
-    ]);
+      setNotes((notesRes.data as CoachNote[]) ?? []);
+      const fetchedAssessments = assessmentsRes.data ?? [];
+      setAssessments(fetchedAssessments);
 
-    setNotes((notesRes.data as CoachNote[]) ?? []);
-    const fetchedAssessments = assessmentsRes.data ?? [];
-    setAssessments(fetchedAssessments);
+      if (fetchedAssessments.length) {
+        const { data: actionData } = await supabase
+          .from('improvement_actions')
+          .select('id, action_title')
+          .eq('assessment_id', fetchedAssessments[0].id)
+          .in('status', ['Open', 'In Progress'])
+          .limit(20);
+        setActions(actionData ?? []);
+      }
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
 
-    if (fetchedAssessments.length) {
-      const { data: actionData } = await supabase
+  useEffect(() => {
+    if (!selectedAssessmentId) return;
+    const fetchActions = async () => {
+      const { data } = await supabase
         .from('improvement_actions')
         .select('id, action_title')
-        .eq('assessment_id', fetchedAssessments[0].id)
+        .eq('assessment_id', selectedAssessmentId)
         .in('status', ['Open', 'In Progress'])
         .limit(20);
-      setActions(actionData ?? []);
-    }
-
-    setLoadingHistory(false);
-  };
+      setActions(data ?? []);
+    };
+    fetchActions();
+  }, [selectedAssessmentId]);
 
   const handleSubmit = async () => {
     if (!noteText.trim() || !dealershipId || !user?.id) return;
     setSubmitting(true);
 
-    const payload: Record<string, string> = {
+    const payload: {
+      coach_user_id: string;
+      dealership_id: string;
+      note_text: string;
+      assessment_id?: string;
+      action_id?: string;
+    } = {
       coach_user_id: user.id,
       dealership_id: dealershipId,
       note_text: noteText.trim(),
@@ -108,9 +129,11 @@ export function CoachNoteSheet({ open, onOpenChange, dealershipId, dealerName, o
     if (contextType === 'assessment' && selectedAssessmentId) payload.assessment_id = selectedAssessmentId;
     if (contextType === 'action' && selectedActionId) payload.action_id = selectedActionId;
 
-    const { data } = await supabase.from('coach_notes').insert(payload).select().single();
+    const { data, error } = await supabase.from('coach_notes').insert(payload).select().single();
 
-    if (data) {
+    if (error) {
+      console.error('coach_notes insert failed', error);
+    } else if (data) {
       setNotes(prev => [data as CoachNote, ...prev]);
       setNoteText('');
       setContextType('general');
