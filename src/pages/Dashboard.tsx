@@ -5,22 +5,15 @@ import { useActiveRole } from '@/hooks/useActiveRole';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, Info, ClipboardList, ArrowRight, BarChart3, Zap, Award } from 'lucide-react';
+import { ClipboardList, ArrowRight, BarChart3, Zap, Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { calculateWeightedScore } from '@/lib/scoringEngine';
 import { getMaturityLevel, MATURITY_LEVELS } from '@/lib/maturityConfig';
 import {
   DEPT_DISPLAY_NAMES,
-  DEPT_ORDER,
-  deptScoreColour,
-  deptMaturityColour,
-  isOverdue,
   formatDisplayDate,
   formatDueDate,
   quarterLabel,
-  nextAssessmentDue,
-  endOfCurrentQuarter,
-  relativeDays,
   deptFindingText,
   focusDepartment,
   criticalGapCount,
@@ -236,7 +229,7 @@ function EmptyState({ onStart }: { onStart: () => void }) {
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
-  const { actorType } = useActiveRole();
+  const { actorType, dealerId } = useActiveRole();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -275,32 +268,36 @@ export default function Dashboard() {
         .neq('status', 'completed')
         .order('target_completion_date', { ascending: true });
 
-      const { data: coachRows } = await supabase
-        .from('coach_dealership_assignments')
-        .select('coach_user_id, assigned_at, valid_from, valid_to, is_active')
-        .eq('is_active', true)
-        .limit(1);
+      let coach: CoachRow | null = null;
+      if (dealerId) {
+        const { data: coachRows } = await supabase
+          .from('coach_dealership_assignments')
+          .select('coach_user_id, assigned_at, valid_from, valid_to, is_active')
+          .eq('dealership_id', dealerId)
+          .eq('is_active', true)
+          .limit(1);
+        coach = (coachRows?.[0] as CoachRow) ?? null;
+      }
 
       if (cancelled) return;
 
       setData({
         assessment,
         actions: (actions ?? []) as ActionRow[],
-        coach: coachRows?.[0] as CoachRow ?? null,
+        coach,
       });
       setLoading(false);
     })();
 
     return () => { cancelled = true; };
-  }, [user]);
+  }, [user, dealerId]);
 
   const derived = useMemo(() => {
     if (!data) return null;
     const { assessment, actions } = data;
     const scores = (assessment.scores as Record<string, number>) ?? {};
     const overallScore = assessment.overall_score ?? calculateWeightedScore(scores);
-    const maturityKey = getMaturityLevel(overallScore);
-    const maturityLabel = MATURITY_LEVELS[maturityKey].label;
+    const maturityLabel = MATURITY_LEVELS[getMaturityLevel(overallScore)].label;
     const focusDeptKey = focusDepartment(scores);
     const focusDeptName = DEPT_DISPLAY_NAMES[focusDeptKey] ?? '—';
     const focusDeptScore = scores[focusDeptKey] ?? 0;
@@ -310,7 +307,7 @@ export default function Dashboard() {
     const quarter = quarterLabel(assessment.completed_at);
 
     return {
-      scores, overallScore, maturityKey, maturityLabel,
+      overallScore, maturityLabel,
       focusDeptKey, focusDeptName, focusDeptScore,
       gapCount, openCount, narrative, quarter,
     };
@@ -331,9 +328,9 @@ export default function Dashboard() {
     );
   }
 
-  const { assessment, actions, coach } = data;
+  const { assessment, actions } = data;
   const {
-    scores, overallScore, maturityLabel,
+    overallScore, maturityLabel,
     focusDeptKey, focusDeptName, focusDeptScore,
     gapCount, openCount, narrative, quarter,
   } = derived;
@@ -377,13 +374,14 @@ export default function Dashboard() {
               Diagnostic Command
             </h1>
           </div>
-          <button
+          <Button
+            variant="default"
             onClick={() => navigate('/app/results')}
-            className="flex items-center gap-2 px-4 py-2 bg-[#0b1f3a] text-white rounded-lg text-[12px] font-semibold hover:bg-[#122a4a] transition-colors"
+            className="flex items-center gap-2 bg-[#0b1f3a] hover:bg-[#122a4a] text-white text-[12px] font-semibold"
           >
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M8 2v8M5 7l3 3 3-3M3 13h10"/></svg>
             View Full Report
-          </button>
+          </Button>
         </div>
 
         {/* ── Hero card ── */}
