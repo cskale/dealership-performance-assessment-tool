@@ -5,19 +5,26 @@ import { useActiveRole } from '@/hooks/useActiveRole';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { ClipboardList, ArrowRight, BarChart3, Zap, Award } from 'lucide-react';
+import { ClipboardList, ArrowRight, BarChart3, Zap, Award, AlertCircle, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { calculateWeightedScore } from '@/lib/scoringEngine';
 import { getMaturityLevel, MATURITY_LEVELS } from '@/lib/maturityConfig';
 import {
   DEPT_DISPLAY_NAMES,
+  DEPT_ORDER,
   formatDisplayDate,
   formatDueDate,
   quarterLabel,
   deptFindingText,
+  deptScoreColour,
+  deptMaturityColour,
   focusDepartment,
   criticalGapCount,
   heroNarrative,
+  isOverdue,
+  nextAssessmentDue,
+  endOfCurrentQuarter,
+  relativeDays,
 } from '@/lib/dashboardUtils';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -189,6 +196,359 @@ function HeroCard({
   );
 }
 
+// ─── Timeline Strip ───────────────────────────────────────────────────────────
+
+type TimelineStatus = 'done' | 'upcoming' | 'overdue';
+
+interface TimelineSlotProps {
+  label: string;
+  date: string;
+  sub: string;
+  status: TimelineStatus;
+  badgeText: string;
+}
+
+function TimelineSlot({ label, date, sub, status, badgeText }: TimelineSlotProps) {
+  const dotColor = {
+    done:     'bg-[#22c55e]',
+    upcoming: 'bg-[#579DFF]',
+    overdue:  'bg-[#ef4444]',
+  }[status];
+
+  const badgeStyle = {
+    done:     'bg-[#f0fdf4] text-[#15803d]',
+    upcoming: 'bg-[#E9F2FF] text-[#1558BC]',
+    overdue:  'bg-[#fef2f2] text-[#ef4444]',
+  }[status];
+
+  return (
+    <div className="px-5 py-4 border-r border-[#F1F2F4] last:border-r-0 relative">
+      <span className={cn('absolute top-4 right-4 w-2 h-2 rounded-full', dotColor)} />
+      <p className="text-[10px] font-semibold text-[#6B778C] mb-1">{label}</p>
+      <p className="text-[13px] font-bold text-[#172B4D] mb-0.5">{date}</p>
+      <p className="text-[10px] text-[#6B778C] mb-2">{sub}</p>
+      <span className={cn('inline-block text-[9px] font-bold px-2 py-0.5 rounded-full', badgeStyle)}>
+        {badgeText}
+      </span>
+    </div>
+  );
+}
+
+function TimelineStrip({
+  assessment,
+  coach,
+}: {
+  assessment: AssessmentRow;
+  coach: CoachRow | null;
+}) {
+  const nextDue = nextAssessmentDue(assessment.completed_at);
+  const qEnd    = endOfCurrentQuarter();
+  const nextDueOverdue = isOverdue(nextDue);
+
+  const coachAssignedDate = coach?.assigned_at
+    ? formatDisplayDate(coach.assigned_at)
+    : null;
+
+  return (
+    <div className="bg-white rounded-xl shadow-card border border-[#DFE1E6] grid grid-cols-5 overflow-hidden">
+      <TimelineSlot
+        label="Last Assessment"
+        date={formatDisplayDate(assessment.completed_at)}
+        sub="61 questions · completed"
+        status="done"
+        badgeText="Completed"
+      />
+      <TimelineSlot
+        label="Next Assessment Due"
+        date={formatDisplayDate(nextDue)}
+        sub={relativeDays(nextDue)}
+        status={nextDueOverdue ? 'overdue' : 'upcoming'}
+        badgeText={nextDueOverdue ? 'Overdue' : 'Upcoming'}
+      />
+      <TimelineSlot
+        label="Last Coach Visit"
+        date={coachAssignedDate ?? 'Not scheduled'}
+        sub={coach ? 'Field coach assigned' : 'No coach assigned'}
+        status={coach ? 'done' : 'upcoming'}
+        badgeText={coach ? 'Assigned' : 'Not scheduled'}
+      />
+      <TimelineSlot
+        label="Next Coach Visit"
+        date={coach?.valid_to ? formatDisplayDate(coach.valid_to) : 'Not scheduled'}
+        sub={coach?.valid_to ? relativeDays(coach.valid_to) : 'Contact your programme manager'}
+        status="upcoming"
+        badgeText={coach?.valid_to ? 'Scheduled' : 'Not scheduled'}
+      />
+      <TimelineSlot
+        label="Action Plan Review"
+        date={formatDisplayDate(qEnd)}
+        sub="End of quarter · all departments"
+        status="upcoming"
+        badgeText="Upcoming"
+      />
+    </div>
+  );
+}
+
+// ─── Priority Intervention Card ───────────────────────────────────────────────
+
+function PriorityCard({
+  focusDeptName,
+  focusDeptScore,
+}: {
+  focusDeptName: string;
+  focusDeptScore: number;
+}) {
+  const navigate = useNavigate();
+  return (
+    <div className="flex items-center gap-4 px-5 py-4 bg-[#fef2f2] border border-[#fecaca] border-l-[3px] border-l-[#ef4444] rounded-xl shadow-card">
+      <div className="flex-1 min-w-0">
+        <p className="text-[12px] font-bold text-[#ef4444] mb-1">
+          Priority Intervention Required
+        </p>
+        <p className="text-[12px] text-[#253858] leading-relaxed">
+          {focusDeptName} scored {Math.round(focusDeptScore)}/100 and requires immediate
+          attention. Review the open actions and assign ownership before the Q2 deadline.
+        </p>
+      </div>
+      <button
+        onClick={() => navigate('/app/actions')}
+        className="flex-shrink-0 px-5 py-2 bg-[#ef4444] text-white rounded-lg text-[12px] font-bold hover:bg-[#dc2626] transition-colors"
+      >
+        Resolve Now
+      </button>
+    </div>
+  );
+}
+
+// ─── Departmental Intelligence Grid ──────────────────────────────────────────
+
+function DeptGrid({ scores }: { scores: Record<string, number> }) {
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <h2 className="text-[15px] font-bold text-[#172B4D]">Departmental Intelligence</h2>
+        <span className="text-[11px] font-semibold text-[#6B778C]">Performance matrix ⓘ</span>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-card border border-[#DFE1E6] grid grid-cols-5 overflow-hidden">
+        {DEPT_ORDER.map((key, i) => {
+          const score = scores[key] ?? 0;
+          const maturity = MATURITY_LEVELS[getMaturityLevel(score)].label;
+          const scoreColour    = deptScoreColour(score);
+          const maturityColour = deptMaturityColour(score);
+          const finding = deptFindingText(key, score);
+
+          return (
+            <div
+              key={key}
+              className={cn(
+                'p-4 pb-4',
+                i < DEPT_ORDER.length - 1 && 'border-r border-[#F1F2F4]'
+              )}
+            >
+              <p className="text-[10px] font-bold text-[#5E6C84] mb-2 leading-tight">
+                {DEPT_DISPLAY_NAMES[key]}
+              </p>
+              <p
+                className={cn(
+                  'text-[38px] font-extrabold leading-none tabular-nums mb-0.5',
+                  scoreColour
+                )}
+                style={{ letterSpacing: '-0.03em', fontOpticalSizing: 'auto' } as React.CSSProperties}
+              >
+                {Math.round(score)}
+              </p>
+              <p className={cn('text-[10px] font-bold uppercase tracking-[0.05em] mb-3', maturityColour)}>
+                {maturity}
+              </p>
+              <p className="text-[10.5px] text-[#5E6C84] leading-relaxed border-t border-[#F1F2F4] pt-2">
+                {finding}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+// ─── Open Actions Table ───────────────────────────────────────────────────────
+
+function ActionsTable({
+  actions,
+  onViewAll,
+}: {
+  actions: ActionRow[];
+  onViewAll: () => void;
+}) {
+  if (actions.length === 0) return null;
+
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <h2 className="text-[15px] font-bold text-[#172B4D]">Open Actions</h2>
+        <button
+          onClick={onViewAll}
+          className="text-[11px] font-semibold text-[#6B778C] hover:text-[#1D7AFC] transition-colors"
+        >
+          View all in Action Plans →
+        </button>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-card border border-[#DFE1E6] px-5 py-5">
+        <table className="w-full" style={{ borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>
+              {['Action', 'Department', 'Responsible', 'Due'].map(h => (
+                <th
+                  key={h}
+                  className="text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-[#97A0AF] pb-3"
+                  style={{ paddingRight: h !== 'Due' ? '20px' : undefined }}
+                >
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {actions.map(action => {
+              const overdue = isOverdue(action.target_completion_date);
+              const deptName = DEPT_DISPLAY_NAMES[action.department] ?? action.department;
+
+              return (
+                <tr key={action.id}>
+                  <td
+                    className="text-[12px] text-[#253858] font-medium py-[10px] border-t border-[#F1F2F4] align-top"
+                    style={{ paddingRight: '20px' }}
+                  >
+                    <span
+                      className={cn(
+                        'inline-block w-[7px] h-[7px] rounded-full mr-2 flex-shrink-0 align-middle',
+                        overdue ? 'bg-[#ef4444]' : 'bg-[#1D7AFC]'
+                      )}
+                    />
+                    {action.action_title}
+                  </td>
+                  <td
+                    className="text-[12px] text-[#5E6C84] py-[10px] border-t border-[#F1F2F4] align-top whitespace-nowrap"
+                    style={{ paddingRight: '20px' }}
+                  >
+                    {deptName}
+                  </td>
+                  <td
+                    className="text-[12px] text-[#5E6C84] py-[10px] border-t border-[#F1F2F4] align-top whitespace-nowrap"
+                    style={{ paddingRight: '20px' }}
+                  >
+                    {action.responsible_person ?? '—'}
+                  </td>
+                  <td
+                    className={cn(
+                      'text-[11px] font-semibold py-[10px] border-t border-[#F1F2F4] align-top whitespace-nowrap',
+                      overdue ? 'text-[#ef4444]' : 'text-[#6B778C]'
+                    )}
+                  >
+                    {formatDueDate(action.target_completion_date)}
+                    {overdue && ' · Overdue'}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+// ─── Strategic Findings ───────────────────────────────────────────────────────
+
+interface Finding {
+  id: string;
+  severity: 'critical' | 'medium';
+  title: string;
+  description: string;
+}
+
+function deriveFindings(scores: Record<string, number>): Finding[] {
+  const findings: Finding[] = [];
+
+  for (const key of DEPT_ORDER) {
+    const score = scores[key] ?? 0;
+    if (score < 45) {
+      const name = DEPT_DISPLAY_NAMES[key];
+      findings.push({
+        id: `critical-${key}`,
+        severity: 'critical',
+        title: `${name} — Critical Performance Gap`,
+        description: `${name} scored ${Math.round(score)}/100 (Foundational). Core processes are undefined or inconsistently applied, creating a significant drag on overall dealership performance. Immediate structured intervention is required before the next assessment cycle.`,
+      });
+    }
+  }
+
+  const weakDepts = DEPT_ORDER.filter(k => (scores[k] ?? 0) < 65);
+  if (weakDepts.length >= 2) {
+    const names = weakDepts.map(k => DEPT_DISPLAY_NAMES[k]).join(', ');
+    findings.push({
+      id: 'systemic-process',
+      severity: 'medium',
+      title: 'Cross-Department Process Consistency Gap',
+      description: `Below-benchmark performance identified in ${weakDepts.length} departments: ${names}. This pattern suggests an organisation-wide process discipline issue — likely inconsistent CRM usage, role ownership gaps, or absence of a regular operational review cadence — rather than isolated department failures.`,
+    });
+  }
+
+  return findings.slice(0, 3);
+}
+
+function FindingsCard({ scores }: { scores: Record<string, number> }) {
+  const findings = deriveFindings(scores);
+  if (findings.length === 0) return null;
+
+  return (
+    <>
+      <h2 className="text-[15px] font-bold text-[#172B4D]">Strategic Findings</h2>
+      <div className="bg-white rounded-xl shadow-card border border-[#DFE1E6] px-5 py-5">
+        {findings.map((f, i) => (
+          <div
+            key={f.id}
+            className={cn('py-4 flex items-start gap-3', i > 0 && 'border-t border-[#F1F2F4]')}
+          >
+            <div
+              className={cn(
+                'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0',
+                f.severity === 'critical' ? 'bg-[#fef2f2]' : 'bg-[#E9F2FF]'
+              )}
+            >
+              {f.severity === 'critical' ? (
+                <AlertCircle size={16} strokeWidth={2} className="text-[#ef4444]" />
+              ) : (
+                <Info size={16} strokeWidth={2} className="text-[#1D7AFC]" />
+              )}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-3 mb-1">
+                <p className="text-[13px] font-bold text-[#172B4D]">{f.title}</p>
+                <span
+                  className={cn(
+                    'flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full',
+                    f.severity === 'critical'
+                      ? 'bg-[#fef2f2] text-[#ef4444]'
+                      : 'bg-[#E9F2FF] text-[#1558BC]'
+                  )}
+                >
+                  {f.severity === 'critical' ? 'Critical risk' : 'Medium impact'}
+                </span>
+              </div>
+              <p className="text-[11px] text-[#5E6C84] leading-relaxed">{f.description}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
 // ─── Empty State ──────────────────────────────────────────────────────────────
 
 function EmptyState({ onStart }: { onStart: () => void }) {
@@ -310,6 +670,7 @@ export default function Dashboard() {
       overallScore, maturityLabel,
       focusDeptKey, focusDeptName, focusDeptScore,
       gapCount, openCount, narrative, quarter,
+      scores,
     };
   }, [data]);
 
@@ -328,11 +689,12 @@ export default function Dashboard() {
     );
   }
 
-  const { assessment, actions } = data;
+  const { assessment, actions, coach } = data;
   const {
     overallScore, maturityLabel,
     focusDeptKey, focusDeptName, focusDeptScore,
     gapCount, openCount, narrative, quarter,
+    scores,
   } = derived;
 
   return (
@@ -395,7 +757,28 @@ export default function Dashboard() {
           focusDeptKey={focusDeptKey}
         />
 
-        {/* placeholder — Tasks 6-9 */}
+        {/* ── Timeline strip ── */}
+        <TimelineStrip assessment={assessment} coach={coach} />
+
+        {/* ── Priority card — only when a critical gap exists ── */}
+        {gapCount > 0 && (
+          <PriorityCard
+            focusDeptName={focusDeptName}
+            focusDeptScore={focusDeptScore}
+          />
+        )}
+
+        {/* ── Departmental intelligence ── */}
+        <DeptGrid scores={scores} />
+
+        {/* ── Open actions table ── */}
+        <ActionsTable
+          actions={actions}
+          onViewAll={() => navigate('/app/actions')}
+        />
+
+        {/* ── Strategic findings ── */}
+        <FindingsCard scores={scores} />
 
       </main>
     </div>
