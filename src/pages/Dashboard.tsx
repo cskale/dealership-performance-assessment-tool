@@ -319,7 +319,7 @@ function PriorityCard({
         </p>
       </div>
       <button
-        onClick={() => navigate('/app/actions')}
+        onClick={() => navigate('/app/actions?filter=critical')}
         className="flex-shrink-0 px-5 py-2 bg-[#ef4444] text-white rounded-lg text-[12px] font-bold hover:bg-[#dc2626] transition-colors"
       >
         Resolve Now
@@ -721,9 +721,8 @@ export default function Dashboard() {
         />
         <StatsBadge label="Open actions" value={`${openCount} item${openCount !== 1 ? 's' : ''}`} />
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-[11px] font-semibold text-white/60">Dealer Principal</span>
           <div className="w-[26px] h-[26px] rounded-full bg-gradient-to-br from-[#1D7AFC] to-indigo-500 flex items-center justify-center text-[10px] font-bold text-white">
-            DP
+            {(user?.email?.[0] ?? 'U').toUpperCase()}
           </div>
         </div>
       </div>

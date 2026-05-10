@@ -187,7 +187,7 @@ export function heroNarrative(
     return `All departments are performing above benchmark — ${focusDept} has the most room for further improvement.`;
   }
   if (aboveBenchmark.length >= 3) {
-    return `${aboveBenchmark.slice(0, 2).join(' and ')} are above benchmark. ${focusDept} is the primary focus for Q2 improvement.`;
+    return `${aboveBenchmark.slice(0, 2).join(' and ')} are above benchmark. ${focusDept} is the primary focus for improvement this quarter.`;
   }
   if (aboveBenchmark.length >= 1) {
     return `${aboveBenchmark[0]} is above benchmark. ${focusDept} requires the most urgent attention this quarter.`;
