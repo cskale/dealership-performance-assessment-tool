@@ -28,7 +28,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { format } from 'date-fns';
-import { ArrowUpDown, CalendarDays, Filter, LineChart as LineChartIcon, TrendingUp as TrendingUpIcon, TrendingUp, TrendingDown, Minus, StickyNote, Clock } from 'lucide-react';
+import { ArrowUpDown, Filter, LineChart as LineChartIcon, TrendingUp as TrendingUpIcon, TrendingUp, TrendingDown, Minus, StickyNote } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { computeStatsBar, computeTrend, daysSince, getScoreBand, isOverdue, isDueSoon } from '@/lib/coachDashboardUtils';
 import { CoachNoteSheet } from '@/components/coach/CoachNoteSheet';
@@ -107,8 +107,6 @@ export default function CoachDashboard() {
   const [noteSheetDealer, setNoteSheetDealer] = useState<AssignedDealer | null>(null);
   const [notesDealerFilter, setNotesDealerFilter] = useState<string>('all');
   const [notesPage, setNotesPage] = useState(0);
-  // Temporary stubs — removed in Tasks 6-10
-  const staleActions: never[] = [];
   const selectedDealer = null;
 
   const fetchNotes = async (page = 0) => {
@@ -278,6 +276,21 @@ export default function CoachDashboard() {
     else result.sort((a, b) => b.overdueCount - a.overdueCount);
     return result;
   }, [dealers, sortBy, statusFilter]);
+
+  const overdueActions = useMemo(() => {
+    const base = actionDealerFilter === 'all' ? allActions : allActions.filter(a => a.dealershipId === actionDealerFilter);
+    return base.filter(a => isOverdue(a.target_completion_date));
+  }, [allActions, actionDealerFilter]);
+
+  const staleActions = useMemo(() => {
+    const base = actionDealerFilter === 'all' ? allActions : allActions.filter(a => a.dealershipId === actionDealerFilter);
+    return base.filter(a => a.daysStale >= 7);
+  }, [allActions, actionDealerFilter]);
+
+  const allOpenActions = useMemo(() => {
+    if (actionDealerFilter === 'all') return allActions;
+    return allActions.filter(a => a.dealershipId === actionDealerFilter);
+  }, [allActions, actionDealerFilter]);
 
   const chartData = useMemo(() => {
     if (selectedDealerIds.length === 0) return [];
@@ -574,67 +587,110 @@ export default function CoachDashboard() {
         </CardContent>
       </Card>
 
-      {/* Stale Actions */}
+      {/* Actions Requiring Attention */}
       <Card className="shadow-card rounded-xl">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-h5">
-            <Clock className="h-4 w-4 text-warning-foreground" />
-            Stale Actions
-            {staleActions.length > 0 && (
-              <Badge variant="outline" className="ml-1 text-caption bg-warning/10 text-warning-foreground border-warning/20">
-                {staleActions.length}
-              </Badge>
-            )}
-          </CardTitle>
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <CardTitle className="text-base font-semibold">Actions Requiring Attention</CardTitle>
+            <Select value={actionDealerFilter} onValueChange={setActionDealerFilter}>
+              <SelectTrigger className="w-44 h-8 text-xs"><SelectValue placeholder="All dealers" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All dealers</SelectItem>
+                {dealers.map(d => (
+                  <SelectItem key={d.dealershipId} value={d.dealershipId}>{d.dealerName}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
-          {staleActions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
-              <Clock className="h-7 w-7 text-muted-foreground/30" />
-              <p className="text-body-sm text-muted-foreground">No stale actions — all items updated within 7 days</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-border">
-              {/* Table header */}
-              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 px-5 py-2 bg-muted/50">
-                <span className="text-caption uppercase tracking-wider text-muted-foreground">Action</span>
-                <span className="text-caption uppercase tracking-wider text-muted-foreground w-32 text-left">Dealership</span>
-                <span className="text-caption uppercase tracking-wider text-muted-foreground w-20 text-right">Days stale</span>
-                <span className="text-caption uppercase tracking-wider text-muted-foreground w-20 text-right">Priority</span>
-              </div>
-              {staleActions.map(action => {
-                const priorityClass =
-                  action.priority === 'critical' ? 'bg-destructive/10 text-destructive border-destructive/20' :
-                  action.priority === 'high'     ? 'bg-warning/10 text-warning-foreground border-warning/20' :
-                  action.priority === 'medium'   ? 'bg-info/10 text-info border-info/20' :
-                                                   'bg-muted text-muted-foreground border-border';
-                const daysClass =
-                  action.daysStale >= 21 ? 'text-destructive font-semibold' :
-                  action.daysStale >= 14 ? 'text-warning-foreground font-medium' :
-                                           'text-muted-foreground';
-                return (
-                  <div
-                    key={action.id}
-                    className="grid grid-cols-[1fr_auto_auto_auto] gap-3 px-5 py-3 hover:bg-muted/20 transition-colors"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-body-sm font-medium text-foreground truncate">{action.action_title}</p>
-                      <p className="text-caption text-muted-foreground mt-0.5">{action.status}</p>
+          <Tabs value={activeTab} onValueChange={v => setActiveTab(v as 'overdue' | 'stale' | 'all')}>
+            <TabsList className="mx-5 mb-0 h-8">
+              <TabsTrigger value="overdue" className="text-xs">
+                Overdue
+                {overdueActions.length > 0 && (
+                  <span className="ml-1 rounded-full bg-[#dc2626]/10 text-[#dc2626] px-1.5 text-[10px]">{overdueActions.length}</span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="stale" className="text-xs">
+                Stale
+                {staleActions.length > 0 && (
+                  <span className="ml-1 rounded-full bg-[#d97706]/10 text-[#d97706] px-1.5 text-[10px]">{staleActions.length}</span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="all" className="text-xs">All Open ({allOpenActions.length})</TabsTrigger>
+            </TabsList>
+
+            {(['overdue', 'stale', 'all'] as const).map(tab => {
+              const items = tab === 'overdue' ? overdueActions : tab === 'stale' ? staleActions : allOpenActions;
+              const emptyMsg = tab === 'overdue'
+                ? 'No overdue actions — all on track'
+                : tab === 'stale'
+                ? 'No stale actions — all updated within 7 days'
+                : 'No open actions';
+
+              return (
+                <TabsContent key={tab} value={tab} className="mt-0">
+                  {items.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+                      <span className="text-2xl text-[#16a34a]">✓</span>
+                      <p className="text-sm text-muted-foreground">{emptyMsg}</p>
                     </div>
-                    <span className="text-body-sm text-muted-foreground w-32 self-center truncate">{action.dealerName}</span>
-                    <span className={`text-body-sm w-20 text-right self-center numeric ${daysClass}`}>
-                      {action.daysStale}d
-                    </span>
-                    <div className="w-20 flex justify-end self-center">
-                      <Badge variant="outline" className={`text-caption capitalize ${priorityClass}`}>
-                        {action.priority}
-                      </Badge>
+                  ) : (
+                    <div className="divide-y divide-border">
+                      <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 px-5 py-2 bg-muted/50">
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Action</span>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-36">Dealership</span>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-24 text-right">
+                          {tab === 'overdue' ? 'Due date' : 'Days stale'}
+                        </span>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-20 text-right">Priority</span>
+                      </div>
+                      {items.map(action => {
+                        const priorityClass =
+                          action.priority === 'critical' ? 'bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20' :
+                          action.priority === 'high'     ? 'bg-[#d97706]/10 text-[#d97706] border-[#d97706]/20' :
+                          action.priority === 'medium'   ? 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20' :
+                                                           'bg-muted text-muted-foreground border-border';
+                        const dueDateClass = isOverdue(action.target_completion_date)
+                          ? 'text-[#dc2626] font-semibold'
+                          : isDueSoon(action.target_completion_date)
+                          ? 'text-[#d97706] font-medium'
+                          : 'text-muted-foreground';
+                        const staleClass =
+                          action.daysStale >= 21 ? 'text-[#dc2626] font-semibold' :
+                          action.daysStale >= 14 ? 'text-[#d97706] font-medium' :
+                                                   'text-muted-foreground';
+                        const dueDateLabel = action.target_completion_date
+                          ? format(new Date(action.target_completion_date), 'dd MMM')
+                          : '—';
+
+                        return (
+                          <div
+                            key={action.id}
+                            className="grid grid-cols-[1fr_auto_auto_auto] gap-3 px-5 py-3 hover:bg-muted/20 transition-colors cursor-pointer"
+                            onClick={() => navigate(`/app/results/${action.assessmentId}`)}
+                          >
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-foreground truncate">{action.action_title}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{action.status}</p>
+                            </div>
+                            <span className="text-sm text-muted-foreground w-36 self-center truncate">{action.dealerName}</span>
+                            <span className={`text-sm w-24 text-right self-center ${tab === 'overdue' ? dueDateClass : staleClass}`}>
+                              {tab === 'overdue' ? dueDateLabel : `${action.daysStale}d`}
+                            </span>
+                            <div className="w-20 flex justify-end self-center">
+                              <Badge variant="outline" className={`text-xs capitalize ${priorityClass}`}>{action.priority}</Badge>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                  )}
+                </TabsContent>
+              );
+            })}
+          </Tabs>
         </CardContent>
       </Card>
     </div>
