@@ -37,25 +37,43 @@ interface AssignedDealer {
   location: string;
   brand: string;
   latestScore: number | null;
+  previousScore: number | null;
   latestDate: string | null;
   latestStatus: string | null;
   latestAssessmentId: string | null;
+  openCount: number;
+  overdueCount: number;
 }
 
 interface AssessmentRecord {
+  id: string;
   dealership_id: string;
   overall_score: number | null;
   created_at: string;
+  status: string;
 }
 
-interface StaleAction {
+interface ActionItem {
   id: string;
   action_title: string;
   priority: string;
   status: string;
   last_status_updated_at: string | null;
+  target_completion_date: string | null;
   dealerName: string;
+  dealershipId: string;
+  assessmentId: string;
   daysStale: number;
+}
+
+interface CoachNote {
+  id: string;
+  coach_user_id: string;
+  dealership_id: string;
+  assessment_id: string | null;
+  action_id: string | null;
+  note_text: string;
+  created_at: string;
 }
 
 const CHART_COLORS = ['#2563eb', '#7c3aed', '#0891b2'];
@@ -75,23 +93,46 @@ export default function CoachDashboard() {
 
   const [dealers, setDealers] = useState<AssignedDealer[]>([]);
   const [allAssessments, setAllAssessments] = useState<AssessmentRecord[]>([]);
+  const [allActions, setAllActions] = useState<ActionItem[]>([]);
+  const [notes, setNotes] = useState<CoachNote[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState<'score' | 'name'>('score');
+  const [sortBy, setSortBy] = useState<'score' | 'name' | 'overdue'>('score');
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'in_progress'>('all');
   const [selectedDealerIds, setSelectedDealerIds] = useState<string[]>([]);
-  const [staleActions, setStaleActions] = useState<StaleAction[]>([]);
-  const [selectedDealer, setSelectedDealer] = useState<AssignedDealer | null>(null);
+  const [activeTab, setActiveTab] = useState<'overdue' | 'stale' | 'all'>('overdue');
+  const [actionDealerFilter, setActionDealerFilter] = useState<string>('all');
+  const [noteSheetOpen, setNoteSheetOpen] = useState(false);
+  const [noteSheetDealer, setNoteSheetDealer] = useState<AssignedDealer | null>(null);
+  const [notesDealerFilter, setNotesDealerFilter] = useState<string>('all');
+  const [notesPage, setNotesPage] = useState(0);
+  // Temporary stubs — removed in Tasks 6-10
+  const staleActions: never[] = [];
+  const selectedDealer = null;
+
+  const fetchNotes = async (page = 0) => {
+    if (!user?.id) return;
+    const { data } = await supabase
+      .from('coach_notes')
+      .select('*')
+      .eq('coach_user_id', user.id)
+      .order('created_at', { ascending: false })
+      .range(page * 20, page * 20 + 19);
+    if (page === 0) {
+      setNotes((data as CoachNote[]) ?? []);
+    } else {
+      setNotes(prev => [...prev, ...((data as CoachNote[]) ?? [])]);
+    }
+  };
 
   useEffect(() => {
     if (!user?.id) return;
     const fetchAssignments = async () => {
       setLoading(true);
 
-      // Get coach assignments
       const { data: assignments, error: assignErr } = await supabase
         .from('coach_dealership_assignments')
         .select('dealership_id')
-        .eq('coach_user_id', user.id)
+        .eq('coach_user_id', user!.id)
         .eq('is_active', true);
 
       if (assignErr || !assignments?.length) {
@@ -102,85 +143,125 @@ export default function CoachDashboard() {
 
       const dealershipIds = assignments.map(a => a.dealership_id);
 
-      // Get dealership details
-      const { data: dealerships } = await supabase
-        .from('dealerships')
-        .select('id, name, location, brand')
-        .in('id', dealershipIds);
+      const [dealershipsRes, assessmentsRes] = await Promise.all([
+        supabase.from('dealerships').select('id, name, location, brand').in('id', dealershipIds),
+        supabase
+          .from('assessments')
+          .select('id, overall_score, created_at, dealership_id, status')
+          .in('dealership_id', dealershipIds)
+          .order('created_at', { ascending: false }),
+      ]);
 
-      // Get all assessments for these dealerships
-      const { data: assessments } = await supabase
-        .from('assessments')
-        .select('id, overall_score, created_at, dealership_id, status')
-        .in('dealership_id', dealershipIds)
-        .order('created_at', { ascending: false });
+      const dealerships = dealershipsRes.data ?? [];
+      const assessments = assessmentsRes.data ?? [];
 
       setAllAssessments(
-        (assessments || []).map(a => ({
+        assessments.map(a => ({
+          id: a.id,
           dealership_id: a.dealership_id,
           overall_score: a.overall_score ? Number(a.overall_score) : null,
           created_at: a.created_at,
+          status: a.status,
         }))
       );
 
-      const dealerList: AssignedDealer[] = (dealerships || []).map(d => {
-        const latestAssessment = (assessments || []).find(a => a.dealership_id === d.id);
+      const assessmentIds = assessments.map(a => a.id);
+      const today = new Date();
+
+      let actionData: Array<{
+        id: string; action_title: string; priority: string; status: string;
+        last_status_updated_at: string | null; target_completion_date: string | null;
+        assessment_id: string;
+      }> = [];
+
+      if (assessmentIds.length) {
+        const { data } = await supabase
+          .from('improvement_actions')
+          .select('id, action_title, priority, status, last_status_updated_at, target_completion_date, assessment_id')
+          .in('assessment_id', assessmentIds)
+          .in('status', ['Open', 'In Progress'])
+          .order('target_completion_date', { ascending: true, nullsFirst: false });
+        actionData = data ?? [];
+      }
+
+      // Build assessment → dealer lookup
+      const assessmentToDealer = new Map<string, { id: string; name: string }>();
+      assessments.forEach(a => {
+        const dealer = dealerships.find(d => d.id === a.dealership_id);
+        if (dealer) assessmentToDealer.set(a.id, { id: dealer.id, name: dealer.name });
+      });
+
+      // Compute per-dealer counts while building ActionItem list
+      const openByDealer = new Map<string, number>();
+      const overdueByDealer = new Map<string, number>();
+      const now = Date.now();
+
+      const builtActions: ActionItem[] = actionData.map(ia => {
+        const dealer = assessmentToDealer.get(ia.assessment_id);
+        const dealerId = dealer?.id ?? '';
+        const dealerName = dealer?.name ?? 'Unknown';
+
+        openByDealer.set(dealerId, (openByDealer.get(dealerId) ?? 0) + 1);
+        if (ia.target_completion_date && new Date(ia.target_completion_date) < today) {
+          overdueByDealer.set(dealerId, (overdueByDealer.get(dealerId) ?? 0) + 1);
+        }
+
+        const lastMs = ia.last_status_updated_at
+          ? new Date(ia.last_status_updated_at).getTime()
+          : now - 8 * 86400000;
+        const daysStale = Math.max(1, Math.floor((now - lastMs) / 86400000));
+
+        return {
+          id: ia.id,
+          action_title: ia.action_title,
+          priority: ia.priority,
+          status: ia.status,
+          last_status_updated_at: ia.last_status_updated_at,
+          target_completion_date: ia.target_completion_date,
+          dealerName,
+          dealershipId: dealerId,
+          assessmentId: ia.assessment_id,
+          daysStale,
+        };
+      });
+
+      setAllActions(builtActions);
+
+      // Build dealer list with top-2 assessments per dealer
+      const dealerAssessments = new Map<string, AssessmentRecord[]>();
+      assessments.forEach(a => {
+        const list = dealerAssessments.get(a.dealership_id) ?? [];
+        list.push({
+          id: a.id,
+          dealership_id: a.dealership_id,
+          overall_score: a.overall_score ? Number(a.overall_score) : null,
+          created_at: a.created_at,
+          status: a.status,
+        });
+        dealerAssessments.set(a.dealership_id, list);
+      });
+
+      const dealerList: AssignedDealer[] = dealerships.map(d => {
+        const records = dealerAssessments.get(d.id) ?? [];
+        const latest = records[0];
+        const previous = records[1];
         return {
           dealershipId: d.id,
           dealerName: d.name,
           location: d.location,
           brand: d.brand,
-          latestScore: latestAssessment?.overall_score ? Number(latestAssessment.overall_score) : null,
-          latestDate: latestAssessment?.created_at ?? null,
-          latestStatus: latestAssessment?.status ?? null,
-          latestAssessmentId: latestAssessment?.id ?? null,
+          latestScore: latest?.overall_score ?? null,
+          previousScore: previous?.overall_score ?? null,
+          latestDate: latest?.created_at ?? null,
+          latestStatus: latest?.status ?? null,
+          latestAssessmentId: latest?.id ?? null,
+          openCount: openByDealer.get(d.id) ?? 0,
+          overdueCount: overdueByDealer.get(d.id) ?? 0,
         };
       });
 
       setDealers(dealerList);
-
-      // Stale actions: improvement_actions for coached dealers with no update in ≥7 days
-      const assessmentIds = (assessments || []).map(a => a.id).filter(Boolean);
-      if (assessmentIds.length > 0) {
-        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-        const { data: staleData } = await supabase
-          .from('improvement_actions')
-          .select('id, action_title, priority, status, last_status_updated_at, assessment_id')
-          .in('assessment_id', assessmentIds)
-          .in('status', ['Open', 'In Progress'])
-          .or(`last_status_updated_at.is.null,last_status_updated_at.lt.${sevenDaysAgo}`)
-          .order('last_status_updated_at', { ascending: true, nullsFirst: true })
-          .limit(20);
-
-        if (staleData) {
-          // Build assessment_id → dealerName lookup
-          const assessmentToDealerName = new Map<string, string>();
-          (assessments || []).forEach(a => {
-            const dealer = (dealerships || []).find(d => d.id === a.dealership_id);
-            if (dealer) assessmentToDealerName.set(a.id, dealer.name);
-          });
-
-          const now = Date.now();
-          setStaleActions(
-            staleData.map(ia => {
-              const lastMs = ia.last_status_updated_at
-                ? new Date(ia.last_status_updated_at).getTime()
-                : now - 8 * 86400000; // treat NULL as 8 days old
-              const daysStale = Math.max(1, Math.floor((now - lastMs) / 86400000));
-              return {
-                id: ia.id,
-                action_title: ia.action_title,
-                priority: ia.priority,
-                status: ia.status,
-                last_status_updated_at: ia.last_status_updated_at,
-                dealerName: assessmentToDealerName.get(ia.assessment_id) ?? 'Unknown dealer',
-                daysStale,
-              };
-            })
-          );
-        }
-      }
-
+      await fetchNotes(0);
       setLoading(false);
     };
     fetchAssignments();
@@ -188,16 +269,11 @@ export default function CoachDashboard() {
 
   const filteredDealers = useMemo(() => {
     let result = [...dealers];
-    if (statusFilter === 'completed') {
-      result = result.filter(d => d.latestStatus === 'completed');
-    } else if (statusFilter === 'in_progress') {
-      result = result.filter(d => d.latestStatus === 'in_progress');
-    }
-    if (sortBy === 'score') {
-      result.sort((a, b) => (b.latestScore ?? 0) - (a.latestScore ?? 0));
-    } else {
-      result.sort((a, b) => a.dealerName.localeCompare(b.dealerName));
-    }
+    if (statusFilter === 'completed') result = result.filter(d => d.latestStatus === 'completed');
+    else if (statusFilter === 'in_progress') result = result.filter(d => d.latestStatus === 'in_progress');
+    if (sortBy === 'score') result.sort((a, b) => (b.latestScore ?? 0) - (a.latestScore ?? 0));
+    else if (sortBy === 'name') result.sort((a, b) => a.dealerName.localeCompare(b.dealerName));
+    else result.sort((a, b) => b.overdueCount - a.overdueCount);
     return result;
   }, [dealers, sortBy, statusFilter]);
 
