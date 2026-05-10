@@ -28,8 +28,10 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { format } from 'date-fns';
-import { ArrowUpDown, CalendarDays, Filter, LineChart as LineChartIcon, TrendingUp as TrendingUpIcon, Clock } from 'lucide-react';
+import { ArrowUpDown, CalendarDays, Filter, LineChart as LineChartIcon, TrendingUp as TrendingUpIcon, TrendingUp, TrendingDown, Minus, StickyNote, Clock } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { computeStatsBar, computeTrend, daysSince, getScoreBand, isOverdue, isDueSoon } from '@/lib/coachDashboardUtils';
+import { CoachNoteSheet } from '@/components/coach/CoachNoteSheet';
 
 interface AssignedDealer {
   dealershipId: string;
@@ -363,31 +365,25 @@ export default function CoachDashboard() {
 
       {/* EXISTING SECTIONS — dealer cards, stale actions, trend chart — keep as-is below this comment */}
 
-      {/* Controls */}
+      {/* Sort + filter controls */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-1">
           <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
-          <Button
-            variant={sortBy === 'score' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSortBy('score')}
-          >
-            {t('coach.sortByScore')}
-          </Button>
-          <Button
-            variant={sortBy === 'name' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSortBy('name')}
-          >
-            {t('coach.sortByName')}
-          </Button>
+          {(['score', 'name', 'overdue'] as const).map(s => (
+            <Button
+              key={s}
+              variant={sortBy === s ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSortBy(s)}
+            >
+              {s === 'score' ? 'Score' : s === 'name' ? 'Name' : 'Overdue'}
+            </Button>
+          ))}
         </div>
         <div className="flex items-center gap-1">
           <Filter className="w-4 h-4 text-muted-foreground" />
-          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | 'completed' | 'in_progress')}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
+          <Select value={statusFilter} onValueChange={v => setStatusFilter(v as 'all' | 'completed' | 'in_progress')}>
+            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t('coach.filterAll')}</SelectItem>
               <SelectItem value="completed">{t('coach.filterCompleted')}</SelectItem>
@@ -399,64 +395,109 @@ export default function CoachDashboard() {
 
       {/* Dealer Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredDealers.map((dealer, i) => (
-          <Card
-            key={dealer.dealershipId}
-            className="cursor-pointer hover:border-[hsl(var(--brand-300))] hover:shadow-md transition-all duration-150 opacity-0 animate-fade-in shadow-card rounded-xl"
-            style={{ animationDelay: `${Math.min(i, 4) * 50}ms`, animationFillMode: 'forwards' }}
-            onClick={() => {
-              if (dealer.latestAssessmentId) {
-                setSelectedDealer(dealer);
-                navigate(`/app/results/${dealer.latestAssessmentId}`);
-              }
-            }}
-          >
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between">
-                <CardTitle className="text-base font-semibold">{dealer.dealerName}</CardTitle>
-                <Badge variant="outline" className="bg-[hsl(var(--neutral-100))] text-[hsl(var(--neutral-700))] border-[hsl(var(--neutral-300))] text-xs shrink-0">
-                  {dealer.brand}
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground">{dealer.location}</p>
-              {dealer.latestDate && (
-                <p className="flex items-center gap-1 text-xs text-[hsl(var(--neutral-500))]">
-                  <CalendarDays className="h-3 w-3" />
-                  {format(new Date(dealer.latestDate), 'dd MMM yyyy')}
+        {filteredDealers.map((dealer, i) => {
+          const trend = computeTrend(dealer.latestScore, dealer.previousScore);
+          const band = dealer.latestScore != null ? getScoreBand(dealer.latestScore) : null;
+          const since = daysSince(dealer.latestDate);
+          const hasNotes = notes.some(n => n.dealership_id === dealer.dealershipId);
+
+          return (
+            <Card
+              key={dealer.dealershipId}
+              className="opacity-0 animate-fade-in shadow-card rounded-xl"
+              style={{ animationDelay: `${Math.min(i, 4) * 50}ms`, animationFillMode: 'forwards' }}
+            >
+              <CardHeader className="pb-2">
+                <div className="flex items-start justify-between">
+                  <CardTitle className="text-base font-semibold leading-tight">{dealer.dealerName}</CardTitle>
+                  <Badge variant="outline" className="bg-[hsl(var(--neutral-100))] text-[hsl(var(--neutral-700))] border-[hsl(var(--neutral-300))] text-xs shrink-0 ml-2">
+                    {dealer.brand}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {dealer.location}
+                  {since != null && <span className="ml-1 text-[hsl(var(--neutral-400))]">· {since}d ago</span>}
                 </p>
-              )}
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex items-center justify-between">
-                <div>
-                  {dealer.latestScore != null ? (
-                    <div className={`inline-flex flex-col items-center rounded-lg border px-3 py-2 ${getScoreBadge(dealer.latestScore).className}`}>
-                      <span className="text-2xl font-bold leading-none">{Math.round(dealer.latestScore)}</span>
-                      <span className="mt-1 text-xs">{getScoreBadge(dealer.latestScore).label}</span>
+              </CardHeader>
+              <CardContent className="pt-0 space-y-3">
+                {/* Score + trend */}
+                <div className="flex items-center justify-between">
+                  {band ? (
+                    <div className={`inline-flex flex-col items-center rounded-lg border px-3 py-2 ${band.className}`}>
+                      <span className="text-2xl font-bold leading-none">{Math.round(dealer.latestScore!)}</span>
+                      <span className="mt-1 text-xs">{band.label}</span>
                     </div>
                   ) : (
-                    <span className="text-xs text-muted-foreground">—</span>
+                    <span className="text-xs text-muted-foreground">No assessment yet</span>
+                  )}
+                  {trend.direction !== 'none' && (
+                    <div className="flex items-center gap-1">
+                      {trend.direction === 'up' && <TrendingUp className="w-4 h-4 text-[#16a34a]" />}
+                      {trend.direction === 'down' && <TrendingDown className="w-4 h-4 text-[#dc2626]" />}
+                      {trend.direction === 'flat' && <Minus className="w-4 h-4 text-muted-foreground" />}
+                      <span className={`text-xs font-medium ${
+                        trend.direction === 'up' ? 'text-[#16a34a]'
+                        : trend.direction === 'down' ? 'text-[#dc2626]'
+                        : 'text-muted-foreground'
+                      }`}>
+                        {trend.delta != null && trend.delta !== 0 ? `${trend.delta > 0 ? '+' : ''}${trend.delta}` : '—'}
+                      </span>
+                    </div>
                   )}
                 </div>
-                <div className="text-right">
-                  {dealer.latestStatus && (
-                    <Badge
-                      variant="outline"
-                      className={
-                        dealer.latestStatus === 'completed'
-                          ? 'bg-[hsl(var(--brand-050))] text-[hsl(var(--brand-600))] border-[hsl(var(--brand-200))] text-xs'
-                          : 'bg-[hsl(var(--dd-amber-light))] text-[hsl(var(--dd-amber))] border-[hsl(var(--dd-amber))]/20 text-xs'
-                      }
-                    >
-                      {dealer.latestStatus === 'completed' ? t('coach.filterCompleted') : t('coach.filterInProgress')}
+
+                {/* Action counts */}
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground">
+                    Open: <span className="font-medium text-foreground">{dealer.openCount}</span>
+                  </span>
+                  {dealer.overdueCount > 0 && (
+                    <Badge variant="outline" className="bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20 text-xs">
+                      {dealer.overdueCount} overdue
                     </Badge>
                   )}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+
+                {/* Bottom: note icon + CTA */}
+                <div className="flex items-center justify-between pt-1 border-t border-border/50">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="relative h-7 w-7 p-0"
+                    onClick={() => { setNoteSheetDealer(dealer); setNoteSheetOpen(true); }}
+                    aria-label="Add note"
+                  >
+                    <StickyNote className="h-4 w-4 text-muted-foreground" />
+                    {hasNotes && (
+                      <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
+                    )}
+                  </Button>
+                  {dealer.latestAssessmentId ? (
+                    <Button variant="outline" size="sm" className="h-7 text-xs"
+                      onClick={() => navigate(`/app/results/${dealer.latestAssessmentId}`)}>
+                      View Results →
+                    </Button>
+                  ) : (
+                    <Button variant="outline" size="sm" className="h-7 text-xs"
+                      onClick={() => navigate('/app/assessment')}>
+                      Start Assessment
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
+
+      {/* Note sheet — rendered once, driven by noteSheetDealer state */}
+      <CoachNoteSheet
+        open={noteSheetOpen}
+        onOpenChange={setNoteSheetOpen}
+        dealershipId={noteSheetDealer?.dealershipId ?? null}
+        dealerName={noteSheetDealer?.dealerName ?? ''}
+        onNoteAdded={() => fetchNotes(0)}
+      />
 
       {/* Score Trend Chart */}
       <Card className="shadow-card rounded-xl">
