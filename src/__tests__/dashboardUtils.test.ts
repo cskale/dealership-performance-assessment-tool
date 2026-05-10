@@ -2,6 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   deptScoreColour,
+  deptMaturityColour,
   isOverdue,
   formatDisplayDate,
   formatDueDate,
@@ -33,6 +34,25 @@ describe('deptScoreColour', () => {
   it('returns red for foundational score (<45)', () => {
     expect(deptScoreColour(44)).toBe('text-[#ef4444]');
     expect(deptScoreColour(0)).toBe('text-[#ef4444]');
+  });
+});
+
+describe('deptMaturityColour', () => {
+  it('returns green for leading score (≥85)', () => {
+    expect(deptMaturityColour(85)).toBe('text-[#22c55e]');
+    expect(deptMaturityColour(100)).toBe('text-[#22c55e]');
+  });
+  it('returns brand blue for advanced score (65–84)', () => {
+    expect(deptMaturityColour(65)).toBe('text-[#1D7AFC]');
+    expect(deptMaturityColour(84)).toBe('text-[#1D7AFC]');
+  });
+  it('returns brand blue for developing score (45–64)', () => {
+    expect(deptMaturityColour(45)).toBe('text-[#1D7AFC]');
+    expect(deptMaturityColour(64)).toBe('text-[#1D7AFC]');
+  });
+  it('returns red for foundational score (<45)', () => {
+    expect(deptMaturityColour(44)).toBe('text-[#ef4444]');
+    expect(deptMaturityColour(0)).toBe('text-[#ef4444]');
   });
 });
 
@@ -73,6 +93,9 @@ describe('quarterLabel', () => {
   it('returns Q1 for January', () => {
     expect(quarterLabel('2026-01-01T12:00:00Z')).toBe('Q1 2026');
   });
+  it('returns Q3 for July', () => {
+    expect(quarterLabel('2026-07-15T12:00:00Z')).toBe('Q3 2026');
+  });
   it('returns Q4 for December', () => {
     expect(quarterLabel('2026-12-01T12:00:00Z')).toBe('Q4 2026');
   });
@@ -84,6 +107,61 @@ describe('nextAssessmentDue', () => {
     const expected = new Date('2026-04-14');
     expected.setDate(expected.getDate() + 90);
     expect(new Date(result).toDateString()).toBe(expected.toDateString());
+  });
+});
+
+describe('endOfCurrentQuarter', () => {
+  it('returns a valid ISO string', () => {
+    const result = endOfCurrentQuarter();
+    expect(typeof result).toBe('string');
+    expect(() => new Date(result)).not.toThrow();
+  });
+  it('returns the last day of a quarter-end month', () => {
+    const result = new Date(endOfCurrentQuarter());
+    const month = result.getMonth() + 1;
+    const day = result.getDate();
+    // Q1 ends Mar 31, Q2 ends Jun 30, Q3 ends Sep 30, Q4 ends Dec 31
+    const isQuarterEnd =
+      (month === 3 && day === 31) ||
+      (month === 6 && day === 30) ||
+      (month === 9 && day === 30) ||
+      (month === 12 && day === 31);
+    expect(isQuarterEnd).toBe(true);
+  });
+  it('returns a date in the current year', () => {
+    const result = new Date(endOfCurrentQuarter());
+    const now = new Date();
+    expect(result.getFullYear()).toBe(now.getFullYear());
+  });
+});
+
+describe('relativeDays', () => {
+  it('returns "today" for now', () => {
+    const now = new Date().toISOString();
+    expect(relativeDays(now)).toBe('today');
+  });
+  it('returns "N days away" for future dates', () => {
+    const future = new Date();
+    future.setDate(future.getDate() + 5);
+    const text = relativeDays(future.toISOString());
+    expect(text).toMatch(/^[0-9]+ days? away$/);
+    expect(text).toContain('5');
+  });
+  it('returns "N days ago" for past dates', () => {
+    const past = new Date();
+    past.setDate(past.getDate() - 3);
+    const text = relativeDays(past.toISOString());
+    expect(text).toMatch(/^[0-9]+ days? ago$/);
+    expect(text).toContain('3');
+  });
+  it('handles singular "day" correctly', () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    expect(relativeDays(tomorrow.toISOString())).toBe('1 day away');
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    expect(relativeDays(yesterday.toISOString())).toBe('1 day ago');
   });
 });
 
@@ -144,6 +222,30 @@ describe('heroNarrative', () => {
   it('mentions "All departments" when score is leading', () => {
     const scores = { 'new-vehicle-sales': 88, 'used-vehicle-sales': 90 };
     expect(heroNarrative(scores, 90)).toContain('All departments');
+  });
+  it('mentions first two department names when 3+ above benchmark', () => {
+    const scores = {
+      'new-vehicle-sales': 72,
+      'used-vehicle-sales': 68,
+      'service-performance': 81,
+      'parts-inventory': 40,
+      'financial-operations': 35,
+    };
+    const text = heroNarrative(scores, 59);
+    expect(text).toContain('New Vehicle Sales');
+    expect(text).toContain('Used Vehicle Sales');
+  });
+  it('mentions single department name when exactly 1 above benchmark', () => {
+    const scores = {
+      'new-vehicle-sales': 72,
+      'used-vehicle-sales': 40,
+      'service-performance': 35,
+      'parts-inventory': 40,
+      'financial-operations': 35,
+    };
+    const text = heroNarrative(scores, 44);
+    expect(text).toContain('New Vehicle Sales');
+    expect(text).toContain('is above benchmark');
   });
 });
 
