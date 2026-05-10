@@ -292,6 +292,11 @@ export default function CoachDashboard() {
     return allActions.filter(a => a.dealershipId === actionDealerFilter);
   }, [allActions, actionDealerFilter]);
 
+  const filteredNotes = useMemo(() => {
+    if (notesDealerFilter === 'all') return notes;
+    return notes.filter(n => n.dealership_id === notesDealerFilter);
+  }, [notes, notesDealerFilter]);
+
   const chartData = useMemo(() => {
     if (selectedDealerIds.length === 0) return [];
     const selectedDealers = dealers.filter(d => selectedDealerIds.includes(d.dealershipId));
@@ -691,6 +696,91 @@ export default function CoachDashboard() {
               );
             })}
           </Tabs>
+        </CardContent>
+      </Card>
+
+      {/* Notes Feed */}
+      <Card className="shadow-card rounded-xl">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <StickyNote className="h-4 w-4 text-[hsl(var(--brand-500))]" />
+              Field Notes
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Select value={notesDealerFilter} onValueChange={v => { setNotesDealerFilter(v); setNotesPage(0); }}>
+                <SelectTrigger className="w-44 h-8 text-xs"><SelectValue placeholder="All dealers" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All dealers</SelectItem>
+                  {dealers.map(d => (
+                    <SelectItem key={d.dealershipId} value={d.dealershipId}>{d.dealerName}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs"
+                onClick={() => {
+                  const preselect = notesDealerFilter !== 'all'
+                    ? dealers.find(d => d.dealershipId === notesDealerFilter) ?? dealers[0] ?? null
+                    : dealers[0] ?? null;
+                  setNoteSheetDealer(preselect);
+                  setNoteSheetOpen(true);
+                }}
+              >
+                + New Note
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          {filteredNotes.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+              <StickyNote className="h-7 w-7 text-muted-foreground/30" />
+              <p className="text-sm text-muted-foreground">No field notes yet</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-border">
+              {filteredNotes.map(note => {
+                const dealer = dealers.find(d => d.dealershipId === note.dealership_id);
+                return (
+                  <div key={note.id} className="px-5 py-3 space-y-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="outline" className="text-xs bg-[hsl(var(--brand-050))] text-[hsl(var(--brand-600))] border-[hsl(var(--brand-200))]">
+                        {dealer?.dealerName ?? 'Unknown dealer'}
+                      </Badge>
+                      {note.assessment_id && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">Assessment</Badge>
+                      )}
+                      {note.action_id && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">Action</Badge>
+                      )}
+                      <span className="ml-auto text-xs text-muted-foreground">
+                        {format(new Date(note.created_at), 'dd MMM yyyy')}
+                      </span>
+                    </div>
+                    <p className="text-sm text-foreground">{note.note_text}</p>
+                  </div>
+                );
+              })}
+              {filteredNotes.length > 0 && filteredNotes.length % 20 === 0 && (
+                <div className="px-5 py-3 flex justify-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const next = notesPage + 1;
+                      setNotesPage(next);
+                      fetchNotes(next);
+                    }}
+                  >
+                    Load more
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
