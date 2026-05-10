@@ -620,6 +620,61 @@ export type Database = {
           },
         ]
       }
+      coach_notes: {
+        Row: {
+          action_id: string | null
+          assessment_id: string | null
+          coach_user_id: string
+          created_at: string
+          dealership_id: string
+          id: string
+          note_text: string
+          updated_at: string
+        }
+        Insert: {
+          action_id?: string | null
+          assessment_id?: string | null
+          coach_user_id: string
+          created_at?: string
+          dealership_id: string
+          id?: string
+          note_text: string
+          updated_at?: string
+        }
+        Update: {
+          action_id?: string | null
+          assessment_id?: string | null
+          coach_user_id?: string
+          created_at?: string
+          dealership_id?: string
+          id?: string
+          note_text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_notes_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "improvement_actions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_notes_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_notes_dealership_id_fkey"
+            columns: ["dealership_id"]
+            isOneToOne: false
+            referencedRelation: "dealerships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dealer_contexts: {
         Row: {
           annual_unit_sales: number
