@@ -16,7 +16,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { SharedLoadingState } from '@/components/shared/SharedLoadingState';
 import { SharedEmptyState } from '@/components/shared/SharedEmptyState';
-import { ActorContextBanner } from '@/components/shared/ActorContextBanner';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   LineChart,
@@ -30,6 +29,7 @@ import {
 } from 'recharts';
 import { format } from 'date-fns';
 import { ArrowUpDown, CalendarDays, Filter, LineChart as LineChartIcon, TrendingUp as TrendingUpIcon, Clock } from 'lucide-react';
+import { computeStatsBar, computeTrend, daysSince, getScoreBand, isOverdue, isDueSoon } from '@/lib/coachDashboardUtils';
 
 interface AssignedDealer {
   dealershipId: string;
@@ -329,23 +329,39 @@ export default function CoachDashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      {selectedDealer && (
-        <ActorContextBanner
-          dealerName={selectedDealer.dealerName}
-          location={selectedDealer.location}
-          backLabel={t('coach.title')}
-          onBack={() => {
-            setSelectedDealer(null);
-            navigate('/app/coach-dashboard');
-          }}
-        />
-      )}
+    <div className="space-y-0">
+      {/* Dark stats bar — matches Sprint 3 dealer dashboard */}
+      <div className="h-9 bg-[#0b1f3a] flex items-center px-6 sticky top-0 z-10">
+        {(() => {
+          const s = computeStatsBar(dealers);
+          const chips = [
+            { label: 'Dealers',          value: String(s.total) },
+            { label: 'Avg Score',        value: s.avgScore > 0 ? String(s.avgScore) : '—' },
+            { label: 'Overdue Actions',  value: String(s.overdueCount) },
+            { label: 'Attention Needed', value: String(s.attentionNeeded) },
+          ];
+          return chips.map((chip, i) => (
+            <div
+              key={chip.label}
+              className={`flex items-center gap-2 px-4 h-full ${i < chips.length - 1 ? 'border-r border-white/[0.08]' : ''}`}
+            >
+              <span className="text-[11px] text-white/50 uppercase tracking-wider">{chip.label}</span>
+              <span className="text-[11px] font-semibold text-white">{chip.value}</span>
+            </div>
+          ));
+        })()}
+      </div>
+
       <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Header */}
+      {/* Page header */}
       <div>
         <h1 className="text-2xl font-semibold text-foreground">{t('coach.title')}</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          {dealers.length} {dealers.length === 1 ? 'dealership' : 'dealerships'} assigned
+        </p>
       </div>
+
+      {/* EXISTING SECTIONS — dealer cards, stale actions, trend chart — keep as-is below this comment */}
 
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-3">
