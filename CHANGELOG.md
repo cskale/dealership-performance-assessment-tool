@@ -9,6 +9,46 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
 
 ---
 
+## [2026-05-10] — Sprint 3: Dashboard Redesign
+
+### feat
+- **Dashboard — full redesign** — `src/pages/Dashboard.tsx` completely rewritten. Static placeholder KPI grid (fake €values, 3 of 5 departments) replaced with a real-data layout wired to Supabase assessment scores, improvement actions, and coach assignments.
+- **dashboardUtils.ts** — New `src/lib/dashboardUtils.ts`. 16 pure utility functions: `deptScoreColour`, `deptMaturityColour`, `isOverdue`, `formatDisplayDate`, `formatDueDate`, `quarterLabel`, `nextAssessmentDue`, `endOfCurrentQuarter`, `relativeDays`, `deptFindingText`, `focusDepartment`, `criticalGapCount`, `heroNarrative`. Two constants: `DEPT_DISPLAY_NAMES`, `DEPT_ORDER`. 38 unit tests in `src/__tests__/dashboardUtils.test.ts`.
+- **Dark stats bar** — `#0b1f3a` strip matching AssessmentHeroNav. Four chips: Overall Score, Assessment date, Critical gaps (red when > 0), Open actions. Avatar shows first letter of user email.
+- **Full-width hero card** — Three equal dark columns on `#0b1f3a` background. Col 1: 72px overall score, gradient progress bar, maturity pill, executive narrative. Col 2: open action count (white, not amber), top 3 action bullets with full dept names. Col 3: lowest-scoring department name + score + maturity + finding text. All text white — no yellow, no amber, no orange.
+- **Key dates timeline** — 5-slot horizontal strip: Last Assessment, Next Assessment Due (+90 days), Last Coach Visit, Next Coach Visit, Action Plan Review (end of quarter). Each slot has a coloured dot, date, sub-detail, and status badge. Coach slots read from `coach_dealership_assignments.valid_from/valid_to`.
+- **Priority Intervention card** — Only rendered when a department scores < 45 (Foundational). Red left-border card with "Priority Intervention Required" label, focus dept context, "Resolve Now" → `/actions?filter=critical`.
+- **Departmental Intelligence grid** — Renders only assessed departments (skips unassessed depts for sales-only 2S/3S dealerships). Each column: full dept name, 38px score, maturity label, diagnostic finding paragraph. Colour rules: green = Leading (≥85), brand blue = Advanced + Developing (45–84), red = Foundational (<45). No yellow/amber anywhere.
+- **Open Actions table** — Borderless table: Action | Department | Responsible | Due. Dot: red = overdue, brand blue = pending (exactly two colours). Due cell appends "· Overdue" in red. Full dept names via `DEPT_DISPLAY_NAMES`. Filters `.neq('status', 'Completed')` matching the kanban's actual status values. Navigates to `/actions`.
+- **Strategic Findings** — Score-derived signals: critical finding for any dept < 45, systemic finding when 2+ assessed depts below 65. Lucide `AlertCircle` (red) and `Info` (blue) icons. Badges in sentence case ("Critical risk", "Medium impact"). No blue caps links.
+- **Empty state preserved** — "Run your first dealership diagnostic" card shown when no completed assessments exist.
+
+### fix
+- **Action status filter** — Was `.neq('status', 'completed')` (lowercase). Kanban stores `'Completed'` (capital). Completed actions now correctly excluded from the dashboard count and table.
+- **"View all in Action Plans" navigation** — Route corrected to `/actions` (was `/app/actions` — wrong path).
+- **Hero narrative invisible** — `text-white/38` (38% opacity) was unreadable against the dark hero. Changed to `text-white/60`.
+- **Performance Matrix label removed** — Decorative "Performance Matrix ⓘ" text with no functionality removed from Departmental Intelligence section header.
+- **Unassessed departments showing 0** — Sales-only 2S dealerships were showing "Service Operations 0 — Foundational" and "Parts & Accessories 0 — Foundational". DeptGrid and deriveFindings now skip any department key absent from `assessment.scores`.
+- **Full width layout** — `max-w-7xl mx-auto` constraint removed. Dashboard now uses full available width.
+- **Coach query scoped** — `coach_dealership_assignments` query filtered by `dealership_id` from `useActiveRole()`. Previously unscoped — potential cross-tenant data issue.
+- **Dynamic quarter label** — "before the Q2 deadline" text in Priority card now derives from actual assessment quarter. `heroNarrative` no longer hardcodes "Q2".
+- **Coach visit status logic** — "Last Coach Visit" slot now checks `valid_from` against today to determine done/upcoming — not just whether a coach exists.
+
+### refactor
+- Removed static KPI grid (NVS/UVS/Service with fake €values), static AI Insights card, static Overall Performance card, assessment period selector dropdown, export button dropdown from old layout.
+
+### docs
+- Sprint 3 design spec: `docs/superpowers/specs/2026-05-10-sprint3-dashboard-design.md`
+- Sprint 3 implementation plan: `docs/superpowers/plans/2026-05-10-sprint3-dashboard.md`
+
+### Notes
+- 114 tests passing, zero TypeScript errors on push
+- No new npm packages, no schema changes, no Edge Functions
+- Benchmark corridor deferred (needs live peer data)
+- Delta scoring / trend arrows deferred (needs #36 DB design)
+
+---
+
 ## [2026-05-09] — Sprint 2: Assessment Flow Redesign
 
 ### feat
