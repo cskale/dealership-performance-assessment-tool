@@ -28,7 +28,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { format } from 'date-fns';
-import { ArrowUpDown, Filter, LineChart as LineChartIcon, TrendingUp as TrendingUpIcon, TrendingUp, TrendingDown, Minus, StickyNote } from 'lucide-react';
+import { ArrowUpDown, Filter, LineChart as LineChartIcon, TrendingUp, TrendingDown, Minus, StickyNote } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { computeStatsBar, computeTrend, daysSince, getScoreBand, isOverdue, isDueSoon } from '@/lib/coachDashboardUtils';
 import { CoachNoteSheet } from '@/components/coach/CoachNoteSheet';
@@ -706,7 +706,7 @@ export default function CoachDashboard() {
       <Card className="shadow-card rounded-xl">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base font-semibold">
-            <TrendingUpIcon className="h-4 w-4 text-[hsl(var(--brand-500))]" />
+            <TrendingUp className="h-4 w-4 text-[hsl(var(--brand-500))]" />
             {t('coach.scoreTrend')}
           </CardTitle>
           <p className="text-xs text-muted-foreground">{t('coach.selectDealers')}</p>
