@@ -133,7 +133,7 @@ function HeroCard({
           <span className="w-1.5 h-1.5 rounded-full bg-[#579DFF]" />
           {maturityLabel}
         </div>
-        <p className="mt-4 text-[11px] italic text-white/38 leading-relaxed border-t border-white/[0.07] pt-4">
+        <p className="mt-4 text-[11px] italic text-white/60 leading-relaxed border-t border-white/[0.07] pt-4">
           "{narrative}"
         </p>
       </div>
@@ -319,7 +319,7 @@ function PriorityCard({
         </p>
       </div>
       <button
-        onClick={() => navigate('/app/actions?filter=critical')}
+        onClick={() => navigate('/actions?filter=critical')}
         className="flex-shrink-0 px-5 py-2 bg-[#ef4444] text-white rounded-lg text-[12px] font-bold hover:bg-[#dc2626] transition-colors"
       >
         Resolve Now
@@ -330,52 +330,56 @@ function PriorityCard({
 
 // ─── Departmental Intelligence Grid ──────────────────────────────────────────
 
+function DeptColumns({ scores }: { scores: Record<string, number> }) {
+  const assessed = DEPT_ORDER.filter(k => scores[k] !== undefined);
+  if (assessed.length === 0) return null;
+  return (
+    <div
+      className="bg-white rounded-xl shadow-card border border-[#DFE1E6] grid overflow-hidden"
+      style={{ gridTemplateColumns: `repeat(${assessed.length}, 1fr)` }}
+    >
+      {assessed.map((key, i) => {
+        const score = scores[key];
+        const maturity = MATURITY_LEVELS[getMaturityLevel(score)].label;
+        const scoreColour    = deptScoreColour(score);
+        const maturityColour = deptMaturityColour(score);
+        const finding = deptFindingText(key, score);
+        return (
+          <div
+            key={key}
+            className={cn('p-4', i < assessed.length - 1 && 'border-r border-[#F1F2F4]')}
+          >
+            <p className="text-[10px] font-bold text-[#5E6C84] mb-2 leading-tight">
+              {DEPT_DISPLAY_NAMES[key]}
+            </p>
+            <p
+              className={cn('text-[38px] font-extrabold leading-none tabular-nums mb-0.5', scoreColour)}
+              style={{ letterSpacing: '-0.03em', fontOpticalSizing: 'auto' } as React.CSSProperties}
+            >
+              {Math.round(score)}
+            </p>
+            <p className={cn('text-[10px] font-bold uppercase tracking-[0.05em] mb-3', maturityColour)}>
+              {maturity}
+            </p>
+            <p className="text-[10.5px] text-[#5E6C84] leading-relaxed border-t border-[#F1F2F4] pt-2">
+              {finding}
+            </p>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function DeptGrid({ scores }: { scores: Record<string, number> }) {
   return (
     <>
       <div className="flex items-center justify-between">
         <h2 className="text-[15px] font-bold text-[#172B4D]">Departmental Intelligence</h2>
-        <span className="text-[11px] font-semibold text-[#6B778C]">Performance matrix ⓘ</span>
+        <span />
       </div>
 
-      <div className="bg-white rounded-xl shadow-card border border-[#DFE1E6] grid grid-cols-5 overflow-hidden">
-        {DEPT_ORDER.map((key, i) => {
-          const score = scores[key] ?? 0;
-          const maturity = MATURITY_LEVELS[getMaturityLevel(score)].label;
-          const scoreColour    = deptScoreColour(score);
-          const maturityColour = deptMaturityColour(score);
-          const finding = deptFindingText(key, score);
-
-          return (
-            <div
-              key={key}
-              className={cn(
-                'p-4 pb-4',
-                i < DEPT_ORDER.length - 1 && 'border-r border-[#F1F2F4]'
-              )}
-            >
-              <p className="text-[10px] font-bold text-[#5E6C84] mb-2 leading-tight">
-                {DEPT_DISPLAY_NAMES[key]}
-              </p>
-              <p
-                className={cn(
-                  'text-[38px] font-extrabold leading-none tabular-nums mb-0.5',
-                  scoreColour
-                )}
-                style={{ letterSpacing: '-0.03em', fontOpticalSizing: 'auto' } as React.CSSProperties}
-              >
-                {Math.round(score)}
-              </p>
-              <p className={cn('text-[10px] font-bold uppercase tracking-[0.05em] mb-3', maturityColour)}>
-                {maturity}
-              </p>
-              <p className="text-[10.5px] text-[#5E6C84] leading-relaxed border-t border-[#F1F2F4] pt-2">
-                {finding}
-              </p>
-            </div>
-          );
-        })}
-      </div>
+      <DeptColumns scores={scores} />
     </>
   );
 }
@@ -481,7 +485,8 @@ function deriveFindings(scores: Record<string, number>): Finding[] {
   const findings: Finding[] = [];
 
   for (const key of DEPT_ORDER) {
-    const score = scores[key] ?? 0;
+    const score = scores[key];
+    if (score === undefined) continue; // skip unassessed departments
     if (score < 45) {
       const name = DEPT_DISPLAY_NAMES[key];
       findings.push({
@@ -493,7 +498,7 @@ function deriveFindings(scores: Record<string, number>): Finding[] {
     }
   }
 
-  const weakDepts = DEPT_ORDER.filter(k => (scores[k] ?? 0) < 65);
+  const weakDepts = DEPT_ORDER.filter(k => scores[k] !== undefined && scores[k] < 65);
   if (weakDepts.length >= 2) {
     const names = weakDepts.map(k => DEPT_DISPLAY_NAMES[k]).join(', ');
     findings.push({
@@ -565,7 +570,7 @@ function EmptyState({ onStart }: { onStart: () => void }) {
     { icon: Award,     label: 'Prioritised action plan' },
   ];
   return (
-    <main className="max-w-7xl mx-auto px-6 py-6">
+    <main className="w-full px-6 py-6">
       <div className="max-w-xl mx-auto mt-8 bg-white rounded-xl shadow-card border border-[#DFE1E6] p-8 space-y-6 text-center">
         <ClipboardList className="h-14 w-14 text-[#85B8FF] mx-auto" />
         <div className="space-y-2">
@@ -632,7 +637,7 @@ export default function Dashboard() {
         .from('improvement_actions')
         .select('id, action_title, action_description, department, responsible_person, target_completion_date, priority, status')
         .eq('assessment_id', assessment.id)
-        .neq('status', 'completed')
+        .neq('status', 'Completed')
         .order('target_completion_date', { ascending: true });
 
       let coach: CoachRow | null = null;
@@ -727,7 +732,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-6 py-6 space-y-4">
+      <main className="w-full px-6 py-6 space-y-4">
 
         {/* ── Page header ── */}
         <div className="flex items-end justify-between">
@@ -781,7 +786,7 @@ export default function Dashboard() {
         {/* ── Open actions table ── */}
         <ActionsTable
           actions={actions}
-          onViewAll={() => navigate('/app/actions')}
+          onViewAll={() => navigate('/actions')}
         />
 
         {/* ── Strategic findings ── */}
