@@ -80,12 +80,6 @@ interface CoachNote {
 
 const CHART_COLORS = ['#2563eb', '#7c3aed', '#0891b2'];
 
-function getScoreBadge(score: number): { className: string; label: string } {
-  if (score >= 85) return { className: 'bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20', label: 'Leading' };
-  if (score >= 70) return { className: 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20', label: 'Advanced' };
-  if (score >= 46) return { className: 'bg-[#d97706]/10 text-[#d97706] border-[#d97706]/20', label: 'Developing' };
-  return { className: 'bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20', label: 'Foundational' };
-}
 
 export default function CoachDashboard() {
   const { actorType, loading: roleLoading } = useActiveRole();
@@ -107,7 +101,6 @@ export default function CoachDashboard() {
   const [noteSheetDealer, setNoteSheetDealer] = useState<AssignedDealer | null>(null);
   const [notesDealerFilter, setNotesDealerFilter] = useState<string>('all');
   const [notesPage, setNotesPage] = useState(0);
-  const selectedDealer = null;
 
   const fetchNotes = async (page = 0) => {
     if (!user?.id) return;
@@ -517,81 +510,6 @@ export default function CoachDashboard() {
         onNoteAdded={() => fetchNotes(0)}
       />
 
-      {/* Score Trend Chart */}
-      <Card className="shadow-card rounded-xl">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base font-semibold">
-            <TrendingUpIcon className="h-4 w-4 text-[hsl(var(--brand-500))]" />
-            {t('coach.scoreTrend')}
-          </CardTitle>
-          <p className="text-xs text-muted-foreground">{t('coach.selectDealers')}</p>
-        </CardHeader>
-        <CardContent>
-          {/* Dealer selector */}
-          <div className="flex flex-wrap gap-3 mb-4">
-            {dealers.map((d, i) => (
-              <label
-                key={d.dealershipId}
-                className="flex items-center gap-2 text-sm cursor-pointer"
-              >
-                <Checkbox
-                  checked={selectedDealerIds.includes(d.dealershipId)}
-                  onCheckedChange={() => toggleDealerSelection(d.dealershipId)}
-                  disabled={!selectedDealerIds.includes(d.dealershipId) && selectedDealerIds.length >= 3}
-                />
-                <span
-                  className={`w-3 h-3 rounded-full shrink-0 ${
-                    selectedDealerIds.includes(d.dealershipId) ? 'ring-1 ring-offset-1 ring-white' : ''
-                  }`}
-                  style={{ backgroundColor: CHART_COLORS[selectedDealerIds.indexOf(d.dealershipId)] ?? '#9ca3af' }}
-                />
-                {d.dealerName}
-              </label>
-            ))}
-          </div>
-
-          {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--background))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: 8,
-                    fontSize: 12,
-                  }}
-                />
-                <Legend />
-                {selectedDealerIds.map((id, i) => {
-                  const dealer = dealers.find(d => d.dealershipId === id);
-                  return (
-                    <Line
-                      key={id}
-                      type="monotone"
-                      dataKey={dealer?.dealerName ?? id}
-                      stroke={CHART_COLORS[i]}
-                      strokeWidth={2}
-                      dot={{ r: 4 }}
-                      connectNulls
-                    />
-                  );
-                })}
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex h-48 flex-col items-center justify-center gap-3 text-center">
-              <LineChartIcon className="h-8 w-8 text-[hsl(var(--neutral-300))]" />
-              <p className="text-sm text-[hsl(var(--neutral-500))]">
-                Select up to 3 dealers above to compare their score trends
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
       {/* Actions Requiring Attention */}
       <Card className="shadow-card rounded-xl">
         <CardHeader className="pb-3">
@@ -779,6 +697,81 @@ export default function CoachDashboard() {
                   </Button>
                 </div>
               )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Score Trend Chart */}
+      <Card className="shadow-card rounded-xl">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base font-semibold">
+            <TrendingUpIcon className="h-4 w-4 text-[hsl(var(--brand-500))]" />
+            {t('coach.scoreTrend')}
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">{t('coach.selectDealers')}</p>
+        </CardHeader>
+        <CardContent>
+          {/* Dealer selector */}
+          <div className="flex flex-wrap gap-3 mb-4">
+            {dealers.map((d, i) => (
+              <label
+                key={d.dealershipId}
+                className="flex items-center gap-2 text-sm cursor-pointer"
+              >
+                <Checkbox
+                  checked={selectedDealerIds.includes(d.dealershipId)}
+                  onCheckedChange={() => toggleDealerSelection(d.dealershipId)}
+                  disabled={!selectedDealerIds.includes(d.dealershipId) && selectedDealerIds.length >= 3}
+                />
+                <span
+                  className={`w-3 h-3 rounded-full shrink-0 ${
+                    selectedDealerIds.includes(d.dealershipId) ? 'ring-1 ring-offset-1 ring-white' : ''
+                  }`}
+                  style={{ backgroundColor: CHART_COLORS[selectedDealerIds.indexOf(d.dealershipId)] ?? '#9ca3af' }}
+                />
+                {d.dealerName}
+              </label>
+            ))}
+          </div>
+
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--background))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
+                />
+                <Legend />
+                {selectedDealerIds.map((id, i) => {
+                  const dealer = dealers.find(d => d.dealershipId === id);
+                  return (
+                    <Line
+                      key={id}
+                      type="monotone"
+                      dataKey={dealer?.dealerName ?? id}
+                      stroke={CHART_COLORS[i]}
+                      strokeWidth={2}
+                      dot={{ r: 4 }}
+                      connectNulls
+                    />
+                  );
+                })}
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-48 flex-col items-center justify-center gap-3 text-center">
+              <LineChartIcon className="h-8 w-8 text-[hsl(var(--neutral-300))]" />
+              <p className="text-sm text-[hsl(var(--neutral-500))]">
+                Select up to 3 dealers above to compare their score trends
+              </p>
             </div>
           )}
         </CardContent>
