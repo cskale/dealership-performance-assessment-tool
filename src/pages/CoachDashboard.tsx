@@ -28,10 +28,11 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { format } from 'date-fns';
-import { ArrowUpDown, Filter, LineChart as LineChartIcon, TrendingUp, TrendingDown, Minus, StickyNote } from 'lucide-react';
+import { ArrowUpDown, Filter, LineChart as LineChartIcon, TrendingUp, TrendingDown, Minus, StickyNote, Calendar } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { computeStatsBar, computeTrend, daysSince, getScoreBand, isOverdue, isDueSoon } from '@/lib/coachDashboardUtils';
 import { CoachNoteSheet } from '@/components/coach/CoachNoteSheet';
+import { VisitSheet } from '@/components/coach/VisitSheet';
 
 interface AssignedDealer {
   dealershipId: string;
@@ -100,6 +101,9 @@ export default function CoachDashboard() {
   const [actionDealerFilter, setActionDealerFilter] = useState<string>('all');
   const [noteSheetOpen, setNoteSheetOpen] = useState(false);
   const [noteSheetDealer, setNoteSheetDealer] = useState<AssignedDealer | null>(null);
+  const [visitSheetOpen, setVisitSheetOpen] = useState(false);
+  const [visitSheetDealer, setVisitSheetDealer] = useState<AssignedDealer | null>(null);
+  const [activeVisitsByDealer, setActiveVisitsByDealer] = useState<Map<string, string>>(new Map());
   const [notesDealerFilter, setNotesDealerFilter] = useState<string>('all');
   const [notesPage, setNotesPage] = useState(0);
   const [activeNetworkId, setActiveNetworkId] = useState<string>('all');
@@ -282,6 +286,20 @@ export default function CoachDashboard() {
 
       setDealers(dealerList);
       await fetchNotes(0);
+
+      // Fetch active visits for dealer cards
+      const { data: visitData } = await supabase
+        .from('coach_visits')
+        .select('dealership_id, visit_date, status')
+        .eq('coach_user_id', user!.id)
+        .in('dealership_id', dealershipIds)
+        .in('status', ['proposed', 'confirmed']);
+      const visitMap = new Map<string, string>();
+      (visitData ?? []).forEach((v: any) => {
+        visitMap.set(v.dealership_id, `${format(new Date(v.visit_date), 'dd MMM')} · ${v.status}`);
+      });
+      setActiveVisitsByDealer(visitMap);
+
       setLoading(false);
     };
     fetchAssignments();
@@ -528,20 +546,39 @@ export default function CoachDashboard() {
                   )}
                 </div>
 
-                {/* Bottom: note icon + CTA */}
+                {/* Bottom: note icon + visit chip + CTA */}
                 <div className="flex items-center justify-between pt-1 border-t border-border/50">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="relative h-7 w-7 p-0"
-                    onClick={() => { setNoteSheetDealer(dealer); setNoteSheetOpen(true); }}
-                    aria-label="Add note"
-                  >
-                    <StickyNote className="h-4 w-4 text-muted-foreground" />
-                    {hasNotes && (
-                      <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="relative h-7 w-7 p-0"
+                      onClick={() => { setNoteSheetDealer(dealer); setNoteSheetOpen(true); }}
+                      aria-label="Add note"
+                    >
+                      <StickyNote className="h-4 w-4 text-muted-foreground" />
+                      {hasNotes && (
+                        <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="relative h-7 w-7 p-0"
+                      onClick={() => { setVisitSheetDealer(dealer); setVisitSheetOpen(true); }}
+                      aria-label="Schedule visit"
+                    >
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      {activeVisitsByDealer.has(dealer.dealershipId) && (
+                        <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-[#16a34a]" />
+                      )}
+                    </Button>
+                    {activeVisitsByDealer.has(dealer.dealershipId) && (
+                      <span className="text-xs text-[#16a34a] font-medium">
+                        {activeVisitsByDealer.get(dealer.dealershipId)}
+                      </span>
                     )}
-                  </Button>
+                  </div>
                   {dealer.latestAssessmentId ? (
                     <Button variant="outline" size="sm" className="h-7 text-xs"
                       onClick={() => navigate(`/app/results/${dealer.latestAssessmentId}`)}>
@@ -567,6 +604,25 @@ export default function CoachDashboard() {
         dealershipId={noteSheetDealer?.dealershipId ?? null}
         dealerName={noteSheetDealer?.dealerName ?? ''}
         onNoteAdded={() => fetchNotes(0)}
+      />
+
+      <VisitSheet
+        open={visitSheetOpen}
+        onOpenChange={setVisitSheetOpen}
+        dealershipId={visitSheetDealer?.dealershipId ?? null}
+        dealerName={visitSheetDealer?.dealerName ?? ''}
+        onVisitSaved={async () => {
+          const { data } = await supabase
+            .from('coach_visits')
+            .select('dealership_id, visit_date, status')
+            .eq('coach_user_id', user!.id)
+            .in('status', ['proposed', 'confirmed']);
+          const map = new Map<string, string>();
+          (data ?? []).forEach((v: any) => {
+            map.set(v.dealership_id, `${format(new Date(v.visit_date), 'dd MMM')} · ${v.status}`);
+          });
+          setActiveVisitsByDealer(map);
+        }}
       />
 
       {/* Actions Requiring Attention */}
