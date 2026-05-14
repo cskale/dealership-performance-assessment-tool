@@ -58,7 +58,7 @@ export function AppSidebar() {
     {
       label: 'Overview',
       items: [
-        { path: '/app/dashboard', label: 'Dashboard', icon: BarChart3 },
+        ...(actorType !== 'coach' ? [{ path: '/app/dashboard', label: 'Dashboard', icon: BarChart3 }] : []),
         ...(actorType === 'oem' ? [
           { path: '/app/oem-dashboard', label: 'OEM Dashboard',    icon: Globe },
           { path: '/app/oem-settings',  label: 'Network Settings', icon: Settings },
