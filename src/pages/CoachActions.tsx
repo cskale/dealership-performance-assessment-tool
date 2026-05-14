@@ -57,6 +57,52 @@ export default function CoachActions() {
 
   const fetchActions = async () => {
     try {
+      if (!user) return;
+
+      // Step 1: Get assigned dealership IDs for this coach
+      const { data: assignments } = await supabase
+        .from('coach_dealership_assignments')
+        .select('dealership_id')
+        .eq('coach_user_id', user.id)
+        .eq('is_active', true);
+
+      if (!assignments?.length) {
+        setActions([]);
+        calculateDealerStats([]);
+        return;
+      }
+
+      const dealershipIds = assignments.map(a => a.dealership_id);
+
+      // Step 2: Get the latest completed assessment per dealer
+      const { data: assessments } = await supabase
+        .from('assessments')
+        .select('id, dealership_id, dealerships!inner(name, location)')
+        .in('dealership_id', dealershipIds)
+        .eq('status', 'completed')
+        .order('completed_at', { ascending: false });
+
+      if (!assessments?.length) {
+        setActions([]);
+        calculateDealerStats([]);
+        return;
+      }
+
+      // Keep only the latest assessment per dealership
+      const latestByDealer = new Map<string, { id: string; name: string; location: string }>();
+      (assessments as any[]).forEach(a => {
+        if (!latestByDealer.has(a.dealership_id)) {
+          latestByDealer.set(a.dealership_id, {
+            id: a.id,
+            name: a.dealerships.name,
+            location: a.dealerships.location,
+          });
+        }
+      });
+
+      const latestAssessmentIds = Array.from(latestByDealer.values()).map(v => v.id);
+
+      // Step 3: Fetch actions only for those latest assessments
       const { data, error } = await supabase
         .from('improvement_actions')
         .select(`
@@ -74,6 +120,7 @@ export default function CoachActions() {
             )
           )
         `)
+        .in('assessment_id', latestAssessmentIds)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
