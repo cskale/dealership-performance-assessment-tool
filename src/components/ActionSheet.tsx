@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { ActionActivityFeed } from "./ActionActivityFeed";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -599,6 +600,13 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                   </div>
                 )}
               </div>
+
+            {/* Activity feed — audit log + comments, shown in edit mode */}
+            {mode === 'edit' && action?.id && (
+              <div className="mt-4 px-4 pb-2">
+                <ActionActivityFeed actionId={action.id} />
+              </div>
+            )}
           </div>
         </ScrollArea>
 

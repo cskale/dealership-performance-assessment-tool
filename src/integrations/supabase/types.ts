@@ -208,6 +208,41 @@ export type Database = {
           },
         ]
       }
+      action_comments: {
+        Row: {
+          action_id: string
+          author_email: string
+          comment_text: string
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          action_id: string
+          author_email: string
+          comment_text: string
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          action_id?: string
+          author_email?: string
+          comment_text?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_comments_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "improvement_actions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       action_generation_log: {
         Row: {
           assessment_id: string | null
@@ -1766,6 +1801,7 @@ export type Database = {
       cleanup_expired_sessions: { Args: never; Returns: undefined }
       delete_user_account: { Args: { _user_id: string }; Returns: boolean }
       export_user_data: { Args: { _user_id: string }; Returns: Json }
+      get_actor_label: { Args: { p_user_id: string }; Returns: string }
       get_dealership_details: { Args: { p_ids: string[] }; Returns: Json }
       has_org_access: {
         Args: {
