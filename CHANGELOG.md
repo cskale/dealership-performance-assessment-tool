@@ -9,6 +9,51 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
 
 ---
 
+## [2026-05-14] — Sprint 4 Hardening + Sprint 5: Coach Capabilities
+
+### security
+- **profiles actor_type privilege escalation patched** — `UPDATE` policy on `profiles` lacked a `WITH CHECK` clause. Any authenticated user could call `supabase.from('profiles').update({ actor_type: 'oem' })` and silently escalate their own role. Fixed by adding `WITH CHECK` that prevents `actor_type` from being modified via direct client calls — changes must go through SECURITY DEFINER functions only. `(migration 20260514000000)`
+
+### fix
+- **action_audit_log 403** — client was making direct REST inserts that returned 403 due to RLS. Replaced all three client-side insert blocks in `ActionPlan.tsx` with a SECURITY DEFINER DB trigger (`trg_improvement_action_audit`) that fires on INSERT/UPDATE of `improvement_actions`. Trigger logs `created`, `status`, and `action_title` field changes automatically. `(migration 20260514000001 · ActionPlan.tsx)`
+- **Coach sidebar duplicate "Dashboard"** — coaches saw both "Dashboard" (dealer UI) and "Coach Dashboard" in the sidebar. Entire Diagnostic section (History, Action Plans, New Assessment) also visible to coaches, causing confusing redirects. Fixed: Dashboard item hidden for `actorType === 'coach'`; Diagnostic section hidden entirely for coaches. `(AppSidebar.tsx)`
+- **Coach auto-lands on dealer dashboard** — navigating to `/app/dashboard` as a coach showed the dealer UI. Added redirect: `if (actorType === 'coach') return <Navigate to="/app/coach-dashboard" replace />`. `(Dashboard.tsx)`
+- **"View Results" broken for coach** — `Results.tsx` queried assessments with `.eq('user_id', user.id)` unconditionally. Coaches have a different `user_id` than the dealer, so results were never found. Fixed: `.eq('user_id')` filter only applies when no `routeAssessmentId` is present (history browse). Direct URL access uses RLS for authorization. `(Results.tsx)`
+- **"View Results" pointing to in-progress assessment** — `latestAssessmentId` in CoachDashboard used `records[0]` (latest assessment regardless of status). If dealer had an in-progress assessment on top, the button pointed to it, which Results.tsx then filtered out. Fixed: `latestAssessmentId` now uses first **completed** assessment only. `(CoachDashboard.tsx)`
+- **"Start Assessment" CTA on coach dealer cards** — coaches should not start dealer assessments. Button replaced with "No assessment yet" text. `(CoachDashboard.tsx)`
+- **Action Tracker showing all historical actions** — `CoachActions.tsx` fetched all `improvement_actions` across all assessments ever. Fixed: now fetches assigned dealerships → latest completed assessment per dealer → actions for those IDs only. `(CoachActions.tsx)`
+- **Action status mismatch (open count = 0, badges blank)** — `CoachActions.tsx` used lowercase status values (`'open'`, `'in_progress'`, `'completed'`) while the DB stores titlecase (`'Open'`, `'In Progress'`, `'Completed'`). All status comparisons, filter options, and badge styles fixed to match DB values. Open count now counts anything ≠ `'Completed'`. `(CoachActions.tsx)`
+- **"In Progress" badge wrapping to two lines** — status badge lacked `whitespace-nowrap`. Added to all status style classes. `(CoachActions.tsx)`
+- **Coach action updates not saving (silent RLS block)** — coaches had a SELECT policy on `improvement_actions` but no UPDATE policy. Supabase silently returns 0 rows updated when RLS blocks — no error thrown. Coach edits via ActionSheet were accepted client-side but never persisted to DB. Added UPDATE policy matching the existing SELECT policy (coach must be actively assigned to the dealership). `(migration 20260514000005)`
+
+### feat
+- **Multi-OEM network grouping tabs** — coach dashboard now fetches `dealer_network_memberships → oem_networks` for all assigned dealers. Dealer cards grouped by OEM programme with pill tabs: `All Networks | BMW Network | Audi Tier 1 | …`. Selecting a tab filters dealer cards, stats bar, and actions section. `(CoachDashboard.tsx)`
+- **Visit scheduling** — new `coach_visits` table with full RLS: coach can propose visits; dealer can confirm or cancel; OEM can view read-only. Unique partial index enforces one active visit per coach+dealer pair. New `VisitSheet` component (shadcn Sheet + Calendar) opens from dealer card calendar icon. Active visit shown as green chip on card. `(migration 20260514000002 · VisitSheet.tsx · CoachDashboard.tsx)`
+- **Dealer visit confirmation banner** — dealer dashboard shows a coloured banner when a coach has proposed or confirmed a visit. Blue = proposed (with Confirm button); green = confirmed. Banner fetches `coach_visits` for the dealer's `active_dealership_id`. Real-time update on confirm. `(Dashboard.tsx)`
+- **Notes polish** — `CoachNoteSheet` now includes a note type selector (`observation | action | follow-up`) stored in new `coach_notes.note_type` column. Type badge shown in Field Notes feed. Delete button added to each note (own notes only). `(migration 20260514000003 · CoachNoteSheet.tsx · CoachDashboard.tsx)`
+- **Resource reference panel** — new "Resources" tab in CoachDashboard. Two sub-panels: (1) KPI Reference — searchable list sourced from `kpiDefinitions.ts` with label, definition, benchmark; (2) Action Playbooks — `actionTemplates.ts` filterable by department with implementation steps. Pure client-side, no new DB queries. `(CoachDashboard.tsx)`
+- **Identical ActionSheet for coach and dealer** — coaches can now click any action row in Action Tracker to open the same full ActionSheet the dealer uses (context intelligence, KPI panel, triage scores, all fields). Replaced the inline status dropdown. `(CoachActions.tsx)`
+- **Real-time action sync (bidirectional)** — `CoachActions.tsx` subscribes to `improvement_actions` changes via Supabase Realtime; `ActionPlan.tsx` (dealer) subscribes filtered to the current `assessment_id`. Changes by either party reflect in the other's view without page refresh. `(CoachActions.tsx · ActionPlan.tsx)`
+- **Action activity feed — comments + audit trail** — new `action_comments` table (RLS: org members + assigned coaches can read/write; users can only delete their own). New `ActionActivityFeed` component renders inside ActionSheet (edit mode only): merged chronological timeline of automatic audit log entries (field changes) and manual comments. `action_audit_log` now has a SELECT policy so clients can read it. Author display uses `profiles.display_name / full_name / email`. Real-time via Supabase channels. Ctrl+Enter to post. Delete own comments on hover. Both dealer and coach see the same feed. `(migration 20260514000004 · ActionActivityFeed.tsx · ActionSheet.tsx)`
+
+### db
+- `coach_visits` — new table, 4-policy RLS, partial unique index for one active visit per coach+dealer, `updated_at` trigger `(migration 20260514000002)`
+- `coach_notes.note_type` — nullable column, check constraint `(observation | action | follow-up)` `(migration 20260514000003)`
+- `action_comments` — new table, 3-policy RLS (select/insert/delete) `(migration 20260514000004)`
+- `action_audit_log` — SELECT policy added (was insert-only via trigger, unreadable by clients) `(migration 20260514000004)`
+- `get_actor_label(uuid)` — new SECURITY DEFINER function returning role label for a user_id `(migration 20260514000004)`
+- `improvement_actions` — UPDATE policy added for coaches `(migration 20260514000005)`
+- Supabase TypeScript types regenerated after all migrations `(types.ts)`
+
+### Notes
+- 136 tests passing, zero TypeScript errors
+- No new npm packages
+- Coach dashboard visual redesign deferred to next sprint (Stitch mockups ready)
+- OEM dashboard redesign deferred to next sprint
+- Assessment templates / OEM question weighting deferred to Sprint 6
+
+---
+
 ## [2026-05-10] — Sprint 3: Dashboard Redesign
 
 ### feat
