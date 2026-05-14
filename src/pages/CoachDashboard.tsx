@@ -78,6 +78,7 @@ interface CoachNote {
   action_id: string | null;
   note_text: string;
   created_at: string;
+  note_type: 'observation' | 'action' | 'follow-up' | null;
 }
 
 const CHART_COLORS = ['#2563eb', '#7c3aed', '#0891b2'];
@@ -783,6 +784,11 @@ export default function CoachDashboard() {
                       <Badge variant="outline" className="text-xs bg-[hsl(var(--brand-050))] text-[hsl(var(--brand-600))] border-[hsl(var(--brand-200))]">
                         {dealer?.dealerName ?? 'Unknown dealer'}
                       </Badge>
+                      {note.note_type && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 capitalize">
+                          {note.note_type}
+                        </Badge>
+                      )}
                       {note.assessment_id && (
                         <Badge variant="outline" className="text-[10px] px-1.5 py-0">Assessment</Badge>
                       )}

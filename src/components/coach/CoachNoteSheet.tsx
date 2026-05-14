@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Trash2 } from 'lucide-react';
 
 interface CoachNote {
   id: string;
@@ -24,6 +24,7 @@ interface CoachNote {
   action_id: string | null;
   note_text: string;
   created_at: string;
+  note_type: 'observation' | 'action' | 'follow-up' | null;
 }
 
 interface AssessmentOption { id: string; created_at: string; }
@@ -46,6 +47,7 @@ export function CoachNoteSheet({ open, onOpenChange, dealershipId, dealerName, o
   const [selectedAssessmentId, setSelectedAssessmentId] = useState('');
   const [selectedActionId, setSelectedActionId] = useState('');
   const [noteText, setNoteText] = useState('');
+  const [noteType, setNoteType] = useState<'observation' | 'action' | 'follow-up' | ''>('');
   const [submitting, setSubmitting] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
@@ -53,6 +55,7 @@ export function CoachNoteSheet({ open, onOpenChange, dealershipId, dealerName, o
     if (!open || !dealershipId || !user?.id) return;
     setContextType('general');
     setNoteText('');
+    setNoteType('');
     setSelectedAssessmentId('');
     setSelectedActionId('');
     fetchSheetData();
@@ -119,12 +122,14 @@ export function CoachNoteSheet({ open, onOpenChange, dealershipId, dealerName, o
       coach_user_id: string;
       dealership_id: string;
       note_text: string;
+      note_type: string | null;
       assessment_id?: string;
       action_id?: string;
     } = {
       coach_user_id: user.id,
       dealership_id: dealershipId,
       note_text: noteText.trim(),
+      note_type: noteType || null,
     };
     if (contextType === 'assessment' && selectedAssessmentId) payload.assessment_id = selectedAssessmentId;
     if (contextType === 'action' && selectedActionId) payload.action_id = selectedActionId;
@@ -136,6 +141,7 @@ export function CoachNoteSheet({ open, onOpenChange, dealershipId, dealerName, o
     } else if (data) {
       setNotes(prev => [data as CoachNote, ...prev]);
       setNoteText('');
+      setNoteType('');
       setContextType('general');
       setSelectedAssessmentId('');
       setSelectedActionId('');
@@ -196,6 +202,17 @@ export function CoachNoteSheet({ open, onOpenChange, dealershipId, dealerName, o
               </Select>
             )}
 
+            <Select value={noteType} onValueChange={v => setNoteType(v as typeof noteType)}>
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue placeholder="Note type (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="observation">Observation</SelectItem>
+                <SelectItem value="action">Action</SelectItem>
+                <SelectItem value="follow-up">Follow-up</SelectItem>
+              </SelectContent>
+            </Select>
+
             <Textarea
               placeholder="Add a field note…"
               value={noteText}
@@ -234,6 +251,19 @@ export function CoachNoteSheet({ open, onOpenChange, dealershipId, dealerName, o
                     {note.action_id && (
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0">Action</Badge>
                     )}
+                    {note.note_type && (
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 capitalize">{note.note_type}</Badge>
+                    )}
+                    <button
+                      className="ml-auto text-muted-foreground hover:text-[#dc2626] transition-colors"
+                      onClick={async () => {
+                        await supabase.from('coach_notes').delete().eq('id', note.id);
+                        setNotes(prev => prev.filter(n => n.id !== note.id));
+                      }}
+                      aria-label="Delete note"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                   <p className="text-sm text-foreground">{note.note_text}</p>
                   <div className="border-b border-border/50" />
