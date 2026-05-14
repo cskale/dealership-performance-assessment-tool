@@ -629,6 +629,7 @@ export type Database = {
           dealership_id: string
           id: string
           note_text: string
+          note_type: string | null
           updated_at: string
         }
         Insert: {
@@ -639,6 +640,7 @@ export type Database = {
           dealership_id: string
           id?: string
           note_text: string
+          note_type?: string | null
           updated_at?: string
         }
         Update: {
@@ -649,6 +651,7 @@ export type Database = {
           dealership_id?: string
           id?: string
           note_text?: string
+          note_type?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -668,6 +671,47 @@ export type Database = {
           },
           {
             foreignKeyName: "coach_notes_dealership_id_fkey"
+            columns: ["dealership_id"]
+            isOneToOne: false
+            referencedRelation: "dealerships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_visits: {
+        Row: {
+          coach_user_id: string
+          created_at: string | null
+          dealership_id: string
+          id: string
+          status: string
+          updated_at: string | null
+          visit_date: string
+          visit_notes: string | null
+        }
+        Insert: {
+          coach_user_id: string
+          created_at?: string | null
+          dealership_id: string
+          id?: string
+          status?: string
+          updated_at?: string | null
+          visit_date: string
+          visit_notes?: string | null
+        }
+        Update: {
+          coach_user_id?: string
+          created_at?: string | null
+          dealership_id?: string
+          id?: string
+          status?: string
+          updated_at?: string | null
+          visit_date?: string
+          visit_notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_visits_dealership_id_fkey"
             columns: ["dealership_id"]
             isOneToOne: false
             referencedRelation: "dealerships"
