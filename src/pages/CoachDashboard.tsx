@@ -28,11 +28,13 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { format } from 'date-fns';
-import { ArrowUpDown, Filter, LineChart as LineChartIcon, TrendingUp, TrendingDown, Minus, StickyNote, Calendar } from 'lucide-react';
+import { ArrowUpDown, Filter, LineChart as LineChartIcon, TrendingUp, TrendingDown, Minus, StickyNote, Calendar, Database, BookOpen } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { computeStatsBar, computeTrend, daysSince, getScoreBand, isOverdue, isDueSoon } from '@/lib/coachDashboardUtils';
 import { CoachNoteSheet } from '@/components/coach/CoachNoteSheet';
 import { VisitSheet } from '@/components/coach/VisitSheet';
+import { KPI_DEFINITIONS } from '@/lib/kpiDefinitions';
+import { ACTION_TEMPLATES } from '@/data/actionTemplates';
 
 interface AssignedDealer {
   dealershipId: string;
@@ -83,6 +85,122 @@ interface CoachNote {
 
 const CHART_COLORS = ['#2563eb', '#7c3aed', '#0891b2'];
 
+function ResourceKpiPanel() {
+  const [search, setSearch] = useState('');
+  const entries = Object.entries(KPI_DEFINITIONS);
+  const filtered = search.trim()
+    ? entries.filter(([key, val]) =>
+        key.toLowerCase().includes(search.toLowerCase()) ||
+        val.en.title.toLowerCase().includes(search.toLowerCase()) ||
+        (val.en.definition ?? '').toLowerCase().includes(search.toLowerCase())
+      )
+    : entries;
+
+  return (
+    <Card className="shadow-card rounded-xl">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base font-semibold flex items-center gap-2">
+          <Database className="h-4 w-4 text-[hsl(var(--brand-500))]" />
+          KPI Reference
+        </CardTitle>
+        <input
+          className="mt-2 h-8 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-1 focus:ring-[hsl(var(--brand-500))]"
+          placeholder="Search KPIs…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+      </CardHeader>
+      <CardContent className="p-0 max-h-[420px] overflow-y-auto">
+        {filtered.length === 0 ? (
+          <p className="px-5 py-6 text-sm text-muted-foreground text-center">No KPIs match &quot;{search}&quot;</p>
+        ) : (
+          <div className="divide-y divide-border">
+            {filtered.slice(0, 50).map(([key, val]) => (
+              <div key={key} className="px-5 py-3 space-y-0.5">
+                <p className="text-sm font-medium">{val.en.title}</p>
+                {val.en.definition && <p className="text-xs text-muted-foreground">{val.en.definition}</p>}
+                {val.en.benchmark && (
+                  <p className="text-xs text-[hsl(var(--brand-500))]">
+                    Benchmark: {val.en.benchmark}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+const DEPT_LABELS: Record<string, string> = {
+  NVS: 'New Vehicle Sales', UVS: 'Used Vehicle Sales',
+  SVC: 'Service', PTS: 'Parts', FIN: 'Financial Operations',
+};
+
+const DEPT_KPI_PREFIX: Record<string, string> = {
+  NVS: 'new-vehicle-sales',
+  UVS: 'used-vehicle-sales',
+  SVC: 'service',
+  PTS: 'parts',
+  FIN: 'financial',
+};
+
+function ResourcePlaybookPanel() {
+  const [dept, setDept] = useState<string>('all');
+  const templates = ACTION_TEMPLATES ?? [];
+  const filtered = dept === 'all'
+    ? templates
+    : templates.filter(t =>
+        t.linkedKPIs?.some(kpiKey => {
+          const kpiDef = KPI_DEFINITIONS[kpiKey];
+          return kpiDef?.en?.department?.includes(DEPT_KPI_PREFIX[dept] ?? dept.toLowerCase());
+        })
+      );
+
+  return (
+    <Card className="shadow-card rounded-xl">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <CardTitle className="text-base font-semibold flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-[hsl(var(--brand-500))]" />
+            Action Playbooks
+          </CardTitle>
+          <Select value={dept} onValueChange={setDept}>
+            <SelectTrigger className="w-44 h-8 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Departments</SelectItem>
+              {Object.entries(DEPT_LABELS).map(([k, v]) => (
+                <SelectItem key={k} value={k}>{v}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </CardHeader>
+      <CardContent className="p-0 max-h-[480px] overflow-y-auto">
+        {filtered.length === 0 ? (
+          <p className="px-5 py-6 text-sm text-muted-foreground text-center">No templates for this department</p>
+        ) : (
+          <div className="divide-y divide-border">
+            {filtered.map((t, i) => (
+              <div key={t.templateId ?? i} className="px-5 py-3 space-y-1">
+                <p className="text-sm font-medium">{t.title}</p>
+                {t.description && <p className="text-xs text-muted-foreground">{t.description}</p>}
+                {t.implementationSteps?.length > 0 && (
+                  <ol className="mt-1 space-y-0.5 pl-4 list-decimal">
+                    {t.implementationSteps.slice(0, 4).map((step, si) => (
+                      <li key={si} className="text-xs text-muted-foreground">{step.text}</li>
+                    ))}
+                  </ol>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function CoachDashboard() {
   const { actorType, loading: roleLoading } = useActiveRole();
@@ -95,6 +213,7 @@ export default function CoachDashboard() {
   const [allActions, setAllActions] = useState<ActionItem[]>([]);
   const [notes, setNotes] = useState<CoachNote[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dashboardView, setDashboardView] = useState<'dashboard' | 'resources'>('dashboard');
   const [sortBy, setSortBy] = useState<'score' | 'name' | 'overdue'>('score');
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'in_progress'>('all');
   const [selectedDealerIds, setSelectedDealerIds] = useState<string[]>([]);
@@ -423,7 +542,25 @@ export default function CoachDashboard() {
         </p>
       </div>
 
-      {/* EXISTING SECTIONS — dealer cards, stale actions, trend chart — keep as-is below this comment */}
+      {/* View tabs */}
+      <div className="flex gap-1 border-b border-border">
+        {(['dashboard', 'resources'] as const).map(view => (
+          <button
+            key={view}
+            onClick={() => setDashboardView(view)}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              dashboardView === view
+                ? 'border-[hsl(var(--brand-500))] text-foreground -mb-px'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {view === 'dashboard' ? 'Overview' : 'Resources'}
+          </button>
+        ))}
+      </div>
+
+      {dashboardView === 'dashboard' && (
+      <div className="space-y-6">
 
       {/* Network tab strip */}
       {networkTabs.length > 0 && (
@@ -897,6 +1034,15 @@ export default function CoachDashboard() {
           )}
         </CardContent>
       </Card>
+      </div>
+      )}
+
+      {dashboardView === 'resources' && (
+        <div className="space-y-6">
+          <ResourceKpiPanel />
+          <ResourcePlaybookPanel />
+        </div>
+      )}
     </div>
     </div>
   );
