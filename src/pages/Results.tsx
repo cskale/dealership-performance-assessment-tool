@@ -68,13 +68,15 @@ export default function Results() {
           let query = supabase
             .from('assessments')
             .select('id, answers, scores, overall_score, completed_at, status')
-            .eq('user_id', user.id)
             .eq('status', 'completed');
 
           if (routeAssessmentId) {
             query = query.eq('id', routeAssessmentId);
           } else {
-            query = query.order('completed_at', { ascending: false }).limit(1);
+            query = query
+              .eq('user_id', user.id)
+              .order('completed_at', { ascending: false })
+              .limit(1);
           }
 
           const { data: dbAssessment, error } = await query.single();
