@@ -172,6 +172,20 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
 
   useEffect(() => { loadActions(); }, [loadActions]);
 
+  // Real-time: re-fetch when any action is updated (e.g. coach changes status)
+  useEffect(() => {
+    if (!assessmentId) return;
+    const channel = supabase
+      .channel(`action-plan-realtime-${assessmentId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'improvement_actions', filter: `assessment_id=eq.${assessmentId}` },
+        () => { loadActions(); }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [assessmentId, loadActions]);
+
   const handleKanbanStatusChange = useCallback(async (
     actionId: string,
     newStatus: 'Open' | 'In Progress' | 'Completed'

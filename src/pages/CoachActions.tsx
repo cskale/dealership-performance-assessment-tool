@@ -49,9 +49,9 @@ interface DealerStats {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  'Open':        'bg-blue-50 text-blue-700 border-blue-200',
-  'In Progress': 'bg-amber-50 text-amber-700 border-amber-200',
-  'Completed':   'bg-emerald-50 text-emerald-700 border-emerald-200',
+  'Open':        'bg-blue-50 text-blue-700 border-blue-200 whitespace-nowrap',
+  'In Progress': 'bg-amber-50 text-amber-700 border-amber-200 whitespace-nowrap',
+  'Completed':   'bg-emerald-50 text-emerald-700 border-emerald-200 whitespace-nowrap',
 };
 
 export default function CoachActions() {
@@ -239,7 +239,10 @@ export default function CoachActions() {
     if (!error) {
       toast({ title: 'Action updated' });
       setSheetOpen(false);
-      fetchActions();
+      // Immediate re-fetch so coach sees their own change without waiting for real-time
+      await fetchActions();
+    } else {
+      toast({ title: 'Error', description: 'Failed to save action', variant: 'destructive' });
     }
   };
 
