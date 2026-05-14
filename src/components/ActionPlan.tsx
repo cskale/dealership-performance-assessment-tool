@@ -255,18 +255,6 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
       const { data: insertedActions, error: insertError } = await supabase.from('improvement_actions').insert(actionsWithOrg as any).select();
       if (insertError) throw insertError;
 
-      // Write audit log entries for AI-generated actions
-      if (insertedActions && insertedActions.length > 0 && currentOrganization?.id) {
-        const auditRows = insertedActions.map((a: any) => ({
-          action_id: a.id,
-          organization_id: currentOrganization.id,
-          changed_by: user.id,
-          field_name: 'created',
-          new_value: 'Action created by AI generation',
-        }));
-        await supabase.from('action_audit_log').insert(auditRows);
-      }
-
       toast.success(`Generated ${insertedActions?.length || 0} targeted action items`);
       loadActions();
     } catch (error) {
@@ -314,17 +302,6 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
         const { data: inserted, error } = await supabase.from('improvement_actions').insert([actionData as any]).select();
         if (error) throw error;
 
-        // Audit log for manual create
-        if (inserted?.[0] && currentOrganization?.id) {
-          await supabase.from('action_audit_log').insert({
-            action_id: inserted[0].id,
-            organization_id: currentOrganization.id,
-            changed_by: user.id,
-            field_name: 'created',
-            new_value: 'Action created',
-          });
-        }
-
         toast.success('Action added successfully');
         loadActions();
       } catch (error) {
@@ -357,12 +334,6 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
     }
   };
 
-  const TRACKED_FIELDS = [
-    'action_title', 'action_description', 'status', 'priority',
-    'responsible_person', 'target_completion_date', 'department',
-    'impact_score', 'effort_score', 'urgency_score', 'support_required_from'
-  ];
-
   const performUpdate = async (formData: Partial<ActionRecord>, original: ActionRecord | null) => {
     const { error } = await supabase.from('improvement_actions').update({
       action_title: formData.action_title,
@@ -380,28 +351,6 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
       updated_at: new Date().toISOString()
     }).eq('id', formData.id!);
     if (error) throw error;
-
-    // Write audit log entries for changed fields
-    if (original && currentOrganization?.id && user) {
-      const auditRows: any[] = [];
-      for (const field of TRACKED_FIELDS) {
-        const oldVal = String((original as any)[field] ?? '');
-        const newVal = String((formData as any)[field] ?? '');
-        if (oldVal !== newVal) {
-          auditRows.push({
-            action_id: formData.id,
-            organization_id: currentOrganization.id,
-            changed_by: user.id,
-            field_name: field,
-            old_value: oldVal || null,
-            new_value: newVal,
-          });
-        }
-      }
-      if (auditRows.length > 0) {
-        await supabase.from('action_audit_log').insert(auditRows);
-      }
-    }
 
     toast.success('Action updated successfully');
     setSheetOpen(false);
