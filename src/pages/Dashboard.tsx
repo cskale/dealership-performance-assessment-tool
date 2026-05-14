@@ -5,7 +5,9 @@ import { useActiveRole } from '@/hooks/useActiveRole';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { ClipboardList, ArrowRight, BarChart3, Zap, Award, AlertCircle, Info } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ClipboardList, ArrowRight, BarChart3, Zap, Award, AlertCircle, Info, Calendar as CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { calculateWeightedScore } from '@/lib/scoringEngine';
 import { getMaturityLevel, MATURITY_LEVELS } from '@/lib/maturityConfig';
@@ -608,6 +610,11 @@ export default function Dashboard() {
   const [hasAssessments, setHasAssessments] = useState<boolean | null>(null);
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [upcomingVisit, setUpcomingVisit] = useState<{
+    visit_date: string;
+    status: 'proposed' | 'confirmed';
+    id: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
@@ -664,6 +671,28 @@ export default function Dashboard() {
     return () => { cancelled = true; };
   }, [user, dealerId]);
 
+  useEffect(() => {
+    if (!user?.id || actorType !== 'dealer') return;
+    const fetchVisit = async () => {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('active_dealership_id')
+        .eq('user_id', user.id)
+        .single();
+      if (!profile?.active_dealership_id) return;
+      const { data } = await supabase
+        .from('coach_visits')
+        .select('id, visit_date, status')
+        .eq('dealership_id', profile.active_dealership_id)
+        .in('status', ['proposed', 'confirmed'])
+        .order('visit_date', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      setUpcomingVisit(data ?? null);
+    };
+    fetchVisit();
+  }, [user?.id, actorType]);
+
   const derived = useMemo(() => {
     if (!data) return null;
     const { assessment, actions } = data;
@@ -688,6 +717,15 @@ export default function Dashboard() {
 
   if (actorType === 'coach') return <Navigate to="/app/coach-dashboard" replace />;
   if (actorType === 'oem')   return <Navigate to="/app/oem-dashboard"   replace />;
+
+  const handleConfirmVisit = async () => {
+    if (!upcomingVisit) return;
+    const { error } = await supabase
+      .from('coach_visits')
+      .update({ status: 'confirmed' })
+      .eq('id', upcomingVisit.id);
+    if (!error) setUpcomingVisit(prev => prev ? { ...prev, status: 'confirmed' } : null);
+  };
 
   if (loading || hasAssessments === null) {
     return <div className="min-h-screen bg-[#F7F8F9]" />;
@@ -756,6 +794,39 @@ export default function Dashboard() {
             View Full Report
           </Button>
         </div>
+
+        {/* ── Visit confirmation banner ── */}
+        {upcomingVisit && (
+          <div className={`rounded-xl border px-4 py-3 flex items-center justify-between gap-4 ${
+            upcomingVisit.status === 'confirmed'
+              ? 'bg-[#16a34a]/5 border-[#16a34a]/20'
+              : 'bg-[#2563eb]/5 border-[#2563eb]/20'
+          }`}>
+            <div className="flex items-center gap-3">
+              <CalendarIcon className={`h-4 w-4 shrink-0 ${
+                upcomingVisit.status === 'confirmed' ? 'text-[#16a34a]' : 'text-[#2563eb]'
+              }`} />
+              <div>
+                <p className="text-sm font-medium">
+                  {upcomingVisit.status === 'confirmed' ? 'Confirmed coaching visit' : 'Upcoming coaching visit'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {format(new Date(upcomingVisit.visit_date), 'EEEE, dd MMMM yyyy')}
+                </p>
+              </div>
+            </div>
+            {upcomingVisit.status === 'proposed' && (
+              <Button size="sm" className="h-8 text-xs shrink-0" onClick={handleConfirmVisit}>
+                Confirm
+              </Button>
+            )}
+            {upcomingVisit.status === 'confirmed' && (
+              <Badge variant="outline" className="bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20 shrink-0">
+                Confirmed ✓
+              </Badge>
+            )}
+          </div>
+        )}
 
         {/* ── Hero card ── */}
         <HeroCard
