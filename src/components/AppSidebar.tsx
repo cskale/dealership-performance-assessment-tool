@@ -69,14 +69,14 @@ export function AppSidebar() {
         ] : []),
       ],
     },
-    {
+    ...(actorType !== 'coach' ? [{
       label: 'Diagnostic',
       items: [
-        ...(actorType !== 'coach' ? [{ path: '/app/assessment', label: 'New Assessment', icon: Plus }] : []),
+        { path: '/app/assessment', label: 'New Assessment', icon: Plus },
         { path: '/app/results', label: 'History', icon: ClipboardList },
         { path: '/actions', label: 'Action Plans', icon: CheckSquare },
       ],
-    },
+    }] : []),
     {
       label: 'Reference',
       items: [

@@ -386,8 +386,10 @@ export default function CoachDashboard() {
 
       const dealerList: AssignedDealer[] = dealerships.map(d => {
         const records = dealerAssessments.get(d.id) ?? [];
-        const latest = records[0];
-        const previous = records[1];
+        // Use only completed assessments for score display and results link
+        const completed = records.filter(r => r.status === 'completed');
+        const latest = completed[0];
+        const previous = completed[1];
         return {
           dealershipId: d.id,
           dealerName: d.name,
@@ -723,10 +725,7 @@ export default function CoachDashboard() {
                       View Results →
                     </Button>
                   ) : (
-                    <Button variant="outline" size="sm" className="h-7 text-xs"
-                      onClick={() => navigate('/app/assessment')}>
-                      Start Assessment
-                    </Button>
+                    <span className="text-xs text-muted-foreground">No assessment yet</span>
                   )}
                 </div>
               </CardContent>
