@@ -45,6 +45,7 @@ interface AssignedDealer {
   latestAssessmentId: string | null;
   openCount: number;
   overdueCount: number;
+  networks: { id: string; name: string; brand: string }[];
 }
 
 interface AssessmentRecord {
@@ -101,6 +102,13 @@ export default function CoachDashboard() {
   const [noteSheetDealer, setNoteSheetDealer] = useState<AssignedDealer | null>(null);
   const [notesDealerFilter, setNotesDealerFilter] = useState<string>('all');
   const [notesPage, setNotesPage] = useState(0);
+  const [activeNetworkId, setActiveNetworkId] = useState<string>('all');
+
+  const networkTabs = useMemo(() => {
+    const seen = new Map<string, { id: string; name: string; brand: string }>();
+    dealers.forEach(d => d.networks.forEach(n => seen.set(n.id, n)));
+    return Array.from(seen.values());
+  }, [dealers]);
 
   const fetchNotes = async (page = 0) => {
     if (!user?.id) return;
@@ -147,6 +155,24 @@ export default function CoachDashboard() {
 
       const dealerships = dealershipsRes.data ?? [];
       const assessments = assessmentsRes.data ?? [];
+
+      // Fetch OEM network memberships for these dealerships
+      const { data: networkMemberships } = await supabase
+        .from('dealer_network_memberships')
+        .select('dealership_id, oem_networks(id, name, oem_brand)')
+        .in('dealership_id', dealershipIds)
+        .eq('is_active', true);
+
+      const dealerNetworkMap = new Map<string, { id: string; name: string; brand: string }[]>();
+      (networkMemberships ?? []).forEach((m: any) => {
+        const net = m.oem_networks;
+        if (!net) return;
+        const existing = dealerNetworkMap.get(m.dealership_id) ?? [];
+        dealerNetworkMap.set(m.dealership_id, [
+          ...existing,
+          { id: net.id, name: net.name, brand: net.oem_brand ?? '' },
+        ]);
+      });
 
       setAllAssessments(
         assessments.map(a => ({
@@ -250,6 +276,7 @@ export default function CoachDashboard() {
           latestAssessmentId: latest?.id ?? null,
           openCount: openByDealer.get(d.id) ?? 0,
           overdueCount: overdueByDealer.get(d.id) ?? 0,
+          networks: dealerNetworkMap.get(d.id) ?? [],
         };
       });
 
@@ -262,13 +289,16 @@ export default function CoachDashboard() {
 
   const filteredDealers = useMemo(() => {
     let result = [...dealers];
+    if (activeNetworkId !== 'all') {
+      result = result.filter(d => d.networks.some(n => n.id === activeNetworkId));
+    }
     if (statusFilter === 'completed') result = result.filter(d => d.latestStatus === 'completed');
     else if (statusFilter === 'in_progress') result = result.filter(d => d.latestStatus === 'in_progress');
     if (sortBy === 'score') result.sort((a, b) => (b.latestScore ?? 0) - (a.latestScore ?? 0));
     else if (sortBy === 'name') result.sort((a, b) => a.dealerName.localeCompare(b.dealerName));
     else result.sort((a, b) => b.overdueCount - a.overdueCount);
     return result;
-  }, [dealers, sortBy, statusFilter]);
+  }, [dealers, activeNetworkId, sortBy, statusFilter]);
 
   const overdueActions = useMemo(() => {
     const base = actionDealerFilter === 'all' ? allActions : allActions.filter(a => a.dealershipId === actionDealerFilter);
@@ -375,6 +405,35 @@ export default function CoachDashboard() {
       </div>
 
       {/* EXISTING SECTIONS — dealer cards, stale actions, trend chart — keep as-is below this comment */}
+
+      {/* Network tab strip */}
+      {networkTabs.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setActiveNetworkId('all')}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+              activeNetworkId === 'all'
+                ? 'bg-[hsl(var(--brand-500))] text-white border-[hsl(var(--brand-500))]'
+                : 'bg-transparent text-muted-foreground border-border hover:border-[hsl(var(--brand-400))]'
+            }`}
+          >
+            All Networks
+          </button>
+          {networkTabs.map(n => (
+            <button
+              key={n.id}
+              onClick={() => setActiveNetworkId(n.id)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                activeNetworkId === n.id
+                  ? 'bg-[hsl(var(--brand-500))] text-white border-[hsl(var(--brand-500))]'
+                  : 'bg-transparent text-muted-foreground border-border hover:border-[hsl(var(--brand-400))]'
+              }`}
+            >
+              {n.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Sort + filter controls */}
       <div className="flex flex-wrap items-center gap-3">
