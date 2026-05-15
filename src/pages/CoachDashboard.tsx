@@ -28,7 +28,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { format } from 'date-fns';
-import { ArrowUpDown, Filter, LineChart as LineChartIcon, TrendingUp, TrendingDown, Minus, StickyNote, Calendar, Database, BookOpen } from 'lucide-react';
+import { LineChart as LineChartIcon, TrendingUp, TrendingDown, Minus, StickyNote, Calendar, Database, BookOpen, MapPin } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { computeStatsBar, computeTrend, daysSince, getScoreBand, isOverdue } from '@/lib/coachDashboardUtils';
 import { CoachNoteSheet } from '@/components/coach/CoachNoteSheet';
@@ -41,8 +41,8 @@ const BRAND_MAP: Record<string, { accent: string; domain: string | null }> = {
   mercedes:        { accent: '#2D3035', domain: 'mercedes-benz.com' },
   'mercedes-benz': { accent: '#2D3035', domain: 'mercedes-benz.com' },
   audi:            { accent: '#BB0A21', domain: 'audi.com' },
-  volkswagen:      { accent: '#003399', domain: 'volkswagen.com' },
-  vw:              { accent: '#003399', domain: 'volkswagen.com' },
+  volkswagen:      { accent: '#003399', domain: 'vw.com' },
+  vw:              { accent: '#003399', domain: 'vw.com' },
   toyota:          { accent: '#EB0A1E', domain: 'toyota.com' },
   ford:            { accent: '#003087', domain: 'ford.com' },
 };
@@ -404,17 +404,31 @@ export default function CoachDashboard() {
       const assessmentIds = assessments.map(a => a.id);
       const today = new Date();
 
+      // Scope actions to latest completed assessment per dealer only
+      const latestCompletedByDealer = new Map<string, string>();
+      const tempByDealer = new Map<string, typeof assessments>();
+      assessments.forEach(a => {
+        const list = tempByDealer.get(a.dealership_id) ?? [];
+        list.push(a);
+        tempByDealer.set(a.dealership_id, list);
+      });
+      tempByDealer.forEach((records, dealerId) => {
+        const completed = records.filter(r => r.status === 'completed');
+        if (completed[0]) latestCompletedByDealer.set(dealerId, completed[0].id);
+      });
+      const latestAssessmentIds = Array.from(latestCompletedByDealer.values());
+
       let actionData: Array<{
         id: string; action_title: string; priority: string; status: string;
         last_status_updated_at: string | null; target_completion_date: string | null;
         assessment_id: string;
       }> = [];
 
-      if (assessmentIds.length) {
+      if (latestAssessmentIds.length) {
         const { data } = await supabase
           .from('improvement_actions')
           .select('id, action_title, priority, status, last_status_updated_at, target_completion_date, assessment_id')
-          .in('assessment_id', assessmentIds)
+          .in('assessment_id', latestAssessmentIds)
           .in('status', ['Open', 'In Progress'])
           .order('target_completion_date', { ascending: true, nullsFirst: false });
         actionData = data ?? [];
@@ -924,32 +938,24 @@ export default function CoachDashboard() {
         </div>
       )}
 
-      {/* Sort + filter controls */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-1">
-          <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
-          {(['score', 'name', 'overdue'] as const).map(s => (
-            <Button
-              key={s}
-              variant={sortBy === s ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSortBy(s)}
-            >
-              {s === 'score' ? 'Score' : s === 'name' ? 'Name' : 'Overdue'}
-            </Button>
-          ))}
-        </div>
-        <div className="flex items-center gap-1">
-          <Filter className="w-4 h-4 text-muted-foreground" />
-          <Select value={statusFilter} onValueChange={v => setStatusFilter(v as 'all' | 'completed' | 'in_progress')}>
-            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('coach.filterAll')}</SelectItem>
-              <SelectItem value="completed">{t('coach.filterCompleted')}</SelectItem>
-              <SelectItem value="in_progress">{t('coach.filterInProgress')}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      {/* Controls bar */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <Select value={sortBy} onValueChange={v => setSortBy(v as 'score' | 'name' | 'overdue')}>
+          <SelectTrigger className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="score">Sort: Score</SelectItem>
+            <SelectItem value="name">Sort: Name</SelectItem>
+            <SelectItem value="overdue">Sort: Overdue</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={statusFilter} onValueChange={v => setStatusFilter(v as 'all' | 'completed' | 'in_progress')}>
+          <SelectTrigger className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All dealers</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+            <SelectItem value="in_progress">In Progress</SelectItem>
+          </SelectContent>
+        </Select>
         <div className="ml-auto">
           <a
             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
@@ -993,15 +999,7 @@ export default function CoachDashboard() {
               <CardContent className="p-4 space-y-3">
                 {/* Brand row */}
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <BrandLogo brand={dealer.brand} size={24} />
-                    <span
-                      className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                      style={{ backgroundColor: accent + '18', color: accent }}
-                    >
-                      {dealer.brand || 'Unknown'}
-                    </span>
-                  </div>
+                  <BrandLogo brand={dealer.brand} size={28} />
                   {dealer.latestScore != null && (() => {
                     const band = getScoreBand(dealer.latestScore);
                     return (
@@ -1016,7 +1014,7 @@ export default function CoachDashboard() {
                 <div>
                   <p className="text-sm font-semibold leading-tight text-foreground">{dealer.dealerName}</p>
                   <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                    <span>📍</span>
+                    <MapPin className="h-3 w-3 shrink-0" />
                     {dealer.location}
                     {since != null && <span className="text-[hsl(var(--neutral-400))] ml-1">· {since}d ago</span>}
                   </p>
@@ -1075,7 +1073,7 @@ export default function CoachDashboard() {
 
                 {/* Visit chip */}
                 <div className="text-xs flex items-center gap-1">
-                  <span>📅</span>
+                  <Calendar className="h-3 w-3 text-muted-foreground shrink-0" />
                   {visitParts ? (
                     <span className={visitConfirmed ? 'text-[#16a34a] font-medium' : 'text-[#d97706] font-medium'}>
                       Next visit: {visitParts[0]} · {visitParts[1]}
