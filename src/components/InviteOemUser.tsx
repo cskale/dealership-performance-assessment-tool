@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
-import { useActiveRole } from '@/hooks/useActiveRole';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,7 +21,6 @@ interface PendingOemInvite {
 export function InviteOemUser() {
   const { user } = useAuth();
   const { currentOrganization, userMemberships } = useMultiTenant();
-  const { actorType } = useActiveRole();
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
@@ -33,8 +31,7 @@ export function InviteOemUser() {
     m => m.organization_id === currentOrganization?.id,
   );
   const canInvite =
-    actorType === 'oem' &&
-    currentMembership &&
+    currentMembership != null &&
     ['owner', 'admin'].includes(currentMembership.role);
 
   const loadPendingInvites = useCallback(async () => {

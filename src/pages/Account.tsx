@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { OrganizationSettings } from '@/components/OrganizationSettings';
 import { InviteTeamMembers } from '@/components/InviteTeamMembers';
 import { InviteCoach } from '@/components/InviteCoach';
+import { InviteOemUser } from '@/components/InviteOemUser';
 import { OemModeToggle } from '@/components/OemModeToggle';
 import {
   User, Shield, Download, Trash2, Monitor, Smartphone, Globe,
@@ -480,6 +481,7 @@ const Account = () => {
               <div className="space-y-6">
                 <InviteTeamMembers />
                 <InviteCoach />
+                <InviteOemUser />
               </div>
             )}
           </TabsContent>
