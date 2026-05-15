@@ -319,6 +319,7 @@ export default function CoachDashboard() {
   const [notesDealerFilter, setNotesDealerFilter] = useState<string>('all');
   const [notesPage, setNotesPage] = useState(0);
   const [activeNetworkId, setActiveNetworkId] = useState<string>('all');
+  const [lastCompletedVisit, setLastCompletedVisit] = useState<{ date: string; dealerName: string } | null>(null);
 
   const networkTabs = useMemo(() => {
     const seen = new Map<string, { id: string; name: string; brand: string }>();
@@ -514,6 +515,24 @@ export default function CoachDashboard() {
       });
       setActiveVisitsByDealer(visitMap);
 
+      // Fetch most recent completed visit for timeline strip
+      const { data: completedVisits } = await supabase
+        .from('coach_visits')
+        .select('dealership_id, visit_date')
+        .eq('coach_user_id', user!.id)
+        .in('dealership_id', dealershipIds)
+        .eq('status', 'completed')
+        .order('visit_date', { ascending: false })
+        .limit(1);
+
+      if (completedVisits?.length) {
+        const cv = completedVisits[0] as { dealership_id: string; visit_date: string };
+        const dealerName = dealerships.find(d => d.id === cv.dealership_id)?.name ?? 'Unknown';
+        setLastCompletedVisit({ date: cv.visit_date, dealerName });
+      } else {
+        setLastCompletedVisit(null);
+      }
+
       setLoading(false);
     };
     fetchAssignments();
@@ -590,6 +609,22 @@ export default function CoachDashboard() {
       return [...prev, id];
     });
   };
+
+  // Derive next upcoming visit (first entry in activeVisitsByDealer)
+  const nextVisit: { dateLabel: string; dealerName: string; status: string } | null = (() => {
+    let earliest: { dateLabel: string; dealerName: string; status: string } | null = null;
+    activeVisitsByDealer.forEach((label, dealershipId) => {
+      if (earliest) return;
+      const dealer = dealers.find(d => d.dealershipId === dealershipId);
+      const parts = label.split(' · ');
+      earliest = {
+        dateLabel: parts[0] ?? label,
+        dealerName: dealer?.dealerName ?? 'Unknown',
+        status: parts[1] ?? 'proposed',
+      };
+    });
+    return earliest;
+  })();
 
   if (roleLoading) return <SharedLoadingState />;
   if (actorType !== 'coach') return <Navigate to="/app/dashboard" replace />;
