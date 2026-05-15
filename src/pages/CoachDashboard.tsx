@@ -789,6 +789,91 @@ export default function CoachDashboard() {
         );
       })()}
 
+      {/* Timeline strip */}
+      {(() => {
+        const assessmentsDue = dealers.filter(d =>
+          d.latestDate == null || (daysSince(d.latestDate) ?? 0) > 90
+        ).length;
+
+        const chips = [
+          {
+            label: 'Last Visit',
+            value: lastCompletedVisit
+              ? format(new Date(lastCompletedVisit.date), 'dd MMM yyyy')
+              : 'Not scheduled',
+            sub: lastCompletedVisit?.dealerName ?? 'No visits recorded',
+            status: lastCompletedVisit ? 'completed' : 'none',
+          },
+          {
+            label: 'Next Visit',
+            value: nextVisit ? nextVisit.dateLabel : 'Not scheduled',
+            sub: nextVisit ? nextVisit.dealerName : 'Contact dealer',
+            status: nextVisit
+              ? nextVisit.status.toLowerCase().includes('confirmed') ? 'confirmed' : 'proposed'
+              : 'none',
+          },
+          {
+            label: 'Assessments Due',
+            value: assessmentsDue > 0 ? String(assessmentsDue) : 'All current',
+            sub: assessmentsDue > 0 ? 'dealers need assessment' : '✓ Up to date',
+            status: assessmentsDue > 0 ? 'attention' : 'ok',
+          },
+          {
+            label: 'Overdue Actions',
+            value: overdueActions.length > 0 ? String(overdueActions.length) : 'On track',
+            sub: overdueActions.some(a => a.priority === 'critical') ? 'incl. critical items' : 'actions past due date',
+            status: overdueActions.length > 0 ? 'critical' : 'ok',
+          },
+          {
+            label: 'Action Plan Review',
+            value: `30 Jun ${new Date().getFullYear()}`,
+            sub: 'End of quarter · all depts',
+            status: 'upcoming',
+          },
+        ];
+
+        const statusDot: Record<string, string> = {
+          completed: 'bg-[#16a34a]',
+          confirmed:  'bg-[#16a34a]',
+          proposed:   'bg-[#d97706]',
+          attention:  'bg-[#d97706]',
+          critical:   'bg-[#dc2626]',
+          ok:         'bg-[#16a34a]',
+          upcoming:   'bg-[#2563eb]',
+          none:       'bg-muted-foreground',
+        };
+
+        const statusLabel: Record<string, string> = {
+          completed: '● Completed',
+          confirmed:  '● Confirmed',
+          proposed:   '● Proposed',
+          attention:  '● Attention',
+          critical:   '● Critical',
+          ok:         '✓ On track',
+          upcoming:   '○ Upcoming',
+          none:       '○ Not scheduled',
+        };
+
+        return (
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            {chips.map((chip, i) => (
+              <div
+                key={i}
+                className="rounded-lg border border-border bg-card p-3 space-y-1"
+              >
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{chip.label}</p>
+                <p className="text-sm font-semibold text-foreground">{chip.value}</p>
+                <p className="text-[11px] text-muted-foreground">{chip.sub}</p>
+                <div className="flex items-center gap-1 pt-0.5">
+                  <span className={`inline-block w-1.5 h-1.5 rounded-full ${statusDot[chip.status]}`} />
+                  <span className="text-[10px] text-muted-foreground">{statusLabel[chip.status]}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
       {/* View tabs */}
       <div className="flex gap-1 border-b border-border">
         {(['dashboard', 'resources'] as const).map(view => (
