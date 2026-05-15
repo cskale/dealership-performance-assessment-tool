@@ -949,6 +949,18 @@ export default function CoachDashboard() {
             </SelectContent>
           </Select>
         </div>
+        <div className="ml-auto">
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+              filteredDealers.map(d => d.location).filter(Boolean).join(' OR ')
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-[hsl(var(--brand-500))] hover:underline font-medium"
+          >
+            View Map →
+          </a>
+        </div>
       </div>
 
       {/* Dealer Cards Grid */}
