@@ -1,6 +1,10 @@
+import { useActiveRole } from '@/hooks/useActiveRole';
 import { OemNetworkSettings } from '@/components/OemNetworkSettings';
+import { InviteOemUser } from '@/components/InviteOemUser';
 
 export default function OemSettings() {
+  const { actorType } = useActiveRole();
+
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
       <div>
@@ -10,6 +14,7 @@ export default function OemSettings() {
         </p>
       </div>
       <OemNetworkSettings />
+      {actorType === 'oem' && <InviteOemUser />}
     </div>
   );
 }

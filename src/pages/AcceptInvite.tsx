@@ -57,7 +57,10 @@ export default function AcceptInvite() {
 
       localStorage.removeItem('pending_invite_token');
       setState('success');
-      const destination = result?.invite_type === 'coach' ? '/app/coach-dashboard' : '/app/assessment';
+      const destination =
+        result?.invite_type === 'coach' ? '/app/coach-dashboard' :
+        result?.invite_type === 'oem'   ? '/app/oem-dashboard' :
+        '/app/assessment';
       setTimeout(() => navigate(destination, { replace: true }), 1800);
     } catch {
       setErrorKey('invite_not_found');
