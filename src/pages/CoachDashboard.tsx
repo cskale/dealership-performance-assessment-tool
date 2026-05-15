@@ -1367,9 +1367,22 @@ export default function CoachDashboard() {
                 return (
                   <div key={note.id} className="px-5 py-3 space-y-1.5">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="outline" className="text-xs bg-[hsl(var(--brand-050))] text-[hsl(var(--brand-600))] border-[hsl(var(--brand-200))]">
-                        {dealer?.dealerName ?? 'Unknown dealer'}
-                      </Badge>
+                      {(() => {
+                        const noteDealer = dealers.find(d => d.dealershipId === note.dealership_id);
+                        const { accent } = getBrandStyle(noteDealer?.brand ?? '');
+                        return (
+                          <span
+                            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border"
+                            style={{
+                              backgroundColor: accent + '18',
+                              color: accent,
+                              borderColor: accent + '40',
+                            }}
+                          >
+                            {noteDealer?.dealerName ?? 'Unknown dealer'}
+                          </span>
+                        );
+                      })()}
                       {note.note_type && (
                         <Badge variant="outline" className="text-[10px] px-1.5 py-0 capitalize">
                           {note.note_type}
@@ -1414,9 +1427,9 @@ export default function CoachDashboard() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base font-semibold">
             <TrendingUp className="h-4 w-4 text-[hsl(var(--brand-500))]" />
-            {t('coach.scoreTrend')}
+            Score Trend
           </CardTitle>
-          <p className="text-xs text-muted-foreground">{t('coach.selectDealers')}</p>
+          <p className="text-xs text-muted-foreground">Select up to 3 dealers to compare performance over time</p>
         </CardHeader>
         <CardContent>
           {/* Dealer selector */}
