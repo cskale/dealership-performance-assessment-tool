@@ -66,21 +66,24 @@ function ScoreGauge({ score, size = 72 }: { score: number; size?: number }) {
                   '#dc2626';
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-label={`Score ${Math.round(score)}`}>
+    <svg role="img" width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-label={`Score ${Math.round(score)}`}>
       <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="5" />
-      <circle
-        cx={cx} cy={cy} r={r} fill="none"
-        stroke={accent} strokeWidth="5"
-        strokeDasharray={`${filled} ${circ - filled}`}
-        strokeLinecap="round"
-        transform={`rotate(-90 ${cx} ${cy})`}
-      />
+      {filled > 0 && (
+        <circle
+          cx={cx} cy={cy} r={r} fill="none"
+          stroke={accent} strokeWidth="5"
+          strokeDasharray={`${filled} ${circ - filled}`}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${cx} ${cy})`}
+        />
+      )}
       <text
         x={cx} y={cy + 5}
         textAnchor="middle"
         fontSize={size * 0.19}
         fontWeight="700"
         fill="currentColor"
+        aria-hidden="true"
       >
         {Math.round(score)}
       </text>
@@ -90,7 +93,7 @@ function ScoreGauge({ score, size = 72 }: { score: number; size?: number }) {
 
 function BrandLogo({ brand, size = 24 }: { brand: string; size?: number }) {
   const { accent, domain } = getBrandStyle(brand);
-  const initials = (brand ?? 'XX').slice(0, 2).toUpperCase();
+  const initials = (brand || 'XX').slice(0, 2).toUpperCase();
   const [failed, setFailed] = useState(false);
 
   if (!domain || failed) {
