@@ -20,18 +20,23 @@ function getCorsHeaders(origin: string) {
   };
 }
 
-function buildInviteEmailHtml(dealershipName: string, inviterName: string, inviteUrl: string, role: string, inviteType: 'dealer' | 'coach' = 'dealer'): string {
-  const heading = inviteType === 'coach'
-    ? "You've been invited as a coach"
-    : "You've been invited!";
+function buildInviteEmailHtml(dealershipName: string, inviterName: string, inviteUrl: string, role: string, inviteType: 'dealer' | 'coach' | 'oem' = 'dealer'): string {
+  const heading =
+    inviteType === 'oem'   ? "You've been invited as an OEM user" :
+    inviteType === 'coach' ? "You've been invited as a coach" :
+                             "You've been invited!";
 
-  const bodyText = inviteType === 'coach'
-    ? `<strong>${inviterName}</strong> has invited you to coach <strong>${dealershipName}</strong> on the Dealer Diagnostic platform.`
-    : `<strong>${inviterName}</strong> has invited you to join <strong>${dealershipName}</strong> as a <strong>${role}</strong>.`;
+  const bodyText =
+    inviteType === 'oem'
+      ? `<strong>${inviterName}</strong> has invited you to access the OEM dashboard and manage the dealer network.`
+      : inviteType === 'coach'
+      ? `<strong>${inviterName}</strong> has invited you to coach <strong>${dealershipName}</strong> on the Dealer Diagnostic platform.`
+      : `<strong>${inviterName}</strong> has invited you to join <strong>${dealershipName}</strong> as a <strong>${role}</strong>.`;
 
-  const ctaText = inviteType === 'coach'
-    ? 'Accept Coach Invitation'
-    : 'Accept Invitation';
+  const ctaText =
+    inviteType === 'oem'   ? 'Accept OEM Invitation' :
+    inviteType === 'coach' ? 'Accept Coach Invitation' :
+                             'Accept Invitation';
 
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>You're invited to join ${dealershipName}</title></head><body style="margin:0;padding:0;background-color:#ffffff;font-family:'Roboto',Arial,sans-serif;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;"><table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;"><tr><td style="background-color:#0052CC;border-radius:12px 12px 0 0;padding:32px 40px;text-align:center;"><h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Dealership Performance Assessment</h1></td></tr><tr><td style="background-color:#f8f9fa;padding:40px;border-left:1px solid #e0e0e0;border-right:1px solid #e0e0e0;"><h2 style="margin:0 0 16px;color:#172B4D;font-size:20px;font-weight:600;">${heading}</h2><p style="margin:0 0 24px;color:#44546F;font-size:15px;line-height:1.6;">${bodyText}</p><table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr><td style="background-color:#0052CC;border-radius:8px;"><a href="${inviteUrl}" target="_blank" style="display:inline-block;padding:14px 32px;color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;">${ctaText}</a></td></tr></table></td></tr><tr><td style="background-color:#f0f1f3;border-radius:0 0 12px 12px;padding:24px 40px;text-align:center;border:1px solid #e0e0e0;"><p style="margin:0;color:#8993A4;font-size:12px;">This invitation expires in 7 days. If you didn't expect this, ignore this email.</p></td></tr></table></td></tr></table></body></html>`
 }
@@ -71,10 +76,16 @@ serve(async (req) => {
     const { invited_email, dealership_id, organization_id, role, invite_type } = body;
     const normalizedEmail = invited_email?.toLowerCase()?.trim()
 
-    // Validate invite_type — anything other than 'coach' defaults to 'dealer'
-    const inviteType: 'dealer' | 'coach' = invite_type === 'coach' ? 'coach' : 'dealer';
+    // Validate invite_type — anything other than 'coach'/'oem' defaults to 'dealer'
+    const inviteType: 'dealer' | 'coach' | 'oem' =
+      invite_type === 'oem'   ? 'oem' :
+      invite_type === 'coach' ? 'coach' :
+      'dealer';
 
-    if (!normalizedEmail || !dealership_id || !organization_id) {
+    if (!normalizedEmail || !organization_id) {
+      return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+    if (inviteType !== 'oem' && !dealership_id) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
@@ -86,6 +97,22 @@ serve(async (req) => {
     const { data: membership } = await supabaseAdmin.from('memberships').select('role').eq('user_id', user.id).eq('organization_id', organization_id).eq('is_active', true).single()
     if (!membership || !['owner', 'admin'].includes(membership.role)) {
       return new Response(JSON.stringify({ error: 'Insufficient permissions' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    // OEM invites additionally require the org to own an active oem_network
+    if (inviteType === 'oem') {
+      const { data: oemNetwork } = await supabaseAdmin
+        .from('oem_networks')
+        .select('id')
+        .eq('owner_org_id', organization_id)
+        .eq('status', 'active')
+        .maybeSingle();
+      if (!oemNetwork) {
+        return new Response(
+          JSON.stringify({ error: 'No active OEM network found for this organisation' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     const validRoles = ['owner', 'admin', 'member', 'viewer']
@@ -125,16 +152,29 @@ serve(async (req) => {
     const resendApiKey = Deno.env.get('RESEND_API_KEY')
     if (resendApiKey) {
       try {
-        const [dealershipRes, profileRes] = await Promise.all([
-          supabaseAdmin.from('dealerships').select('name').eq('id', dealership_id).single(),
-          supabaseAdmin.from('profiles').select('display_name, full_name').eq('user_id', user.id).single(),
-        ])
-        const dealershipName = dealershipRes.data?.name || 'your dealership'
-        const inviterName = profileRes.data?.display_name || profileRes.data?.full_name || user.email || 'A team member'
+        const profileRes = await supabaseAdmin.from('profiles').select('display_name, full_name').eq('user_id', user.id).single();
+        const inviterName = profileRes.data?.display_name || profileRes.data?.full_name || user.email || 'A team member';
+
+        let dealershipName: string;
+        if (inviteType === 'oem') {
+          const { data: network } = await supabaseAdmin
+            .from('oem_networks')
+            .select('name')
+            .eq('owner_org_id', organization_id)
+            .eq('status', 'active')
+            .maybeSingle();
+          dealershipName = network?.name || 'your OEM network';
+        } else {
+          const dealershipRes = await supabaseAdmin.from('dealerships').select('name').eq('id', dealership_id).single();
+          dealershipName = dealershipRes.data?.name || 'your dealership';
+        }
+
+        const subject =
+          inviteType === 'oem'   ? `You've been invited as an OEM user for ${dealershipName}` :
+          inviteType === 'coach' ? `You've been invited as a coach for ${dealershipName}` :
+                                   `You're invited to join ${dealershipName}`;
+
         const roleLabel = inviteRole.charAt(0).toUpperCase() + inviteRole.slice(1)
-        const subject = inviteType === 'coach'
-          ? `You've been invited as a coach for ${dealershipName}`
-          : `You're invited to join ${dealershipName}`
         const resendRes = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ from: 'Dealership Assessment <invites@notify.performance-assessment.com>', to: [normalizedEmail], subject, html: buildInviteEmailHtml(dealershipName, inviterName, inviteUrl, roleLabel, inviteType) }) })
         if (resendRes.ok) emailSent = true
       } catch (e) { console.error('Email error:', e) }
