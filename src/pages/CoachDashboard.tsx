@@ -16,19 +16,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { SharedLoadingState } from '@/components/shared/SharedLoadingState';
 import { SharedEmptyState } from '@/components/shared/SharedEmptyState';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
 import { format } from 'date-fns';
-import { LineChart as LineChartIcon, TrendingUp, TrendingDown, Minus, StickyNote, Calendar, Database, BookOpen, MapPin } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, StickyNote, Calendar, Database, BookOpen, MapPin } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { computeStatsBar, computeTrend, daysSince, getScoreBand, isOverdue } from '@/lib/coachDashboardUtils';
 import { CoachNoteSheet } from '@/components/coach/CoachNoteSheet';
@@ -175,7 +164,6 @@ interface CoachNote {
   note_type: 'observation' | 'action' | 'follow-up' | null;
 }
 
-const CHART_COLORS = ['#2563eb', '#7c3aed', '#0891b2'];
 
 function ResourceKpiPanel() {
   const [search, setSearch] = useState('');
@@ -308,7 +296,6 @@ export default function CoachDashboard() {
   const [dashboardView, setDashboardView] = useState<'dashboard' | 'resources'>('dashboard');
   const [sortBy, setSortBy] = useState<'score' | 'name' | 'overdue'>('score');
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'in_progress'>('all');
-  const [selectedDealerIds, setSelectedDealerIds] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'overdue' | 'stale' | 'all'>('overdue');
   const [actionDealerFilter, setActionDealerFilter] = useState<string>('all');
   const [noteSheetOpen, setNoteSheetOpen] = useState(false);
@@ -586,44 +573,6 @@ export default function CoachDashboard() {
     return notes.filter(n => n.dealership_id === notesDealerFilter);
   }, [notes, notesDealerFilter]);
 
-  const chartData = useMemo(() => {
-    if (selectedDealerIds.length === 0) return [];
-    const selectedDealers = dealers.filter(d => selectedDealerIds.includes(d.dealershipId));
-    const assessmentsByDealer = new Map<string, AssessmentRecord[]>();
-
-    for (const id of selectedDealerIds) {
-      assessmentsByDealer.set(
-        id,
-        allAssessments
-          .filter(a => a.dealership_id === id && a.overall_score != null)
-          .slice(0, 12)
-          .reverse()
-      );
-    }
-
-    // Merge all dates
-    const allDates = new Set<string>();
-    assessmentsByDealer.forEach(records => records.forEach(r => allDates.add(r.created_at.split('T')[0])));
-    const sortedDates = Array.from(allDates).sort();
-
-    return sortedDates.map(date => {
-      const point: Record<string, string | number | null> = { date: format(new Date(date), 'dd MMM yy') };
-      for (const id of selectedDealerIds) {
-        const dealer = selectedDealers.find(d => d.dealershipId === id);
-        const record = assessmentsByDealer.get(id)?.find(r => r.created_at.startsWith(date));
-        point[dealer?.dealerName ?? id] = record?.overall_score ?? null;
-      }
-      return point;
-    });
-  }, [selectedDealerIds, allAssessments, dealers]);
-
-  const toggleDealerSelection = (id: string) => {
-    setSelectedDealerIds(prev => {
-      if (prev.includes(id)) return prev.filter(x => x !== id);
-      if (prev.length >= 3) return prev;
-      return [...prev, id];
-    });
-  };
 
   // Derive next upcoming visit (first entry in activeVisitsByDealer)
   const nextVisit: { dateLabel: string; dealerName: string; status: string } | null = (() => {
@@ -677,7 +626,7 @@ export default function CoachDashboard() {
         })()}
       </div>
 
-      <div className="p-6 space-y-6 max-w-7xl mx-auto">
+      <div className="p-6 space-y-6">
       {/* Page header */}
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -1084,7 +1033,7 @@ export default function CoachDashboard() {
                 </div>
 
                 {/* Bottom action row */}
-                <div className="flex items-center justify-between pt-1 border-t border-border/50">
+                <div className="border-t border-border/50 pt-2 space-y-2">
                   <div className="flex items-center gap-1">
                     <Button
                       variant="ghost"
@@ -1115,13 +1064,13 @@ export default function CoachDashboard() {
                     <Button
                       variant="default"
                       size="sm"
-                      className="h-7 text-xs"
+                      className="w-full h-8 text-xs"
                       onClick={() => navigate(`/app/results/${dealer.latestAssessmentId}`)}
                     >
                       Enter Dealership →
                     </Button>
                   ) : (
-                    <Button variant="outline" size="sm" className="h-7 text-xs" disabled>
+                    <Button variant="outline" size="sm" className="w-full h-8 text-xs" disabled>
                       No assessment yet
                     </Button>
                   )}
@@ -1163,29 +1112,11 @@ export default function CoachDashboard() {
       {/* Actions Requiring Attention */}
       <Card className="shadow-card rounded-xl">
         <CardHeader className="pb-3">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between w-full flex-wrap gap-3">
-              <CardTitle className="text-base font-semibold">Network Actions Requiring Attention</CardTitle>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => console.log('Filter — future sprint')}>
-                  ≡ Filter
-                </Button>
-                <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => console.log('Export — future sprint')}>
-                  ↓ Export List
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 text-xs text-[hsl(var(--brand-500))] hover:underline px-2"
-                  onClick={() => navigate('/app/coach-actions')}
-                >
-                  View all in Action Tracker →
-                </Button>
-              </div>
-            </div>
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <CardTitle className="text-base font-semibold">Network Actions Requiring Attention</CardTitle>
             <div className="flex items-center gap-2">
               <Select value={actionDealerFilter} onValueChange={setActionDealerFilter}>
-                <SelectTrigger className="w-44 h-8 text-xs"><SelectValue placeholder="All dealers" /></SelectTrigger>
+                <SelectTrigger className="w-36 h-8 text-xs"><SelectValue placeholder="All dealers" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All dealers</SelectItem>
                   {dealers.map(d => (
@@ -1193,6 +1124,12 @@ export default function CoachDashboard() {
                   ))}
                 </SelectContent>
               </Select>
+              <button
+                className="text-sm text-[hsl(var(--brand-500))] hover:underline font-medium whitespace-nowrap"
+                onClick={() => navigate('/app/coach-actions')}
+              >
+                View all →
+              </button>
             </div>
           </div>
         </CardHeader>
@@ -1421,80 +1358,6 @@ export default function CoachDashboard() {
         </CardContent>
       </Card>
 
-      {/* Score Trend Chart */}
-      <Card className="shadow-card rounded-xl">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base font-semibold">
-            <TrendingUp className="h-4 w-4 text-[hsl(var(--brand-500))]" />
-            Score Trend
-          </CardTitle>
-          <p className="text-xs text-muted-foreground">Select up to 3 dealers to compare performance over time</p>
-        </CardHeader>
-        <CardContent>
-          {/* Dealer selector */}
-          <div className="flex flex-wrap gap-3 mb-4">
-            {dealers.map((d, i) => (
-              <label
-                key={d.dealershipId}
-                className="flex items-center gap-2 text-sm cursor-pointer"
-              >
-                <Checkbox
-                  checked={selectedDealerIds.includes(d.dealershipId)}
-                  onCheckedChange={() => toggleDealerSelection(d.dealershipId)}
-                  disabled={!selectedDealerIds.includes(d.dealershipId) && selectedDealerIds.length >= 3}
-                />
-                <span
-                  className={`w-3 h-3 rounded-full shrink-0 ${
-                    selectedDealerIds.includes(d.dealershipId) ? 'ring-1 ring-offset-1 ring-white' : ''
-                  }`}
-                  style={{ backgroundColor: CHART_COLORS[selectedDealerIds.indexOf(d.dealershipId)] ?? '#9ca3af' }}
-                />
-                {d.dealerName}
-              </label>
-            ))}
-          </div>
-
-          {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--background))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: 8,
-                    fontSize: 12,
-                  }}
-                />
-                <Legend />
-                {selectedDealerIds.map((id, i) => {
-                  const dealer = dealers.find(d => d.dealershipId === id);
-                  return (
-                    <Line
-                      key={id}
-                      type="monotone"
-                      dataKey={dealer?.dealerName ?? id}
-                      stroke={CHART_COLORS[i]}
-                      strokeWidth={2}
-                      dot={{ r: 4 }}
-                      connectNulls
-                    />
-                  );
-                })}
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex h-48 flex-col items-center justify-center gap-3 text-center">
-              <LineChartIcon className="h-8 w-8 text-[hsl(var(--neutral-300))]" />
-              <p className="text-sm text-[hsl(var(--neutral-500))]">
-                Select up to 3 dealers above to compare their score trends
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
       </div>
       )}
 
