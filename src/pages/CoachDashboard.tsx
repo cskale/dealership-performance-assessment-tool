@@ -30,7 +30,7 @@ import {
 import { format } from 'date-fns';
 import { ArrowUpDown, Filter, LineChart as LineChartIcon, TrendingUp, TrendingDown, Minus, StickyNote, Calendar, Database, BookOpen } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { computeStatsBar, computeTrend, daysSince, getScoreBand, isOverdue, isDueSoon } from '@/lib/coachDashboardUtils';
+import { computeStatsBar, computeTrend, daysSince, getScoreBand, isOverdue } from '@/lib/coachDashboardUtils';
 import { CoachNoteSheet } from '@/components/coach/CoachNoteSheet';
 import { VisitSheet } from '@/components/coach/VisitSheet';
 import { KPI_DEFINITIONS } from '@/lib/kpiDefinitions';
@@ -508,7 +508,8 @@ export default function CoachDashboard() {
         .select('dealership_id, visit_date, status')
         .eq('coach_user_id', user!.id)
         .in('dealership_id', dealershipIds)
-        .in('status', ['proposed', 'confirmed']);
+        .in('status', ['proposed', 'confirmed'])
+        .order('visit_date', { ascending: true });
       const visitMap = new Map<string, string>();
       (visitData ?? []).forEach((v: any) => {
         visitMap.set(v.dealership_id, `${format(new Date(v.visit_date), 'dd MMM')} · ${v.status}`);
