@@ -1164,17 +1164,37 @@ export default function CoachDashboard() {
       {/* Actions Requiring Attention */}
       <Card className="shadow-card rounded-xl">
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <CardTitle className="text-base font-semibold">Actions Requiring Attention</CardTitle>
-            <Select value={actionDealerFilter} onValueChange={setActionDealerFilter}>
-              <SelectTrigger className="w-44 h-8 text-xs"><SelectValue placeholder="All dealers" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All dealers</SelectItem>
-                {dealers.map(d => (
-                  <SelectItem key={d.dealershipId} value={d.dealershipId}>{d.dealerName}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between w-full flex-wrap gap-3">
+              <CardTitle className="text-base font-semibold">Network Actions Requiring Attention</CardTitle>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => console.log('Filter — future sprint')}>
+                  ≡ Filter
+                </Button>
+                <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => console.log('Export — future sprint')}>
+                  ↓ Export List
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs text-[hsl(var(--brand-500))] hover:underline px-2"
+                  onClick={() => navigate('/app/coach-actions')}
+                >
+                  View all in Action Tracker →
+                </Button>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Select value={actionDealerFilter} onValueChange={setActionDealerFilter}>
+                <SelectTrigger className="w-44 h-8 text-xs"><SelectValue placeholder="All dealers" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All dealers</SelectItem>
+                  {dealers.map(d => (
+                    <SelectItem key={d.dealershipId} value={d.dealershipId}>{d.dealerName}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -1212,13 +1232,15 @@ export default function CoachDashboard() {
                     </div>
                   ) : (
                     <div className="divide-y divide-border">
-                      <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 px-5 py-2 bg-muted/50">
+                      <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-3 px-5 py-2 bg-muted/50">
+                        <span />
                         <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Action</span>
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-36">Dealership</span>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-28">Dealership</span>
                         <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-24 text-right">
                           {tab === 'overdue' ? 'Due date' : 'Days stale'}
                         </span>
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-20 text-right">Priority</span>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-20">Status</span>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-16">Priority</span>
                       </div>
                       {items.map(action => {
                         const priorityClass =
@@ -1242,20 +1264,67 @@ export default function CoachDashboard() {
                         return (
                           <div
                             key={action.id}
-                            className="grid grid-cols-[1fr_auto_auto_auto] gap-3 px-5 py-3 hover:bg-muted/20 transition-colors cursor-pointer"
+                            className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-3 px-5 py-3 hover:bg-muted/20 transition-colors cursor-pointer items-center"
                             onClick={() => navigate(`/app/results/${action.assessmentId}`)}
                           >
+                            {/* Priority dot */}
+                            <span className={`w-2 h-2 rounded-full shrink-0 ${
+                              action.priority === 'critical' ? 'bg-[#dc2626]' :
+                              action.priority === 'high'     ? 'bg-[#d97706]' :
+                              action.priority === 'medium'   ? 'bg-[#2563eb]' :
+                                                               'bg-muted-foreground'
+                            }`} />
+
+                            {/* Action title + dealer sub */}
                             <div className="min-w-0">
                               <p className="text-sm font-medium text-foreground truncate">{action.action_title}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">{action.status}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{action.dealerName}</p>
                             </div>
-                            <span className="text-sm text-muted-foreground w-36 self-center truncate">{action.dealerName}</span>
-                            <span className={`text-sm w-24 text-right self-center ${tab === 'overdue' ? dueDateClass : staleClass}`}>
-                              {tab === 'overdue' ? dueDateLabel : `${action.daysStale}d`}
+
+                            {/* Dealership brand chip */}
+                            <div className="flex items-center gap-1.5 shrink-0 w-28">
+                              <BrandLogo brand={dealers.find(d => d.dealershipId === action.dealershipId)?.brand ?? ''} size={16} />
+                              <span className="text-xs text-muted-foreground truncate max-w-[80px] hidden md:inline">{action.dealerName}</span>
+                            </div>
+
+                            {/* Due date / days stale */}
+                            <span className={`text-xs w-24 text-right shrink-0 ${
+                              tab === 'overdue'
+                                ? isOverdue(action.target_completion_date) ? 'text-[#dc2626] font-semibold' : 'text-muted-foreground'
+                                : action.daysStale >= 14 ? 'text-[#dc2626] font-semibold' : 'text-muted-foreground'
+                            }`}>
+                              {tab === 'overdue'
+                                ? (action.target_completion_date ? format(new Date(action.target_completion_date), 'dd MMM') : '—')
+                                : `${action.daysStale}d`
+                              }
                             </span>
-                            <div className="w-20 flex justify-end self-center">
-                              <Badge variant="outline" className={`text-xs capitalize ${priorityClass}`}>{action.priority}</Badge>
-                            </div>
+
+                            {/* Status badge — derived display mapping, no DB change */}
+                            {(() => {
+                              const isBlocked = action.daysStale >= 21 && isOverdue(action.target_completion_date);
+                              const isStalled = !isBlocked && action.daysStale >= 14 && isOverdue(action.target_completion_date);
+                              const label = isBlocked ? 'BLOCKED' : isStalled ? 'STALLED' : action.status === 'In Progress' ? 'IN PROGRESS' : 'ASSIGNED';
+                              const cls = isBlocked
+                                ? 'bg-[#dc2626] text-white border-[#dc2626]'
+                                : isStalled
+                                ? 'bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20'
+                                : action.status === 'In Progress'
+                                ? 'bg-[#d97706]/10 text-[#d97706] border-[#d97706]/20'
+                                : 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20';
+                              return (
+                                <Badge variant="outline" className={`text-[10px] shrink-0 whitespace-nowrap w-20 justify-center ${cls}`}>
+                                  {label}
+                                </Badge>
+                              );
+                            })()}
+
+                            {/* Priority badge */}
+                            <Badge variant="outline" className={`text-[10px] capitalize shrink-0 w-16 justify-center ${
+                              action.priority === 'critical' ? 'bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20' :
+                              action.priority === 'high'     ? 'bg-[#d97706]/10 text-[#d97706] border-[#d97706]/20' :
+                              action.priority === 'medium'   ? 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20' :
+                                                               'bg-muted text-muted-foreground border-border'
+                            }`}>{action.priority}</Badge>
                           </div>
                         );
                       })}
