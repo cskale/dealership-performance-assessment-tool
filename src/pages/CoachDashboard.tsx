@@ -645,10 +645,10 @@ export default function CoachDashboard() {
         {(() => {
           const s = computeStatsBar(dealers);
           const chips = [
-            { label: 'Dealers',          value: String(s.total) },
-            { label: 'Avg Score',        value: s.avgScore > 0 ? String(s.avgScore) : '—' },
-            { label: 'Overdue Actions',  value: String(s.overdueCount) },
-            { label: 'Attention Needed', value: String(s.attentionNeeded) },
+            { label: 'Dealers',         value: String(s.total) },
+            { label: 'Avg Score',       value: s.avgScore > 0 ? String(s.avgScore) : '—' },
+            { label: 'Overdue Actions', value: String(s.overdueCount) },
+            { label: 'Critical Gaps',   value: String(dealers.filter(d => (d.latestScore ?? 101) < 46).length) },
           ];
           return chips.map((chip, i) => (
             <div
@@ -664,11 +664,24 @@ export default function CoachDashboard() {
 
       <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-semibold text-foreground">{t('coach.title')}</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {dealers.length} {dealers.length === 1 ? 'dealership' : 'dealerships'} assigned
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium mb-1">
+            COACHING PERSPECTIVE · {getQuarterLabel()}
+          </p>
+          <h1 className="text-2xl font-semibold text-foreground">Field Performance Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Active monitoring for {dealers.length} assigned {dealers.length === 1 ? 'dealership' : 'dealerships'}
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="shrink-0 mt-1"
+          onClick={() => console.log('Export Report — wired in future sprint')}
+        >
+          <span className="mr-1.5">↓</span> Export Report
+        </Button>
       </div>
 
       {/* View tabs */}
