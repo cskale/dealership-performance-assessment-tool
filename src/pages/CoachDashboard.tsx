@@ -966,69 +966,125 @@ export default function CoachDashboard() {
       {/* Dealer Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredDealers.map((dealer, i) => {
+          const { accent } = getBrandStyle(dealer.brand);
           const trend = computeTrend(dealer.latestScore, dealer.previousScore);
-          const band = dealer.latestScore != null ? getScoreBand(dealer.latestScore) : null;
           const since = daysSince(dealer.latestDate);
           const hasNotes = notes.some(n => n.dealership_id === dealer.dealershipId);
+          const visitLabel = activeVisitsByDealer.get(dealer.dealershipId);
+          const visitParts = visitLabel ? visitLabel.split(' · ') : null;
+          const visitConfirmed = visitParts?.[1]?.toLowerCase() === 'confirmed';
+
+          const openMinusOverdue = Math.max(0, dealer.openCount - dealer.overdueCount);
+          const progressPct = dealer.openCount > 0
+            ? (openMinusOverdue / dealer.openCount) * 100
+            : 100;
 
           return (
             <Card
               key={dealer.dealershipId}
-              className="opacity-0 animate-fade-in shadow-card rounded-xl"
-              style={{ animationDelay: `${Math.min(i, 4) * 50}ms`, animationFillMode: 'forwards' }}
+              className="opacity-0 animate-fade-in shadow-card rounded-xl overflow-hidden"
+              style={{
+                animationDelay: `${Math.min(i, 4) * 50}ms`,
+                animationFillMode: 'forwards',
+                borderTop: `3px solid ${accent}`,
+              }}
             >
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-base font-semibold leading-tight">{dealer.dealerName}</CardTitle>
-                  <Badge variant="outline" className="bg-[hsl(var(--neutral-100))] text-[hsl(var(--neutral-700))] border-[hsl(var(--neutral-300))] text-xs shrink-0 ml-2">
-                    {dealer.brand}
-                  </Badge>
+              <CardContent className="p-4 space-y-3">
+                {/* Brand row */}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <BrandLogo brand={dealer.brand} size={24} />
+                    <span
+                      className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                      style={{ backgroundColor: accent + '18', color: accent }}
+                    >
+                      {dealer.brand || 'Unknown'}
+                    </span>
+                  </div>
+                  {dealer.latestScore != null && (() => {
+                    const band = getScoreBand(dealer.latestScore);
+                    return (
+                      <Badge variant="outline" className={`text-[10px] shrink-0 ${band.className}`}>
+                        {band.label}
+                      </Badge>
+                    );
+                  })()}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {dealer.location}
-                  {since != null && <span className="ml-1 text-[hsl(var(--neutral-400))]">· {since}d ago</span>}
-                </p>
-              </CardHeader>
-              <CardContent className="pt-0 space-y-3">
-                {/* Score + trend */}
-                <div className="flex items-center justify-between">
-                  {band ? (
-                    <div className={`inline-flex flex-col items-center rounded-lg border px-3 py-2 ${band.className}`}>
-                      <span className="text-2xl font-bold leading-none">{Math.round(dealer.latestScore!)}</span>
-                      <span className="mt-1 text-xs">{band.label}</span>
+
+                {/* Dealer name + location */}
+                <div>
+                  <p className="text-sm font-semibold leading-tight text-foreground">{dealer.dealerName}</p>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                    <span>📍</span>
+                    {dealer.location}
+                    {since != null && <span className="text-[hsl(var(--neutral-400))] ml-1">· {since}d ago</span>}
+                  </p>
+                </div>
+
+                <div className="border-t border-border/50 pt-3 flex items-start gap-4">
+                  {/* Score gauge */}
+                  <div className="shrink-0">
+                    {dealer.latestScore != null ? (
+                      <ScoreGauge score={dealer.latestScore} size={72} />
+                    ) : (
+                      <div className="w-[72px] h-[72px] flex items-center justify-center text-[10px] text-muted-foreground text-center leading-tight">
+                        No score yet
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action plan */}
+                  <div className="flex-1 space-y-1.5 pt-1">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Action Plan</p>
+                    <div className="w-full h-1.5 rounded-full bg-muted">
+                      <div
+                        className="h-1.5 rounded-full bg-[hsl(var(--brand-500))] transition-all"
+                        style={{ width: `${progressPct}%` }}
+                      />
                     </div>
+                    <p className="text-xs text-foreground font-medium">
+                      {dealer.openCount > 0
+                        ? `${openMinusOverdue} / ${dealer.openCount} on track`
+                        : 'No open actions'
+                      }
+                    </p>
+                    {dealer.overdueCount > 0 && (
+                      <p className="text-[11px] text-[#dc2626] font-medium">{dealer.overdueCount} overdue</p>
+                    )}
+                    {/* Trend */}
+                    {trend.direction !== 'none' && (
+                      <div className="flex items-center gap-1 pt-0.5">
+                        {trend.direction === 'up' && <TrendingUp className="w-3 h-3 text-[#16a34a]" />}
+                        {trend.direction === 'down' && <TrendingDown className="w-3 h-3 text-[#dc2626]" />}
+                        {trend.direction === 'flat' && <Minus className="w-3 h-3 text-muted-foreground" />}
+                        <span className={`text-[11px] font-medium ${
+                          trend.direction === 'up' ? 'text-[#16a34a]' :
+                          trend.direction === 'down' ? 'text-[#dc2626]' :
+                          'text-muted-foreground'
+                        }`}>
+                          {trend.delta != null && trend.delta !== 0
+                            ? `${trend.delta > 0 ? '+' : ''}${trend.delta}`
+                            : '—'
+                          }
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Visit chip */}
+                <div className="text-xs flex items-center gap-1">
+                  <span>📅</span>
+                  {visitParts ? (
+                    <span className={visitConfirmed ? 'text-[#16a34a] font-medium' : 'text-[#d97706] font-medium'}>
+                      Next visit: {visitParts[0]} · {visitParts[1]}
+                    </span>
                   ) : (
-                    <span className="text-xs text-muted-foreground">No assessment yet</span>
-                  )}
-                  {trend.direction !== 'none' && (
-                    <div className="flex items-center gap-1">
-                      {trend.direction === 'up' && <TrendingUp className="w-4 h-4 text-[#16a34a]" />}
-                      {trend.direction === 'down' && <TrendingDown className="w-4 h-4 text-[#dc2626]" />}
-                      {trend.direction === 'flat' && <Minus className="w-4 h-4 text-muted-foreground" />}
-                      <span className={`text-xs font-medium ${
-                        trend.direction === 'up' ? 'text-[#16a34a]'
-                        : trend.direction === 'down' ? 'text-[#dc2626]'
-                        : 'text-muted-foreground'
-                      }`}>
-                        {trend.delta != null && trend.delta !== 0 ? `${trend.delta > 0 ? '+' : ''}${trend.delta}` : '—'}
-                      </span>
-                    </div>
+                    <span className="text-muted-foreground">No visit scheduled</span>
                   )}
                 </div>
 
-                {/* Action counts */}
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground">
-                    Open: <span className="font-medium text-foreground">{dealer.openCount}</span>
-                  </span>
-                  {dealer.overdueCount > 0 && (
-                    <Badge variant="outline" className="bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20 text-xs">
-                      {dealer.overdueCount} overdue
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Bottom: note icon + visit chip + CTA */}
+                {/* Bottom action row */}
                 <div className="flex items-center justify-between pt-1 border-t border-border/50">
                   <div className="flex items-center gap-1">
                     <Button
@@ -1055,19 +1111,20 @@ export default function CoachDashboard() {
                         <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-[#16a34a]" />
                       )}
                     </Button>
-                    {activeVisitsByDealer.has(dealer.dealershipId) && (
-                      <span className="text-xs text-[#16a34a] font-medium">
-                        {activeVisitsByDealer.get(dealer.dealershipId)}
-                      </span>
-                    )}
                   </div>
                   {dealer.latestAssessmentId ? (
-                    <Button variant="outline" size="sm" className="h-7 text-xs"
-                      onClick={() => navigate(`/app/results/${dealer.latestAssessmentId}`)}>
-                      View Results →
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => navigate(`/app/results/${dealer.latestAssessmentId}`)}
+                    >
+                      Enter Dealership →
                     </Button>
                   ) : (
-                    <span className="text-xs text-muted-foreground">No assessment yet</span>
+                    <Button variant="outline" size="sm" className="h-7 text-xs" disabled>
+                      No assessment yet
+                    </Button>
                   )}
                 </div>
               </CardContent>
