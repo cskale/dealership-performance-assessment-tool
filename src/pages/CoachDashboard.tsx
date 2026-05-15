@@ -1112,20 +1112,12 @@ export default function CoachDashboard() {
       {/* Actions Requiring Attention */}
       <Card className="shadow-card rounded-xl">
         <CardHeader className="pb-0">
-          <div className="flex items-center justify-between gap-3">
-            <CardTitle className="text-base font-semibold">Network Actions Requiring Attention</CardTitle>
-            <button
-              className="text-sm text-[hsl(var(--brand-500))] hover:underline font-medium whitespace-nowrap shrink-0"
-              onClick={() => navigate('/app/coach-actions')}
-            >
-              View all →
-            </button>
-          </div>
+          <CardTitle className="text-base font-semibold">Network Actions Requiring Attention</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <Tabs value={activeTab} onValueChange={v => setActiveTab(v as 'overdue' | 'stale' | 'all')}>
-            {/* Tabs + dealer filter on one line */}
-            <div className="flex items-center justify-between px-5 py-2 border-b border-border gap-3">
+            {/* Tabs + dealer filter + view all on one line */}
+            <div className="flex items-center px-5 py-2 border-b border-border gap-3">
               <TabsList className="h-8">
                 <TabsTrigger value="overdue" className="text-xs">
                   Overdue
@@ -1150,6 +1142,12 @@ export default function CoachDashboard() {
                   ))}
                 </SelectContent>
               </Select>
+              <button
+                className="ml-auto text-sm text-[hsl(var(--brand-500))] hover:underline font-medium whitespace-nowrap shrink-0"
+                onClick={() => navigate('/app/coach-actions')}
+              >
+                View all →
+              </button>
             </div>
 
             {(['overdue', 'stale', 'all'] as const).map(tab => {
@@ -1169,21 +1167,21 @@ export default function CoachDashboard() {
                     </div>
                   ) : (
                     <div className="divide-y divide-border">
-                      <div className="grid grid-cols-[auto_1fr_minmax(140px,auto)_auto_auto_auto] gap-3 px-5 py-2 bg-muted/50 items-center">
+                      <div className="grid grid-cols-[auto_1fr_minmax(140px,auto)_80px_80px_70px] gap-3 px-5 py-2 bg-muted/50 items-center">
                         <span />
                         <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Action</span>
                         <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Dealership</span>
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-20 text-right">
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground text-center">
                           {tab === 'overdue' ? 'Due date' : 'Days stale'}
                         </span>
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-20 text-center">Status</span>
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-16 text-center">Priority</span>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground text-center">Status</span>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground text-center">Priority</span>
                       </div>
                       {items.map(action => {
                         return (
                           <div
                             key={action.id}
-                            className="grid grid-cols-[auto_1fr_minmax(140px,auto)_auto_auto_auto] gap-3 px-5 py-3 hover:bg-muted/20 transition-colors cursor-pointer items-center"
+                            className="grid grid-cols-[auto_1fr_minmax(140px,auto)_80px_80px_70px] gap-3 px-5 py-3 hover:bg-muted/20 transition-colors cursor-pointer items-center"
                             onClick={() => navigate(`/app/results/${action.assessmentId}`)}
                           >
                             {/* Priority dot */}
@@ -1207,7 +1205,7 @@ export default function CoachDashboard() {
                             </div>
 
                             {/* Due date / days stale */}
-                            <span className={`text-xs w-20 text-right shrink-0 ${
+                            <span className={`text-xs text-center ${
                               tab === 'overdue'
                                 ? isOverdue(action.target_completion_date) ? 'text-[#dc2626] font-semibold' : 'text-muted-foreground'
                                 : action.daysStale >= 14 ? 'text-[#dc2626] font-semibold' : 'text-muted-foreground'
@@ -1231,14 +1229,14 @@ export default function CoachDashboard() {
                                 ? 'bg-[#d97706]/10 text-[#d97706] border-[#d97706]/20'
                                 : 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20';
                               return (
-                                <Badge variant="outline" className={`text-[10px] shrink-0 whitespace-nowrap w-20 flex justify-center ${cls}`}>
+                                <Badge variant="outline" className={`text-[10px] whitespace-nowrap w-full flex justify-center ${cls}`}>
                                   {label}
                                 </Badge>
                               );
                             })()}
 
                             {/* Priority badge */}
-                            <Badge variant="outline" className={`text-[10px] capitalize shrink-0 w-16 flex justify-center ${
+                            <Badge variant="outline" className={`text-[10px] capitalize w-full flex justify-center ${
                               action.priority === 'critical' ? 'bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20' :
                               action.priority === 'high'     ? 'bg-[#d97706]/10 text-[#d97706] border-[#d97706]/20' :
                               action.priority === 'medium'   ? 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20' :
