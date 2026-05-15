@@ -684,6 +684,111 @@ export default function CoachDashboard() {
         </Button>
       </div>
 
+      {/* Dark hero card */}
+      {(() => {
+        const s = computeStatsBar(dealers);
+        const avgScore = s.avgScore > 0 ? s.avgScore : null;
+        const belowBenchmark = dealers.filter(d => (d.latestScore ?? 101) < 70).length;
+        const focusDealer = [...dealers]
+          .filter(d => d.latestScore != null)
+          .sort((a, b) => (a.latestScore ?? 0) - (b.latestScore ?? 0))[0] ?? null;
+
+        const narrative = avgScore == null
+          ? 'No assessments completed yet across the portfolio.'
+          : avgScore >= 85
+          ? 'Portfolio performing above benchmark across all departments.'
+          : avgScore >= 70
+          ? `Most dealers performing well — ${belowBenchmark} below benchmark threshold.`
+          : avgScore >= 46
+          ? `${belowBenchmark} dealers require active intervention this quarter.`
+          : `${dealers.filter(d => (d.latestScore ?? 101) < 46).length} dealers at foundational level — priority coaching required.`;
+
+        const topOverdue = overdueActions.slice(0, 2);
+
+        return (
+          <div className="rounded-xl bg-[#0b1f3a] text-white p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Col 1: Portfolio Score */}
+            <div className="space-y-3">
+              <p className="text-[10px] uppercase tracking-widest text-white/50">Overall Portfolio Score</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-5xl font-bold leading-none">
+                  {avgScore != null ? avgScore : '—'}
+                </span>
+                {avgScore != null && <span className="text-lg text-white/50">/ 100</span>}
+              </div>
+              {avgScore != null && (
+                <div className="w-full h-1.5 rounded-full bg-white/10">
+                  <div
+                    className="h-1.5 rounded-full bg-[#2563eb] transition-all"
+                    style={{ width: `${avgScore}%` }}
+                  />
+                </div>
+              )}
+              {avgScore != null && (() => {
+                const band = getScoreBand(avgScore);
+                return (
+                  <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${band.className}`}>
+                    ● {band.label}
+                  </span>
+                );
+              })()}
+              <p className="text-xs text-white/60 italic mt-2">"{narrative}"</p>
+            </div>
+
+            {/* Col 2: Active Actions */}
+            <div className="space-y-3 md:border-l md:border-white/10 md:pl-6">
+              <p className="text-[10px] uppercase tracking-widest text-white/50">Open Actions</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-5xl font-bold leading-none">{allActions.length}</span>
+              </div>
+              <p className="text-xs text-white/50">items requiring attention</p>
+              <div className="space-y-1.5 mt-2">
+                {topOverdue.length === 0 ? (
+                  <p className="text-xs text-[#16a34a] font-medium">All actions on track ✓</p>
+                ) : topOverdue.map(a => (
+                  <p key={a.id} className="text-xs text-white/70 truncate">
+                    <span className="text-white/40">•</span>{' '}
+                    <span className="font-medium text-white">{a.dealerName}:</span>{' '}
+                    {a.action_title}
+                    {a.target_completion_date && (
+                      <span className="text-[#dc2626] ml-1">
+                        — due {format(new Date(a.target_completion_date), 'dd MMM')}
+                      </span>
+                    )}
+                  </p>
+                ))}
+              </div>
+            </div>
+
+            {/* Col 3: Focus Dealer */}
+            <div className="space-y-3 md:border-l md:border-white/10 md:pl-6">
+              <p className="text-[10px] uppercase tracking-widest text-white/50">Focus Dealer</p>
+              {focusDealer ? (
+                <>
+                  <p className="text-lg font-semibold leading-tight">{focusDealer.dealerName}</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-3xl font-bold">{Math.round(focusDealer.latestScore!)}</span>
+                    {(() => {
+                      const band = getScoreBand(focusDealer.latestScore!);
+                      return <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${band.className}`}>{band.label}</span>;
+                    })()}
+                  </div>
+                  <p className="text-xs text-white/50">{focusDealer.location}</p>
+                  <p className="text-xs font-medium mt-1">
+                    {(focusDealer.latestScore ?? 101) < 46
+                      ? <span className="text-[#dc2626]">Needs immediate attention</span>
+                      : <span className="text-[#d97706]">Monitor closely</span>
+                    }
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-white/50">No assessments yet</p>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* View tabs */}
       <div className="flex gap-1 border-b border-border">
         {(['dashboard', 'resources'] as const).map(view => (
