@@ -1032,9 +1032,9 @@ export default function CoachDashboard() {
                   )}
                 </div>
 
-                {/* Bottom action row */}
-                <div className="border-t border-border/50 pt-2 space-y-2">
-                  <div className="flex items-center gap-1">
+                {/* Bottom action row — single line */}
+                <div className="border-t border-border/50 pt-2 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1 shrink-0">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -1064,13 +1064,13 @@ export default function CoachDashboard() {
                     <Button
                       variant="default"
                       size="sm"
-                      className="w-full h-8 text-xs"
+                      className="h-7 text-xs flex-1"
                       onClick={() => navigate(`/app/results/${dealer.latestAssessmentId}`)}
                     >
                       Enter Dealership →
                     </Button>
                   ) : (
-                    <Button variant="outline" size="sm" className="w-full h-8 text-xs" disabled>
+                    <Button variant="outline" size="sm" className="h-7 text-xs flex-1" disabled>
                       No assessment yet
                     </Button>
                   )}
@@ -1111,12 +1111,38 @@ export default function CoachDashboard() {
 
       {/* Actions Requiring Attention */}
       <Card className="shadow-card rounded-xl">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between flex-wrap gap-3">
+        <CardHeader className="pb-0">
+          <div className="flex items-center justify-between gap-3">
             <CardTitle className="text-base font-semibold">Network Actions Requiring Attention</CardTitle>
-            <div className="flex items-center gap-2">
+            <button
+              className="text-sm text-[hsl(var(--brand-500))] hover:underline font-medium whitespace-nowrap shrink-0"
+              onClick={() => navigate('/app/coach-actions')}
+            >
+              View all →
+            </button>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <Tabs value={activeTab} onValueChange={v => setActiveTab(v as 'overdue' | 'stale' | 'all')}>
+            {/* Tabs + dealer filter on one line */}
+            <div className="flex items-center justify-between px-5 py-2 border-b border-border gap-3">
+              <TabsList className="h-8">
+                <TabsTrigger value="overdue" className="text-xs">
+                  Overdue
+                  {overdueActions.length > 0 && (
+                    <span className="ml-1 rounded-full bg-[#dc2626]/10 text-[#dc2626] px-1.5 text-[10px]">{overdueActions.length}</span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="stale" className="text-xs">
+                  Stale
+                  {staleActions.length > 0 && (
+                    <span className="ml-1 rounded-full bg-[#d97706]/10 text-[#d97706] px-1.5 text-[10px]">{staleActions.length}</span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="all" className="text-xs">All Open ({allOpenActions.length})</TabsTrigger>
+              </TabsList>
               <Select value={actionDealerFilter} onValueChange={setActionDealerFilter}>
-                <SelectTrigger className="w-36 h-8 text-xs"><SelectValue placeholder="All dealers" /></SelectTrigger>
+                <SelectTrigger className="w-36 h-8 text-xs shrink-0"><SelectValue placeholder="All dealers" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All dealers</SelectItem>
                   {dealers.map(d => (
@@ -1124,32 +1150,7 @@ export default function CoachDashboard() {
                   ))}
                 </SelectContent>
               </Select>
-              <button
-                className="text-sm text-[hsl(var(--brand-500))] hover:underline font-medium whitespace-nowrap"
-                onClick={() => navigate('/app/coach-actions')}
-              >
-                View all →
-              </button>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Tabs value={activeTab} onValueChange={v => setActiveTab(v as 'overdue' | 'stale' | 'all')}>
-            <TabsList className="mx-5 mb-0 h-8">
-              <TabsTrigger value="overdue" className="text-xs">
-                Overdue
-                {overdueActions.length > 0 && (
-                  <span className="ml-1 rounded-full bg-[#dc2626]/10 text-[#dc2626] px-1.5 text-[10px]">{overdueActions.length}</span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="stale" className="text-xs">
-                Stale
-                {staleActions.length > 0 && (
-                  <span className="ml-1 rounded-full bg-[#d97706]/10 text-[#d97706] px-1.5 text-[10px]">{staleActions.length}</span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="all" className="text-xs">All Open ({allOpenActions.length})</TabsTrigger>
-            </TabsList>
 
             {(['overdue', 'stale', 'all'] as const).map(tab => {
               const items = tab === 'overdue' ? overdueActions : tab === 'stale' ? staleActions : allOpenActions;
@@ -1168,21 +1169,21 @@ export default function CoachDashboard() {
                     </div>
                   ) : (
                     <div className="divide-y divide-border">
-                      <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-3 px-5 py-2 bg-muted/50">
+                      <div className="grid grid-cols-[auto_1fr_minmax(140px,auto)_auto_auto_auto] gap-3 px-5 py-2 bg-muted/50 items-center">
                         <span />
                         <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Action</span>
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-28">Dealership</span>
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-24 text-right">
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Dealership</span>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-20 text-right">
                           {tab === 'overdue' ? 'Due date' : 'Days stale'}
                         </span>
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-20">Status</span>
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-16">Priority</span>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-20 text-center">Status</span>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-16 text-center">Priority</span>
                       </div>
                       {items.map(action => {
                         return (
                           <div
                             key={action.id}
-                            className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-3 px-5 py-3 hover:bg-muted/20 transition-colors cursor-pointer items-center"
+                            className="grid grid-cols-[auto_1fr_minmax(140px,auto)_auto_auto_auto] gap-3 px-5 py-3 hover:bg-muted/20 transition-colors cursor-pointer items-center"
                             onClick={() => navigate(`/app/results/${action.assessmentId}`)}
                           >
                             {/* Priority dot */}
@@ -1200,13 +1201,13 @@ export default function CoachDashboard() {
                             </div>
 
                             {/* Dealership brand chip */}
-                            <div className="flex items-center gap-1.5 shrink-0 w-28">
+                            <div className="flex items-center gap-1.5">
                               <BrandLogo brand={dealers.find(d => d.dealershipId === action.dealershipId)?.brand ?? ''} size={16} />
-                              <span className="text-xs text-muted-foreground truncate max-w-[80px] hidden md:inline">{action.dealerName}</span>
+                              <span className="text-xs text-foreground font-medium">{action.dealerName}</span>
                             </div>
 
                             {/* Due date / days stale */}
-                            <span className={`text-xs w-24 text-right shrink-0 ${
+                            <span className={`text-xs w-20 text-right shrink-0 ${
                               tab === 'overdue'
                                 ? isOverdue(action.target_completion_date) ? 'text-[#dc2626] font-semibold' : 'text-muted-foreground'
                                 : action.daysStale >= 14 ? 'text-[#dc2626] font-semibold' : 'text-muted-foreground'
@@ -1230,14 +1231,14 @@ export default function CoachDashboard() {
                                 ? 'bg-[#d97706]/10 text-[#d97706] border-[#d97706]/20'
                                 : 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20';
                               return (
-                                <Badge variant="outline" className={`text-[10px] shrink-0 whitespace-nowrap w-20 justify-center ${cls}`}>
+                                <Badge variant="outline" className={`text-[10px] shrink-0 whitespace-nowrap w-20 flex justify-center ${cls}`}>
                                   {label}
                                 </Badge>
                               );
                             })()}
 
                             {/* Priority badge */}
-                            <Badge variant="outline" className={`text-[10px] capitalize shrink-0 w-16 justify-center ${
+                            <Badge variant="outline" className={`text-[10px] capitalize shrink-0 w-16 flex justify-center ${
                               action.priority === 'critical' ? 'bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20' :
                               action.priority === 'high'     ? 'bg-[#d97706]/10 text-[#d97706] border-[#d97706]/20' :
                               action.priority === 'medium'   ? 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20' :
