@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -914,7 +914,7 @@ export type Database = {
           accepted_at: string | null
           accepted_by: string | null
           created_at: string
-          dealership_id: string
+          dealership_id: string | null
           expires_at: string
           id: string
           invite_type: string
@@ -929,7 +929,7 @@ export type Database = {
           accepted_at?: string | null
           accepted_by?: string | null
           created_at?: string
-          dealership_id: string
+          dealership_id?: string | null
           expires_at?: string
           id?: string
           invite_type?: string
@@ -944,7 +944,7 @@ export type Database = {
           accepted_at?: string | null
           accepted_by?: string | null
           created_at?: string
-          dealership_id?: string
+          dealership_id?: string | null
           expires_at?: string
           id?: string
           invite_type?: string
@@ -2038,3 +2038,4 @@ export const Constants = {
     },
   },
 } as const
+
