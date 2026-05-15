@@ -54,6 +54,44 @@ Repository: https://github.com/cskale/dealership-performance-assessment-tool
 
 ---
 
+## [2026-05-15] — Sprint 6: Coach Dashboard Redesign
+
+### feat
+- **Coach dashboard — full visual redesign** — `CoachDashboard.tsx` completely rewritten to match the dealer dashboard design language. Single-file change, zero new packages, zero schema changes.
+  - **Dark stats bar** — "Dealers / Avg Score / Overdue Actions / Critical Gaps" chips (renamed from "Attention Needed"; Critical Gaps counts dealers with score < 46)
+  - **Page header** — "COACHING PERSPECTIVE · Q{N} {YEAR}" eyebrow + "Field Performance Dashboard" H1 + Export Report placeholder button
+  - **Dark hero card** — Three-column `bg-[#0b1f3a]` card: (1) Portfolio Score — avg score, progress bar, maturity band, 5-variant narrative; (2) Open Actions — total count + top 2 overdue items; (3) Focus Dealer — lowest-scoring dealer with severity label
+  - **5-chip timeline strip** — Last Visit / Next Visit / Assessments Due / Overdue Actions / Action Plan Review; data sourced from `coach_visits` + existing state; status dots colour-coded
+  - **OEM brand-styled dealer cards** — card border top `3px solid {accent}` per brand colour (BMW blue, Audi red, Mercedes charcoal, VW blue, etc.); Clearbit OEM logo via `<img>` (no new package) with branded initials fallback; circular SVG score gauge; action plan progress bar (X / Y on track); visit chip with confirmed/proposed colour; "Enter Dealership →" CTA
+  - **Compact sort + filter controls** — replaced button group + separate filter icon with two compact Select dropdowns; "View Map →" external Google Maps link derived from dealer locations
+  - **Network Actions Requiring Attention** — richer 6-column table: priority dot · action · dealership (full name, brand logo) · due date/days stale · derived status badge (BLOCKED/STALLED/IN PROGRESS/ASSIGNED) · priority badge; Overdue/Stale/All Open tabs + All dealers select + View all → on one unified row; all columns centre-aligned
+  - **Field Notes** — dealer name chip uses brand accent colour instead of generic blue Badge
+  - **Score Trend card removed** — recharts + Checkbox imports also removed (bundle −65 kB)
+  - **Full-width layout** — `max-w-7xl mx-auto` constraint removed; matches dealer dashboard width
+
+- **Action Tracker — layout and alignment fixes** — `CoachActions.tsx`: full-width layout (removed `max-w-7xl mx-auto`); Status and Due Date columns header + cell now `text-center` / `flex justify-center`
+
+### fix
+- **Actions scoped to latest assessment** — `CoachDashboard.tsx` and `CoachActions.tsx` were fetching `improvement_actions` across all historical assessment IDs per dealer. Inflated action counts to 400+. Fixed: actions query now uses only the latest completed assessment ID per dealer, computed before the query runs.
+- **Dealer card icon language** — replaced 📍/📅 emojis with `MapPin`/`Calendar` lucide icons to match app design language
+- **Dealer card bottom row** — note/calendar icon buttons and "Enter Dealership →" CTA consolidated onto a single `flex items-center justify-between` row (was two separate rows)
+- **VW Clearbit logo** — Clearbit domain updated from `volkswagen.com` → `vw.com` for correct logo resolution
+- **Active visits sort order** — `coach_visits` query for proposed/confirmed visits now includes `.order('visit_date', { ascending: true })` so "Next Visit" timeline chip always shows the soonest upcoming visit (was non-deterministic Map insertion order)
+- **Unused import removed** — `isDueSoon` removed from `coachDashboardUtils` import (was imported but never used after table refactor)
+
+### db
+- No schema changes this sprint
+
+### Notes
+- Zero new npm packages
+- Zero TypeScript errors
+- Bundle size reduced by ~65 kB (recharts removed from CoachDashboard)
+- OEM dashboard redesign deferred to Sprint 7
+- Network Pattern Detection (cross-dealer signal intelligence) deferred — intelligence layer planned for Sprint 7
+- Assessment templates / OEM question weighting deferred to Sprint 7
+
+---
+
 ## [2026-05-10] — Sprint 3: Dashboard Redesign
 
 ### feat
