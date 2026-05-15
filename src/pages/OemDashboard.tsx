@@ -3,30 +3,32 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useActiveRole } from '@/hooks/useActiveRole';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { SharedLoadingState } from '@/components/shared/SharedLoadingState';
 import { SharedEmptyState } from '@/components/shared/SharedEmptyState';
 import { TierBadge } from '@/components/shared/TierBadge';
-import { Globe, TrendingUp, TrendingDown, Minus, Users, Award, ArrowDown, ArrowUp, Settings, ClipboardList, Trophy } from 'lucide-react';
+import { ScoreGauge } from '@/components/shared/ScoreGauge';
+import {
+  DEPT_KEYS, DEPT_LABELS, AT_RISK_THRESHOLD,
+  parseDeptScores, getDeptCellClass, getDeptBgClass, getDeptTextClass,
+  networkAvgByDept, getWeakestDept,
+} from '@/lib/oemDashboardUtils';
+import type { DeptKey } from '@/lib/oemDashboardUtils';
+import {
+  Globe, TrendingUp, TrendingDown, Minus, Users, Award, ArrowDown, ArrowUp,
+  Settings, ClipboardList, Trophy, AlertTriangle, CheckCircle, MapPin,
+} from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
 type OemNetwork = Tables<'oem_networks'>;
@@ -39,6 +41,7 @@ interface DealerScore {
   latestScore: number | null;
   previousScore: number | null;
   latestAssessmentId: string | null;
+  deptScores: Record<DeptKey, number | null>;
 }
 
 function getScoreBand(score: number): { label: string; className: string } {
@@ -72,7 +75,6 @@ function getRankBadgeClass(rank: number): string | null {
 export default function OemDashboard() {
   const { actorType, loading: roleLoading } = useActiveRole();
   const { currentOrganization } = useMultiTenant();
-  const { user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
 
@@ -82,8 +84,9 @@ export default function OemDashboard() {
   const [loadingNetworks, setLoadingNetworks] = useState(true);
   const [loadingDealers, setLoadingDealers] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tierFilter, setTierFilter] = useState<string>('all');
+  const [selectedDealer, setSelectedDealer] = useState<DealerScore | null>(null);
 
-  // Fetch networks owned by current org
   useEffect(() => {
     if (!currentOrganization?.id) return;
     const fetchNetworks = async () => {
@@ -93,66 +96,44 @@ export default function OemDashboard() {
         .select('*')
         .eq('owner_org_id', currentOrganization.id)
         .eq('status', 'active');
-
-      if (err) {
-        setError(t('oem.loadError'));
-        setLoadingNetworks(false);
-        return;
-      }
+      if (err) { setError(t('oem.loadError')); setLoadingNetworks(false); return; }
       setNetworks(data || []);
-      if (data && data.length > 0) {
-        setSelectedNetworkId(data[0].id);
-      }
+      if (data && data.length > 0) setSelectedNetworkId(data[0].id);
       setLoadingNetworks(false);
     };
     fetchNetworks();
   }, [currentOrganization?.id, t]);
 
-  // Fetch dealer scores for selected network
   useEffect(() => {
     if (!selectedNetworkId) return;
     const fetchDealerScores = async () => {
       setLoadingDealers(true);
       setError(null);
 
-      // Get dealer memberships for this network
       const { data: memberships, error: memErr } = await supabase
         .from('dealer_network_memberships')
         .select('dealership_id, programme_tier')
         .eq('network_id', selectedNetworkId)
         .eq('is_active', true);
 
-      if (memErr || !memberships?.length) {
-        setDealerScores([]);
-        setLoadingDealers(false);
-        return;
-      }
+      if (memErr || !memberships?.length) { setDealerScores([]); setLoadingDealers(false); return; }
 
       const tierByDealer = new Map<string, string | null>();
       for (const m of memberships) {
         if (m.dealership_id) tierByDealer.set(m.dealership_id, m.programme_tier ?? null);
       }
 
-      const dealershipIds = memberships
-        .map(m => m.dealership_id)
-        .filter((id): id is string => id != null);
+      const dealershipIds = memberships.map(m => m.dealership_id).filter((id): id is string => id != null);
+      if (dealershipIds.length === 0) { setDealerScores([]); setLoadingDealers(false); return; }
 
-      if (dealershipIds.length === 0) {
-        setDealerScores([]);
-        setLoadingDealers(false);
-        return;
-      }
-
-      // Get dealership names
       const { data: dealerships } = await supabase
         .from('dealerships')
         .select('id, name, location')
         .in('id', dealershipIds);
 
-      // Get latest 2 assessments per dealership
       const { data: assessments } = await supabase
         .from('assessments')
-        .select('id, overall_score, created_at, dealership_id')
+        .select('id, overall_score, scores, created_at, dealership_id')
         .in('dealership_id', dealershipIds)
         .eq('status', 'completed')
         .order('created_at', { ascending: false });
@@ -167,10 +148,10 @@ export default function OemDashboard() {
           latestScore: null,
           previousScore: null,
           latestAssessmentId: null,
+          deptScores: parseDeptScores(null),
         });
       }
 
-      // Assign latest and previous scores
       const countMap = new Map<string, number>();
       for (const a of assessments || []) {
         const count = countMap.get(a.dealership_id) ?? 0;
@@ -180,6 +161,7 @@ export default function OemDashboard() {
         if (count === 0) {
           dealer.latestScore = a.overall_score ? Number(a.overall_score) : null;
           dealer.latestAssessmentId = a.id;
+          dealer.deptScores = parseDeptScores(a.scores);
         } else {
           dealer.previousScore = a.overall_score ? Number(a.overall_score) : null;
         }
@@ -192,33 +174,38 @@ export default function OemDashboard() {
     fetchDealerScores();
   }, [selectedNetworkId]);
 
-  const sortedDealers = useMemo(() => {
-    return [...dealerScores].sort((a, b) => (b.latestScore ?? 0) - (a.latestScore ?? 0));
-  }, [dealerScores]);
+  const sortedDealers = useMemo(() =>
+    [...dealerScores].sort((a, b) => (b.latestScore ?? 0) - (a.latestScore ?? 0)),
+    [dealerScores],
+  );
+
+  const filteredDealers = useMemo(() =>
+    tierFilter === 'all' ? sortedDealers : sortedDealers.filter(d => d.programmeTier === tierFilter),
+    [sortedDealers, tierFilter],
+  );
+
+  const atRiskDealers = useMemo(() =>
+    sortedDealers.filter(d => (d.latestScore ?? 100) < AT_RISK_THRESHOLD),
+    [sortedDealers],
+  );
+
+  const networkAvg = useMemo(() => networkAvgByDept(sortedDealers), [sortedDealers]);
 
   const stats = useMemo(() => {
     const scored = sortedDealers.filter(d => d.latestScore != null);
     const scores = scored.map(d => d.latestScore!);
     return {
       total: sortedDealers.length,
-      avg: scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0,
+      avg:     scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0,
       highest: scores.length ? Math.max(...scores) : 0,
-      lowest: scores.length ? Math.min(...scores) : 0,
+      lowest:  scores.length ? Math.min(...scores) : 0,
     };
   }, [sortedDealers]);
 
   if (roleLoading) return <SharedLoadingState />;
   if (actorType !== 'oem') return <Navigate to="/app/dashboard" replace />;
-
   if (loadingNetworks) return <SharedLoadingState />;
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <SharedEmptyState title={t('oem.loadError')} description={error} />
-      </div>
-    );
-  }
+  if (error) return <div className="p-6"><SharedEmptyState title={t('oem.loadError')} description={error} /></div>;
 
   if (networks.length === 0) {
     return (
@@ -229,7 +216,7 @@ export default function OemDashboard() {
             <div className="space-y-2">
               <h2 className="text-xl font-semibold text-[hsl(var(--neutral-900))]">Set up your OEM network</h2>
               <p className="text-sm text-[hsl(var(--neutral-600))]">
-                Create your dealer network in Network Settings to start tracking performance across your pilot dealerships.
+                Create your dealer network in Network Settings to start tracking performance.
               </p>
             </div>
             <Button onClick={() => navigate('/app/oem-settings')}>
@@ -243,10 +230,10 @@ export default function OemDashboard() {
   }
 
   const summaryCards = [
-    { label: t('oem.totalDealers'), value: stats.total, icon: Users },
-    { label: t('oem.avgScore'), value: stats.avg, icon: Award },
+    { label: t('oem.totalDealers'), value: stats.total,   icon: Users },
+    { label: t('oem.avgScore'),     value: stats.avg,     icon: Award },
     { label: t('oem.highestScore'), value: stats.highest, icon: ArrowUp },
-    { label: t('oem.lowestScore'), value: stats.lowest, icon: ArrowDown },
+    { label: t('oem.lowestScore'),  value: stats.lowest,  icon: ArrowDown },
   ];
 
   return (
@@ -267,153 +254,397 @@ export default function OemDashboard() {
             </SelectTrigger>
             <SelectContent>
               {networks.map(n => (
-                <SelectItem key={n.id} value={n.id}>
-                  {n.name}
-                </SelectItem>
+                <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         )}
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {summaryCards.map((card, i) => (
-          <Card
-            key={card.label}
-            className="opacity-0 animate-fade-in shadow-card rounded-xl"
-            style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'forwards' }}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <card.icon className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider">{card.label}</p>
-                  <p className="text-2xl font-semibold text-foreground">{card.value}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Tabs defaultValue="overview">
+        <TabsList className="mb-4">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+        </TabsList>
 
-      {/* Leaderboard */}
-      <Card className="shadow-card rounded-xl">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold">{t('oem.leaderboard')}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
+        {/* ── Overview Tab ── */}
+        <TabsContent value="overview" className="space-y-6">
+          {/* Stat cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {summaryCards.map((card, i) => (
+              <Card
+                key={card.label}
+                className="opacity-0 animate-fade-in shadow-card rounded-xl"
+                style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'forwards' }}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <card.icon className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider">{card.label}</p>
+                      <p className="text-2xl font-semibold text-foreground">{card.value}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Dept Weakness Heatmap */}
           {loadingDealers ? (
-            <div className="p-6"><SharedLoadingState /></div>
-          ) : sortedDealers.length === 0 ? (
-            <div className="py-12 space-y-3 text-center">
-              <ClipboardList className="mx-auto h-8 w-8 text-[hsl(var(--neutral-400))]" />
-              <div className="space-y-1">
-                <h3 className="text-base font-semibold text-[hsl(var(--neutral-900))]">No assessments yet</h3>
-                <p className="mx-auto max-w-md text-sm text-[hsl(var(--neutral-600))]">
-                  Enrolled dealers haven't completed an assessment. Share the assessment link with your pilot dealers to get started.
-                </p>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => navigate('/app/oem-settings')}>
-                Manage dealers →
-              </Button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-16">{t('oem.rank')}</TableHead>
-                    <TableHead>{t('oem.dealerName')}</TableHead>
-                    <TableHead className="text-right">{t('oem.latestScore')}</TableHead>
-                    <TableHead className="text-right hidden sm:table-cell">{t('oem.previousScore')}</TableHead>
-                    <TableHead className="text-center hidden sm:table-cell">{t('oem.trend')}</TableHead>
-                    <TableHead className="text-center">{t('oem.benchmarkBand')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedDealers.map((dealer, index) => {
-                    const rank = index + 1;
-                    const band = dealer.latestScore != null ? getScoreBand(dealer.latestScore) : null;
-                    const rankBadgeClass = getRankBadgeClass(rank);
-                    return (
-                      <TableRow
-                        key={dealer.dealershipId}
-                        className={`cursor-pointer hover:bg-muted/50 transition-colors ${getRankStyle(rank)}`}
-                        onClick={() => {
-                          if (dealer.latestAssessmentId) {
-                            navigate(`/app/results/${dealer.latestAssessmentId}`);
-                          }
-                        }}
-                      >
-                        <TableCell className="font-medium">
-                          {rankBadgeClass ? (
-                            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold ${rankBadgeClass}`}>
-                              {rank === 1 && <Trophy className="h-3 w-3" />}
-                              {rank}
-                            </span>
-                          ) : (
-                            <span className="text-[hsl(var(--neutral-500))]">{rank}</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-medium text-foreground">{dealer.dealerName}</span>
-                            <span className="text-xs text-muted-foreground">{dealer.location}</span>
-                            <TierBadge tier={dealer.programmeTier as 'Standard' | 'Silver' | 'Gold' | 'Platinum' | null} size="sm" />
+            <Card className="shadow-card rounded-xl">
+              <CardContent className="p-6"><SharedLoadingState /></CardContent>
+            </Card>
+          ) : sortedDealers.length > 0 && (
+            <Card className="shadow-card rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold">Department Performance</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2 px-4 font-medium text-muted-foreground w-48">Dealer</th>
+                        {DEPT_KEYS.map(key => (
+                          <th key={key} className="text-center py-2 px-2 font-medium text-muted-foreground w-16">
+                            {DEPT_LABELS[key]}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sortedDealers.map(dealer => (
+                        <tr
+                          key={dealer.dealershipId}
+                          className="border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
+                          onClick={() => setSelectedDealer(dealer)}
+                        >
+                          <td className="py-2 px-4">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm truncate max-w-[160px]">{dealer.dealerName}</span>
+                              <TierBadge tier={dealer.programmeTier as 'Standard' | 'Silver' | 'Gold' | 'Platinum' | null} size="sm" />
+                            </div>
+                          </td>
+                          {DEPT_KEYS.map(key => {
+                            const score = dealer.deptScores[key];
+                            return (
+                              <td key={key} className="py-2 px-2 text-center">
+                                {score !== null ? (
+                                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${getDeptCellClass(score)}`}>
+                                    {Math.round(score)}
+                                  </span>
+                                ) : (
+                                  <span className="text-muted-foreground text-xs">—</span>
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                      <tr className="bg-muted/30">
+                        <td className="py-2 px-4 text-sm italic text-muted-foreground">Network avg</td>
+                        {DEPT_KEYS.map(key => {
+                          const score = networkAvg[key];
+                          return (
+                            <td key={key} className="py-2 px-2 text-center">
+                              {score !== null ? (
+                                <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${getDeptCellClass(score)}`}>
+                                  {score}
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground text-xs">—</span>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* At-Risk Dealers */}
+          {!loadingDealers && sortedDealers.length > 0 && (
+            <Card className="shadow-card rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold">At-Risk Dealers</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {atRiskDealers.length === 0 ? (
+                  <div className="flex items-center gap-3 p-4 bg-[#16a34a]/5 rounded-lg border border-[#16a34a]/20">
+                    <CheckCircle className="h-5 w-5 text-[#16a34a] shrink-0" />
+                    <p className="text-sm text-[#16a34a] font-medium">
+                      All dealers performing above Foundational threshold
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-[#dc2626] mb-1">
+                      <AlertTriangle className="h-4 w-4" />
+                      <span className="text-sm font-medium">
+                        {atRiskDealers.length} dealer{atRiskDealers.length > 1 ? 's' : ''} in Foundational band (score &lt; {AT_RISK_THRESHOLD})
+                      </span>
+                    </div>
+                    {atRiskDealers.map(dealer => (
+                      <div key={dealer.dealershipId} className="flex items-center justify-between border rounded-lg p-3">
+                        <div className="flex items-center gap-3">
+                          <div>
+                            <p className="text-sm font-medium">{dealer.dealerName}</p>
+                            <p className="text-xs text-muted-foreground">{dealer.location}</p>
                           </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {dealer.latestScore != null ? (
-                            <span className="font-semibold text-foreground">{Math.round(dealer.latestScore)}</span>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right hidden sm:table-cell">
-                          {dealer.previousScore != null ? (
-                            <span className="text-muted-foreground">{Math.round(dealer.previousScore)}</span>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-center hidden sm:table-cell">
-                          {getTrendIcon(dealer.latestScore, dealer.previousScore)}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {band ? (
-                            <Badge variant="outline" className={band.className}>
-                              {band.label}
+                          <TierBadge tier={dealer.programmeTier as 'Standard' | 'Silver' | 'Gold' | 'Platinum' | null} size="sm" />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {dealer.latestScore !== null && (
+                            <Badge variant="outline" className="bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20 text-xs">
+                              {Math.round(dealer.latestScore)}
                             </Badge>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
                           )}
+                          <Button size="sm" variant="outline" onClick={() => setSelectedDealer(dealer)}>
+                            View
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* ── Leaderboard Tab ── */}
+        <TabsContent value="leaderboard" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              {filteredDealers.length} dealer{filteredDealers.length !== 1 ? 's' : ''}
+              {tierFilter !== 'all' ? ` · ${tierFilter}` : ''}
+            </p>
+            <Select value={tierFilter} onValueChange={setTierFilter}>
+              <SelectTrigger className="w-44">
+                <SelectValue placeholder="Filter by tier" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All tiers</SelectItem>
+                <SelectItem value="Standard">Standard</SelectItem>
+                <SelectItem value="Silver">Silver</SelectItem>
+                <SelectItem value="Gold">Gold</SelectItem>
+                <SelectItem value="Platinum">Platinum</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Card className="shadow-card rounded-xl">
+            <CardContent className="p-0">
+              {loadingDealers ? (
+                <div className="p-6"><SharedLoadingState /></div>
+              ) : filteredDealers.length === 0 ? (
+                <div className="py-12 space-y-3 text-center">
+                  <ClipboardList className="mx-auto h-8 w-8 text-[hsl(var(--neutral-400))]" />
+                  <div className="space-y-1">
+                    <h3 className="text-base font-semibold text-[hsl(var(--neutral-900))]">
+                      {tierFilter !== 'all' ? `No ${tierFilter} tier dealers` : 'No assessments yet'}
+                    </h3>
+                    <p className="mx-auto max-w-md text-sm text-[hsl(var(--neutral-600))]">
+                      {tierFilter !== 'all'
+                        ? 'Try a different tier filter or check Network Settings.'
+                        : "Enrolled dealers haven't completed an assessment yet."}
+                    </p>
+                  </div>
+                  {tierFilter !== 'all' && (
+                    <Button variant="outline" size="sm" onClick={() => setTierFilter('all')}>
+                      Clear filter
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-16">{t('oem.rank')}</TableHead>
+                        <TableHead>{t('oem.dealerName')}</TableHead>
+                        <TableHead className="text-center hidden md:table-cell">Weakest Dept</TableHead>
+                        <TableHead className="text-right">{t('oem.latestScore')}</TableHead>
+                        <TableHead className="text-right hidden sm:table-cell">{t('oem.previousScore')}</TableHead>
+                        <TableHead className="text-center hidden sm:table-cell">{t('oem.trend')}</TableHead>
+                        <TableHead className="text-center">{t('oem.benchmarkBand')}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredDealers.map(dealer => {
+                        const rank = sortedDealers.indexOf(dealer) + 1;
+                        const band = dealer.latestScore != null ? getScoreBand(dealer.latestScore) : null;
+                        const rankBadgeClass = getRankBadgeClass(rank);
+                        const weakest = getWeakestDept(dealer.deptScores);
+                        return (
+                          <TableRow
+                            key={dealer.dealershipId}
+                            className={`cursor-pointer hover:bg-muted/50 transition-colors ${getRankStyle(rank)}`}
+                            onClick={() => setSelectedDealer(dealer)}
+                          >
+                            <TableCell className="font-medium">
+                              {rankBadgeClass ? (
+                                <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold ${rankBadgeClass}`}>
+                                  {rank === 1 && <Trophy className="h-3 w-3" />}
+                                  {rank}
+                                </span>
+                              ) : (
+                                <span className="text-[hsl(var(--neutral-500))]">{rank}</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-medium text-foreground">{dealer.dealerName}</span>
+                                <span className="text-xs text-muted-foreground">{dealer.location}</span>
+                                <TierBadge tier={dealer.programmeTier as 'Standard' | 'Silver' | 'Gold' | 'Platinum' | null} size="sm" />
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center hidden md:table-cell">
+                              {weakest ? (
+                                <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${getDeptCellClass(weakest.score)}`}>
+                                  {DEPT_LABELS[weakest.key]} {Math.round(weakest.score)}
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {dealer.latestScore != null ? (
+                                <span className="font-semibold text-foreground">{Math.round(dealer.latestScore)}</span>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right hidden sm:table-cell">
+                              {dealer.previousScore != null ? (
+                                <span className="text-muted-foreground">{Math.round(dealer.previousScore)}</span>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-center hidden sm:table-cell">
+                              {getTrendIcon(dealer.latestScore, dealer.previousScore)}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {band ? (
+                                <Badge variant="outline" className={band.className}>{band.label}</Badge>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                      <TableRow className="bg-[hsl(var(--neutral-050))] hover:bg-[hsl(var(--neutral-050))]">
+                        <TableCell className="text-[hsl(var(--neutral-500))]">—</TableCell>
+                        <TableCell><span className="italic text-[hsl(var(--neutral-600))]">Network average</span></TableCell>
+                        <TableCell className="hidden md:table-cell" />
+                        <TableCell className="text-right font-semibold text-foreground">{stats.avg}</TableCell>
+                        <TableCell className="text-right hidden sm:table-cell text-muted-foreground">—</TableCell>
+                        <TableCell className="text-center hidden sm:table-cell text-muted-foreground">—</TableCell>
+                        <TableCell className="text-center">
+                          <Badge variant="outline" className={getScoreBand(stats.avg).className}>
+                            {getScoreBand(stats.avg).label}
+                          </Badge>
                         </TableCell>
                       </TableRow>
-                    );
-                  })}
-                  <TableRow className="bg-[hsl(var(--neutral-050))] hover:bg-[hsl(var(--neutral-050))]">
-                    <TableCell className="text-[hsl(var(--neutral-500))]">—</TableCell>
-                    <TableCell>
-                      <span className="italic text-[hsl(var(--neutral-600))]">Network average</span>
-                    </TableCell>
-                    <TableCell className="text-right font-semibold text-foreground">{stats.avg}</TableCell>
-                    <TableCell className="text-right hidden sm:table-cell text-muted-foreground">—</TableCell>
-                    <TableCell className="text-center hidden sm:table-cell text-muted-foreground">—</TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="outline" className={getScoreBand(stats.avg).className}>
-                        {getScoreBand(stats.avg).label}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Dealer Drill-down Sheet */}
+      <Sheet open={!!selectedDealer} onOpenChange={open => { if (!open) setSelectedDealer(null); }}>
+        <SheetContent side="right" className="w-[480px] sm:w-[540px] overflow-y-auto">
+          {selectedDealer && (
+            <>
+              <SheetHeader className="pb-4 border-b">
+                <div className="flex items-start justify-between pr-6">
+                  <div>
+                    <SheetTitle className="text-lg font-semibold">{selectedDealer.dealerName}</SheetTitle>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                      <MapPin className="h-3 w-3" />
+                      {selectedDealer.location}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <ScoreGauge score={selectedDealer.latestScore ?? 0} size={64} />
+                    <TierBadge tier={selectedDealer.programmeTier as 'Standard' | 'Silver' | 'Gold' | 'Platinum' | null} size="sm" />
+                  </div>
+                </div>
+              </SheetHeader>
+
+              <div className="space-y-6 pt-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Department Scores</h3>
+                  <div className="space-y-2">
+                    {DEPT_KEYS.map(key => {
+                      const score = selectedDealer.deptScores[key];
+                      return (
+                        <div key={key} className="flex items-center gap-3">
+                          <span className="w-10 text-xs font-medium text-muted-foreground">{DEPT_LABELS[key]}</span>
+                          <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                            {score !== null && (
+                              <div
+                                className={`h-2 rounded-full ${getDeptBgClass(score)}`}
+                                style={{ width: `${score}%` }}
+                              />
+                            )}
+                          </div>
+                          <span className={`text-xs font-semibold w-8 text-right ${score !== null ? getDeptTextClass(score) : 'text-muted-foreground'}`}>
+                            {score !== null ? Math.round(score) : '—'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Score History</h3>
+                  <div className="flex items-center gap-6">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Latest</p>
+                      <p className="text-2xl font-semibold text-foreground">
+                        {selectedDealer.latestScore !== null ? Math.round(selectedDealer.latestScore) : '—'}
+                      </p>
+                    </div>
+                    <div className="flex items-center">
+                      {getTrendIcon(selectedDealer.latestScore, selectedDealer.previousScore)}
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Previous</p>
+                      <p className="text-lg font-medium text-muted-foreground">
+                        {selectedDealer.previousScore !== null ? Math.round(selectedDealer.previousScore) : '—'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {selectedDealer.latestAssessmentId && (
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => navigate(`/app/results/${selectedDealer.latestAssessmentId}`)}
+                  >
+                    Open Full Report →
+                  </Button>
+                )}
+              </div>
+            </>
           )}
-        </CardContent>
-      </Card>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
