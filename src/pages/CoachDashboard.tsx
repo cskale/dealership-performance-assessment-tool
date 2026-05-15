@@ -1243,24 +1243,6 @@ export default function CoachDashboard() {
                         <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-16">Priority</span>
                       </div>
                       {items.map(action => {
-                        const priorityClass =
-                          action.priority === 'critical' ? 'bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20' :
-                          action.priority === 'high'     ? 'bg-[#d97706]/10 text-[#d97706] border-[#d97706]/20' :
-                          action.priority === 'medium'   ? 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20' :
-                                                           'bg-muted text-muted-foreground border-border';
-                        const dueDateClass = isOverdue(action.target_completion_date)
-                          ? 'text-[#dc2626] font-semibold'
-                          : isDueSoon(action.target_completion_date)
-                          ? 'text-[#d97706] font-medium'
-                          : 'text-muted-foreground';
-                        const staleClass =
-                          action.daysStale >= 21 ? 'text-[#dc2626] font-semibold' :
-                          action.daysStale >= 14 ? 'text-[#d97706] font-medium' :
-                                                   'text-muted-foreground';
-                        const dueDateLabel = action.target_completion_date
-                          ? format(new Date(action.target_completion_date), 'dd MMM')
-                          : '—';
-
                         return (
                           <div
                             key={action.id}
