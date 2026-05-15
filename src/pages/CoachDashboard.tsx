@@ -36,6 +36,95 @@ import { VisitSheet } from '@/components/coach/VisitSheet';
 import { KPI_DEFINITIONS } from '@/lib/kpiDefinitions';
 import { ACTION_TEMPLATES } from '@/data/actionTemplates';
 
+const BRAND_MAP: Record<string, { accent: string; domain: string | null }> = {
+  bmw:             { accent: '#1C69D4', domain: 'bmw.com' },
+  mercedes:        { accent: '#2D3035', domain: 'mercedes-benz.com' },
+  'mercedes-benz': { accent: '#2D3035', domain: 'mercedes-benz.com' },
+  audi:            { accent: '#BB0A21', domain: 'audi.com' },
+  volkswagen:      { accent: '#003399', domain: 'volkswagen.com' },
+  vw:              { accent: '#003399', domain: 'volkswagen.com' },
+  toyota:          { accent: '#EB0A1E', domain: 'toyota.com' },
+  ford:            { accent: '#003087', domain: 'ford.com' },
+};
+
+function getBrandStyle(brand: string): { accent: string; domain: string | null } {
+  const key = (brand ?? '').toLowerCase().trim();
+  return BRAND_MAP[key] ?? { accent: 'hsl(var(--brand-500))', domain: null };
+}
+
+function ScoreGauge({ score, size = 72 }: { score: number; size?: number }) {
+  const r = size * 0.39;
+  const circ = 2 * Math.PI * r;
+  const filled = Math.min(Math.max(score, 0), 100) / 100 * circ;
+  const cx = size / 2;
+  const cy = size / 2;
+
+  const accent =
+    score >= 85 ? '#16a34a' :
+    score >= 70 ? '#2563eb' :
+    score >= 46 ? '#d97706' :
+                  '#dc2626';
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-label={`Score ${Math.round(score)}`}>
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="5" />
+      <circle
+        cx={cx} cy={cy} r={r} fill="none"
+        stroke={accent} strokeWidth="5"
+        strokeDasharray={`${filled} ${circ - filled}`}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${cx} ${cy})`}
+      />
+      <text
+        x={cx} y={cy + 5}
+        textAnchor="middle"
+        fontSize={size * 0.19}
+        fontWeight="700"
+        fill="currentColor"
+      >
+        {Math.round(score)}
+      </text>
+    </svg>
+  );
+}
+
+function BrandLogo({ brand, size = 24 }: { brand: string; size?: number }) {
+  const { accent, domain } = getBrandStyle(brand);
+  const initials = (brand ?? 'XX').slice(0, 2).toUpperCase();
+  const [failed, setFailed] = useState(false);
+
+  if (!domain || failed) {
+    return (
+      <div
+        className="rounded-sm flex items-center justify-center text-[9px] font-bold shrink-0"
+        style={{
+          width: size, height: size,
+          backgroundColor: accent + '26',
+          color: accent,
+        }}
+      >
+        {initials}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={`https://logo.clearbit.com/${domain}`}
+      width={size} height={size}
+      className="rounded-sm object-contain shrink-0"
+      onError={() => setFailed(true)}
+      alt={brand}
+    />
+  );
+}
+
+function getQuarterLabel(): string {
+  const now = new Date();
+  const q = Math.ceil((now.getMonth() + 1) / 3);
+  return `Q${q} ${now.getFullYear()}`;
+}
+
 interface AssignedDealer {
   dealershipId: string;
   dealerName: string;
