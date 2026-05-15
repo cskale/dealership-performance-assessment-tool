@@ -263,7 +263,7 @@ export default function CoachActions() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-foreground">All Actions</h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -332,8 +332,8 @@ export default function CoachActions() {
                 <TableRow>
                   <TableHead>Dealer</TableHead>
                   <TableHead>Action Title</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Due Date</TableHead>
+                  <TableHead className="text-center">Status</TableHead>
+                  <TableHead className="text-center">Due Date</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -355,14 +355,14 @@ export default function CoachActions() {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell onClick={e => e.stopPropagation()}>
+                    <TableCell className="text-center" onClick={e => e.stopPropagation()}>
                       <Badge variant="outline" className={STATUS_STYLES[action.status] ?? ''}>
                         {action.status}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       {action.target_completion_date ? (
-                        <div className="flex items-center gap-1.5 text-sm">
+                        <div className="flex items-center justify-center gap-1.5 text-sm">
                           <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                           {new Date(action.target_completion_date).toLocaleDateString()}
                         </div>
