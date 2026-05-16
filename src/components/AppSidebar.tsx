@@ -58,7 +58,7 @@ export function AppSidebar() {
     {
       label: 'Overview',
       items: [
-        ...(actorType !== 'coach' ? [{ path: '/app/dashboard', label: 'Dashboard', icon: BarChart3 }] : []),
+        ...(actorType !== 'coach' && actorType !== 'oem' ? [{ path: '/app/dashboard', label: 'Dashboard', icon: BarChart3 }] : []),
         ...(actorType === 'oem' ? [
           { path: '/app/oem-dashboard', label: 'OEM Dashboard',    icon: Globe },
           { path: '/app/oem-settings',  label: 'Network Settings', icon: Settings },
@@ -69,7 +69,7 @@ export function AppSidebar() {
         ] : []),
       ],
     },
-    ...(actorType !== 'coach' ? [{
+    ...(actorType !== 'coach' && actorType !== 'oem' ? [{
       label: 'Diagnostic',
       items: [
         { path: '/app/assessment', label: 'New Assessment', icon: Plus },
