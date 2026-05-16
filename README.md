@@ -2,9 +2,6 @@
 
 Enterprise dealership performance assessment and coaching platform. Designed for BMW, Mercedes, VW-group, and multi-brand dealer networks.
 
-**Production:** https://dealership-performance-assessment-t.vercel.app
-**Repository:** https://github.com/cskale/dealership-performance-assessment-tool
-
 ---
 
 ## What It Does
@@ -35,17 +32,21 @@ Dealers complete a structured diagnostic assessment across five departments. The
 ### Coach Portal (`/app/coach-dashboard`, `/app/coach-actions`)
 - **Field Performance Dashboard** — "COACHING PERSPECTIVE · Q{N} {YEAR}" with dark hero card (portfolio avg score / open actions / focus dealer) and 5-chip timeline strip
 - **OEM brand-styled dealer cards** — Clearbit brand logo, circular SVG score gauge, action plan progress, visit chip, "Enter Dealership →" CTA
-- **Network Actions Requiring Attention** — Overdue / Stale / All Open tabs, per-dealer filter, priority dots, derived status badges (BLOCKED / STALLED / IN PROGRESS / ASSIGNED)
+- **Network Actions Requiring Attention** — Overdue / Stale / All Open tabs, per-dealer filter, priority dots, derived status badges
 - **Field Notes feed** — observation / action / follow-up notes per dealer, paginated
 - **Visit scheduling** — propose, confirm, cancel coach visits via `VisitSheet`
-- **Action Tracker** — full table of open actions across all assigned dealers (latest assessment only); click-through to identical ActionSheet as dealer
+- **Action Tracker** — full table of open actions across all assigned dealers (latest assessment only)
 - **Resource panel** — KPI Reference (searchable) + Action Playbooks (filterable by department)
 
 ### OEM Portal (`/app/oem-dashboard`, `/app/oem-settings`)
-- Network leaderboard across all assigned dealers with score, maturity, programme tier
-- Peer rank position within the network
-- Network management: create/edit network, add dealers by email lookup (cross-org via SECURITY DEFINER), set programme tier, soft-remove dealers
-- OEM activation: self-service `actor_type='oem'` provisioning (owner-only)
+- **Full-width command centre** matching Coach Dashboard design language — dark `bg-[#0b1f3a]` stats bar (Network / Avg Score / Critical Gaps / Enrolled Dealers), 3-column dark hero card (Network Performance score + Enrolled Dealers health + Dept Weaknesses)
+- **Dealer cards grid** — responsive 1/2/3-col grid with ScoreGauge ring, TierBadge, top-3 weakest dept score bars, open action count, freshness, "Enter Dealership →" CTA
+- **Network Insights cards** — Score Momentum (network avg trend), Assessment Coverage (stale/missing alert), Network Insights (dept weakness counts + recurring signal codes)
+- **Leaderboard tab** — Network Portfolio Heatmap (all dealers × all depts), tier filter, rank arrows, dealer drill-down Sheet
+- **Results page OEM context banner** — "Viewing as OEM · {Dealer Name}" with back navigation when viewing a dealer's results
+- **Network management** — create/edit network, add dealers by email lookup (cross-org via SECURITY DEFINER), remove dealers (soft-delete)
+- **OEM invite flow** — self-service invite via `InviteOemUser` card (Account → Team + OEM Settings); edge function guards on active `oem_network` ownership
+- **OEM self-activation** — org owners with an active OEM network can invite OEM users without SQL
 
 ### Action Management
 - Kanban board (HTML5 DnD) with Open / In Progress / Completed columns
@@ -68,7 +69,7 @@ Three actor types in `profiles.actor_type`:
 **Provisioning:**
 - `dealer` — set on dealer invite acceptance (`accept_dealership_invite` RPC)
 - `coach` — set on coach invite acceptance (via `InviteCoach` component → `send-invite` Edge Function)
-- `oem` — set via `OEM Programme Activation` in OEM Settings (owner-only self-service)
+- `oem` — set via `InviteOemUser` (Account → Team tab or OEM Settings); org owner with active `oem_network` can send invite; `accept_dealership_invite` RPC sets `actor_type='oem'` on acceptance
 
 ---
 
@@ -81,17 +82,6 @@ Three actor types in `profiles.actor_type`:
 | Deployment | Vercel (auto-deploy on push to `main`) |
 | Testing | Vitest, jsdom, 80% coverage threshold |
 | Export | html2canvas + jsPDF (PDF), xlsx (Excel) |
-
----
-
-## Key Infrastructure
-
-| Resource | ID / URL |
-|---|---|
-| Supabase project | `xrypgosuyfdkkqafftae` |
-| Supabase URL | `https://xrypgosuyfdkkqafftae.supabase.co` |
-| Vercel project | `prj_mZ0wgESKAmV5MiR8UwMrtZIipTVR` |
-| Production URL | `https://dealership-performance-assessment-t.vercel.app` |
 
 ---
 
@@ -121,7 +111,7 @@ npx vitest --coverage
 ## Architecture Notes
 
 ### RLS recursion rule
-Any RLS policy that joins `dealer_network_memberships` inside a policy on `dealerships` or `assessments` causes infinite recursion. Always wrap cross-org logic in a `SECURITY DEFINER` function in the `private` schema and call that from the policy.
+Any RLS policy that joins `dealer_network_memberships` inside a policy on another table can cause infinite recursion. Always wrap cross-table OEM access logic in a `SECURITY DEFINER` function in the `private` schema (`private.user_is_member_of_network_owner`, `private.user_is_admin_of_network_owner`) and call that from the policy — never reference `oem_networks` directly inside `dealer_network_memberships` policies or vice versa.
 
 ### File ownership
 - **Claude Code owned** (do not edit via Lovable): `src/data/questionnaire.ts`, `src/data/signalTypes.ts`, `src/data/signalMappings.ts`, `src/lib/signalEngine.ts`
@@ -139,18 +129,17 @@ Never add `useState` or `useEffect` after a conditional return. Hooks must be de
 
 | Issue | Status |
 |---|---|
-| ActionSheet PATCH: `new_value` sent as URL-encoded query param instead of JSON body | Pending fix |
-| `DialogContent` missing `DialogTitle` on several dialogs — accessibility warnings in dev | Pending fix |
 | `useOnboarding` RLS false negatives on first load — hook logs warning and preserves stored value | Accepted / low priority |
 
 ---
 
-## Deferred (Sprint 7+)
+## Deferred
 
-- OEM dashboard visual redesign (same design language as dealer + coach dashboards)
-- Network Pattern Detection — cross-dealer signal intelligence surfacing systemic issues
 - Score delta / trajectory card (requires DB design for historical snapshots)
 - Context intake questionnaire (#12)
 - Coach assignment management UI
 - Assessment templates / OEM question weighting
 - Modular assessment (Lovable sprint)
+- Network map view for OEM Dashboard
+- OEM signal aggregation drill-down (click signal code → list of affected dealers)
+- Tier gap analysis (needs real programme tier data across multiple OEMs)

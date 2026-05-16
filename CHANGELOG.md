@@ -4,8 +4,99 @@ All notable changes to this project are documented here.
 Format: `[Type] Description (tracker item · commit sha)`
 Types: **feat** · **fix** · **security** · **perf** · **docs** · **refactor**
 
-Production URL: https://dealership-performance-assessment-t.vercel.app
-Repository: https://github.com/cskale/dealership-performance-assessment-tool
+---
+
+## [2026-05-16] — Sprint 9: OEM Dashboard Full Redesign
+
+### feat
+- **OEM Dashboard — full visual redesign** — `OemDashboard.tsx` completely rewritten to match the Coach Dashboard design language. All changes are single-file, zero new packages, zero schema changes.
+  - **Dark stats bar** — `bg-[#0b1f3a]` strip with 4 chips: NETWORK · AVG SCORE · CRITICAL GAPS · ENROLLED DEALERS; sticky top-0; identical pattern to Coach Dashboard
+  - **Page header** — "OEM PERSPECTIVE · Q{N} {YEAR}" eyebrow + "Network Overview" H1 + enrolled dealership count subline
+  - **Dark hero card** — Three-column `bg-[#0b1f3a]` card: (1) Network Performance — avg score, progress bar, maturity band, momentum delta from last cycle, contextual narrative; (2) Enrolled Dealers — total count, at-risk dealer count/names, all-clear state; (3) Dept Weaknesses — top 3 weakest depts across network with colour-coded prevalence bars (red >50%, amber >25%, blue otherwise)
+  - **Dealer cards grid** — responsive `grid-cols-1 md:grid-cols-2 lg:grid-cols-3` replacing the old 4 stat cards; each card shows TierBadge + ScoreGauge (56px), dealer name + maturity band, location, top-3 weakest dept score bars, open action count + freshness ("assessed Nd ago"), "Enter Dealership →" CTA; skeleton loading state (3 placeholder cards); SharedEmptyState for 0 enrolled dealers
+  - **`OemDealerCard` inline component** — self-contained card renderer; `onSelect` opens drill-down Sheet; `onNavigate` routes to Results page
+  - **`getHeroNarrative()`** — 5-variant contextual narrative matching Coach Dashboard pattern (0 dealers / ≥85 / ≥70 / ≥46 / below 46)
+  - **`getQuarterLabel()`** — derives current quarter label (Q2 2026 etc.)
+  - **Full-width layout** — `max-w-7xl mx-auto` removed; matches Coach Dashboard width
+  - **Leaderboard tab** — rank change arrows (▲/▼/—) added to rank column; Network Portfolio Heatmap title
+  - **`openActionCount` data layer** — extra query to `improvement_actions` grouped by dealership; non-Completed actions counted per dealer and hydrated into `DealerScore`
+
+- **OEM Network Settings — full width** — removed `max-w-4xl mx-auto` constraint from `OemSettings.tsx`; matches other portal pages
+
+### fix
+- **Dealer roster table** — removed Programme Tier column (badge + Select dropdown) from OEM Network Settings dealer roster; table now shows Dealer · Location · Enrolled · Remove only
+- **Dealer roster table alignment** — Location, Enrolled columns centre-aligned in both headers and data cells
+- **OEM sidebar nav** — Dashboard and entire Diagnostic section (New Assessment, History, Action Plans) hidden from `actorType === 'oem'` users; OEM users see only OEM Dashboard + Network Settings + Reference
+
+### db
+- No schema changes this sprint
+
+### Notes
+- 175 tests passing, zero TypeScript errors
+- No new npm packages
+
+---
+
+## [2026-05-16] — Sprint 8: OEM Dashboard Polish + Bug Fixes + RLS Fix
+
+### feat
+- **OEM Dashboard — 3 new insight cards** (Sprint 8):
+  - **Network Momentum** — computes avg score delta across all dealers with 2+ assessments; shows ↑/↓/— direction, delta pts, from→to avg; "not enough data" fallback when <2 dealers have trend
+  - **Assessment Coverage** — categorises enrolled dealers into healthy (<90d), stale (>90d), missing (no assessment); green all-clear or amber alert list with "Manage" CTA
+  - **Network Insights** — dept weakness bar chart (top 3 depts below threshold 60, colour-coded by network prevalence) + recurring signal codes dot-matrix (top 5 signal codes across network, amber dots)
+- **OEM Dashboard — visual polish** — skeleton loading shapes in heatmap/at-risk sections; `min-w-[600px]` on heatmap table for mobile; empty state when dealers enrolled but no assessments; filtered leaderboard avg uses `filteredDealers` (not all dealers) when tier filter active
+- **Results page — OEM context banner** — when `actorType === 'oem'` views a dealer's results via OEM drill-down, a sticky info banner renders: Globe icon + "Viewing as OEM · {dealer name}" + TierBadge + "← Back to OEM Dashboard" button
+
+### fix
+- **KPIExplorer DialogContent** — missing `DialogTitle` added (sr-only); resolves React accessibility warning. All other `DialogContent` usages were already correctly titled.
+- **action_audit_log 403** — verified no client-side INSERT calls exist; inserts handled by DB trigger only. Bug already resolved.
+- **ActionSheet PATCH body** — verified `performUpdate` in `ActionPlan.tsx` uses Supabase client `.update()` correctly. Bug already resolved.
+
+### security
+- **OEM ↔ dealer_network_memberships RLS circular recursion fixed** — `oem_networks` had a SELECT policy ("Members can read their networks") that joined `dealer_network_memberships`; `dealer_network_memberships` had SELECT/UPDATE/DELETE policies that joined `oem_networks` back — creating an infinite recursion loop that returned 403 on any `oem_networks` client query. Fixed by:
+  1. Dropping the recursive `oem_networks` policy
+  2. Creating `private.user_is_member_of_network_owner(uuid)` and `private.user_is_admin_of_network_owner(uuid)` SECURITY DEFINER functions in the `private` schema (bypass RLS by design)
+  3. Recreating all `dealer_network_memberships` policies to call the private functions instead of directly joining `oem_networks` `(migration 20260516090000)`
+
+### feat (utilities)
+- **`oemDashboardUtils.ts` — 4 new functions** (TDD, all tested):
+  - `computeNetworkMomentum(dealers)` — avg score delta, direction, sampleSize, fromAvg, toAvg; requires sampleSize ≥ 2
+  - `computeCoverage(dealers)` — categorises into missing/stale/healthy using `STALE_THRESHOLD_DAYS = 90`
+  - `computeDeptWeaknessCounts(dealers, threshold)` — count of dealers below threshold per dept; ignores null scores
+  - `extractTopSignals(signalCodes[][])` — top 5 most frequent signal codes across network; `WEAKNESS_THRESHOLD = 60`
+- **`ScoreGauge` extracted to shared component** — `src/components/shared/ScoreGauge.tsx`; previously inline in `CoachDashboard.tsx`; now reused by `OemDashboard.tsx`
+
+### db
+- `dealership_invites.dealership_id` — column made nullable (migration `20260515213746`); OEM invites don't belong to a specific dealership
+
+### Notes
+- 175 tests passing (39 new utility tests), zero TypeScript errors
+- No new npm packages
+
+---
+
+## [2026-05-15] — Sprint 7: OEM Invite System + OEM Dashboard v1
+
+### feat
+- **OEM invite flow** — end-to-end email invite for `actor_type='oem'` users
+  - `InviteOemUser` component (mirrors `InviteCoach` pattern) — email input, pending invite list with copy/revoke; placed in Account → Team tab and OEM Settings
+  - `send-invite` edge function extended — `invite_type='oem'` branch; `dealership_id` optional for OEM; auth guard: org owner/admin + active `oem_network`; OEM-specific email template ("Accept OEM Invitation")
+  - `accept_dealership_invite` RPC — new `'oem'` branch sets `actor_type='oem'` + `active_organization_id`; redirects to `/app/oem-dashboard`
+  - `AcceptInvite.tsx` — `invite_type === 'oem'` case added to redirect switch
+  - `OemSettings.tsx` — `InviteOemUser` rendered below `OemNetworkSettings` for OEM actors
+
+- **OEM Dashboard v1** — tabs layout (Overview / Leaderboard), dept weakness heatmap, at-risk dealer list, leaderboard with tier filter + weakest dept column, dealer drill-down Sheet (score ring, dept bars, score history, "Open Full Report")
+- **`oemDashboardUtils.ts`** — `DeptKey` type, `DEPT_KEYS`, `DEPT_LABELS`, `AT_RISK_THRESHOLD = 46`, `parseDeptScores`, `getDeptCellClass/BgClass/TextClass`, `networkAvgByDept`, `getWeakestDept` (21 tests)
+- **OEM sidebar** — Dashboard and Diagnostic sections hidden from OEM users in `AppSidebar.tsx` (`actorType !== 'oem'`)
+
+### db
+- `dealership_invites.invite_type` — `'oem'` added as valid value (no column change, string type)
+- `accept_dealership_invite` RPC — `'oem'` branch added via Supabase MCP `execute_sql`
+- Supabase TypeScript types regenerated
+
+### Notes
+- 157 tests passing, zero TypeScript errors
+- No new npm packages
 
 ---
 
