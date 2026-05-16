@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface KPIExplorerProps {
   scores: Record<string, number>;
@@ -300,6 +300,9 @@ export function KPIExplorer({ initialKpiKey }: KPIExplorerProps) {
       {/* KPI Detail Modal */}
       <Dialog open={!!selectedKpiKey && !!selectedItem} onOpenChange={(open) => { if (!open) handleCloseStudio(); }}>
         <DialogContent className="w-[calc(100vw-3rem)] max-w-6xl max-h-[88vh] p-0 gap-0 overflow-hidden rounded-xl bg-card shadow-elevated">
+          <DialogHeader className="sr-only">
+            <DialogTitle>KPI Encyclopedia</DialogTitle>
+          </DialogHeader>
           {selectedKpiKey && selectedItem && (
             <KPIStudio
               kpiKey={selectedKpiKey}
