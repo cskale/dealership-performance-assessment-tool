@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/table';
 import { SharedLoadingState } from '@/components/shared/SharedLoadingState';
 import { SharedEmptyState } from '@/components/shared/SharedEmptyState';
+import { Skeleton } from '@/components/ui/skeleton';
 import { TierBadge } from '@/components/shared/TierBadge';
 import { ScoreGauge } from '@/components/shared/ScoreGauge';
 import {
@@ -208,6 +209,14 @@ export default function OemDashboard() {
     };
   }, [sortedDealers]);
 
+  const filteredStats = useMemo(() => {
+    const scored = filteredDealers.filter(d => d.latestScore != null);
+    const scores = scored.map(d => d.latestScore!);
+    return {
+      avg: scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0,
+    };
+  }, [filteredDealers]);
+
   if (roleLoading) return <SharedLoadingState />;
   if (actorType !== 'oem') return <Navigate to="/app/dashboard" replace />;
   if (loadingNetworks) return <SharedLoadingState />;
@@ -301,16 +310,30 @@ export default function OemDashboard() {
           {/* Dept Weakness Heatmap */}
           {loadingDealers ? (
             <Card className="shadow-card rounded-xl">
-              <CardContent className="p-6"><SharedLoadingState /></CardContent>
+              <CardHeader className="pb-3">
+                <Skeleton className="h-5 w-48" />
+              </CardHeader>
+              <CardContent className="space-y-2 p-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <Skeleton className="h-6 w-36" />
+                    <Skeleton className="h-6 w-10" />
+                    <Skeleton className="h-6 w-10" />
+                    <Skeleton className="h-6 w-10" />
+                    <Skeleton className="h-6 w-10" />
+                    <Skeleton className="h-6 w-10" />
+                  </div>
+                ))}
+              </CardContent>
             </Card>
-          ) : sortedDealers.length > 0 && (
+          ) : sortedDealers.length > 0 ? (
             <Card className="shadow-card rounded-xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-semibold">Department Performance</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-sm min-w-[600px]">
                     <thead>
                       <tr className="border-b">
                         <th className="text-left py-2 px-4 font-medium text-muted-foreground w-48">Dealer</th>
@@ -370,6 +393,18 @@ export default function OemDashboard() {
                     </tbody>
                   </table>
                 </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="shadow-card rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold">Department Performance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SharedEmptyState
+                  title="No assessments recorded yet"
+                  description="Enrolled dealers haven't completed an assessment. Share the assessment link to get started."
+                />
               </CardContent>
             </Card>
           )}
@@ -551,12 +586,12 @@ export default function OemDashboard() {
                         <TableCell className="text-[hsl(var(--neutral-500))]">—</TableCell>
                         <TableCell><span className="italic text-[hsl(var(--neutral-600))]">Network average</span></TableCell>
                         <TableCell className="hidden md:table-cell" />
-                        <TableCell className="text-right font-semibold text-foreground">{stats.avg}</TableCell>
+                        <TableCell className="text-right font-semibold text-foreground">{filteredStats.avg}</TableCell>
                         <TableCell className="text-right hidden sm:table-cell text-muted-foreground">—</TableCell>
                         <TableCell className="text-center hidden sm:table-cell text-muted-foreground">—</TableCell>
                         <TableCell className="text-center">
-                          <Badge variant="outline" className={getScoreBand(stats.avg).className}>
-                            {getScoreBand(stats.avg).label}
+                          <Badge variant="outline" className={getScoreBand(filteredStats.avg).className}>
+                            {getScoreBand(filteredStats.avg).label}
                           </Badge>
                         </TableCell>
                       </TableRow>
