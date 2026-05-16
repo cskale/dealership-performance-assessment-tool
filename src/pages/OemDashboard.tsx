@@ -416,31 +416,57 @@ export default function OemDashboard() {
   ];
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">{t('oem.title')}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {networks.find(n => n.id === selectedNetworkId)?.oem_brand ?? ''}
-          </p>
-        </div>
-        {networks.length > 1 && (
-          <Select value={selectedNetworkId ?? ''} onValueChange={setSelectedNetworkId}>
-            <SelectTrigger className="w-64">
-              <Globe className="w-4 h-4 mr-2 shrink-0" />
-              <SelectValue placeholder={t('oem.selectNetwork')} />
-            </SelectTrigger>
-            <SelectContent>
-              {networks.map(n => (
-                <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+    <div className="flex flex-col">
+      {/* ── Top stats bar ── */}
+      <div className="h-9 bg-[#0b1f3a] flex items-center px-6 sticky top-0 z-10">
+        {(() => {
+          const brand = networks.find(n => n.id === selectedNetworkId)?.oem_brand ?? 'OEM Network';
+          const chips = [
+            { label: 'NETWORK',          value: brand },
+            { label: 'AVG SCORE',        value: stats.avg > 0 ? String(stats.avg) : '—' },
+            { label: 'CRITICAL GAPS',    value: String(atRiskDealers.length) },
+            { label: 'ENROLLED DEALERS', value: String(stats.total) },
+          ];
+          return chips.map((chip, i) => (
+            <div
+              key={chip.label}
+              className={`flex items-center gap-2 px-4 h-full ${i < chips.length - 1 ? 'border-r border-white/[0.08]' : ''}`}
+            >
+              <span className="text-[11px] text-white/50 uppercase tracking-wider">{chip.label}</span>
+              <span className="text-[11px] font-semibold text-white">{chip.value}</span>
+            </div>
+          ));
+        })()}
       </div>
 
-      <Tabs defaultValue="overview">
+      <div className="p-6 space-y-6">
+        {/* ── Page header ── */}
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium mb-1">
+              OEM PERSPECTIVE · {getQuarterLabel()}
+            </p>
+            <h1 className="text-2xl font-semibold text-foreground">Network Overview</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Active monitoring for {stats.total} enrolled {stats.total === 1 ? 'dealership' : 'dealerships'}
+            </p>
+          </div>
+          {networks.length > 1 && (
+            <Select value={selectedNetworkId ?? ''} onValueChange={setSelectedNetworkId}>
+              <SelectTrigger className="w-56 shrink-0">
+                <Globe className="w-4 h-4 mr-2 shrink-0" />
+                <SelectValue placeholder="Select network" />
+              </SelectTrigger>
+              <SelectContent>
+                {networks.map(n => (
+                  <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+
+        <Tabs defaultValue="overview">
         <TabsList className="mb-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
@@ -1022,6 +1048,7 @@ export default function OemDashboard() {
           )}
         </SheetContent>
       </Sheet>
+      </div>
     </div>
   );
 }
