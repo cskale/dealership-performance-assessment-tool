@@ -466,6 +466,116 @@ export default function OemDashboard() {
           )}
         </div>
 
+        {/* ── Dark hero card ── */}
+        <div className="rounded-xl bg-[#0b1f3a] text-white p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Col 1 — Network Score */}
+          <div className="space-y-3">
+            <p className="text-[10px] uppercase tracking-widest text-white/50">
+              NETWORK PERFORMANCE · {getQuarterLabel()}
+            </p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-5xl font-bold leading-none">
+                {stats.avg > 0 ? stats.avg : '—'}
+              </span>
+              {stats.avg > 0 && <span className="text-lg text-white/50">/ 100</span>}
+            </div>
+            {stats.avg > 0 && (
+              <>
+                <div className="w-full h-1.5 rounded-full bg-white/10">
+                  <div
+                    className="h-1.5 rounded-full bg-[#2563eb] transition-all"
+                    style={{ width: `${stats.avg}%` }}
+                  />
+                </div>
+                {(() => {
+                  const band = getScoreBand(stats.avg);
+                  return (
+                    <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${band.className}`}>
+                      ● {band.label}
+                    </span>
+                  );
+                })()}
+                {momentum.sampleSize >= 2 && (
+                  <p className={`text-xs font-medium ${
+                    momentum.direction === 'up' ? 'text-[#16a34a]' :
+                    momentum.direction === 'down' ? 'text-[#dc2626]' :
+                    'text-white/50'
+                  }`}>
+                    {momentum.direction === 'up' ? '↑' : momentum.direction === 'down' ? '↓' : '—'}{' '}
+                    {momentum.delta > 0 ? '+' : ''}{momentum.delta} pts from last cycle
+                  </p>
+                )}
+                <p className="text-xs text-white/60 italic mt-1">
+                  "{getHeroNarrative(stats.avg, stats.total, atRiskDealers.length)}"
+                </p>
+              </>
+            )}
+          </div>
+
+          {/* Col 2 — Network Health */}
+          <div className="space-y-3 md:border-l md:border-white/10 md:pl-6">
+            <p className="text-[10px] uppercase tracking-widest text-white/50">ENROLLED DEALERS</p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-5xl font-bold leading-none">{stats.total}</span>
+            </div>
+            {atRiskDealers.length > 0 ? (
+              <p className="text-xs font-medium text-[#dc2626]">
+                {atRiskDealers.length} in Foundational band
+              </p>
+            ) : stats.total > 0 ? (
+              <p className="text-xs font-medium text-[#16a34a]">All dealers above threshold</p>
+            ) : (
+              <p className="text-xs text-white/40">No dealers enrolled yet</p>
+            )}
+            <div className="flex flex-wrap gap-1 mt-1">
+              {atRiskDealers.slice(0, 2).map(d => (
+                <span
+                  key={d.dealershipId}
+                  className="inline-block text-[11px] bg-white/10 rounded px-2 py-0.5 truncate max-w-[140px]"
+                >
+                  {d.dealerName}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Col 3 — Dept Velocity */}
+          <div className="space-y-3 md:border-l md:border-white/10 md:pl-6">
+            <p className="text-[10px] uppercase tracking-widest text-white/50">
+              DEPT WEAKNESSES ACROSS NETWORK
+            </p>
+            {DEPT_KEYS.filter(k => deptWeaknessCounts[k] > 0).length === 0 ? (
+              <p className="text-xs text-[#16a34a]">No departments below threshold</p>
+            ) : (
+              <div className="space-y-2">
+                {DEPT_KEYS.filter(k => deptWeaknessCounts[k] > 0)
+                  .sort((a, b) => deptWeaknessCounts[b] - deptWeaknessCounts[a])
+                  .slice(0, 3)
+                  .map(key => {
+                    const count = deptWeaknessCounts[key];
+                    const pct = stats.total > 0 ? count / stats.total : 0;
+                    const barClass =
+                      pct > 0.5 ? 'bg-[#dc2626]' : pct > 0.25 ? 'bg-[#d97706]' : 'bg-[#2563eb]';
+                    return (
+                      <div key={key} className="flex items-center gap-2">
+                        <span className="text-[11px] text-white/70 w-8 shrink-0">{DEPT_LABELS[key]}</span>
+                        <div className="flex-1 h-1.5 rounded-full bg-white/10">
+                          <div
+                            className={`h-1.5 rounded-full ${barClass}`}
+                            style={{ width: `${Math.round(pct * 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-[11px] text-white/50 w-12 shrink-0 text-right">
+                          {count}/{stats.total}
+                        </span>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+        </div>
+
         <Tabs defaultValue="overview">
         <TabsList className="mb-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
