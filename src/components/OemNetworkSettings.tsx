@@ -406,7 +406,6 @@ export function OemNetworkSettings() {
                   <TableRow>
                     <TableHead>Dealer</TableHead>
                     <TableHead className="text-center">Location</TableHead>
-                    <TableHead className="text-center">Programme Tier</TableHead>
                     <TableHead className="text-center">Enrolled</TableHead>
                     <TableHead className="w-20" />
                   </TableRow>
@@ -416,26 +415,6 @@ export function OemNetworkSettings() {
                     <TableRow key={entry.membershipId}>
                       <TableCell className="font-medium">{entry.name}</TableCell>
                       <TableCell className="text-muted-foreground text-center">{entry.location}</TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <TierBadge tier={entry.programmeTier as 'Standard' | 'Silver' | 'Gold' | 'Platinum'} size="sm" />
-                          <Select
-                            value={entry.programmeTier}
-                            onValueChange={tier => handleTierChange(entry.membershipId, tier)}
-                          >
-                            <SelectTrigger className="h-8 w-28 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {PROGRAMME_TIERS.map(t => (
-                                <SelectItem key={t} value={t} className="text-xs">
-                                  {t}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </TableCell>
                       <TableCell className="text-muted-foreground text-sm text-center">
                         {entry.enrolledAt
                           ? format(new Date(entry.enrolledAt), 'dd MMM yyyy')
