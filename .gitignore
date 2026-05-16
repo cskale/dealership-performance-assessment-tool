@@ -26,3 +26,7 @@ dist-ssr
 
 # Superpowers plugin local session files
 .superpowers/
+
+# Bun lock files (project uses npm)
+bun.lock
+bun.lockb
