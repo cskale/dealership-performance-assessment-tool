@@ -83,6 +83,125 @@ function getRankBadgeClass(rank: number): string | null {
   return null;
 }
 
+function getQuarterLabel(): string {
+  const now = new Date();
+  const q = Math.ceil((now.getMonth() + 1) / 3);
+  return `Q${q} ${now.getFullYear()}`;
+}
+
+function getHeroNarrative(avgScore: number, dealerCount: number, atRiskCount: number): string {
+  if (dealerCount === 0) return 'No dealers enrolled in the network yet.';
+  if (avgScore >= 85) return 'Network performing above benchmark across all departments.';
+  if (avgScore >= 70) return `Most dealers performing well — ${atRiskCount} below Foundational threshold.`;
+  if (avgScore >= 46) return `${atRiskCount} dealer${atRiskCount !== 1 ? 's' : ''} require active intervention this quarter.`;
+  return `${atRiskCount} dealer${atRiskCount !== 1 ? 's' : ''} at Foundational level — priority coaching required.`;
+}
+
+function OemDealerCard({
+  dealer,
+  onSelect,
+  onNavigate,
+}: {
+  dealer: DealerScore;
+  onSelect: (d: DealerScore) => void;
+  onNavigate: (path: string) => void;
+}) {
+  const band = dealer.latestScore != null ? getScoreBand(dealer.latestScore) : null;
+
+  const rankedDepts = DEPT_KEYS
+    .map(k => ({ key: k, score: dealer.deptScores[k] }))
+    .filter((d): d is { key: DeptKey; score: number } => d.score !== null)
+    .sort((a, b) => a.score - b.score)
+    .slice(0, 3);
+
+  const daysAgo = dealer.latestAssessmentDate
+    ? Math.round((Date.now() - new Date(dealer.latestAssessmentDate).getTime()) / 86400000)
+    : null;
+
+  return (
+    <div
+      className="rounded-xl shadow-card border p-4 space-y-3 hover:bg-muted/30 transition-colors cursor-pointer"
+      onClick={() => onSelect(dealer)}
+    >
+      {/* Header row */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="space-y-1 min-w-0">
+          <TierBadge
+            tier={dealer.programmeTier as 'Standard' | 'Silver' | 'Gold' | 'Platinum' | null}
+            size="sm"
+          />
+          <p className="font-semibold text-foreground text-sm leading-tight truncate">
+            {dealer.dealerName}
+          </p>
+          {band && (
+            <Badge variant="outline" className={`${band.className} text-xs py-0`}>
+              {band.label}
+            </Badge>
+          )}
+        </div>
+        <div className="shrink-0">
+          <ScoreGauge score={dealer.latestScore ?? 0} size={56} />
+        </div>
+      </div>
+
+      {/* Location */}
+      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+        <MapPin className="h-3 w-3 shrink-0" />
+        <span className="truncate">{dealer.location}</span>
+      </div>
+
+      {/* Dept score bars — top 3 weakest */}
+      {rankedDepts.length > 0 ? (
+        <div className="space-y-1.5 pt-2 border-t border-border">
+          {rankedDepts.map(({ key, score }) => (
+            <div key={key} className="flex items-center gap-2">
+              <span className="text-[10px] font-medium text-muted-foreground w-8 shrink-0 uppercase">
+                {DEPT_LABELS[key]}
+              </span>
+              <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                <div
+                  className={`h-1.5 rounded-full ${getDeptBgClass(score)}`}
+                  style={{ width: `${score}%` }}
+                />
+              </div>
+              <span className={`text-xs font-semibold w-6 text-right shrink-0 ${getDeptTextClass(score)}`}>
+                {Math.round(score)}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="pt-2 border-t border-border">
+          <p className="text-xs text-muted-foreground italic">No assessment data yet</p>
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="border-t border-border pt-2 space-y-2">
+        <p className="text-xs text-muted-foreground">
+          {dealer.latestAssessmentId
+            ? `${dealer.openActionCount} open action${dealer.openActionCount !== 1 ? 's' : ''} · assessed ${daysAgo}d ago`
+            : 'No assessment yet'}
+        </p>
+        <Button
+          size="sm"
+          variant="outline"
+          className="w-full text-xs h-7"
+          disabled={!dealer.latestAssessmentId}
+          onClick={e => {
+            e.stopPropagation();
+            if (dealer.latestAssessmentId) {
+              onNavigate(`/app/results/${dealer.latestAssessmentId}`);
+            }
+          }}
+        >
+          Enter Dealership →
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function OemDashboard() {
   const { actorType, loading: roleLoading } = useActiveRole();
   const { currentOrganization } = useMultiTenant();
