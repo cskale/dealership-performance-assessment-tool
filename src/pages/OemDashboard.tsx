@@ -42,6 +42,8 @@ interface DealerScore {
   previousScore: number | null;
   latestAssessmentId: string | null;
   deptScores: Record<DeptKey, number | null>;
+  latestAssessmentDate: string | null;
+  signalCodes: string[];
 }
 
 function getScoreBand(score: number): { label: string; className: string } {
@@ -149,6 +151,8 @@ export default function OemDashboard() {
           previousScore: null,
           latestAssessmentId: null,
           deptScores: parseDeptScores(null),
+          latestAssessmentDate: null,
+          signalCodes: [],
         });
       }
 
@@ -162,6 +166,8 @@ export default function OemDashboard() {
           dealer.latestScore = a.overall_score ? Number(a.overall_score) : null;
           dealer.latestAssessmentId = a.id;
           dealer.deptScores = parseDeptScores(a.scores);
+          dealer.latestAssessmentDate = a.created_at ?? null;
+          dealer.signalCodes = (a.scores as any)?.signals ?? [];
         } else {
           dealer.previousScore = a.overall_score ? Number(a.overall_score) : null;
         }
