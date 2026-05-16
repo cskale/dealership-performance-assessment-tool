@@ -911,14 +911,23 @@ export default function OemDashboard() {
                             onClick={() => setSelectedDealer(dealer)}
                           >
                             <TableCell className="font-medium">
-                              {rankBadgeClass ? (
-                                <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold ${rankBadgeClass}`}>
-                                  {rank === 1 && <Trophy className="h-3 w-3" />}
-                                  {rank}
-                                </span>
-                              ) : (
-                                <span className="text-[hsl(var(--neutral-500))]">{rank}</span>
-                              )}
+                              <span className="inline-flex items-center">
+                                {rankBadgeClass ? (
+                                  <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold ${rankBadgeClass}`}>
+                                    {rank === 1 && <Trophy className="h-3 w-3" />}
+                                    {rank}
+                                  </span>
+                                ) : (
+                                  <span className="text-[hsl(var(--neutral-500))]">{rank}</span>
+                                )}
+                                {dealer.latestScore != null && dealer.previousScore != null && (
+                                  dealer.latestScore > dealer.previousScore
+                                    ? <span className="text-[#16a34a] text-[10px] ml-0.5">▲</span>
+                                    : dealer.latestScore < dealer.previousScore
+                                    ? <span className="text-[#dc2626] text-[10px] ml-0.5">▼</span>
+                                    : <span className="text-muted-foreground text-[10px] ml-0.5">—</span>
+                                )}
+                              </span>
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2 flex-wrap">
