@@ -584,129 +584,46 @@ export default function OemDashboard() {
 
         {/* ── Overview Tab ── */}
         <TabsContent value="overview" className="space-y-6">
-          {/* Stat cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {summaryCards.map((card, i) => (
-              <Card
-                key={card.label}
-                className="opacity-0 animate-fade-in shadow-card rounded-xl"
-                style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'forwards' }}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <card.icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider">{card.label}</p>
-                      <p className="text-2xl font-semibold text-foreground">{card.value}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
 
-          {/* Dept Weakness Heatmap */}
+          {/* Dealer Cards Grid */}
           {loadingDealers ? (
-            <Card className="shadow-card rounded-xl">
-              <CardHeader className="pb-3">
-                <Skeleton className="h-5 w-48" />
-              </CardHeader>
-              <CardContent className="space-y-2 p-4">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <Skeleton className="h-6 w-36" />
-                    <Skeleton className="h-6 w-10" />
-                    <Skeleton className="h-6 w-10" />
-                    <Skeleton className="h-6 w-10" />
-                    <Skeleton className="h-6 w-10" />
-                    <Skeleton className="h-6 w-10" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="rounded-xl shadow-card border p-4 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-2">
+                      <Skeleton className="h-5 w-16" />
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-4 w-20" />
+                    </div>
+                    <Skeleton className="h-14 w-14 rounded-full" />
                   </div>
-                ))}
-              </CardContent>
-            </Card>
-          ) : sortedDealers.length > 0 ? (
-            <Card className="shadow-card rounded-xl">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base font-semibold">Department Performance</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm min-w-[600px]">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-2 px-4 font-medium text-muted-foreground w-48">Dealer</th>
-                        {DEPT_KEYS.map(key => (
-                          <th key={key} className="text-center py-2 px-2 font-medium text-muted-foreground w-16">
-                            {DEPT_LABELS[key]}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sortedDealers.map(dealer => (
-                        <tr
-                          key={dealer.dealershipId}
-                          className="border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
-                          onClick={() => setSelectedDealer(dealer)}
-                        >
-                          <td className="py-2 px-4">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-sm truncate max-w-[160px]">{dealer.dealerName}</span>
-                              <TierBadge tier={dealer.programmeTier as 'Standard' | 'Silver' | 'Gold' | 'Platinum' | null} size="sm" />
-                            </div>
-                          </td>
-                          {DEPT_KEYS.map(key => {
-                            const score = dealer.deptScores[key];
-                            return (
-                              <td key={key} className="py-2 px-2 text-center">
-                                {score !== null ? (
-                                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${getDeptCellClass(score)}`}>
-                                    {Math.round(score)}
-                                  </span>
-                                ) : (
-                                  <span className="text-muted-foreground text-xs">—</span>
-                                )}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      ))}
-                      <tr className="bg-muted/30">
-                        <td className="py-2 px-4 text-sm italic text-muted-foreground">Network avg</td>
-                        {DEPT_KEYS.map(key => {
-                          const score = networkAvg[key];
-                          return (
-                            <td key={key} className="py-2 px-2 text-center">
-                              {score !== null ? (
-                                <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${getDeptCellClass(score)}`}>
-                                  {score}
-                                </span>
-                              ) : (
-                                <span className="text-muted-foreground text-xs">—</span>
-                              )}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    </tbody>
-                  </table>
+                  <Skeleton className="h-3 w-28" />
+                  <div className="pt-2 border-t border-border space-y-2">
+                    <Skeleton className="h-2 w-full" />
+                    <Skeleton className="h-2 w-full" />
+                    <Skeleton className="h-2 w-3/4" />
+                  </div>
+                  <Skeleton className="h-7 w-full" />
                 </div>
-              </CardContent>
-            </Card>
+              ))}
+            </div>
+          ) : sortedDealers.length === 0 ? (
+            <SharedEmptyState
+              title="No dealers enrolled"
+              description="Add dealers from Network Settings to see performance data here."
+            />
           ) : (
-            <Card className="shadow-card rounded-xl">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base font-semibold">Department Performance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <SharedEmptyState
-                  title="No assessments recorded yet"
-                  description="Enrolled dealers haven't completed an assessment. Share the assessment link to get started."
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {sortedDealers.map(dealer => (
+                <OemDealerCard
+                  key={dealer.dealershipId}
+                  dealer={dealer}
+                  onSelect={setSelectedDealer}
+                  onNavigate={navigate}
                 />
-              </CardContent>
-            </Card>
+              ))}
+            </div>
           )}
 
           {/* At-Risk Dealers */}
@@ -862,7 +779,6 @@ export default function OemDashboard() {
                 <CardTitle className="text-base font-semibold">Network Insights</CardTitle>
               </CardHeader>
               <CardContent className="space-y-5">
-                {/* Section A — Dept weakness counts */}
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                     Departments below {WEAKNESS_THRESHOLD} — most common weaknesses
@@ -886,10 +802,7 @@ export default function OemDashboard() {
                                 {DEPT_LABELS[key]}
                               </span>
                               <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                                <div
-                                  className={`h-2 rounded-full ${barClass}`}
-                                  style={{ width: `${Math.round(pct * 100)}%` }}
-                                />
+                                <div className={`h-2 rounded-full ${barClass}`} style={{ width: `${Math.round(pct * 100)}%` }} />
                               </div>
                               <span className="text-xs text-muted-foreground w-24 shrink-0">
                                 {count}/{sortedDealers.length} dealers
@@ -900,7 +813,6 @@ export default function OemDashboard() {
                     </div>
                   )}
                 </div>
-                {/* Section B — Top signal codes (only if signal data exists) */}
                 {topSignals.length > 0 && (
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
@@ -912,10 +824,7 @@ export default function OemDashboard() {
                           <span className="text-xs font-mono text-foreground flex-1 truncate">{code}</span>
                           <div className="flex gap-0.5">
                             {Array.from({ length: Math.min(sortedDealers.length, 12) }).map((_, i) => (
-                              <div
-                                key={i}
-                                className={`w-2 h-2 rounded-full ${i < count ? 'bg-[#d97706]' : 'bg-muted'}`}
-                              />
+                              <div key={i} className={`w-2 h-2 rounded-full ${i < count ? 'bg-[#d97706]' : 'bg-muted'}`} />
                             ))}
                           </div>
                           <span className="text-xs text-muted-foreground w-20 shrink-0 text-right">
