@@ -24,6 +24,13 @@ import {
   DEPT_KEYS, DEPT_LABELS, AT_RISK_THRESHOLD,
   parseDeptScores, getDeptCellClass, getDeptBgClass, getDeptTextClass,
   networkAvgByDept, getWeakestDept,
+  computeNetworkMomentum,
+  computeCoverage,
+  computeDeptWeaknessCounts,
+  extractTopSignals,
+  STALE_THRESHOLD_DAYS,
+  WEAKNESS_THRESHOLD,
+  type DealerCoverageInput,
 } from '@/lib/oemDashboardUtils';
 import type { DeptKey } from '@/lib/oemDashboardUtils';
 import {
@@ -197,6 +204,26 @@ export default function OemDashboard() {
   );
 
   const networkAvg = useMemo(() => networkAvgByDept(sortedDealers), [sortedDealers]);
+
+  const momentum = useMemo(
+    () => computeNetworkMomentum(sortedDealers),
+    [sortedDealers],
+  );
+
+  const coverage = useMemo(
+    () => computeCoverage(sortedDealers as unknown as DealerCoverageInput[]),
+    [sortedDealers],
+  );
+
+  const deptWeaknessCounts = useMemo(
+    () => computeDeptWeaknessCounts(sortedDealers, WEAKNESS_THRESHOLD),
+    [sortedDealers],
+  );
+
+  const topSignals = useMemo(
+    () => extractTopSignals(sortedDealers.map(d => d.signalCodes)),
+    [sortedDealers],
+  );
 
   const stats = useMemo(() => {
     const scored = sortedDealers.filter(d => d.latestScore != null);
@@ -452,6 +479,178 @@ export default function OemDashboard() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Score Momentum */}
+          {!loadingDealers && sortedDealers.length > 0 && (
+            <Card className="shadow-card rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold">Network Momentum</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {momentum.sampleSize < 2 ? (
+                  <div className="flex items-center gap-3 p-4 bg-muted/40 rounded-lg">
+                    <Minus className="h-5 w-5 text-muted-foreground shrink-0" />
+                    <p className="text-sm text-muted-foreground">
+                      Not enough data — need 2+ assessment cycles per dealer
+                      {momentum.sampleSize === 1 && ` (1 dealer has trend data)`}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2">
+                      {momentum.direction === 'up' && <TrendingUp className="h-8 w-8 text-[#16a34a]" />}
+                      {momentum.direction === 'down' && <TrendingDown className="h-8 w-8 text-[#dc2626]" />}
+                      {momentum.direction === 'flat' && <Minus className="h-8 w-8 text-muted-foreground" />}
+                      <p className={`text-3xl font-semibold ${
+                        momentum.direction === 'up' ? 'text-[#16a34a]' :
+                        momentum.direction === 'down' ? 'text-[#dc2626]' :
+                        'text-muted-foreground'
+                      }`}>
+                        {momentum.delta > 0 ? '+' : ''}{momentum.delta} pts
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        Network avg {momentum.direction === 'up' ? 'improved' : momentum.direction === 'down' ? 'declined' : 'unchanged'} from{' '}
+                        <span className="font-medium text-foreground">{momentum.fromAvg}</span> →{' '}
+                        <span className="font-medium text-foreground">{momentum.toAvg}</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Based on {momentum.sampleSize} dealers with 2+ assessments
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Assessment Coverage */}
+          {!loadingDealers && sortedDealers.length > 0 && (
+            <Card className="shadow-card rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold">Assessment Coverage</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {coverage.missing.length === 0 && coverage.stale.length === 0 ? (
+                  <div className="flex items-center gap-3 p-4 bg-[#16a34a]/5 rounded-lg border border-[#16a34a]/20">
+                    <CheckCircle className="h-5 w-5 text-[#16a34a] shrink-0" />
+                    <p className="text-sm text-[#16a34a] font-medium">
+                      All {sortedDealers.length} dealers assessed within {STALE_THRESHOLD_DAYS} days
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-[#d97706]">
+                      <AlertTriangle className="h-4 w-4" />
+                      <span className="text-sm font-medium">
+                        {coverage.missing.length + coverage.stale.length} of {sortedDealers.length} dealers need attention
+                      </span>
+                    </div>
+                    {[...coverage.missing, ...coverage.stale].map(dealer => {
+                      const isStale = coverage.stale.some(s => s.dealershipId === dealer.dealershipId);
+                      const daysAgo = dealer.latestAssessmentDate
+                        ? Math.round((Date.now() - new Date(dealer.latestAssessmentDate).getTime()) / (1000 * 60 * 60 * 24))
+                        : null;
+                      return (
+                        <div key={dealer.dealershipId} className="flex items-center justify-between border rounded-lg p-3">
+                          <div>
+                            <p className="text-sm font-medium">{dealer.dealerName}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {isStale && daysAgo ? `Last assessed: ${daysAgo} days ago` : 'No assessment yet'}
+                            </p>
+                          </div>
+                          <Button size="sm" variant="outline" onClick={() => navigate('/app/oem-settings')}>
+                            Manage
+                          </Button>
+                        </div>
+                      );
+                    })}
+                    {coverage.healthy.length > 0 && (
+                      <p className="text-xs text-muted-foreground pt-1">
+                        ✓ {coverage.healthy.length} dealer{coverage.healthy.length > 1 ? 's' : ''} assessed within {STALE_THRESHOLD_DAYS} days
+                      </p>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Network Insights */}
+          {!loadingDealers && sortedDealers.length > 0 && (
+            <Card className="shadow-card rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold">Network Insights</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                {/* Section A — Dept weakness counts */}
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                    Departments below {WEAKNESS_THRESHOLD} — most common weaknesses
+                  </p>
+                  {DEPT_KEYS.filter(k => deptWeaknessCounts[k] > 0).length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      No departments below {WEAKNESS_THRESHOLD} — strong network performance
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {DEPT_KEYS.filter(k => deptWeaknessCounts[k] > 0)
+                        .sort((a, b) => deptWeaknessCounts[b] - deptWeaknessCounts[a])
+                        .slice(0, 3)
+                        .map(key => {
+                          const count = deptWeaknessCounts[key];
+                          const pct = sortedDealers.length > 0 ? count / sortedDealers.length : 0;
+                          const barClass = pct > 0.5 ? 'bg-[#dc2626]' : pct > 0.25 ? 'bg-[#d97706]' : 'bg-[#2563eb]';
+                          return (
+                            <div key={key} className="flex items-center gap-3">
+                              <span className="w-10 text-xs font-medium text-muted-foreground shrink-0">
+                                {DEPT_LABELS[key]}
+                              </span>
+                              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                <div
+                                  className={`h-2 rounded-full ${barClass}`}
+                                  style={{ width: `${Math.round(pct * 100)}%` }}
+                                />
+                              </div>
+                              <span className="text-xs text-muted-foreground w-24 shrink-0">
+                                {count}/{sortedDealers.length} dealers
+                              </span>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  )}
+                </div>
+                {/* Section B — Top signal codes (only if signal data exists) */}
+                {topSignals.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                      Recurring signals
+                    </p>
+                    <div className="space-y-2">
+                      {topSignals.map(({ code, count }) => (
+                        <div key={code} className="flex items-center gap-3">
+                          <span className="text-xs font-mono text-foreground flex-1 truncate">{code}</span>
+                          <div className="flex gap-0.5">
+                            {Array.from({ length: Math.min(sortedDealers.length, 12) }).map((_, i) => (
+                              <div
+                                key={i}
+                                className={`w-2 h-2 rounded-full ${i < count ? 'bg-[#d97706]' : 'bg-muted'}`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-xs text-muted-foreground w-20 shrink-0 text-right">
+                            {count} dealer{count > 1 ? 's' : ''}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </CardContent>
