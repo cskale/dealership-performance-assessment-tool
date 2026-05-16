@@ -52,6 +52,7 @@ interface DealerScore {
   deptScores: Record<DeptKey, number | null>;
   latestAssessmentDate: string | null;
   signalCodes: string[];
+  openActionCount: number;
 }
 
 function getScoreBand(score: number): { label: string; className: string } {
@@ -148,6 +149,22 @@ export default function OemDashboard() {
         .eq('status', 'completed')
         .order('created_at', { ascending: false });
 
+      const { data: openActions } = await supabase
+        .from('improvement_actions')
+        .select('dealership_id')
+        .in('dealership_id', dealershipIds)
+        .neq('status', 'Completed');
+
+      const openCountByDealer = new Map<string, number>();
+      for (const a of openActions ?? []) {
+        if (a.dealership_id) {
+          openCountByDealer.set(
+            a.dealership_id,
+            (openCountByDealer.get(a.dealership_id) ?? 0) + 1,
+          );
+        }
+      }
+
       const dealerMap = new Map<string, DealerScore>();
       for (const d of dealerships || []) {
         dealerMap.set(d.id, {
@@ -161,6 +178,7 @@ export default function OemDashboard() {
           deptScores: parseDeptScores(null),
           latestAssessmentDate: null,
           signalCodes: [],
+          openActionCount: openCountByDealer.get(d.id) ?? 0,
         });
       }
 
