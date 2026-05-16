@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { FileText, RefreshCw, ArrowLeft, ClipboardList, BarChart3, Award, CheckSquare, BookOpen, AlertCircle, X } from "lucide-react";
+import { FileText, RefreshCw, ArrowLeft, ClipboardList, BarChart3, Award, CheckSquare, BookOpen, AlertCircle, X, Globe } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { ExecutiveSummary } from "@/components/ExecutiveSummary";
@@ -21,6 +21,8 @@ import type { CrossValidationFinding } from "@/data/crossValidationRules";
 import { ExportPDFModal } from "@/components/ExportPDFModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useMultiTenant } from "@/hooks/useMultiTenant";
+import { useActiveRole } from "@/hooks/useActiveRole";
+import { TierBadge } from "@/components/shared/TierBadge";
 import { supabase } from "@/integrations/supabase/client";
 import type { PDFExportData } from "@/lib/pdfReportGenerator";
 import { calculateWeightedScore, CATEGORY_WEIGHTS } from "@/lib/scoringEngine";
@@ -53,6 +55,11 @@ export default function Results() {
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const { currentOrganization, userMemberships } = useMultiTenant();
+  const { actorType } = useActiveRole();
+  const [oemDealerContext, setOemDealerContext] = useState<{
+    name: string;
+    tier: string | null;
+  } | null>(null);
 
   // Load completed assessment results
   useEffect(() => {
@@ -67,7 +74,7 @@ export default function Results() {
         try {
           let query = supabase
             .from('assessments')
-            .select('id, answers, scores, overall_score, completed_at, status')
+            .select('id, answers, scores, overall_score, completed_at, status, dealership_id')
             .eq('status', 'completed');
 
           if (routeAssessmentId) {
@@ -97,6 +104,7 @@ export default function Results() {
               answers: dbAssessment.answers,
               scores: dbAssessment.scores,
               completedAt: dbAssessment.completed_at || new Date().toISOString(),
+              dealershipId: (dbAssessment as any).dealership_id ?? null,
             });
             loaded = true;
           }
@@ -199,6 +207,28 @@ export default function Results() {
     loadActions();
   }, [user, resultsData?.assessmentId, currentOrganization?.id]);
 
+  useEffect(() => {
+    if (actorType !== 'oem' || !(resultsData as any)?.dealershipId) return;
+    const dealershipId = (resultsData as any).dealershipId;
+    supabase
+      .from('dealerships')
+      .select('name')
+      .eq('id', dealershipId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setOemDealerContext(prev => ({ name: data.name, tier: prev?.tier ?? null }));
+      });
+    supabase
+      .from('dealer_network_memberships')
+      .select('programme_tier')
+      .eq('dealership_id', dealershipId)
+      .eq('is_active', true)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setOemDealerContext(prev => prev ? { ...prev, tier: data.programme_tier } : null);
+      });
+  }, [actorType, (resultsData as any)?.dealershipId]);
+
   const pdfExportData: PDFExportData | null = resultsData ? {
     organization: currentOrganization ? {
       name: currentOrganization.name,
@@ -294,8 +324,27 @@ export default function Results() {
 
   return (
     <div className="min-h-screen bg-muted">
-      
-      
+      {actorType === 'oem' && oemDealerContext && (
+        <div className="bg-[hsl(var(--brand-50))] border-b border-[hsl(var(--brand-200))] px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-[hsl(var(--brand-700))]">
+            <Globe className="h-4 w-4 shrink-0" />
+            <span>Viewing as OEM</span>
+            <span className="text-[hsl(var(--brand-400))]">·</span>
+            <span className="font-medium">{oemDealerContext.name}</span>
+            {oemDealerContext.tier && (
+              <TierBadge tier={oemDealerContext.tier as 'Standard' | 'Silver' | 'Gold' | 'Platinum' | null} size="sm" />
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-[hsl(var(--brand-700))] hover:text-[hsl(var(--brand-900))] gap-1"
+            onClick={() => navigate('/app/oem-dashboard')}
+          >
+            ← Back to OEM Dashboard
+          </Button>
+        </div>
+      )}
       <div className="px-6 py-6" id="results-content">
 
         {/* Results Hero */}
