@@ -405,9 +405,9 @@ export function OemNetworkSettings() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Dealer</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Programme Tier</TableHead>
-                    <TableHead>Enrolled</TableHead>
+                    <TableHead className="text-center">Location</TableHead>
+                    <TableHead className="text-center">Programme Tier</TableHead>
+                    <TableHead className="text-center">Enrolled</TableHead>
                     <TableHead className="w-20" />
                   </TableRow>
                 </TableHeader>
@@ -415,9 +415,9 @@ export function OemNetworkSettings() {
                   {roster.map(entry => (
                     <TableRow key={entry.membershipId}>
                       <TableCell className="font-medium">{entry.name}</TableCell>
-                      <TableCell className="text-muted-foreground">{entry.location}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
+                      <TableCell className="text-muted-foreground text-center">{entry.location}</TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-2">
                           <TierBadge tier={entry.programmeTier as 'Standard' | 'Silver' | 'Gold' | 'Platinum'} size="sm" />
                           <Select
                             value={entry.programmeTier}
@@ -436,7 +436,7 @@ export function OemNetworkSettings() {
                           </Select>
                         </div>
                       </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
+                      <TableCell className="text-muted-foreground text-sm text-center">
                         {entry.enrolledAt
                           ? format(new Date(entry.enrolledAt), 'dd MMM yyyy')
                           : '—'}
