@@ -8,6 +8,12 @@ import {
   getWeakestDept,
   AT_RISK_THRESHOLD,
   DEPT_KEYS,
+  computeNetworkMomentum,
+  computeCoverage,
+  computeDeptWeaknessCounts,
+  extractTopSignals,
+  STALE_THRESHOLD_DAYS,
+  WEAKNESS_THRESHOLD,
 } from '@/lib/oemDashboardUtils';
 
 describe('parseDeptScores', () => {
@@ -162,4 +168,170 @@ describe('DEPT_KEYS', () => {
     expect(DEPT_KEYS).toContain('new-vehicle-sales');
     expect(DEPT_KEYS).toContain('financial-operations');
   });
+});
+
+describe('computeNetworkMomentum', () => {
+  it('returns flat + sampleSize 0 when no dealers have two scores', () => {
+    const r = computeNetworkMomentum([
+      { latestScore: 70, previousScore: null },
+      { latestScore: null, previousScore: null },
+    ]);
+    expect(r.sampleSize).toBe(0);
+    expect(r.direction).toBe('flat');
+    expect(r.delta).toBe(0);
+  });
+
+  it('returns flat + sampleSize 1 when only one dealer has two scores (insufficient)', () => {
+    const r = computeNetworkMomentum([{ latestScore: 70, previousScore: 60 }]);
+    expect(r.sampleSize).toBe(1);
+    expect(r.direction).toBe('flat');
+  });
+
+  it('returns up direction and correct delta when avg improved', () => {
+    const r = computeNetworkMomentum([
+      { latestScore: 70, previousScore: 60 },
+      { latestScore: 80, previousScore: 70 },
+    ]);
+    expect(r.direction).toBe('up');
+    expect(r.delta).toBe(10);
+    expect(r.fromAvg).toBe(65);
+    expect(r.toAvg).toBe(75);
+    expect(r.sampleSize).toBe(2);
+  });
+
+  it('returns down direction when avg declined', () => {
+    const r = computeNetworkMomentum([
+      { latestScore: 55, previousScore: 70 },
+      { latestScore: 65, previousScore: 75 },
+    ]);
+    expect(r.direction).toBe('down');
+    expect(r.delta).toBeLessThan(0);
+  });
+
+  it('excludes dealers missing a previous score from sample', () => {
+    const r = computeNetworkMomentum([
+      { latestScore: 70, previousScore: 60 },
+      { latestScore: 80, previousScore: null },
+      { latestScore: 90, previousScore: 80 },
+    ]);
+    expect(r.sampleSize).toBe(2);
+    expect(r.toAvg).toBe(80);
+    expect(r.fromAvg).toBe(70);
+  });
+});
+
+describe('computeCoverage', () => {
+  const makeDealer = (id: string, assessmentId: string | null, date: string | null) => ({
+    dealershipId: id,
+    dealerName: `Dealer ${id}`,
+    location: 'Munich',
+    programmeTier: null,
+    latestAssessmentId: assessmentId,
+    latestAssessmentDate: date,
+  });
+
+  it('puts dealer with null assessmentId in missing', () => {
+    const r = computeCoverage([makeDealer('1', null, null)]);
+    expect(r.missing).toHaveLength(1);
+    expect(r.stale).toHaveLength(0);
+    expect(r.healthy).toHaveLength(0);
+  });
+
+  it('puts dealer assessed within 90 days in healthy', () => {
+    const recent = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const r = computeCoverage([makeDealer('1', 'uuid-1', recent)]);
+    expect(r.healthy).toHaveLength(1);
+    expect(r.stale).toHaveLength(0);
+  });
+
+  it('puts dealer assessed >90 days ago in stale', () => {
+    const old = new Date(Date.now() - 100 * 24 * 60 * 60 * 1000).toISOString();
+    const r = computeCoverage([makeDealer('1', 'uuid-1', old)]);
+    expect(r.stale).toHaveLength(1);
+    expect(r.healthy).toHaveLength(0);
+  });
+
+  it('handles mixed dealers correctly', () => {
+    const recent = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
+    const old = new Date(Date.now() - 120 * 24 * 60 * 60 * 1000).toISOString();
+    const r = computeCoverage([
+      makeDealer('1', null, null),
+      makeDealer('2', 'uuid-2', recent),
+      makeDealer('3', 'uuid-3', old),
+    ]);
+    expect(r.missing).toHaveLength(1);
+    expect(r.healthy).toHaveLength(1);
+    expect(r.stale).toHaveLength(1);
+  });
+});
+
+describe('computeDeptWeaknessCounts', () => {
+  it('counts dealers below threshold per dept', () => {
+    const dealers = [
+      { deptScores: { 'new-vehicle-sales': 55, 'used-vehicle-sales': 70, 'service-performance': 80, 'parts-inventory': 40, 'financial-operations': 55 } },
+      { deptScores: { 'new-vehicle-sales': 65, 'used-vehicle-sales': 55, 'service-performance': 55, 'parts-inventory': 70, 'financial-operations': 65 } },
+    ];
+    const r = computeDeptWeaknessCounts(dealers, 60);
+    expect(r['new-vehicle-sales']).toBe(1);
+    expect(r['used-vehicle-sales']).toBe(1);
+    expect(r['service-performance']).toBe(1);
+    expect(r['parts-inventory']).toBe(1);
+    expect(r['financial-operations']).toBe(1);
+  });
+
+  it('returns 0 counts when all depts above threshold', () => {
+    const dealers = [
+      { deptScores: { 'new-vehicle-sales': 80, 'used-vehicle-sales': 75, 'service-performance': 70, 'parts-inventory': 85, 'financial-operations': 72 } },
+    ];
+    const r = computeDeptWeaknessCounts(dealers, 60);
+    for (const key of ['new-vehicle-sales', 'used-vehicle-sales', 'service-performance', 'parts-inventory', 'financial-operations'] as const) {
+      expect(r[key]).toBe(0);
+    }
+  });
+
+  it('ignores null scores (not counted as weak)', () => {
+    const dealers = [
+      { deptScores: { 'new-vehicle-sales': null, 'used-vehicle-sales': 40, 'service-performance': null, 'parts-inventory': null, 'financial-operations': null } },
+    ];
+    const r = computeDeptWeaknessCounts(dealers, 60);
+    expect(r['new-vehicle-sales']).toBe(0);
+    expect(r['used-vehicle-sales']).toBe(1);
+  });
+});
+
+describe('extractTopSignals', () => {
+  it('counts signal occurrences and sorts by frequency', () => {
+    const signals = [
+      ['NVS_PROCESS_GAP', 'SVC_CAPACITY_LOW'],
+      ['NVS_PROCESS_GAP', 'FIN_REPORTING_GAP'],
+      ['NVS_PROCESS_GAP'],
+    ];
+    const r = extractTopSignals(signals);
+    expect(r[0]).toEqual({ code: 'NVS_PROCESS_GAP', count: 3 });
+    expect(r).toHaveLength(3);
+  });
+
+  it('returns at most 5 results', () => {
+    const signals = Array.from({ length: 10 }, (_, i) => [`CODE_${i}`]);
+    expect(extractTopSignals(signals)).toHaveLength(5);
+  });
+
+  it('returns empty array for empty input', () => {
+    expect(extractTopSignals([])).toEqual([]);
+  });
+
+  it('handles dealers with no signals', () => {
+    const signals = [[], ['NVS_PROCESS_GAP'], []];
+    const r = extractTopSignals(signals);
+    expect(r).toHaveLength(1);
+    expect(r[0].count).toBe(1);
+  });
+});
+
+describe('STALE_THRESHOLD_DAYS', () => {
+  it('is 90', () => { expect(STALE_THRESHOLD_DAYS).toBe(90); });
+});
+
+describe('WEAKNESS_THRESHOLD', () => {
+  it('is 60', () => { expect(WEAKNESS_THRESHOLD).toBe(60); });
 });
