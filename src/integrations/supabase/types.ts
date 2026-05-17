@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -1709,6 +1709,41 @@ export type Database = {
         }
         Relationships: []
       }
+      user_learning_progress: {
+        Row: {
+          last_accessed_at: string
+          modules_completed: number
+          resource_id: string
+          started_at: string
+          total_modules: number
+          user_id: string
+        }
+        Insert: {
+          last_accessed_at?: string
+          modules_completed?: number
+          resource_id: string
+          started_at?: string
+          total_modules?: number
+          user_id: string
+        }
+        Update: {
+          last_accessed_at?: string
+          modules_completed?: number
+          resource_id?: string
+          started_at?: string
+          total_modules?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_learning_progress_resource_id_fkey"
+            columns: ["resource_id"]
+            isOneToOne: false
+            referencedRelation: "resources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_saved_resources: {
         Row: {
           id: string
@@ -2038,4 +2073,3 @@ export const Constants = {
     },
   },
 } as const
-
