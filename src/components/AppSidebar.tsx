@@ -5,7 +5,7 @@ import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { useActiveRole } from '@/hooks/useActiveRole';
 import {
   BarChart3, Plus, ClipboardList, CheckSquare,
-  BookOpen, FileText, LogOut, Database, Globe, Users, Settings,
+  GraduationCap, FileText, LogOut, Globe, Users, Settings,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
@@ -80,8 +80,7 @@ export function AppSidebar() {
     {
       label: 'Reference',
       items: [
-        { path: '/kpi-encyclopedia', label: 'KPI Encyclopedia', icon: Database },
-        { path: '/resources', label: 'Resource Hub', icon: BookOpen },
+        { path: '/app/knowledge', label: 'Knowledge', icon: GraduationCap },
         { path: '/methodology', label: 'Methodology', icon: FileText },
       ],
     },
