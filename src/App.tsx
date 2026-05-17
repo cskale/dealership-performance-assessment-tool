@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Assessment from "./pages/Assessment";
@@ -11,12 +11,12 @@ import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import Account from "./pages/Account";
 import Actions from "./pages/Actions";
-import ResourceHub from "./pages/ResourceHub";
+import KnowledgeHub from "./pages/KnowledgeHub";
+import KpiDetailPage from "./pages/KpiDetailPage";
 import Methodology from "./pages/Methodology";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import AcceptInvite from "./pages/AcceptInvite";
-import KPIEncyclopediaPage from "./pages/KPIEncyclopediaPage";
 import OemDashboard from "./pages/OemDashboard";
 import OemSettings from "./pages/OemSettings";
 import CoachDashboard from "./pages/CoachDashboard";
@@ -99,6 +99,8 @@ const App = () => (
                             } />
                             <Route path="results" element={<Results />} />
                             <Route path="results/:assessmentId" element={<Results />} />
+                            <Route path="knowledge" element={<KnowledgeHub />} />
+                            <Route path="knowledge/kpi/:kpiKey" element={<KpiDetailPage />} />
                           </Routes>
                         </AuthenticatedLayout>
                       </ProtectedRoute>
@@ -119,20 +121,8 @@ const App = () => (
                         </AuthenticatedLayout>
                       </ProtectedRoute>
                     } />
-                    <Route path="/resources" element={
-                      <ProtectedRoute>
-                        <AuthenticatedLayout>
-                          <ResourceHub />
-                        </AuthenticatedLayout>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/kpi-encyclopedia" element={
-                      <ProtectedRoute>
-                        <AuthenticatedLayout>
-                          <KPIEncyclopediaPage />
-                        </AuthenticatedLayout>
-                      </ProtectedRoute>
-                    } />
+                    <Route path="/resources" element={<Navigate to="/app/knowledge" replace />} />
+                    <Route path="/kpi-encyclopedia" element={<Navigate to="/app/knowledge?tab=kpi" replace />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
