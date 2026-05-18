@@ -22,7 +22,7 @@ export default function KnowledgeHub() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8">
+    <div className="px-6 py-8">
       <div className="mb-6">
         <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">
           Knowledge & Resources

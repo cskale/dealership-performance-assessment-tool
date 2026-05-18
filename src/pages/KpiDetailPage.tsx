@@ -8,7 +8,7 @@ export default function KpiDetailPage() {
   const { data: assessment } = useLatestAssessment();
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8">
+    <div className="px-6 py-8">
       <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-6">
         <Link to="/app/knowledge?tab=kpi" className="hover:text-foreground flex items-center gap-1">
           <ChevronLeft className="w-3 h-3" />
