@@ -2,10 +2,9 @@ import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RecommendedTab } from '@/components/knowledge/RecommendedTab';
 import { KpiEncyclopediaTab } from '@/components/knowledge/KpiEncyclopediaTab';
-import { LearningPathsTab } from '@/components/knowledge/LearningPathsTab';
 import { DownloadsTab } from '@/components/knowledge/DownloadsTab';
 
-const VALID_TABS = ['recommended', 'kpi', 'learning', 'downloads'] as const;
+const VALID_TABS = ['recommended', 'kpi', 'downloads'] as const;
 type TabValue = (typeof VALID_TABS)[number];
 
 function isValidTab(v: string | null): v is TabValue {
@@ -37,7 +36,6 @@ export default function KnowledgeHub() {
         <TabsList className="mb-6">
           <TabsTrigger value="recommended">Recommended</TabsTrigger>
           <TabsTrigger value="kpi">KPI Encyclopedia</TabsTrigger>
-          <TabsTrigger value="learning">Learning Paths</TabsTrigger>
           <TabsTrigger value="downloads">Downloads</TabsTrigger>
         </TabsList>
 
@@ -46,9 +44,6 @@ export default function KnowledgeHub() {
         </TabsContent>
         <TabsContent value="kpi">
           <KpiEncyclopediaTab />
-        </TabsContent>
-        <TabsContent value="learning">
-          <LearningPathsTab />
         </TabsContent>
         <TabsContent value="downloads">
           <DownloadsTab />

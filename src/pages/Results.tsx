@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { FileText, RefreshCw, ArrowLeft, ClipboardList, BarChart3, Award, CheckSquare, BookOpen, AlertCircle, X, Globe } from "lucide-react";
+import { FileText, RefreshCw, ArrowLeft, ClipboardList, BarChart3, Award, CheckSquare, AlertCircle, X, Globe } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { ExecutiveSummary } from "@/components/ExecutiveSummary";
@@ -13,7 +13,6 @@ import { RadarBenchmarkChart } from "@/components/results/RadarBenchmarkChart";
 import { IndustrialKPIDashboard } from "@/components/IndustrialKPIDashboard";
 import { MaturityScoring } from "@/components/MaturityScoring";
 import { ActionPlan } from "@/components/ActionPlan";
-import { UsefulResources } from "@/components/UsefulResources";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { evaluateCrossValidations } from "@/data/crossValidationRules";
 import type { CrossValidationFinding } from "@/data/crossValidationRules";
@@ -596,7 +595,7 @@ export default function Results() {
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 h-11 bg-card border">
+          <TabsList className="grid w-full grid-cols-4 h-11 bg-card border">
             <TabsTrigger value="executive" className="gap-1.5 text-body-sm">
               <ClipboardList className="h-4 w-4 hidden sm:inline" />
               {t('results.tab.executive')}
@@ -613,10 +612,6 @@ export default function Results() {
               <CheckSquare className="h-4 w-4 hidden sm:inline" />
               {t('results.tab.actionPlan')}
             </TabsTrigger>
-            <TabsTrigger value="resources" className="gap-1.5 text-body-sm">
-              <BookOpen className="h-4 w-4 hidden sm:inline" />
-              {t('results.tab.resources')}
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="executive" className="space-y-6 animate-fade-in" style={{ willChange: 'opacity, transform' }}>
@@ -628,7 +623,7 @@ export default function Results() {
                 completedAt={resultsData.completedAt}
                 benchmarks={benchmarks}
                 onNavigateToEncyclopedia={(kpiKey) => {
-                  navigate(kpiKey ? `/app/kpi-encyclopedia?kpi=${kpiKey}` : '/app/kpi-encyclopedia');
+                  navigate(kpiKey ? `/app/knowledge/kpi/${kpiKey}` : '/app/knowledge?tab=kpi');
                 }}
               />
             </ErrorBoundary>
@@ -676,7 +671,7 @@ export default function Results() {
               <IndustrialKPIDashboard
                 scores={resultsData.scores}
                 onNavigateToEncyclopedia={(kpiKey) => {
-                  navigate(kpiKey ? `/app/kpi-encyclopedia?kpi=${kpiKey}` : '/app/kpi-encyclopedia');
+                  navigate(kpiKey ? `/app/knowledge/kpi/${kpiKey}` : '/app/knowledge?tab=kpi');
                 }}
               />
             </ErrorBoundary>
@@ -694,11 +689,6 @@ export default function Results() {
             </ErrorBoundary>
           </TabsContent>
 
-          <TabsContent value="resources" className="space-y-6 animate-fade-in">
-            <ErrorBoundary fallbackTitle={language === 'de' ? 'Ressourcen nicht verfügbar' : 'Resources unavailable'}>
-              <UsefulResources scores={resultsData.scores} />
-            </ErrorBoundary>
-          </TabsContent>
         </Tabs>
       </div>
     </div>

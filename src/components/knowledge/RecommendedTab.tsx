@@ -1,12 +1,13 @@
 import { useLatestAssessment } from '@/hooks/useLatestAssessment';
 import { mapSignalsToResources, GapCard, SignalType, DEPT_DISPLAY_NAMES } from '@/lib/mapSignalsToResources';
 import { FreshnessBadge } from '@/components/ui/FreshnessBadge';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Bookmark, Play, FileText, Download, ExternalLink } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Bookmark, Play, FileText, Download, ExternalLink, GraduationCap } from 'lucide-react';
 
 const DEPT_ORDER = [
   'new-vehicle-sales',
@@ -82,29 +83,88 @@ interface Resource {
   url: string | null;
   topics: string[] | null;
   is_featured: boolean | null;
+  duration: string | null;
+}
+
+interface ProgressRow {
+  resource_id: string;
+  modules_completed: number;
+  total_modules: number;
 }
 
 export function RecommendedTab() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [, setSearchParams] = useSearchParams();
   const { data: assessment, isLoading } = useLatestAssessment();
 
   const gapCards = mapSignalsToResources(assessment?.departmentScores);
+  const gapTopics = gapCards.flatMap((g) => g.topicFilters);
 
   const { data: resources = [] } = useQuery({
     queryKey: ['knowledge-recommended', gapCards.map((g) => g.deptKey)],
     enabled: gapCards.length > 0,
     queryFn: async (): Promise<Resource[]> => {
-      const topicFilters = gapCards.flatMap((g) => g.topicFilters);
       const { data, error } = await supabase
         .from('resources')
         .select('*')
-        .overlaps('topics', topicFilters)
+        .overlaps('topics', gapTopics)
         .order('is_featured', { ascending: false });
       if (error) throw error;
       return (data as Resource[]) ?? [];
     },
   });
+
+  const { data: courses = [] } = useQuery({
+    queryKey: ['knowledge-courses', gapCards.map((g) => g.deptKey)],
+    enabled: !!user?.id,
+    queryFn: async (): Promise<Resource[]> => {
+      let query = supabase
+        .from('resources')
+        .select('*')
+        .eq('resource_type', 'course')
+        .order('is_featured', { ascending: false });
+      if (gapTopics.length > 0) {
+        query = query.overlaps('topics', gapTopics);
+      }
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data as Resource[]) ?? [];
+    },
+  });
+
+  const { data: progress = [] } = useQuery({
+    queryKey: ['learning-progress', user?.id],
+    enabled: !!user?.id,
+    queryFn: async (): Promise<ProgressRow[]> => {
+      const { data, error } = await supabase
+        .from('user_learning_progress')
+        .select('resource_id, modules_completed, total_modules')
+        .eq('user_id', user!.id);
+      if (error) throw error;
+      return (data as ProgressRow[]) ?? [];
+    },
+  });
+
+  const startPath = useMutation({
+    mutationFn: async (resourceId: string) => {
+      if (!user) return;
+      const { error } = await supabase.from('user_learning_progress').upsert(
+        { user_id: user.id, resource_id: resourceId, last_accessed_at: new Date().toISOString() },
+        { onConflict: 'user_id,resource_id' },
+      );
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['learning-progress'] }),
+  });
+
+  const progressMap = new Map(progress.map((p) => [p.resource_id, p]));
+
+  function progressPct(id: string): number {
+    const e = progressMap.get(id);
+    if (!e || e.total_modules === 0) return 0;
+    return Math.round((e.modules_completed / e.total_modules) * 100);
+  }
 
   if (isLoading) {
     return <div className="text-sm text-muted-foreground">Loading recommendations…</div>;
@@ -175,14 +235,11 @@ export function RecommendedTab() {
         <div className="rounded-2xl border bg-card p-10 text-center">
           <h3 className="text-lg font-semibold mb-2">Your dealership is performing well across all areas.</h3>
           <p className="text-sm text-muted-foreground mb-6">
-            Keep momentum by exploring KPI deep-dives or browsing learning paths.
+            Keep momentum by exploring KPI deep-dives or browsing downloads.
           </p>
           <div className="flex gap-3 justify-center">
             <Button variant="outline" onClick={() => setSearchParams({ tab: 'kpi' })}>
               KPI Encyclopedia
-            </Button>
-            <Button variant="outline" onClick={() => setSearchParams({ tab: 'learning' })}>
-              Learning Paths
             </Button>
             <Button variant="outline" onClick={() => setSearchParams({ tab: 'downloads' })}>
               Downloads
@@ -194,24 +251,17 @@ export function RecommendedTab() {
           const badge = signalBadge(gap.signalType);
           const groupResources = [...resources]
             .filter((r) => r.topics?.includes(gap.deptKey))
-            .sort(
-              (a, b) =>
-                (TYPE_ORDER[a.resource_type] ?? 3) - (TYPE_ORDER[b.resource_type] ?? 3),
-            );
+            .sort((a, b) => (TYPE_ORDER[a.resource_type] ?? 3) - (TYPE_ORDER[b.resource_type] ?? 3));
 
           return (
             <section key={gap.deptKey} id={gap.deptKey} className="scroll-mt-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <h3 className="text-lg font-semibold">{gap.deptName}</h3>
-                  <span
-                    className={`px-2 py-0.5 text-xs font-medium rounded-full border ${badge.className}`}
-                  >
+                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full border ${badge.className}`}>
                     {badge.label}
                   </span>
-                  <span className="text-xs text-muted-foreground">
-                    Score {Math.round(gap.score)} / 100
-                  </span>
+                  <span className="text-xs text-muted-foreground">Score {Math.round(gap.score)} / 100</span>
                 </div>
                 <span className="text-xs text-muted-foreground">
                   {groupResources.length} resource{groupResources.length === 1 ? '' : 's'}
@@ -228,33 +278,20 @@ export function RecommendedTab() {
                     const cta = ctaForType(r.resource_type);
                     const Icon = cta.Icon;
                     return (
-                      <div
-                        key={r.id}
-                        className="relative rounded-xl border bg-card p-5 hover:shadow-md transition"
-                      >
+                      <div key={r.id} className="relative rounded-xl border bg-card p-5 hover:shadow-md transition">
                         <div className="flex items-start justify-between mb-3">
                           <span className="text-[10px] font-semibold tracking-wider text-blue-700 bg-blue-100 px-2 py-0.5 rounded">
                             {typeChip(r.resource_type)}
                           </span>
-                          <button
-                            type="button"
-                            className="text-muted-foreground hover:text-foreground"
-                            aria-label="Bookmark"
-                          >
+                          <button type="button" className="text-muted-foreground hover:text-foreground" aria-label="Bookmark">
                             <Bookmark className="w-4 h-4" />
                           </button>
                         </div>
                         <h4 className="font-semibold mb-2 line-clamp-2">{r.title}</h4>
-                        <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
-                          {r.description}
-                        </p>
+                        <p className="text-sm text-muted-foreground line-clamp-3 mb-4">{r.description}</p>
                         {r.url && (
-                          <a
-                            href={r.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-                          >
+                          <a href={r.url} target="_blank" rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
                             <Icon className="w-3.5 h-3.5" />
                             {cta.label}
                             <ExternalLink className="w-3 h-3" />
@@ -268,6 +305,53 @@ export function RecommendedTab() {
             </section>
           );
         })
+      )}
+
+      {/* Learning Paths — courses relevant to gap departments */}
+      {courses.length > 0 && (
+        <section>
+          <div className="flex items-center gap-2 mb-4">
+            <GraduationCap className="w-5 h-5 text-muted-foreground" />
+            <h3 className="text-lg font-semibold">Learning Paths</h3>
+            <span className="text-xs text-muted-foreground">
+              {gapCards.length > 0 ? 'Matched to your improvement areas' : 'All available paths'}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {courses.map((course) => {
+              const pct = progressPct(course.id);
+              const started = progressMap.has(course.id);
+              return (
+                <div key={course.id} className="rounded-xl border bg-card p-5 hover:shadow-md transition flex flex-col">
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="text-[10px] font-semibold tracking-wider text-blue-700 bg-blue-100 px-2 py-0.5 rounded">
+                      COURSE
+                    </span>
+                    {course.duration && (
+                      <span className="text-xs text-muted-foreground">{course.duration}</span>
+                    )}
+                  </div>
+                  <h4 className="font-semibold mb-2 line-clamp-2">{course.title}</h4>
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">{course.description}</p>
+                  {started && (
+                    <div className="mb-3">
+                      <Progress value={pct} className="h-1.5 mb-1" />
+                      <p className="text-xs text-muted-foreground">{pct}% complete</p>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => startPath.mutate(course.id)}
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                  >
+                    <Play className="w-3.5 h-3.5" />
+                    {started ? 'Resume' : 'Start Path'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </section>
       )}
     </div>
   );
