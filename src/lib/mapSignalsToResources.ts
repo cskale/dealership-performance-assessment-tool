@@ -1,5 +1,7 @@
 export type SignalType = 'CRITICAL_GAP' | 'HIGH_PRIORITY' | 'GROWTH_OPPORTUNITY';
 
+export type ResourceType = 'video' | 'article' | 'course' | 'webinar' | 'tool' | 'template' | 'case_study';
+
 export interface GapCard {
   deptKey: string;
   deptName: string;
