@@ -1,5 +1,12 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import React from 'https://esm.sh/react@18'
+import { render } from 'https://esm.sh/@react-email/render@0.0.10'
+import { StaleActionEmail } from '../_templates/StaleActionEmail.tsx'
+import { WeeklyDigestEmail } from '../_templates/WeeklyDigestEmail.tsx'
+import type { DigestAction } from '../_templates/WeeklyDigestEmail.tsx'
+import { MilestoneEmail } from '../_templates/MilestoneEmail.tsx'
+import { CoachCommentEmail } from '../_templates/CoachCommentEmail.tsx'
 
 const ALLOWED_ORIGINS = [
   'https://dealership-performance-assessment-t.vercel.app',
@@ -18,108 +25,6 @@ function getCorsHeaders(origin: string) {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Vary': 'Origin',
   }
-}
-
-function buildNotificationEmailHtml(title: string, body: string): string {
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>${title}</title></head><body style="margin:0;padding:0;background-color:#ffffff;font-family:'Inter',Arial,sans-serif;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;"><table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;"><tr><td style="background-color:#1D7AFC;border-radius:12px 12px 0 0;padding:28px 40px;text-align:center;"><h1 style="margin:0;color:#ffffff;font-size:20px;font-weight:700;">Dealer Diagnostic Platform</h1></td></tr><tr><td style="background-color:#f8f9fa;padding:40px;border-left:1px solid #e0e0e0;border-right:1px solid #e0e0e0;"><h2 style="margin:0 0 12px;color:#172d4d;font-size:18px;font-weight:600;">${title}</h2><p style="margin:0 0 24px;color:#445166;font-size:14px;line-height:1.6;">${body}</p></td></tr><tr><td style="background-color:#f0f1f3;border-radius:0 0 12px 12px;padding:20px 40px;text-align:center;border:1px solid #e0e0e0;"><p style="margin:0;color:#8993A4;font-size:12px;">You are receiving this because you have notifications enabled. Manage preferences in Account Settings.</p></td></tr></table></td></tr></table></body></html>`
-}
-
-interface DigestAction {
-  action_title: string
-  priority: string
-  urgency_score: number | null
-  days_overdue: number
-}
-
-interface DigestPayload {
-  open_count: number
-  overdue_count: number
-  top_actions: DigestAction[]
-}
-
-function priorityColor(priority: string): string {
-  const map: Record<string, string> = {
-    critical: '#dc2626',
-    high: '#d97706',
-    medium: '#2563eb',
-    low: '#6b7280',
-  }
-  return map[priority.toLowerCase()] ?? '#6b7280'
-}
-
-function buildDigestEmailHtml(data: DigestPayload, siteUrl: string): string {
-  const { open_count, overdue_count, top_actions } = data
-  const actionsUrl = `${siteUrl}/app/actions`
-
-  const actionRows = top_actions.map(a => {
-    const col = priorityColor(a.priority)
-    const daysLabel = a.days_overdue > 0
-      ? `<span style="color:#dc2626;font-weight:600;">${a.days_overdue}d overdue</span>`
-      : '<span style="color:#16a34a;">On track</span>'
-    return `<tr>
-      <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;font-size:13px;color:#172d4d;">${a.action_title}</td>
-      <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:center;">
-        <span style="background:${col}18;color:${col};border:1px solid ${col}30;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600;text-transform:capitalize;">${a.priority}</span>
-      </td>
-      <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:right;font-size:12px;">${daysLabel}</td>
-    </tr>`
-  }).join('')
-
-  const tableSection = top_actions.length > 0 ? `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
-      <thead>
-        <tr style="background:#f3f4f6;">
-          <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">Action</th>
-          <th style="padding:8px 12px;text-align:center;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">Priority</th>
-          <th style="padding:8px 12px;text-align:right;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">Status</th>
-        </tr>
-      </thead>
-      <tbody>${actionRows}</tbody>
-    </table>` : ''
-
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Your Weekly Action Digest</title></head>
-<body style="margin:0;padding:0;background-color:#ffffff;font-family:'Inter',Arial,sans-serif;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-  <tr><td align="center" style="padding:40px 20px;">
-    <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-      <!-- Header -->
-      <tr><td style="background-color:#1D7AFC;border-radius:12px 12px 0 0;padding:28px 40px;">
-        <h1 style="margin:0;color:#ffffff;font-size:20px;font-weight:700;">Dealer Diagnostic Platform</h1>
-        <p style="margin:6px 0 0;color:#b3d9ff;font-size:13px;">Weekly Action Digest</p>
-      </td></tr>
-      <!-- Body -->
-      <tr><td style="background-color:#f8f9fa;padding:32px 40px;border-left:1px solid #e0e0e0;border-right:1px solid #e0e0e0;">
-        <h2 style="margin:0 0 20px;color:#172d4d;font-size:18px;font-weight:600;">Your weekly action summary</h2>
-        <!-- Summary stats -->
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
-          <tr>
-            <td style="width:50%;padding:16px;background:#f0f8ff;border-radius:8px;text-align:center;border:1px solid #b3d9ff;">
-              <div style="font-size:28px;font-weight:700;color:#1D7AFC;font-variant-numeric:tabular-nums;">${open_count}</div>
-              <div style="font-size:12px;color:#445166;margin-top:4px;text-transform:uppercase;letter-spacing:0.05em;">Open actions</div>
-            </td>
-            <td style="width:8px;"></td>
-            <td style="width:50%;padding:16px;background:${overdue_count > 0 ? '#fef2f2' : '#f0fdf4'};border-radius:8px;text-align:center;border:1px solid ${overdue_count > 0 ? '#fecaca' : '#bbf7d0'};">
-              <div style="font-size:28px;font-weight:700;color:${overdue_count > 0 ? '#dc2626' : '#16a34a'};font-variant-numeric:tabular-nums;">${overdue_count}</div>
-              <div style="font-size:12px;color:#445166;margin-top:4px;text-transform:uppercase;letter-spacing:0.05em;">Overdue</div>
-            </td>
-          </tr>
-        </table>
-        ${top_actions.length > 0 ? `<p style="margin:0 0 8px;color:#172d4d;font-size:13px;font-weight:600;">Top priority actions</p>${tableSection}` : ''}
-        <!-- CTA -->
-        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px auto 0;">
-          <tr><td style="background-color:#1D7AFC;border-radius:8px;">
-            <a href="${actionsUrl}" target="_blank" style="display:inline-block;padding:12px 28px;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;">Review Action Plan</a>
-          </td></tr>
-        </table>
-      </td></tr>
-      <!-- Footer -->
-      <tr><td style="background-color:#f0f1f3;border-radius:0 0 12px 12px;padding:20px 40px;text-align:center;border:1px solid #e0e0e0;">
-        <p style="margin:0;color:#8993A4;font-size:12px;">You're receiving this because weekly digests are enabled. Manage preferences in Account Settings.</p>
-      </td></tr>
-    </table>
-  </td></tr>
-</table>
-</body></html>`
 }
 
 interface NotificationPayload {
@@ -224,17 +129,107 @@ serve(async (req) => {
     if (channel === 'email' && email_to && resendApiKey) {
       try {
         let emailHtml: string
+        const siteUrl = Deno.env.get('SITE_URL') || 'https://dealership-performance-assessment-tool.lovable.app'
+        const actionsUrl = `${siteUrl}/app/actions`
+
         if (type === 'digest') {
           try {
-            const digestData: DigestPayload = JSON.parse(body)
-            const siteUrl = Deno.env.get('SITE_URL') || 'https://dealership-performance-assessment-tool.lovable.app'
-            emailHtml = buildDigestEmailHtml(digestData, siteUrl)
+            const digestData = JSON.parse(body) as {
+              open_count: number
+              overdue_count: number
+              top_actions: DigestAction[]
+            }
+            emailHtml = render(React.createElement(WeeklyDigestEmail, {
+              openCount: digestData.open_count,
+              overdueCount: digestData.overdue_count,
+              topActions: digestData.top_actions,
+              actionsUrl,
+            }))
           } catch {
-            emailHtml = buildNotificationEmailHtml(title, body)
+            emailHtml = render(React.createElement(StaleActionEmail, {
+              actionTitle: title,
+              priority: 'medium',
+              daysStale: 0,
+              actionsUrl,
+            }))
           }
+        } else if (type === 'stale_action') {
+          const daysMatch = body.match(/(\d+) day/)
+          const daysStale = daysMatch ? parseInt(daysMatch[1]) : 1
+          const priorityMatch = body.match(/Priority: (\w+)/)
+          const priority = (priorityMatch?.[1]?.toLowerCase() ?? 'medium') as 'critical' | 'high' | 'medium' | 'low'
+          const jwtSecret = Deno.env.get('SUPABASE_JWT_SECRET')
+
+          let markInProgressUrl: string | undefined
+          let markCompleteUrl: string | undefined
+
+          if (entity_id && jwtSecret) {
+            const exp = Math.floor(Date.now() / 1000) + 72 * 3600
+
+            const makeToken = async (status: string): Promise<string> => {
+              const tokenPayload = { action_id: entity_id, user_id, status, exp }
+              const key = await crypto.subtle.importKey(
+                'raw', new TextEncoder().encode(jwtSecret),
+                { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+              )
+              const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(JSON.stringify(tokenPayload)))
+              const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig)))
+              return btoa(JSON.stringify({ ...tokenPayload, sig: sigB64 }))
+            }
+
+            const [inProgressToken, completeToken] = await Promise.all([
+              makeToken('in_progress'),
+              makeToken('completed'),
+            ])
+
+            const tokenBaseUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/action-token-update`
+            markInProgressUrl = `${tokenBaseUrl}?token=${encodeURIComponent(inProgressToken)}&status=in_progress`
+            markCompleteUrl = `${tokenBaseUrl}?token=${encodeURIComponent(completeToken)}&status=completed`
+
+            await supabaseAdmin
+              .from('improvement_actions')
+              .update({
+                token_nonce: inProgressToken,
+                token_expires_at: new Date(Date.now() + 72 * 3600 * 1000).toISOString(),
+              })
+              .eq('id', entity_id)
+          }
+
+          emailHtml = render(React.createElement(StaleActionEmail, {
+            actionTitle: title.replace('Action overdue: ', ''),
+            priority,
+            daysStale,
+            actionsUrl,
+            markInProgressUrl,
+            markCompleteUrl,
+          }))
+        } else if (type === 'milestone') {
+          const percentMatch = body.match(/(\d+)%/)
+          const milestonePercent = (percentMatch ? parseInt(percentMatch[1]) : 25) as 25 | 50 | 75 | 100
+          const countMatch = body.match(/(\d+) of (\d+)/)
+          emailHtml = render(React.createElement(MilestoneEmail, {
+            milestonePercent,
+            completedCount: countMatch ? parseInt(countMatch[1]) : 0,
+            totalCount: countMatch ? parseInt(countMatch[2]) : 0,
+            actionsUrl,
+            reassessUrl: milestonePercent === 100 ? `${siteUrl}/app/assessment` : undefined,
+          }))
+        } else if (type === 'coach_comment') {
+          emailHtml = render(React.createElement(CoachCommentEmail, {
+            coachName: 'Your coach',
+            notePreview: body,
+            dealershipName: 'your dealership',
+            dashboardUrl: `${siteUrl}/app/dashboard#coach-notes`,
+          }))
         } else {
-          emailHtml = buildNotificationEmailHtml(title, body)
+          emailHtml = render(React.createElement(StaleActionEmail, {
+            actionTitle: title,
+            priority: 'medium',
+            daysStale: 0,
+            actionsUrl,
+          }))
         }
+
         const resendRes = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {

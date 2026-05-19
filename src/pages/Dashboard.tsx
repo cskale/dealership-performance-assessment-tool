@@ -11,6 +11,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { calculateWeightedScore } from '@/lib/scoringEngine';
 import { getMaturityLevel, MATURITY_LEVELS } from '@/lib/maturityConfig';
+import { CoachNotesPanel } from '@/components/CoachNotesPanel';
 import {
   DEPT_DISPLAY_NAMES,
   DEPT_ORDER,
@@ -859,6 +860,9 @@ export default function Dashboard() {
           actions={actions}
           onViewAll={() => navigate('/actions')}
         />
+
+        {/* ── Coach Notes — visible to dealers when notes exist ── */}
+        <CoachNotesPanel dealershipId={dealerId ?? null} />
 
         {/* ── Strategic findings ── */}
         <FindingsCard scores={scores} />
