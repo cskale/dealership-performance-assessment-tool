@@ -348,92 +348,37 @@ export default function Results() {
 
         {/* Results Hero */}
         <div className="mb-8">
-          <div className="flex items-center justify-end gap-2 mb-6">
-            <Button onClick={() => setShowExportModal(true)} size="sm" className="gap-1.5">
-              <FileText className="h-4 w-4" />
-              {t('results.exportPDF')}
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleRetakeAssessment} className="gap-1.5">
-              <RefreshCw className="h-4 w-4" />
-              {t('results.retakeAssessment')}
-            </Button>
-          </div>
-          
-          {/* Precision Header (DESIGN.md §24) */}
-          {(() => {
-            const maturityKey = getMaturityLevel(overallScore);
-            const maturityLabelEn: Record<string, string> = { leading: 'Leading', advanced: 'Advanced', developing: 'Developing', foundational: 'Foundational' };
-            const maturityLabelDe: Record<string, string> = { leading: 'Führend', advanced: 'Fortgeschritten', developing: 'Entwickelnd', foundational: 'Grundlegend' };
-            const maturityLabel = language === 'de' ? maturityLabelDe[maturityKey] : maturityLabelEn[maturityKey];
-            const modulesAssessed = resultsData?.scores ? Object.keys(resultsData.scores).length : 0;
-            const answeredQuestions = resultsData?.answers ? Object.keys(resultsData.answers).length : 0;
-            const ringColor = overallScore >= 85 ? 'hsl(var(--success))'
-              : overallScore >= 70 ? 'hsl(var(--primary))'
-              : overallScore >= 30 ? 'hsl(var(--warning))'
-              : 'hsl(var(--destructive))';
+          {/* Precision Header */}
+          <header className="mb-6">
+            {/* Top row: label + actions inline */}
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-caption uppercase tracking-wider text-muted-foreground">
+                {language === 'de' ? 'BEWERTUNGSERGEBNISSE' : 'ASSESSMENT RESULTS'}
+              </span>
+              <div className="flex items-center gap-2">
+                <Button onClick={() => setShowExportModal(true)} size="sm" className="gap-1.5">
+                  <FileText className="h-4 w-4" />
+                  {t('results.exportPDF')}
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleRetakeAssessment} className="gap-1.5">
+                  <RefreshCw className="h-4 w-4" />
+                  {t('results.retakeAssessment')}
+                </Button>
+              </div>
+            </div>
 
-            return (
-              <header className="mb-6">
-                {/* Top row: label + actions */}
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-caption uppercase tracking-wider text-muted-foreground">
-                    {language === 'de' ? 'BEWERTUNGSERGEBNISSE' : 'ASSESSMENT RESULTS'}
-                  </span>
-                  <FreshnessBadge
-                    completedAt={resultsData.completedAt}
-                    onReassess={() => navigate('/app/assessment')}
-                  />
-                </div>
+            {/* Main heading */}
+            <h1 className="text-h2 text-foreground">
+              {currentOrganization?.name || (language === 'de' ? 'Händler-Diagnose' : 'Dealer Diagnostic')}
+            </h1>
 
-                {/* Main heading */}
-                <h1 className="text-h2 text-foreground">
-                  {currentOrganization?.name || (language === 'de' ? 'Händler-Diagnose' : 'Dealer Diagnostic')}
-                </h1>
+            {/* Subtitle */}
+            <p className="text-body-sm text-muted-foreground mt-1">
+              {language === 'de' ? 'Abgeschlossen am' : 'Completed'} {formatDate(resultsData.completedAt)}
+            </p>
 
-                {/* Subtitle */}
-                <p className="text-body-sm text-muted-foreground mt-1">
-                  {language === 'de' ? 'Abgeschlossen am' : 'Completed'} {formatDate(resultsData.completedAt)}
-                </p>
-
-                {/* Dividing rule */}
-                <div className="border-t border-border mt-5 mb-5" />
-
-                {/* 4-stat strip */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  <div>
-                    <div className="text-caption uppercase tracking-wider text-muted-foreground mb-1">
-                      {language === 'de' ? 'GESAMTBEWERTUNG' : 'OVERALL SCORE'}
-                    </div>
-                    <div className="text-metric-md" style={{ color: ringColor }}>
-                      {overallScore} <span className="text-body-md text-muted-foreground font-normal">/ 100</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-caption uppercase tracking-wider text-muted-foreground mb-1">
-                      {language === 'de' ? 'MODULE' : 'MODULES'}
-                    </div>
-                    <div className="text-metric-md text-foreground">
-                      {modulesAssessed} <span className="text-body-md text-muted-foreground font-normal">/ 5</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-caption uppercase tracking-wider text-muted-foreground mb-1">
-                      {language === 'de' ? 'FRAGEN' : 'QUESTIONS'}
-                    </div>
-                    <div className="text-metric-md text-foreground">
-                      {answeredQuestions} <span className="text-body-md text-muted-foreground font-normal">/ {TOTAL_QUESTIONS}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-caption uppercase tracking-wider text-muted-foreground mb-1">
-                      {language === 'de' ? 'REIFEGRAD' : 'MATURITY BAND'}
-                    </div>
-                    <div className="text-metric-md text-foreground">{maturityLabel}</div>
-                  </div>
-                </div>
-              </header>
-            );
-          })()}
+            <div className="border-t border-border mt-5" />
+          </header>
 
           {/* Stale assessment banner */}
           {(() => {

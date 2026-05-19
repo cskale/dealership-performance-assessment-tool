@@ -50,55 +50,41 @@ export function KpiEncyclopediaTab() {
     });
   }, [entries, search, deptFilter]);
 
-  const totalKpis = entries.length;
-  const totalDepartments = new Set(entries.map(([, d]) => d.department).filter(Boolean)).size;
+  const allDepts = useMemo(() => {
+    const seen = new Set<string>();
+    const result: { key: string; label: string }[] = [];
+    entries.forEach(([, d]) => {
+      if (d.department && !seen.has(d.department)) {
+        seen.add(d.department);
+        result.push({ key: d.department, label: DEPT_DISPLAY_NAMES[d.department] ?? d.department });
+      }
+    });
+    return result.sort((a, b) => a.label.localeCompare(b.label));
+  }, [entries]);
 
   return (
     <div className="space-y-6">
-      {/* Filter bar */}
-      <div className="space-y-4">
-        <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
-          <div className="relative md:w-3/5">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search KPIs by name or definition…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <div className="text-sm text-muted-foreground md:ml-auto">
-            <span className="font-semibold text-foreground">Total KPIs: {totalKpis}</span>
-            <span className="mx-2">·</span>
-            <span className="font-semibold text-foreground">Departments: {totalDepartments || 5}</span>
-          </div>
+      {/* Filter bar — single row */}
+      <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search KPIs by name or definition…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
         </div>
-
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setDeptFilter('all')}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition ${
-              deptFilter === 'all'
-                ? 'bg-blue-100 text-blue-700 border-blue-200'
-                : 'bg-background text-muted-foreground border-border hover:bg-muted'
-            }`}
-          >
-            All
-          </button>
-          {DEPT_ORDER.map((dept) => (
-            <button
-              key={dept}
-              onClick={() => setDeptFilter(dept)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition ${
-                deptFilter === dept
-                  ? 'bg-blue-100 text-blue-700 border-blue-200'
-                  : 'bg-background text-muted-foreground border-border hover:bg-muted'
-              }`}
-            >
-              {DEPT_DISPLAY_NAMES[dept]}
-            </button>
+        <select
+          value={deptFilter}
+          onChange={(e) => setDeptFilter(e.target.value)}
+          className="text-sm border border-border rounded-md px-3 py-2 bg-background md:w-56"
+        >
+          <option value="all">All Departments</option>
+          {allDepts.map((d) => (
+            <option key={d.key} value={d.key}>{d.label}</option>
           ))}
-        </div>
+        </select>
       </div>
 
       {/* KPI grid */}

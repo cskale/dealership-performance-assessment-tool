@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   Plus, Loader2, Pencil,
-  AlertTriangle, Target, Eye, Search, Filter, CalendarIcon, LayoutGrid, List as ListIcon,
+  AlertTriangle, Target, Eye, Search, Filter, LayoutGrid, List as ListIcon,
   CheckCircle2, X
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,7 +24,6 @@ import { generateActionsFromAssessment, formatActionsForDatabaseInsert } from '@
 import { cleanActionTitle, priorityDisplay, resetPatternUsage } from '@/lib/actionRationaleMap';
 import { cleanDescription } from '@/lib/cleanDescription';
 import { ActionSheet } from './ActionSheet';
-import { TimelineView } from './action-plan/TimelineView';
 import { KanbanBoard } from './action-plan/KanbanBoard';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
@@ -114,7 +113,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
   const [filterDepartment, setFilterDepartment] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('priority');
   const [filterOpen, setFilterOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'kanban' | 'list' | 'timeline' | 'roadmap'>('list');
+  const [viewMode, setViewMode] = useState<'kanban' | 'list' | 'roadmap'>('list');
   const [lastGenerated, setLastGenerated] = useState<number | null>(null);
   const [actionPage, setActionPage] = useState(0);
   const PAGE_SIZE = 50;
@@ -542,7 +541,6 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
             {([
               { key: 'list', label: 'List', Icon: ListIcon },
               { key: 'kanban', label: 'Kanban', Icon: LayoutGrid },
-              { key: 'timeline', label: 'Timeline', Icon: CalendarIcon },
               { key: 'roadmap', label: 'Roadmap', Icon: Target },
             ] as const).map(({ key, label, Icon }) => (
               <button
@@ -727,8 +725,6 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
             </div>
           ))}
         </div>
-      ) : viewMode === 'timeline' ? (
-        <TimelineView actions={filteredActions} onActionClick={openEditPanel} />
       ) : viewMode === 'kanban' ? (
         <KanbanBoard
           actions={filteredActions}

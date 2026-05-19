@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useLatestAssessment } from '@/hooks/useLatestAssessment';
-import { mapSignalsToResources, DEPT_DISPLAY_NAMES } from '@/lib/mapSignalsToResources';
+import { mapSignalsToResources } from '@/lib/mapSignalsToResources';
 import { BookOpen, Download } from 'lucide-react';
 
 interface Resource {
@@ -27,17 +27,8 @@ const TYPE_LABEL: Record<string, string> = {
   case_study: 'CASE STUDIES',
 };
 
-const DEPT_ORDER = [
-  'new-vehicle-sales',
-  'used-vehicle-sales',
-  'service-performance',
-  'parts-inventory',
-  'financial-operations',
-];
-
 export function DownloadsTab() {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
-  const [deptFilter, setDeptFilter] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<SortOrder>('recent');
 
   const { data: assessment } = useLatestAssessment();
@@ -59,10 +50,9 @@ export function DownloadsTab() {
   const filtered = useMemo(() => {
     let list = downloads;
     if (typeFilter !== 'all') list = list.filter((r) => r.resource_type === typeFilter);
-    if (deptFilter !== 'all') list = list.filter((r) => r.topics?.includes(deptFilter));
     if (sortOrder === 'az') list = [...list].sort((a, b) => a.title.localeCompare(b.title));
     return list;
-  }, [downloads, typeFilter, deptFilter, sortOrder]);
+  }, [downloads, typeFilter, sortOrder]);
 
   const recommended = useMemo(() => {
     if (gapCards.length === 0) return [];
@@ -90,63 +80,45 @@ export function DownloadsTab() {
       )}
 
       {/* Filter bar */}
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex gap-1.5 items-center">
-            <span className="text-xs text-muted-foreground mr-1">Type:</span>
-            {(['all', 'template', 'article', 'case_study'] as TypeFilter[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTypeFilter(t)}
-                className={`px-2.5 py-1 rounded-full text-xs font-medium border transition ${
-                  typeFilter === t
-                    ? 'bg-blue-100 text-blue-700 border-blue-200'
-                    : 'bg-background text-muted-foreground border-border hover:bg-muted'
-                }`}
-              >
-                {t === 'all'
-                  ? 'All'
-                  : t === 'template'
-                  ? 'Templates'
-                  : t === 'article'
-                  ? 'Guides'
-                  : 'Case Studies'}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex gap-1.5 items-center">
-            <span className="text-xs text-muted-foreground mr-1">Department:</span>
-            <select
-              value={deptFilter}
-              onChange={(e) => setDeptFilter(e.target.value)}
-              className="text-xs border border-border rounded-md px-2 py-1 bg-background"
-            >
-              <option value="all">All</option>
-              {DEPT_ORDER.map((d) => (
-                <option key={d} value={d}>
-                  {DEPT_DISPLAY_NAMES[d]}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex gap-1.5 items-center">
-            <span className="text-xs text-muted-foreground mr-1">Sort:</span>
-            <select
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value as SortOrder)}
-              className="text-xs border border-border rounded-md px-2 py-1 bg-background"
-            >
-              <option value="recent">Most Recent</option>
-              <option value="az">A–Z</option>
-            </select>
-          </div>
-
-          <span className="text-xs text-muted-foreground ml-auto">
-            {filtered.length} result{filtered.length === 1 ? '' : 's'}
-          </span>
-        </div>
+      <div className="flex flex-wrap items-center gap-2">
+        {([
+          { value: 'all', label: 'All' },
+          { value: 'template', label: 'Templates' },
+          { value: 'article', label: 'Guides' },
+          { value: 'case_study', label: 'Case Studies' },
+        ] as { value: TypeFilter; label: string }[]).map((t) => (
+          <button
+            key={t.value}
+            onClick={() => setTypeFilter(t.value)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition ${
+              typeFilter === t.value
+                ? 'bg-blue-100 text-blue-700 border-blue-200'
+                : 'bg-background text-muted-foreground border-border hover:bg-muted'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+        <div className="w-px h-4 bg-border mx-1" />
+        {([
+          { value: 'recent', label: 'Most Recent' },
+          { value: 'az', label: 'A–Z' },
+        ] as { value: SortOrder; label: string }[]).map((s) => (
+          <button
+            key={s.value}
+            onClick={() => setSortOrder(s.value)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition ${
+              sortOrder === s.value
+                ? 'bg-blue-100 text-blue-700 border-blue-200'
+                : 'bg-background text-muted-foreground border-border hover:bg-muted'
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
+        <span className="text-xs text-muted-foreground ml-auto">
+          {filtered.length} result{filtered.length === 1 ? '' : 's'}
+        </span>
       </div>
 
       {/* Grid */}
