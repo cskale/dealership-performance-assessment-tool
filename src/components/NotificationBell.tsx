@@ -76,9 +76,24 @@ export function NotificationBell({ collapsed = false, headerMode = false }: Noti
   const handleMarkRead = async (n: Notification) => {
     await markNotificationRead(n.id);
     setNotifications(prev => prev.filter(x => x.id !== n.id));
+    setOpen(false);
+
     if (n.entity_type === 'improvement_action') {
       navigate('/app/actions');
-      setOpen(false);
+    } else if (n.entity_type === 'coach_note') {
+      if (n.entity_id) {
+        const { data } = await supabase
+          .from('coach_notes')
+          .select('action_id')
+          .eq('id', n.entity_id)
+          .maybeSingle();
+        navigate(data?.action_id ? '/app/actions' : '/app/dashboard#coach-notes');
+      } else {
+        navigate('/app/dashboard#coach-notes');
+      }
+    } else {
+      // digest, milestone, stale_action — all land on action plan
+      navigate('/app/actions');
     }
   };
 
