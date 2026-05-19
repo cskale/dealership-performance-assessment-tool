@@ -6,6 +6,42 @@ Types: **feat** · **fix** · **security** · **perf** · **docs** · **refactor
 
 ---
 
+## [2026-05-19] — Sprint 11: Notification System Full Build (#70–#73, #77–#78)
+
+### feat
+- **Notification infrastructure (#70)** — `notifications` + `notification_preferences` tables, `notify-dispatcher` Edge Function (Resend), Supabase Realtime bell with unread badge, notification preferences UI (email / weekly digest / stale nudge / milestone toggles). pg_cron schedules live: stale action check daily 08:00 UTC, weekly digest Monday 07:00 UTC.
+- **Stale action nudge engine (#71)** — `process_stale_actions()` SECURITY DEFINER function flags actions with no status update in Critical=7d / High=14d / Medium=21d. Inserts in-app notification + fires email via Edge Function. `stale_nudge_sent_at` + `last_status_updated_at` columns on `improvement_actions`.
+- **Tokenised one-click email reply (#72)** — Stale action nudge emails include [Mark In Progress] / [Mark Complete] buttons. HMAC-SHA-256 signed tokens (action_id + user_id + 72h expiry). New `action-token-update` Edge Function validates token, single-use nonce guard, updates `improvement_actions.status`, returns HTML confirmation page. `token_nonce` + `token_expires_at` columns added to `improvement_actions`.
+- **Weekly action digest email (#73)** — `send_weekly_digests()` runs every Monday 07:00 UTC. Aggregates open/overdue count + top 3 actions per org, sends in-app + email to all active members (respects `weekly_digest` preference). React Email `WeeklyDigestEmail` template with open/overdue stat tiles and priority action table.
+- **Coach commentary layer (#77)** — `coach_notes` table (coach_user_id, dealership_id, assessment_id, action_id, note_text) with 3-way RLS (coach CRUD / dealer read own dealership / OEM read network). **Coach Notes panel** added to dealer dashboard: shows latest 5 notes with coach name, relative timestamp, action badge. Anchored at `#coach-notes` for bell navigation.
+- **Coach commentary notifications (#78)** — `notify_on_coach_comment()` SECURITY DEFINER trigger fires AFTER INSERT on `coach_notes`. Inserts one `in_app` / `coach_comment` notification per active owner/admin member of the dealership's org. In-app bell updates in real time via Supabase Realtime.
+- **React Email templates** — 5 Deno-compatible TSX components in `supabase/functions/_templates/`: `BaseEmail` (brand wrapper), `StaleActionEmail` (priority badge + one-click buttons), `WeeklyDigestEmail` (stat tiles + action table), `MilestoneEmail` (progress bar + reassess CTA), `CoachCommentEmail` (reserved). Replaced 120 lines of raw HTML string builders in `notify-dispatcher`.
+- **Notification bell routing** — `handleMarkRead` extended: `coach_note` entities check `action_id` → `/app/actions` or `/app/dashboard#coach-notes`; `digest` / `milestone` / `stale_action` → `/app/actions`.
+
+### fix
+- **Cron email dispatch** — `ALTER DATABASE` restricted in Supabase SQL editor (no superuser). Fixed by embedding anon key directly in cron functions as a constant. `notify-dispatcher` has `verify_jwt=false`; Edge Function uses its own `SUPABASE_SERVICE_ROLE_KEY` env var for all admin DB ops.
+- **Action-token-update base URL** — `tokenBaseUrl` corrected to use `SUPABASE_URL` (Supabase Edge Functions host) instead of `SITE_URL` (frontend host). Broken one-click email links would have 404'd in production.
+
+### db
+- `notifications` table + RLS (sprint already had this; now fully wired)
+- `notification_preferences` table + RLS
+- `improvement_actions`: `stale_nudge_sent_at`, `last_status_updated_at`, `token_nonce` (UNIQUE), `token_expires_at` columns
+- `coach_notes` table + RLS (coach/dealer/OEM)
+- `notify_on_coach_comment()` trigger function + trigger on `coach_notes`
+- `process_stale_actions()` + `send_weekly_digests()` updated to use anon key
+- Supabase types regenerated
+
+### infra
+- `notify-dispatcher` Edge Function — v3 deployed (React Email templates)
+- `action-token-update` Edge Function — v1 deployed (public, `verify_jwt=false`)
+
+### Notes
+- 186 tests passing (4 new `CoachNotesPanel` tests added), zero TypeScript errors
+- No new npm packages (React Email imports via `esm.sh` in Deno Edge Functions only — zero frontend bundle impact)
+- Tracker items completed: #70, #71, #72, #73, #77, #78
+
+---
+
 ## [2026-05-18] — Sprint 10: Knowledge Hub + Results/Action Plan Polish
 
 ### feat
