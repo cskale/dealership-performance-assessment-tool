@@ -1,36 +1,15 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
-import { useLatestAssessment } from '@/hooks/useLatestAssessment';
 import { getAllKPIDefinitions } from '@/lib/kpiDefinitions';
 import { DEPT_DISPLAY_NAMES } from '@/lib/mapSignalsToResources';
 import { Search } from 'lucide-react';
 
-const DEPT_ORDER = [
-  'new-vehicle-sales',
-  'used-vehicle-sales',
-  'service-performance',
-  'parts-inventory',
-  'financial-operations',
-];
-
-function dotColor(score: number | undefined): string {
-  if (score === undefined) return 'bg-slate-300';
-  if (score < 50) return 'bg-red-500';
-  if (score < 65) return 'bg-amber-500';
-  if (score < 75) return 'bg-blue-500';
-  return 'bg-green-500';
-}
-
-function borderClass(score: number | undefined): string {
-  if (score === undefined) return 'border-l-transparent';
-  if (score < 50) return 'border-l-red-500';
-  if (score < 65) return 'border-l-amber-500';
-  return 'border-l-transparent';
+function toSentenceCase(str: string): string {
+  return str.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
 }
 
 export function KpiEncyclopediaTab() {
-  const { data: assessment } = useLatestAssessment();
   const [search, setSearch] = useState('');
   const [deptFilter, setDeptFilter] = useState<string>('all');
 
@@ -56,7 +35,10 @@ export function KpiEncyclopediaTab() {
     entries.forEach(([, d]) => {
       if (d.department && !seen.has(d.department)) {
         seen.add(d.department);
-        result.push({ key: d.department, label: DEPT_DISPLAY_NAMES[d.department] ?? d.department });
+        result.push({
+          key: d.department,
+          label: DEPT_DISPLAY_NAMES[d.department] ?? toSentenceCase(d.department),
+        });
       }
     });
     return result.sort((a, b) => a.label.localeCompare(b.label));
@@ -80,7 +62,7 @@ export function KpiEncyclopediaTab() {
           onChange={(e) => setDeptFilter(e.target.value)}
           className="text-sm border border-border rounded-md px-3 py-2 bg-background md:w-56"
         >
-          <option value="all">All Departments</option>
+          <option value="all">All departments</option>
           {allDepts.map((d) => (
             <option key={d.key} value={d.key}>{d.label}</option>
           ))}
@@ -96,12 +78,11 @@ export function KpiEncyclopediaTab() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map(([key, def]) => {
             const dept = def.department ?? '';
-            const deptName = DEPT_DISPLAY_NAMES[dept];
-            const score = dept ? assessment?.departmentScores[dept] : undefined;
+            const deptName = DEPT_DISPLAY_NAMES[dept] ?? toSentenceCase(dept);
             return (
               <div
                 key={key}
-                className={`rounded-xl border border-l-4 bg-card p-5 flex flex-col gap-3 hover:shadow-md transition ${borderClass(score)}`}
+                className="rounded-xl border border-l-4 border-l-blue-400 bg-card p-5 flex flex-col gap-3 hover:shadow-md transition"
               >
                 <div className="flex items-center justify-between gap-2">
                   {deptName && (
@@ -109,10 +90,6 @@ export function KpiEncyclopediaTab() {
                       {deptName}
                     </span>
                   )}
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <span className={`w-2 h-2 rounded-full ${dotColor(score)}`} />
-                    <span>{score !== undefined ? `${Math.round(score)} / 100` : '—'}</span>
-                  </div>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-1">{def.title}</h4>
@@ -122,7 +99,7 @@ export function KpiEncyclopediaTab() {
                   to={`/app/knowledge/kpi/${key}`}
                   className="text-sm font-medium text-primary hover:underline mt-auto"
                 >
-                  View Details →
+                  View details →
                 </Link>
               </div>
             );

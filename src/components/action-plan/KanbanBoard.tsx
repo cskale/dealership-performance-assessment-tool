@@ -19,10 +19,10 @@ const COLUMNS: { key: ColumnStatus; label: string }[] = [
 ];
 
 const PRIORITY_DOT: Record<ActionRecord['priority'], string> = {
-  critical: '#E24B4A',
-  high: '#EF9F27',
+  critical: '#378ADD',
+  high: '#378ADD',
   medium: '#378ADD',
-  low: '#888780',
+  low: '#378ADD',
 };
 
 export function KanbanBoard({ actions, onStatusChange, onActionClick }: KanbanBoardProps) {
