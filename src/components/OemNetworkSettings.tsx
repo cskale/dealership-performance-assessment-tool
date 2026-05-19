@@ -28,7 +28,6 @@ interface LookupResult {
   dealership_id?: string;
   dealership_name?: string;
   location?: string;
-  organization_id?: string;
   error?: string;
 }
 
@@ -186,11 +185,25 @@ export function OemNetworkSettings() {
       return;
     }
     setAddingDealer(true);
+
+    // Fetch organization_id via the additive OEM RLS policy on dealerships.
+    // The lookup RPC no longer returns organization_id to prevent cross-org enumeration.
+    const { data: dealerRow, error: dealerFetchError } = await supabase
+      .from('dealerships')
+      .select('organization_id')
+      .eq('id', lookupResult.dealership_id!)
+      .single();
+    if (dealerFetchError || !dealerRow?.organization_id) {
+      toast.error('Could not retrieve dealer details. Please try again.');
+      setAddingDealer(false);
+      return;
+    }
+
     const { error } = await supabase.from('dealer_network_memberships').upsert(
       {
         network_id: network.id,
         dealership_id: lookupResult.dealership_id!,
-        organization_id: lookupResult.organization_id!,
+        organization_id: dealerRow.organization_id,
         programme_tier: selectedTier,
         is_active: true,
         enrolled_at: new Date().toISOString(),

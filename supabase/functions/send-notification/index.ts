@@ -41,6 +41,33 @@ serve(async (req) => {
     );
   }
 
+  // This function is an internal email relay — service_role callers only.
+  // verify_jwt=true in config.toml means Supabase already validated the JWT signature;
+  // we just decode the payload here to enforce the role claim.
+  const authHeader = req.headers.get('Authorization') ?? '';
+  if (!authHeader.startsWith('Bearer ')) {
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
+  }
+  try {
+    const parts = authHeader.replace('Bearer ', '').split('.');
+    if (parts.length !== 3) throw new Error('malformed jwt');
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    if (payload.role !== 'service_role') {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden: service_role required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+  } catch {
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
+  }
+
   const apiKey = Deno.env.get('RESEND_API_KEY');
   if (!apiKey) {
     console.error('RESEND_API_KEY not set');

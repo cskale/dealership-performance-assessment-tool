@@ -5,3 +5,11 @@ verify_jwt = false
 
 [functions.generate-actions]
 verify_jwt = false
+
+# Raw email relay — server-to-server only; must carry service_role JWT
+[functions.send-notification]
+verify_jwt = true
+
+# Notification hub — called by cron (anon JWT) and internal triggers; no anonymous unauthenticated access
+[functions.notify-dispatcher]
+verify_jwt = true

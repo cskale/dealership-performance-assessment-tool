@@ -72,6 +72,24 @@ serve(async (req) => {
       )
     }
 
+    // Verify email_to matches the recipient user's registered email address.
+    // Prevents this function from being used as a relay to arbitrary email addresses.
+    if (channel === 'email' && email_to) {
+      const { data: adminUser } = await supabaseAdmin.auth.admin.getUserById(user_id)
+      if (!adminUser?.user) {
+        return new Response(
+          JSON.stringify({ error: 'User not found' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      if (adminUser.user.email?.toLowerCase() !== email_to.toLowerCase()) {
+        return new Response(
+          JSON.stringify({ error: 'Forbidden: email_to must match the recipient user\'s registered email' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    }
+
     // Check preferences - skip if user has disabled this channel or type
     const { data: prefs } = await supabaseAdmin
       .from('notification_preferences')

@@ -20,7 +20,15 @@ function getCorsHeaders(origin: string) {
   };
 }
 
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]!))
+}
+
 function buildInviteEmailHtml(dealershipName: string, inviterName: string, inviteUrl: string, role: string, inviteType: 'dealer' | 'coach' | 'oem' = 'dealer'): string {
+  const safeName       = escapeHtml(inviterName)
+  const safeDealership = escapeHtml(dealershipName)
+  const safeRole       = escapeHtml(role)
+
   const heading =
     inviteType === 'oem'   ? "You've been invited as an OEM user" :
     inviteType === 'coach' ? "You've been invited as a coach" :
@@ -28,17 +36,17 @@ function buildInviteEmailHtml(dealershipName: string, inviterName: string, invit
 
   const bodyText =
     inviteType === 'oem'
-      ? `<strong>${inviterName}</strong> has invited you to access the OEM dashboard and manage the dealer network.`
+      ? `<strong>${safeName}</strong> has invited you to access the OEM dashboard and manage the dealer network.`
       : inviteType === 'coach'
-      ? `<strong>${inviterName}</strong> has invited you to coach <strong>${dealershipName}</strong> on the Dealer Diagnostic platform.`
-      : `<strong>${inviterName}</strong> has invited you to join <strong>${dealershipName}</strong> as a <strong>${role}</strong>.`;
+      ? `<strong>${safeName}</strong> has invited you to coach <strong>${safeDealership}</strong> on the Dealer Diagnostic platform.`
+      : `<strong>${safeName}</strong> has invited you to join <strong>${safeDealership}</strong> as a <strong>${safeRole}</strong>.`;
 
   const ctaText =
     inviteType === 'oem'   ? 'Accept OEM Invitation' :
     inviteType === 'coach' ? 'Accept Coach Invitation' :
                              'Accept Invitation';
 
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>You're invited to join ${dealershipName}</title></head><body style="margin:0;padding:0;background-color:#ffffff;font-family:'Roboto',Arial,sans-serif;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;"><table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;"><tr><td style="background-color:#0052CC;border-radius:12px 12px 0 0;padding:32px 40px;text-align:center;"><h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Dealership Performance Assessment</h1></td></tr><tr><td style="background-color:#f8f9fa;padding:40px;border-left:1px solid #e0e0e0;border-right:1px solid #e0e0e0;"><h2 style="margin:0 0 16px;color:#172B4D;font-size:20px;font-weight:600;">${heading}</h2><p style="margin:0 0 24px;color:#44546F;font-size:15px;line-height:1.6;">${bodyText}</p><table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr><td style="background-color:#0052CC;border-radius:8px;"><a href="${inviteUrl}" target="_blank" style="display:inline-block;padding:14px 32px;color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;">${ctaText}</a></td></tr></table></td></tr><tr><td style="background-color:#f0f1f3;border-radius:0 0 12px 12px;padding:24px 40px;text-align:center;border:1px solid #e0e0e0;"><p style="margin:0;color:#8993A4;font-size:12px;">This invitation expires in 7 days. If you didn't expect this, ignore this email.</p></td></tr></table></td></tr></table></body></html>`
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>You're invited to join ${safeDealership}</title></head><body style="margin:0;padding:0;background-color:#ffffff;font-family:'Roboto',Arial,sans-serif;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;"><table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;"><tr><td style="background-color:#0052CC;border-radius:12px 12px 0 0;padding:32px 40px;text-align:center;"><h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Dealership Performance Assessment</h1></td></tr><tr><td style="background-color:#f8f9fa;padding:40px;border-left:1px solid #e0e0e0;border-right:1px solid #e0e0e0;"><h2 style="margin:0 0 16px;color:#172B4D;font-size:20px;font-weight:600;">${heading}</h2><p style="margin:0 0 24px;color:#44546F;font-size:15px;line-height:1.6;">${bodyText}</p><table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr><td style="background-color:#0052CC;border-radius:8px;"><a href="${inviteUrl}" target="_blank" style="display:inline-block;padding:14px 32px;color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;">${ctaText}</a></td></tr></table></td></tr><tr><td style="background-color:#f0f1f3;border-radius:0 0 12px 12px;padding:24px 40px;text-align:center;border:1px solid #e0e0e0;"><p style="margin:0;color:#8993A4;font-size:12px;">This invitation expires in 7 days. If you didn't expect this, ignore this email.</p></td></tr></table></td></tr></table></body></html>`
 }
 
 serve(async (req) => {
