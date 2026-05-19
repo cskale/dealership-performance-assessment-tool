@@ -182,7 +182,7 @@ serve(async (req) => {
               makeToken('completed'),
             ])
 
-            const tokenBaseUrl = `${siteUrl}/functions/v1/action-token-update`
+            const tokenBaseUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/action-token-update`
             markInProgressUrl = `${tokenBaseUrl}?token=${encodeURIComponent(inProgressToken)}&status=in_progress`
             markCompleteUrl = `${tokenBaseUrl}?token=${encodeURIComponent(completeToken)}&status=completed`
 
