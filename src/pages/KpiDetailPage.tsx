@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { KPIExplorer } from '@/components/kpi-encyclopedia/KPIExplorer';
 import { useLatestAssessment } from '@/hooks/useLatestAssessment';
@@ -6,6 +6,7 @@ import { useLatestAssessment } from '@/hooks/useLatestAssessment';
 export default function KpiDetailPage() {
   const { kpiKey } = useParams<{ kpiKey: string }>();
   const { data: assessment } = useLatestAssessment();
+  const navigate = useNavigate();
 
   return (
     <div className="px-6 py-8">
@@ -23,7 +24,11 @@ export default function KpiDetailPage() {
           </>
         )}
       </nav>
-      <KPIExplorer scores={assessment?.departmentScores ?? {}} initialKpiKey={kpiKey} />
+      <KPIExplorer
+        scores={assessment?.departmentScores ?? {}}
+        initialKpiKey={kpiKey}
+        onKpiClose={() => navigate('/app/knowledge?tab=kpi')}
+      />
     </div>
   );
 }

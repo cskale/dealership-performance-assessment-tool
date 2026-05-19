@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 interface KPIExplorerProps {
   scores: Record<string, number>;
   initialKpiKey?: string;
+  onKpiClose?: () => void;
 }
 
 export interface KPIListItem {
@@ -43,7 +44,7 @@ function highlightMatch(text: string, search: string) {
 // Primary visible chips (max 6) + overflow into dropdown
 const PRIMARY_CHIP_COUNT = 6;
 
-export function KPIExplorer({ initialKpiKey }: KPIExplorerProps) {
+export function KPIExplorer({ initialKpiKey, onKpiClose }: KPIExplorerProps) {
   const { language } = useLanguage();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -113,7 +114,8 @@ export function KPIExplorer({ initialKpiKey }: KPIExplorerProps) {
 
   const handleCloseStudio = useCallback(() => {
     setSelectedKpiKey(null);
-  }, []);
+    onKpiClose?.();
+  }, [onKpiClose]);
 
   const resultCount = filteredItems.length;
 
