@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -1058,6 +1058,8 @@ export type Database = {
           status: string | null
           support_required_from: string[] | null
           target_completion_date: string | null
+          token_expires_at: string | null
+          token_nonce: string | null
           updated_at: string | null
           urgency_score: number | null
           user_id: string | null
@@ -1089,6 +1091,8 @@ export type Database = {
           status?: string | null
           support_required_from?: string[] | null
           target_completion_date?: string | null
+          token_expires_at?: string | null
+          token_nonce?: string | null
           updated_at?: string | null
           urgency_score?: number | null
           user_id?: string | null
@@ -1120,6 +1124,8 @@ export type Database = {
           status?: string | null
           support_required_from?: string[] | null
           target_completion_date?: string | null
+          token_expires_at?: string | null
+          token_nonce?: string | null
           updated_at?: string | null
           urgency_score?: number | null
           user_id?: string | null
