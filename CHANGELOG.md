@@ -6,6 +6,48 @@ Types: **feat** · **fix** · **security** · **perf** · **docs** · **refactor
 
 ---
 
+## [2026-05-18] — Sprint 10: Knowledge Hub + Results/Action Plan Polish
+
+### feat
+- **Knowledge Hub** — unified `/app/knowledge` section replacing separate `/resources` and `/kpi-encyclopedia` routes. Single sidebar item ("Knowledge") with 3 tabs:
+  - **Recommended** — score-driven gap cards: `mapSignalsToResources()` classifies department scores (CRITICAL_GAP <50 / HIGH_PRIORITY 50–64 / GROWTH_OPPORTUNITY 65–74), fetches matching resources from Supabase `resources` table via `topics[]` overlap, groups by department with signal badge. Dark `bg-slate-900` hero strip with 5 department score pills (health-coloured) and dynamic headline. Learning Paths section below gap cards: courses matching gap departments, with `user_learning_progress` progress bars and Start/Resume CTA.
+  - **KPI Encyclopedia** — searchable grid of all 111 KPIs. Single-row filter: search input + department dropdown (all departments from data, sentence-cased). Uniform blue left border on all cards. No score overlay — pure knowledge base, equal for all users. "View details →" links to `/app/knowledge/kpi/:kpiKey`.
+  - **Downloads** — filterable grid of articles, templates, case studies. Pill-based Type filter (All / Templates / Guides / Case Studies) + Sort (Most Recent / A–Z). Recommended Downloads strip above grid when assessment gaps exist.
+- **`mapSignalsToResources` utility** (`src/lib/mapSignalsToResources.ts`) — pure function, 7 unit tests. Exports `GapCard`, `SignalType`, `DEPT_DISPLAY_NAMES`, `ResourceType`.
+- **`useLatestAssessment` hook** (`src/hooks/useLatestAssessment.ts`) — TanStack Query hook; fetches latest completed assessment by `dealership_id` with fallback to `user_id` for org owners.
+- **`user_learning_progress` DB table** — composite PK `(user_id, resource_id)`, FK cascade on user + resource delete, RLS: user reads/writes own rows only. (migration `20260517120000`)
+- **KPI detail route** — `/app/knowledge/kpi/:kpiKey` renders existing `KPIExplorer` with breadcrumb and back navigation. `onKpiClose` prop added to `KPIExplorer`; fires `navigate('/app/knowledge?tab=kpi')` on ESC/X, preventing the old KPIExplorer list view from showing.
+- **Old routes preserved as redirects** — `/resources` → `/app/knowledge`, `/kpi-encyclopedia` → `/app/knowledge?tab=kpi`.
+
+### fix
+- **Recommended tab empty state** — `useLatestAssessment` queried by `dealership_id` from `useActiveRole().dealerId`, which is null for org owners (uxRole='coach'). Added `user_id` fallback query when `dealerId` is null.
+- **Knowledge Hub full-width** — removed `max-w-7xl` constraint from `KnowledgeHub.tsx` and `KpiDetailPage.tsx`.
+- **KPI detail back-navigation** — closing KPI detail dialog (ESC or X) now navigates to `/app/knowledge?tab=kpi` instead of revealing KPIExplorer's own list view.
+- **Kanban priority dots** — all dots now uniform blue (`#378ADD`); removed red/yellow priority colouring to match Roadmap view's consistent blue left border.
+- **KPI Encyclopedia department dropdown** — kebab-case dept keys (e.g. `sales-process`, `ev-readiness`) now converted to sentence case via `toSentenceCase()` helper.
+
+### removed
+- **Results page Resources tab** — removed from Results 5-tab layout (now 4 tabs: Summary / KPI Analysis / Maturity Level / Action Plan). KPI encyclopedia links in Results updated to `/app/knowledge/kpi/:key` and `/app/knowledge?tab=kpi`.
+- **Learning Paths tab** — merged into Recommended tab as a "Learning Paths" section; Knowledge Hub reduced from 4 to 3 tabs.
+- **Timeline view** — removed from Action Plan view switcher (List / Kanban / Roadmap remain); `TimelineView` import and render branch removed from `ActionPlan.tsx`.
+- **ResourceHub page** (`src/pages/ResourceHub.tsx`) — retired.
+- **KPIEncyclopediaPage** (`src/pages/KPIEncyclopediaPage.tsx`) — retired.
+
+### ui
+- **Results header** — Export PDF + Retake Assessment buttons moved inline with "ASSESSMENT RESULTS" label row; "Current" freshness badge removed (stale banner below handles this).
+- **Results duplicate stat strip** — removed Overall Score / Modules / Questions / Maturity Band row above the 4 summary cards (info was duplicated).
+- **Downloads filter bar** — removed Department filter; Type and Sort unified as consistent pills.
+
+### db
+- `user_learning_progress` table added (see feat above)
+- No other schema changes
+
+### Notes
+- 182 tests passing, zero TypeScript errors
+- No new npm packages
+
+---
+
 ## [2026-05-16] — Sprint 9: OEM Dashboard Full Redesign
 
 ### feat

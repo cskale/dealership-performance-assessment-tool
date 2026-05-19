@@ -48,8 +48,15 @@ Dealers complete a structured diagnostic assessment across five departments. The
 - **OEM invite flow** — self-service invite via `InviteOemUser` card (Account → Team + OEM Settings); edge function guards on active `oem_network` ownership
 - **OEM self-activation** — org owners with an active OEM network can invite OEM users without SQL
 
+### Knowledge Hub (`/app/knowledge`)
+Single unified section replacing separate Resource Hub and KPI Encyclopedia pages. Three tabs:
+- **Recommended** — score-driven: `mapSignalsToResources()` classifies department scores into CRITICAL_GAP / HIGH_PRIORITY / GROWTH_OPPORTUNITY, fetches Supabase resources matching those department topics, groups cards by department with signal badge. Learning Paths (courses) shown below gap cards with `user_learning_progress` progress bars.
+- **KPI Encyclopedia** — searchable grid of all 111 KPIs with department dropdown filter (all departments, sentence-cased). Uniform blue left border; no score overlay — equal for all users. Clicking a KPI opens the `KPIExplorer` dialog at `/app/knowledge/kpi/:kpiKey`; ESC/X navigates back to the tab.
+- **Downloads** — filterable grid (article / template / case_study). Pill filters for type + sort. Recommended Downloads strip when assessment gaps exist.
+
 ### Action Management
-- Kanban board (HTML5 DnD) with Open / In Progress / Completed columns
+- Kanban board (HTML5 DnD) with Open / In Progress / Completed columns; uniform blue priority dots
+- Roadmap view: 3-column 30/60/90-day grouping with blue left border on all cards
 - Full ActionSheet: all fields (title, description, status, priority, department, responsible, due date, KPIs, impact/effort/urgency scores)
 - Activity feed: merged timeline of automatic audit log entries + manual comments; real-time via Supabase channels; Ctrl+Enter to post
 - Real-time sync bidirectional: dealer and coach see each other's changes without page refresh
