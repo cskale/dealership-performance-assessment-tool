@@ -6,6 +6,30 @@ Types: **feat** · **fix** · **security** · **perf** · **docs** · **refactor
 
 ---
 
+## [2026-05-19] — Security Audit + Benchmark Methodology (#50)
+
+### security
+- **Unauthenticated email relay patched (HIGH)** — `send-notification` Edge Function had zero auth; any external caller could send arbitrary emails via our Resend account. Fixed: `verify_jwt=true` added to `config.toml` + explicit `role === 'service_role'` check inside the function. Only server-to-server service-role callers can now invoke the raw email relay. `(commit a841a22)`
+- **`notify-dispatcher` arbitrary email_to patched (HIGH)** — notification hub accepted any `email_to` value, enabling spam relay to arbitrary addresses. Fixed: `verify_jwt=true` added; `email_to` now validated against the recipient user's registered email via `supabaseAdmin.auth.admin.getUserById()` before any email is sent. `(commit a841a22)`
+- **HTML injection in invite emails patched (MEDIUM)** — `send-invite` interpolated `inviterName`, `dealershipName`, and `roleLabel` (from DB profile/dealership records) directly into HTML email templates without escaping. A malicious org owner could inject HTML event handlers via their display name or dealership name. Fixed: `escapeHtml()` helper added; all user-controlled values escaped before template interpolation. `(commit a841a22)`
+- **Cross-org dealer enumeration patched (MEDIUM)** — `lookup_dealer_by_email` RPC (SECURITY DEFINER) returned `organization_id` for any dealer on the platform by email, allowing a verified OEM admin to map competitor email addresses to org identities. Fixed: `organization_id` removed from RPC response (migration `20260519140000`); `OemNetworkSettings` now fetches `organization_id` separately via the additive OEM RLS policy on `dealerships`. Add-dealer flow unaffected. `(commit a841a22)`
+
+### docs
+- **Benchmark methodology document (#50)** — full 1-pager drafted covering: source categories (generic / verified / OEM-specific / estimated), geographic scope (Western Europe + NADA reference), date range (Q4 2024), update cadence (annual), full KPI benchmark inventory across NVS / Service / Parts / Financial with confidence levels and sample sizes, scoring/benchmark interaction model, limitations and governance contacts. Ready to paste into Google Docs for OEM procurement.
+
+### security-audit findings cleared as false positives
+- Invite token reuse — email match enforced at DB level, FOR UPDATE lock, 7-day expiry, single-use status flag — well hardened
+- ActionSheet PATCH query-param bug — not found in current codebase, likely resolved in earlier sprint
+- Client writes to `action_audit_log` — RLS correctly returns 403; no data leak, functional issue only
+- CoachDashboard actor_type enforcement — client-side check is defence-in-depth; RLS on `coach_dealership_assignments` enforces server-side
+
+### notes
+- No new npm packages
+- SQL migration applied live: `20260519140000_fix_lookup_dealer_network_guard`
+- Anon key remains hardcoded in `cron_use_anon_key.sql` — accepted low risk (anon key is public by design; service_role key and Resend key confirmed absent from all git history)
+
+---
+
 ## [2026-05-19] — Sprint 11: Notification System Full Build (#70–#73, #77–#78)
 
 ### feat
