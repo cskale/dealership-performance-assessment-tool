@@ -158,11 +158,50 @@ serve(async (req) => {
           const daysStale = daysMatch ? parseInt(daysMatch[1]) : 1
           const priorityMatch = body.match(/Priority: (\w+)/)
           const priority = (priorityMatch?.[1]?.toLowerCase() ?? 'medium') as 'critical' | 'high' | 'medium' | 'low'
+          const jwtSecret = Deno.env.get('SUPABASE_JWT_SECRET')
+
+          let markInProgressUrl: string | undefined
+          let markCompleteUrl: string | undefined
+
+          if (entity_id && jwtSecret) {
+            const exp = Math.floor(Date.now() / 1000) + 72 * 3600
+
+            const makeToken = async (status: string): Promise<string> => {
+              const tokenPayload = { action_id: entity_id, user_id, status, exp }
+              const key = await crypto.subtle.importKey(
+                'raw', new TextEncoder().encode(jwtSecret),
+                { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+              )
+              const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(JSON.stringify(tokenPayload)))
+              const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig)))
+              return btoa(JSON.stringify({ ...tokenPayload, sig: sigB64 }))
+            }
+
+            const [inProgressToken, completeToken] = await Promise.all([
+              makeToken('in_progress'),
+              makeToken('completed'),
+            ])
+
+            const tokenBaseUrl = `${siteUrl}/functions/v1/action-token-update`
+            markInProgressUrl = `${tokenBaseUrl}?token=${encodeURIComponent(inProgressToken)}&status=in_progress`
+            markCompleteUrl = `${tokenBaseUrl}?token=${encodeURIComponent(completeToken)}&status=completed`
+
+            await supabaseAdmin
+              .from('improvement_actions')
+              .update({
+                token_nonce: inProgressToken,
+                token_expires_at: new Date(Date.now() + 72 * 3600 * 1000).toISOString(),
+              })
+              .eq('id', entity_id)
+          }
+
           emailHtml = render(React.createElement(StaleActionEmail, {
             actionTitle: title.replace('Action overdue: ', ''),
             priority,
             daysStale,
             actionsUrl,
+            markInProgressUrl,
+            markCompleteUrl,
           }))
         } else if (type === 'milestone') {
           const percentMatch = body.match(/(\d+)%/)
