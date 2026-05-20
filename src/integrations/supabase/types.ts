@@ -715,34 +715,49 @@ export type Database = {
       }
       coach_visits: {
         Row: {
+          agreed_action_ids: string[]
           coach_user_id: string
           created_at: string | null
           dealership_id: string
           id: string
+          modules_reviewed: string[]
+          next_visit_date: string | null
           status: string
+          summary: string | null
           updated_at: string | null
           visit_date: string
           visit_notes: string | null
+          visit_type: string | null
         }
         Insert: {
+          agreed_action_ids?: string[]
           coach_user_id: string
           created_at?: string | null
           dealership_id: string
           id?: string
+          modules_reviewed?: string[]
+          next_visit_date?: string | null
           status?: string
+          summary?: string | null
           updated_at?: string | null
           visit_date: string
           visit_notes?: string | null
+          visit_type?: string | null
         }
         Update: {
+          agreed_action_ids?: string[]
           coach_user_id?: string
           created_at?: string | null
           dealership_id?: string
           id?: string
+          modules_reviewed?: string[]
+          next_visit_date?: string | null
           status?: string
+          summary?: string | null
           updated_at?: string | null
           visit_date?: string
           visit_notes?: string | null
+          visit_type?: string | null
         }
         Relationships: [
           {
@@ -1054,6 +1069,8 @@ export type Database = {
           priority: string
           recommendation: string | null
           responsible_person: string | null
+          source_question_id: string | null
+          source_visit_id: string | null
           stale_nudge_sent_at: string | null
           status: string | null
           support_required_from: string[] | null
@@ -1087,6 +1104,8 @@ export type Database = {
           priority: string
           recommendation?: string | null
           responsible_person?: string | null
+          source_question_id?: string | null
+          source_visit_id?: string | null
           stale_nudge_sent_at?: string | null
           status?: string | null
           support_required_from?: string[] | null
@@ -1120,6 +1139,8 @@ export type Database = {
           priority?: string
           recommendation?: string | null
           responsible_person?: string | null
+          source_question_id?: string | null
+          source_visit_id?: string | null
           stale_nudge_sent_at?: string | null
           status?: string | null
           support_required_from?: string[] | null
@@ -1151,6 +1172,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "peer_segmentation_keys"
             referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "improvement_actions_source_visit_id_fkey"
+            columns: ["source_visit_id"]
+            isOneToOne: false
+            referencedRelation: "coach_visits"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2079,3 +2107,4 @@ export const Constants = {
     },
   },
 } as const
+
