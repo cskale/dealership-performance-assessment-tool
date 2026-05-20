@@ -33,6 +33,7 @@ import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { cn } from "@/lib/utils";
 import { FreshnessBadge } from "@/components/ui/FreshnessBadge";
 import { getAssessmentFreshness } from "@/lib/assessmentFreshness";
+import { useAssessmentNotes } from "@/hooks/useAssessmentNotes";
 
 export default function Results() {
   useEffect(() => { document.title = 'Results — Dealer Diagnostic'; }, []);
@@ -55,6 +56,7 @@ export default function Results() {
   const { user } = useAuth();
   const { currentOrganization, userMemberships } = useMultiTenant();
   const { actorType } = useActiveRole();
+  const { notes } = useAssessmentNotes();
   const [oemDealerContext, setOemDealerContext] = useState<{
     name: string;
     tier: string | null;
@@ -624,7 +626,7 @@ export default function Results() {
 
           <TabsContent value="maturity" className="space-y-6 animate-fade-in">
             <ErrorBoundary fallbackTitle={language === 'de' ? 'Reifegradanalyse nicht verfügbar' : 'Maturity analysis unavailable'}>
-              <MaturityScoring scores={resultsData.scores} answers={resultsData.answers} benchmarks={benchmarks} />
+              <MaturityScoring scores={resultsData.scores} answers={resultsData.answers} benchmarks={benchmarks} notes={notes} />
             </ErrorBoundary>
           </TabsContent>
 
