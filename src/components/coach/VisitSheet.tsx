@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
-import { CalendarIcon, X } from 'lucide-react';
+import { CalendarIcon, X, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface CoachVisit {
@@ -101,6 +101,17 @@ export function VisitSheet({ open, onOpenChange, dealershipId, dealerName, onVis
     onVisitSaved();
   };
 
+  const handleMarkCompleted = async (visitId: string) => {
+    const { error } = await supabase
+      .from('coach_visits')
+      .update({ status: 'completed', updated_at: new Date().toISOString() })
+      .eq('id', visitId);
+    if (error) { toast.error('Failed to mark visit as completed'); return; }
+    toast.success('Visit marked as completed');
+    await fetchVisits();
+    onVisitSaved();
+  };
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-md overflow-y-auto">
@@ -133,6 +144,16 @@ export function VisitSheet({ open, onOpenChange, dealershipId, dealerName, onVis
               >
                 <X className="h-3 w-3 mr-1" />Cancel visit
               </Button>
+              {activeVisit.status === 'confirmed' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs text-[#16a34a] hover:text-[#16a34a]"
+                  onClick={() => handleMarkCompleted(activeVisit.id)}
+                >
+                  <CheckCircle className="h-3 w-3 mr-1" />Mark as completed
+                </Button>
+              )}
             </div>
           )}
 
