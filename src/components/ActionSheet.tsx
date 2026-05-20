@@ -16,13 +16,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   CalendarIcon, Save, X, Trash2, Lightbulb,
   Loader2, BarChart3, AlertTriangle, TrendingUp,
-  ArrowRight, ChevronsUpDown, Check
+  ArrowRight, ChevronsUpDown, Check, StickyNote
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { KPI_DEFINITIONS } from "@/lib/kpiDefinitions";
 import { cleanDescription } from "@/lib/cleanDescription";
 import { sanitizeFormData } from "@/lib/sanitize";
+import { buildQuestionSectionMap, buildQuestionLabelMap, getDeptNotes } from '@/lib/coachVisitUtils';
 import { actionSchema } from "@/lib/validationSchemas";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -36,6 +37,7 @@ interface ActionSheetProps {
   onSave: (action: Partial<ActionRecord>) => void;
   onDelete?: (actionId: string) => void;
   readOnly?: boolean;
+  notes?: Record<string, string>; // questionId → note text
 }
 
 const RESPONSIBLE_PERSONS = [
@@ -49,6 +51,15 @@ const SUPPORT_OPTIONS = ["Coach", "IT Team", "Parts Vendor", "OEM", "Management"
 
 const DEPARTMENTS = ["Parts", "Workshop", "Sales", "Aftersales", "Finance", "Marketing", "Customer Service",
   "New Vehicle Sales", "Used Vehicle Sales", "Service", "Parts & Inventory", "Financial Operations"];
+
+const DEPT_LABEL_TO_ID: Record<string, string> = {
+  'New Vehicle Sales':    'new-vehicle-sales',
+  'Used Vehicle Sales':   'used-vehicle-sales',
+  'Service':              'service-performance',
+  'Parts':                'parts-inventory',
+  'Parts & Inventory':    'parts-inventory',
+  'Financial Operations': 'financial-operations',
+};
 
 const IMPACT_LABELS = ['Marginal', 'Low', 'Moderate', 'High', 'Critical'];
 const EFFORT_LABELS = ['<1 day', '<1 week', '1–2 weeks', '2–4 weeks', 'Major'];
@@ -66,7 +77,7 @@ function getQuadrantLabel(impact: number, effort: number): string {
   return 'Low Priority';
 }
 
-export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete, readOnly }: ActionSheetProps) {
+export function ActionSheet({ open, onOpenChange, action, mode, onSave, onDelete, readOnly, notes }: ActionSheetProps) {
   const { language } = useLanguage();
   const [isDirty, setIsDirty] = useState(false);
   const [showKpiAll, setShowKpiAll] = useState(false);
@@ -181,6 +192,17 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
 
   const visibleKpis = showKpiAll ? linkedKpiDetails : linkedKpiDetails.slice(0, 4);
 
+  // Field notes for the action's department
+  const questionSectionMap = useMemo(() => buildQuestionSectionMap(), []);
+  const questionLabelMap   = useMemo(() => buildQuestionLabelMap(), []);
+
+  const deptNotes = useMemo(() => {
+    if (!notes || !action?.department) return [];
+    const sectionId = DEPT_LABEL_TO_ID[action.department];
+    if (!sectionId) return [];
+    return getDeptNotes(sectionId, notes, questionSectionMap);
+  }, [notes, action?.department, questionSectionMap]);
+
   // Triage
   const triageScore = computeTriageScore(formData.impact_score ?? null, formData.effort_score ?? null, formData.urgency_score ?? null);
   const allScoresSet = formData.impact_score != null && formData.effort_score != null && formData.urgency_score != null;
@@ -265,6 +287,27 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
               <div className={cn("gap-0", mode === 'edit' ? "grid grid-cols-1 lg:grid-cols-[1fr_380px]" : "space-y-5")}>
                 {/* ── LEFT: Form ── */}
                 <div className="space-y-5 p-4">
+                  {/* Field Notes from Department */}
+                  {deptNotes.length > 0 && (
+                    <div className="rounded-md bg-amber-50 border border-amber-100 px-3 py-2.5 space-y-1.5">
+                      <p className="flex items-center gap-1.5 text-[10px] font-semibold text-amber-700 uppercase tracking-wide">
+                        <StickyNote className="h-3 w-3" />
+                        Field notes — {action?.department}
+                      </p>
+                      {deptNotes.slice(0, 3).map(({ questionId, text }) => (
+                        <div key={questionId}>
+                          {questionLabelMap[questionId] && (
+                            <p className="text-[10px] text-amber-600">{questionLabelMap[questionId]}</p>
+                          )}
+                          <p className="text-xs text-amber-900 leading-relaxed">{text}</p>
+                        </div>
+                      ))}
+                      {deptNotes.length > 3 && (
+                        <p className="text-[10px] text-amber-600">+{deptNotes.length - 3} more notes</p>
+                      )}
+                    </div>
+                  )}
+
                   {/* Title & Description */}
                   <div className="space-y-3">
                     <div className="space-y-1.5">

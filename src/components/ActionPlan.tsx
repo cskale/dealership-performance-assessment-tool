@@ -100,7 +100,7 @@ const STATUS_STRIPE: Record<string, string> = {
   'Completed': 'bg-success',
 };
 
-export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
+export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; notes?: Record<string, string> }) {
   const { user } = useAuth();
   const { currentOrganization, canPerformAction } = useMultiTenant();
   const { t, language } = useLanguage();
@@ -823,6 +823,7 @@ export function ActionPlan({ assessmentId }: { assessmentId?: string }) {
         onSave={handleSheetSave}
         onDelete={canEdit ? handleDelete : undefined}
         readOnly={!canEdit}
+        notes={notes}
       />
 
       {/* Conflict Resolution Dialog */}
