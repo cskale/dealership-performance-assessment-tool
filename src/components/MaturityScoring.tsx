@@ -18,11 +18,14 @@ import {
 } from "@/lib/scoringEngine";
 import { getMaturityLevelKey } from "@/lib/constants";
 import { questionnaire } from "@/data/questionnaire";
+import { FieldNotesCollapsible } from '@/components/results/FieldNotesCollapsible';
+import { buildQuestionSectionMap, buildQuestionLabelMap, getDeptNotes } from '@/lib/coachVisitUtils';
 
 interface MaturityScoringProps {
   scores: Record<string, number>;
   answers: Record<string, any>;
   benchmarks?: Record<string, ModuleBenchmark>;
+  notes?: Record<string, string>; // questionId → note text (optional — no notes shown if omitted)
 }
 
 interface MaturityLevel {
@@ -34,8 +37,11 @@ interface MaturityLevel {
   characteristics: string[];
 }
 
-export function MaturityScoring({ scores, answers, benchmarks }: MaturityScoringProps) {
+export function MaturityScoring({ scores, answers, benchmarks, notes }: MaturityScoringProps) {
   const { t, language } = useLanguage();
+
+  const questionSectionMap = useMemo(() => buildQuestionSectionMap(), []);
+  const questionLabelMap   = useMemo(() => buildQuestionLabelMap(), []);
 
   const subCategoryData = useMemo(() =>
     calculateSubCategoryScores(questionnaire.sections, answers as Record<string, number>),
@@ -425,13 +431,21 @@ export function MaturityScoring({ scores, answers, benchmarks }: MaturityScoring
               <h4 className="font-medium mb-3">{language === 'de' ? 'Abteilungs-Reifegrad' : 'Department Maturity'}</h4>
               <div className="space-y-2">
                 {departmentMaturityData.map((d) => (
-                  <div key={d.deptKey} className="flex items-center gap-2 text-sm whitespace-nowrap">
-                    <span className="flex-shrink-0">{d.level.icon}</span>
-                    <span className="flex-shrink-0 w-28 truncate">{d.department}</span>
-                    <Progress value={d.score} className="flex-1 h-2 min-w-[60px]" />
-                    <span className="flex-shrink-0 text-xs w-20 text-right">
-                      {d.level.name}
-                    </span>
+                  <div key={d.deptKey} className="space-y-1">
+                    <div className="flex items-center gap-2 text-sm whitespace-nowrap">
+                      <span className="flex-shrink-0">{d.level.icon}</span>
+                      <span className="flex-shrink-0 w-28 truncate">{d.department}</span>
+                      <Progress value={d.score} className="flex-1 h-2 min-w-[60px]" />
+                      <span className="flex-shrink-0 text-xs w-20 text-right">
+                        {d.level.name}
+                      </span>
+                    </div>
+                    {notes && (
+                      <FieldNotesCollapsible
+                        notes={getDeptNotes(d.deptKey, notes, questionSectionMap)}
+                        questionLabels={questionLabelMap}
+                      />
+                    )}
                   </div>
                 ))}
               </div>
