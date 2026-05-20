@@ -13,7 +13,7 @@ import {
 import {
   Plus, Loader2, Pencil,
   AlertTriangle, Target, Eye, Search, Filter, LayoutGrid, List as ListIcon,
-  CheckCircle2, X
+  CheckCircle2, X, StickyNote
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,6 +23,7 @@ import { questionnaire } from '@/data/questionnaire';
 import { generateActionsFromAssessment, formatActionsForDatabaseInsert } from '@/lib/signalEngine';
 import { cleanActionTitle, priorityDisplay, resetPatternUsage } from '@/lib/actionRationaleMap';
 import { cleanDescription } from '@/lib/cleanDescription';
+import { buildQuestionSectionMap } from '@/lib/coachVisitUtils';
 import { ActionSheet } from './ActionSheet';
 import { KanbanBoard } from './action-plan/KanbanBoard';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -57,6 +58,7 @@ export interface ActionRecord {
   likely_consequences?: string[] | null;
   expected_impact?: string | null;
   estimated_effort?: string | null;
+  source_visit_id?: string | null;
 }
 
 function computeTriageScore(action: ActionRecord): number | null {
@@ -388,6 +390,17 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
     return Array.from(set).sort();
   }, [actions]);
 
+  const questionSectionMap = useMemo(() => buildQuestionSectionMap(), []);
+
+  const DEPT_LABEL_TO_ID: Record<string, string> = {
+    'New Vehicle Sales':    'new-vehicle-sales',
+    'Used Vehicle Sales':   'used-vehicle-sales',
+    'Service':              'service-performance',
+    'Parts':                'parts-inventory',
+    'Parts & Inventory':    'parts-inventory',
+    'Financial Operations': 'financial-operations',
+  };
+
   const statusCounts = useMemo(() => {
     const counts = { all: actions.length, Open: 0, 'In Progress': 0, Completed: 0, Overdue: 0 };
     actions.forEach(a => {
@@ -698,6 +711,11 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
                   <p className="text-xs text-[hsl(var(--neutral-500))] text-center py-4">No actions in this phase yet</p>
                 ) : column.actions.map((action) => {
                   const priorityConfig = priorityDisplay[action.priority as keyof typeof priorityDisplay] || priorityDisplay.medium;
+                  const roadmapHasDeptNotes = notes && action.department
+                    ? Object.entries(notes).some(([qId, text]) =>
+                        text.trim() && questionSectionMap[qId] === DEPT_LABEL_TO_ID[action.department]
+                      )
+                    : false;
                   return (
                     <div
                       key={action.id}
@@ -707,7 +725,7 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
                       <h4 className="text-body-md font-medium text-[hsl(var(--neutral-900))] line-clamp-2">
                         {cleanActionTitle(action.action_title)}
                       </h4>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-1.5 items-center">
                         <span className="text-xs px-2 py-0.5 rounded-full border border-[hsl(var(--neutral-200))] bg-[hsl(var(--neutral-050))] text-[hsl(var(--neutral-600))]">
                           {action.department}
                         </span>
@@ -717,6 +735,16 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
                         <span className="text-xs px-2 py-0.5 rounded-full border border-[hsl(var(--neutral-200))] bg-[hsl(var(--neutral-050))] text-[hsl(var(--neutral-600))]">
                           {action.status}
                         </span>
+                        {action.source_visit_id && (
+                          <Badge variant="outline" className="text-[10px] text-violet-700 border-violet-200 bg-violet-50">
+                            From coaching visit
+                          </Badge>
+                        )}
+                        {roadmapHasDeptNotes && (
+                          <span title="Field notes available for this department">
+                            <StickyNote className="h-3 w-3 text-amber-500" />
+                          </span>
+                        )}
                       </div>
                     </div>
                   );
@@ -749,6 +777,12 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
                 const dueBadge = getDueBadge(action);
                 const topicHint = displayDesc.trim().split(/\s+/)[0] || '';
 
+                const hasDeptNotes = notes && action.department
+                  ? Object.entries(notes).some(([qId, text]) =>
+                      text.trim() && questionSectionMap[qId] === DEPT_LABEL_TO_ID[action.department]
+                    )
+                  : false;
+
                 return (
                   <div
                     key={action.id}
@@ -778,7 +812,7 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
                       {displayDesc && (
                         <p className="text-xs text-neutral-500 leading-relaxed line-clamp-2 mt-1">{displayDesc}</p>
                       )}
-                      <div className="flex flex-wrap gap-1.5 mt-2">
+                      <div className="flex flex-wrap gap-1.5 mt-2 items-center">
                         <span className="text-[11px] px-2 py-0.5 rounded-full border border-neutral-200 bg-neutral-50 text-neutral-600">
                           {action.department}
                         </span>
@@ -795,6 +829,16 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
                         <span className={cn("text-[11px] px-2 py-0.5 rounded-full border", getPriorityPillClass(action.priority))}>
                           {priorityConfig.label}
                         </span>
+                        {action.source_visit_id && (
+                          <Badge variant="outline" className="text-[10px] text-violet-700 border-violet-200 bg-violet-50">
+                            From coaching visit
+                          </Badge>
+                        )}
+                        {hasDeptNotes && (
+                          <span title="Field notes available for this department">
+                            <StickyNote className="h-3 w-3 text-amber-500" />
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
