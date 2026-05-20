@@ -23,7 +23,7 @@ import { questionnaire } from '@/data/questionnaire';
 import { generateActionsFromAssessment, formatActionsForDatabaseInsert } from '@/lib/signalEngine';
 import { cleanActionTitle, priorityDisplay, resetPatternUsage } from '@/lib/actionRationaleMap';
 import { cleanDescription } from '@/lib/cleanDescription';
-import { buildQuestionSectionMap } from '@/lib/coachVisitUtils';
+import { buildQuestionSectionMap, DEPT_LABEL_TO_SECTION_ID } from '@/lib/coachVisitUtils';
 import { ActionSheet } from './ActionSheet';
 import { KanbanBoard } from './action-plan/KanbanBoard';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -392,15 +392,6 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
 
   const questionSectionMap = useMemo(() => buildQuestionSectionMap(), []);
 
-  const DEPT_LABEL_TO_ID: Record<string, string> = {
-    'New Vehicle Sales':    'new-vehicle-sales',
-    'Used Vehicle Sales':   'used-vehicle-sales',
-    'Service':              'service-performance',
-    'Parts':                'parts-inventory',
-    'Parts & Inventory':    'parts-inventory',
-    'Financial Operations': 'financial-operations',
-  };
-
   const statusCounts = useMemo(() => {
     const counts = { all: actions.length, Open: 0, 'In Progress': 0, Completed: 0, Overdue: 0 };
     actions.forEach(a => {
@@ -713,7 +704,7 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
                   const priorityConfig = priorityDisplay[action.priority as keyof typeof priorityDisplay] || priorityDisplay.medium;
                   const roadmapHasDeptNotes = notes && action.department
                     ? Object.entries(notes).some(([qId, text]) =>
-                        text.trim() && questionSectionMap[qId] === DEPT_LABEL_TO_ID[action.department]
+                        text.trim() && questionSectionMap[qId] === DEPT_LABEL_TO_SECTION_ID[action.department]
                       )
                     : false;
                   return (
@@ -779,7 +770,7 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
 
                 const hasDeptNotes = notes && action.department
                   ? Object.entries(notes).some(([qId, text]) =>
-                      text.trim() && questionSectionMap[qId] === DEPT_LABEL_TO_ID[action.department]
+                      text.trim() && questionSectionMap[qId] === DEPT_LABEL_TO_SECTION_ID[action.department]
                     )
                   : false;
 

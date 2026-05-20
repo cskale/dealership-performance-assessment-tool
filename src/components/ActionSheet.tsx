@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 import { KPI_DEFINITIONS } from "@/lib/kpiDefinitions";
 import { cleanDescription } from "@/lib/cleanDescription";
 import { sanitizeFormData } from "@/lib/sanitize";
-import { buildQuestionSectionMap, buildQuestionLabelMap, getDeptNotes } from '@/lib/coachVisitUtils';
+import { buildQuestionSectionMap, buildQuestionLabelMap, getDeptNotes, DEPT_LABEL_TO_SECTION_ID } from '@/lib/coachVisitUtils';
 import { actionSchema } from "@/lib/validationSchemas";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -52,14 +52,6 @@ const SUPPORT_OPTIONS = ["Coach", "IT Team", "Parts Vendor", "OEM", "Management"
 const DEPARTMENTS = ["Parts", "Workshop", "Sales", "Aftersales", "Finance", "Marketing", "Customer Service",
   "New Vehicle Sales", "Used Vehicle Sales", "Service", "Parts & Inventory", "Financial Operations"];
 
-const DEPT_LABEL_TO_ID: Record<string, string> = {
-  'New Vehicle Sales':    'new-vehicle-sales',
-  'Used Vehicle Sales':   'used-vehicle-sales',
-  'Service':              'service-performance',
-  'Parts':                'parts-inventory',
-  'Parts & Inventory':    'parts-inventory',
-  'Financial Operations': 'financial-operations',
-};
 
 const IMPACT_LABELS = ['Marginal', 'Low', 'Moderate', 'High', 'Critical'];
 const EFFORT_LABELS = ['<1 day', '<1 week', '1–2 weeks', '2–4 weeks', 'Major'];
@@ -198,7 +190,7 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
 
   const deptNotes = useMemo(() => {
     if (!notes || !action?.department) return [];
-    const sectionId = DEPT_LABEL_TO_ID[action.department];
+    const sectionId = DEPT_LABEL_TO_SECTION_ID[action.department];
     if (!sectionId) return [];
     return getDeptNotes(sectionId, notes, questionSectionMap);
   }, [notes, action?.department, questionSectionMap]);

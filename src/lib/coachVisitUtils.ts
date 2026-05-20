@@ -11,6 +11,15 @@ export const VISIT_MODULES: { id: string; label: string }[] = [
   { id: 'financial-operations', label: 'Financial Operations' },
 ];
 
+export const DEPT_LABEL_TO_SECTION_ID: Record<string, string> = {
+  'New Vehicle Sales':     'new-vehicle-sales',
+  'Used Vehicle Sales':    'used-vehicle-sales',
+  'Service':               'service-performance',
+  'Parts':                 'parts-inventory',
+  'Parts & Inventory':     'parts-inventory',
+  'Financial Operations':  'financial-operations',
+};
+
 export interface CoachVisit {
   id: string;
   coach_user_id: string;
