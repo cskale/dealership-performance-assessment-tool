@@ -284,6 +284,7 @@ export interface PDFExportData {
     department: string;
   }>;
   includeWatermark: boolean;
+  fieldNotes?: Record<string, string>; // questionId → note text
 }
 
 function l(lang: string, key: string): string {
@@ -976,6 +977,104 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   pdf.text(discLines, margin, y);
 
   addFooter(pageNum);
+
+  // ── Dealer Field Notes appendix ──────────────────────────────────────────
+  if (data.fieldNotes && Object.keys(data.fieldNotes).length > 0) {
+    // Build maps from questionnaire
+    const sectionMap: Record<string, string> = {};
+    const labelMap: Record<string, string> = {};
+    for (const section of questionnaire.sections) {
+      for (const q of section.questions) {
+        sectionMap[q.id] = section.id;
+        labelMap[q.id] = q.text.length > 60 ? q.text.slice(0, 60) + '…' : q.text;
+      }
+    }
+
+    const DEPT_ORDER = ['new-vehicle-sales', 'used-vehicle-sales', 'service-performance', 'parts-inventory', 'financial-operations'];
+    const DEPT_LABELS: Record<string, string> = {
+      'new-vehicle-sales': DEPT_NAMES['new-vehicle-sales'][lang] ?? 'New Vehicle Sales',
+      'used-vehicle-sales': DEPT_NAMES['used-vehicle-sales'][lang] ?? 'Used Vehicle Sales',
+      'service-performance': DEPT_NAMES['service-performance'][lang] ?? 'Service Performance',
+      'parts-inventory': DEPT_NAMES['parts-inventory'][lang] ?? 'Parts & Inventory',
+      'financial-operations': DEPT_NAMES['financial-operations'][lang] ?? 'Financial Operations',
+    };
+
+    // Build rows with sectionId kept for sorting
+    type NoteRow = { sectionId: string; dept: string; questionLabel: string; text: string };
+    const rows: NoteRow[] = [];
+    for (const [questionId, noteText] of Object.entries(data.fieldNotes)) {
+      if (!noteText.trim()) continue;
+      const sectionId = sectionMap[questionId];
+      if (!sectionId) continue;
+      rows.push({
+        sectionId,
+        dept: DEPT_LABELS[sectionId] ?? sectionId,
+        questionLabel: labelMap[questionId] ?? questionId,
+        text: noteText.trim(),
+      });
+    }
+    // Sort by canonical dept order
+    rows.sort((a, b) => DEPT_ORDER.indexOf(a.sectionId) - DEPT_ORDER.indexOf(b.sectionId));
+
+    if (rows.length > 0) {
+      pdf.addPage();
+      pageNum++;
+      addHeader();
+      addWatermark();
+      let ny = contentTop;
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(24, 24, 27);
+      pdf.text(lang === 'de' ? 'Beobachtungsnotizen' : 'Dealer Field Notes', margin, ny);
+      ny += 10;
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(120, 120, 120);
+      pdf.text(lang === 'de' ? 'Notizen aus der Bewertungsdurchfuehrung' : 'Notes captured during assessment', margin, ny);
+      ny += 10;
+      pdf.setTextColor(0, 0, 0);
+
+      // Table header
+      const colDept = margin;
+      const colQ = margin + 45;
+      const colNote = margin + 110;
+      const tableWidth = pageW - margin * 2;
+
+      pdf.setFillColor(245, 245, 242);
+      pdf.rect(margin, ny, tableWidth, 7, 'F');
+      pdf.setFontSize(7);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(24, 24, 27);
+      pdf.text('Department', colDept + 2, ny + 5);
+      pdf.text('Question', colQ + 2, ny + 5);
+      pdf.text('Field Note', colNote + 2, ny + 5);
+      ny += 9;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(7);
+      for (const row of rows) {
+        const noteLines = pdf.splitTextToSize(row.text, pageW - colNote - margin);
+        const rowH = Math.max(8, noteLines.length * 4 + 4);
+        if (ny + rowH > pageH - margin) {
+          addFooter(pageNum);
+          pdf.addPage();
+          pageNum++;
+          addHeader();
+          addWatermark();
+          ny = contentTop;
+        }
+        pdf.setDrawColor(230, 228, 220);
+        pdf.line(margin, ny, margin + tableWidth, ny);
+        pdf.setTextColor(60, 60, 60);
+        pdf.text(pdf.splitTextToSize(row.dept, 43), colDept + 2, ny + 4);
+        pdf.text(pdf.splitTextToSize(row.questionLabel, 63), colQ + 2, ny + 4);
+        pdf.text(noteLines, colNote + 2, ny + 4);
+        ny += rowH;
+      }
+
+      addFooter(pageNum);
+    }
+  }
 
   // ═══════════════════════════════════════════
   // FINALIZE: Update page footers with total

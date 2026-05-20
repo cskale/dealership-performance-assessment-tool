@@ -249,6 +249,7 @@ export default function Results() {
     },
     actions: pdfActions,
     includeWatermark: false,
+    fieldNotes: notes,
   } : null;
 
   const getScoreColor = (score: number) => {
