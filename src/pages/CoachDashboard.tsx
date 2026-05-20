@@ -23,6 +23,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { computeStatsBar, computeTrend, daysSince, getScoreBand, isOverdue } from '@/lib/coachDashboardUtils';
 import { CoachNoteSheet } from '@/components/coach/CoachNoteSheet';
 import { VisitSheet } from '@/components/coach/VisitSheet';
+import { VisitLogSheet } from '@/components/coach/VisitLogSheet';
+import { type CoachVisit } from '@/lib/coachVisitUtils';
 import { KPI_DEFINITIONS } from '@/lib/kpiDefinitions';
 import { ACTION_TEMPLATES } from '@/data/actionTemplates';
 
@@ -269,12 +271,33 @@ export default function CoachDashboard() {
   const [notesPage, setNotesPage] = useState(0);
   const [activeNetworkId, setActiveNetworkId] = useState<string>('all');
   const [lastCompletedVisit, setLastCompletedVisit] = useState<{ date: string; dealerName: string } | null>(null);
+  const [visitHistoryDealerId, setVisitHistoryDealerId] = useState<string | null>(null);
+  const [visitLogSheetOpen, setVisitLogSheetOpen] = useState(false);
+  const [selectedVisitForLog, setSelectedVisitForLog] = useState<CoachVisit | null>(null);
+  const [dealerVisits, setDealerVisits] = useState<Record<string, CoachVisit[]>>({});
+  const [visitHistoryLoading, setVisitHistoryLoading] = useState(false);
 
   const networkTabs = useMemo(() => {
     const seen = new Map<string, { id: string; name: string; brand: string }>();
     dealers.forEach(d => d.networks.forEach(n => seen.set(n.id, n)));
     return Array.from(seen.values());
   }, [dealers]);
+
+  const fetchDealerVisits = async (dealershipId: string) => {
+    if (!user?.id) return;
+    setVisitHistoryLoading(true);
+    const { data } = await supabase
+      .from('coach_visits')
+      .select('*')
+      .eq('coach_user_id', user.id)
+      .eq('dealership_id', dealershipId)
+      .order('visit_date', { ascending: false });
+    setDealerVisits(prev => ({
+      ...prev,
+      [dealershipId]: (data ?? []) as CoachVisit[],
+    }));
+    setVisitHistoryLoading(false);
+  };
 
   const fetchNotes = async (page = 0) => {
     if (!user?.id) return;
@@ -1021,6 +1044,22 @@ export default function CoachDashboard() {
                         <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-[#16a34a]" />
                       )}
                     </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={`h-7 px-2 text-xs ${visitHistoryDealerId === dealer.dealershipId ? 'text-[hsl(var(--brand-500))]' : 'text-muted-foreground'}`}
+                      onClick={() => {
+                        if (visitHistoryDealerId === dealer.dealershipId) {
+                          setVisitHistoryDealerId(null);
+                        } else {
+                          setVisitHistoryDealerId(dealer.dealershipId);
+                          fetchDealerVisits(dealer.dealershipId);
+                        }
+                      }}
+                      aria-label="Visit history"
+                    >
+                      History
+                    </Button>
                   </div>
                   {dealer.latestAssessmentId ? (
                     <Button
@@ -1037,6 +1076,59 @@ export default function CoachDashboard() {
                     </Button>
                   )}
                 </div>
+
+                {/* Visit history panel */}
+                {visitHistoryDealerId === dealer.dealershipId && (
+                  <div className="mt-3 border-t border-border pt-3 space-y-2">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground px-1">Visit history</p>
+                    {visitHistoryLoading ? (
+                      <p className="text-xs text-muted-foreground px-1">Loading…</p>
+                    ) : (dealerVisits[dealer.dealershipId] ?? []).length === 0 ? (
+                      <p className="text-xs text-muted-foreground px-1">No visits recorded.</p>
+                    ) : (
+                      (dealerVisits[dealer.dealershipId] ?? []).map(v => (
+                        <div
+                          key={v.id}
+                          className="flex items-start justify-between gap-2 rounded-md border border-border px-3 py-2 text-sm"
+                        >
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs font-medium">
+                                {format(new Date(v.visit_date), 'dd MMM yyyy')}
+                              </span>
+                              {v.status === 'completed' && v.visit_type && (
+                                <Badge variant="outline" className="text-[10px] capitalize">
+                                  {v.visit_type}
+                                </Badge>
+                              )}
+                              {v.modules_reviewed?.length > 0 && (
+                                <span className="text-[10px] text-muted-foreground">
+                                  {v.modules_reviewed.length} module{v.modules_reviewed.length > 1 ? 's' : ''}
+                                </span>
+                              )}
+                            </div>
+                            {v.summary && (
+                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{v.summary}</p>
+                            )}
+                          </div>
+                          {v.status === 'completed' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs shrink-0"
+                              onClick={() => {
+                                setSelectedVisitForLog(v);
+                                setVisitLogSheetOpen(true);
+                              }}
+                            >
+                              {v.summary ? 'Edit log' : 'Log session'}
+                            </Button>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           );
@@ -1070,6 +1162,22 @@ export default function CoachDashboard() {
           setActiveVisitsByDealer(map);
         }}
       />
+
+      {selectedVisitForLog && visitHistoryDealerId && (
+        <VisitLogSheet
+          open={visitLogSheetOpen}
+          onOpenChange={setVisitLogSheetOpen}
+          visit={selectedVisitForLog}
+          dealershipId={visitHistoryDealerId}
+          dealerName={
+            dealers.find(d => d.dealershipId === visitHistoryDealerId)?.dealerName ?? ''
+          }
+          onLogSaved={() => {
+            setVisitLogSheetOpen(false);
+            fetchDealerVisits(visitHistoryDealerId);
+          }}
+        />
+      )}
 
       {/* Actions Requiring Attention */}
       <Card className="shadow-card rounded-xl">
