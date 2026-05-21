@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 import {
   Select,
   SelectContent,
@@ -305,37 +306,41 @@ export default function CoachDashboard() {
   };
 
   const downloadVisitReport = async (visit: CoachVisit, dealer: AssignedDealer) => {
-    // Fetch latest assessment scores for this dealership
-    const { data: assessments } = await supabase
-      .from('assessments')
-      .select('scores')
-      .eq('dealership_id', dealer.dealershipId)
-      .order('created_at', { ascending: false })
-      .limit(1);
-    const scores = (assessments?.[0] as any)?.scores ?? {};
+    try {
+      // Fetch latest assessment scores for this dealership
+      const { data: assessments } = await supabase
+        .from('assessments')
+        .select('scores')
+        .eq('dealership_id', dealer.dealershipId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      const scores = (assessments?.[0] as any)?.scores ?? {};
 
-    // Fetch agreed actions by IDs (if any)
-    let agreedActions: VisitReportData['agreedActions'] = [];
-    if (visit.agreed_action_ids.length > 0) {
-      const { data: actions } = await supabase
-        .from('improvement_actions')
-        .select('action_title, department, priority, status')
-        .in('id', visit.agreed_action_ids);
-      agreedActions = (actions ?? []) as VisitReportData['agreedActions'];
+      // Fetch agreed actions by IDs (if any)
+      let agreedActions: VisitReportData['agreedActions'] = [];
+      if (visit.agreed_action_ids.length > 0) {
+        const { data: actions } = await supabase
+          .from('improvement_actions')
+          .select('action_title, department, priority, status')
+          .in('id', visit.agreed_action_ids);
+        agreedActions = (actions ?? []) as VisitReportData['agreedActions'];
+      }
+
+      const reportData: VisitReportData = {
+        dealerName: dealer.dealerName,
+        dealerLocation: dealer.location,
+        coachName: user?.email ?? 'Coach',
+        visit,
+        scores,
+        benchmarks: STATIC_BENCHMARKS,
+        agreedActions,
+        lang: 'en',
+      };
+
+      await generateVisitReport(reportData);
+    } catch {
+      toast.error('Failed to generate visit report');
     }
-
-    const reportData: VisitReportData = {
-      dealerName: dealer.dealerName,
-      dealerLocation: dealer.location,
-      coachName: user?.email ?? 'Coach',
-      visit,
-      scores,
-      benchmarks: STATIC_BENCHMARKS,
-      agreedActions,
-      lang: 'en',
-    };
-
-    await generateVisitReport(reportData);
   };
 
   const fetchNotes = async (page = 0) => {
@@ -1164,7 +1169,7 @@ export default function CoachDashboard() {
                           </div>
                           {v.status === 'completed' && (
                             <div className="flex items-center gap-1 shrink-0">
-                              {v.status === 'completed' && v.summary && (
+                              {v.summary && (
                                 <Button
                                   variant="ghost"
                                   size="sm"
