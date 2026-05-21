@@ -28,6 +28,8 @@ import { VisitBriefingSheet } from '@/components/coach/VisitBriefingSheet';
 import { type CoachVisit } from '@/lib/coachVisitUtils';
 import { KPI_DEFINITIONS } from '@/lib/kpiDefinitions';
 import { ACTION_TEMPLATES } from '@/data/actionTemplates';
+import { generateVisitReport, type VisitReportData } from '@/lib/pdfReportGenerator';
+import { STATIC_BENCHMARKS } from '@/lib/benchmarkUtils';
 
 const BRAND_MAP: Record<string, { accent: string; domain: string | null }> = {
   bmw:             { accent: '#1C69D4', domain: 'bmw.com' },
@@ -300,6 +302,40 @@ export default function CoachDashboard() {
       [dealershipId]: (data ?? []) as CoachVisit[],
     }));
     setVisitHistoryLoading(false);
+  };
+
+  const downloadVisitReport = async (visit: CoachVisit, dealer: AssignedDealer) => {
+    // Fetch latest assessment scores for this dealership
+    const { data: assessments } = await supabase
+      .from('assessments')
+      .select('scores')
+      .eq('dealership_id', dealer.dealershipId)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    const scores = (assessments?.[0] as any)?.scores ?? {};
+
+    // Fetch agreed actions by IDs (if any)
+    let agreedActions: VisitReportData['agreedActions'] = [];
+    if (visit.agreed_action_ids.length > 0) {
+      const { data: actions } = await supabase
+        .from('improvement_actions')
+        .select('action_title, department, priority, status')
+        .in('id', visit.agreed_action_ids);
+      agreedActions = (actions ?? []) as VisitReportData['agreedActions'];
+    }
+
+    const reportData: VisitReportData = {
+      dealerName: dealer.dealerName,
+      dealerLocation: dealer.location,
+      coachName: user?.email ?? 'Coach',
+      visit,
+      scores,
+      benchmarks: STATIC_BENCHMARKS,
+      agreedActions,
+      lang: 'en',
+    };
+
+    await generateVisitReport(reportData);
   };
 
   const fetchNotes = async (page = 0) => {
@@ -1127,17 +1163,29 @@ export default function CoachDashboard() {
                             )}
                           </div>
                           {v.status === 'completed' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-7 text-xs shrink-0"
-                              onClick={() => {
-                                setSelectedVisitForLog(v);
-                                setVisitLogSheetOpen(true);
-                              }}
-                            >
-                              {v.summary ? 'Edit log' : 'Log session'}
-                            </Button>
+                            <div className="flex items-center gap-1 shrink-0">
+                              {v.status === 'completed' && v.summary && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 text-xs shrink-0"
+                                  onClick={() => downloadVisitReport(v, dealer)}
+                                >
+                                  ↓ Report
+                                </Button>
+                              )}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-xs shrink-0"
+                                onClick={() => {
+                                  setSelectedVisitForLog(v);
+                                  setVisitLogSheetOpen(true);
+                                }}
+                              >
+                                {v.summary ? 'Edit log' : 'Log session'}
+                              </Button>
+                            </div>
                           )}
                         </div>
                       ))
