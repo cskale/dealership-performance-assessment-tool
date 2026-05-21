@@ -1,6 +1,9 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { format } from 'date-fns';
 import { formatEuro, formatNumber } from '@/utils/euroFormatter';
+import { sectionToModuleCode, STATIC_BENCHMARKS } from '@/lib/benchmarkUtils';
+import { VISIT_MODULES, type CoachVisit } from '@/lib/coachVisitUtils';
 import {
   calculateWeightedScore,
   CATEGORY_WEIGHTS,
@@ -285,6 +288,22 @@ export interface PDFExportData {
   }>;
   includeWatermark: boolean;
   fieldNotes?: Record<string, string>; // questionId → note text
+}
+
+export interface VisitReportData {
+  dealerName: string;
+  dealerLocation: string;
+  coachName: string;
+  visit: Pick<CoachVisit, 'id' | 'visit_date' | 'visit_type' | 'modules_reviewed' | 'summary' | 'next_visit_date' | 'agreed_action_ids'>;
+  scores: Record<string, number>;
+  benchmarks: Record<string, { meanScore: number }>;
+  agreedActions: Array<{
+    action_title: string;
+    department: string;
+    priority: string;
+    status: string;
+  }>;
+  lang?: string;
 }
 
 function l(lang: string, key: string): string {
@@ -1092,4 +1111,228 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
   // Save
   const fileName = `${sanitizeFilename(orgName)}_Assessment_Report_${dateStr}.pdf`;
   pdf.save(fileName);
+}
+
+export async function generateVisitReport(data: VisitReportData): Promise<void> {
+  const lang = data.lang ?? 'en';
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  const pageW  = pdf.internal.pageSize.getWidth();
+  const pageH  = pdf.internal.pageSize.getHeight();
+  const margin = 20;
+  const contentW = pageW - margin * 2;
+  const footerY  = pageH - 10;
+
+  let pageNum = 1;
+
+  const addFooter = (num: number) => {
+    pdf.setFontSize(7);
+    pdf.setTextColor(130, 130, 130);
+    pdf.setFont('helvetica', 'normal');
+    const visitDateStr = format(new Date(data.visit.visit_date), 'dd MMM yyyy');
+    pdf.text(
+      `${data.coachName}  |  ${data.dealerName}  |  ${visitDateStr}  |  Page ${num}`,
+      margin,
+      footerY
+    );
+  };
+
+  // ── PAGE 1: VISIT SUMMARY ──────────────────────────────────────────────
+  pdf.setFillColor(24, 24, 27);
+  pdf.rect(0, 0, pageW, 44, 'F');
+  pdf.setFontSize(16);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(255, 255, 255);
+  pdf.text('Coaching Visit Report', margin, 18);
+  pdf.setFontSize(9);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text(`${data.dealerName}  ·  ${format(new Date(data.visit.visit_date), 'dd MMMM yyyy')}`, margin, 28);
+  pdf.text(`Coach: ${data.coachName}`, margin, 36);
+  pdf.setTextColor(0, 0, 0);
+
+  let ny = 54;
+
+  if (data.visit.visit_type) {
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Visit type', margin, ny);
+    pdf.setFont('helvetica', 'normal');
+    const typeLabel = data.visit.visit_type.charAt(0).toUpperCase() + data.visit.visit_type.slice(1);
+    pdf.text(typeLabel, margin + 38, ny);
+    ny += 8;
+  }
+
+  if (data.visit.modules_reviewed.length > 0) {
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Modules reviewed', margin, ny);
+    const moduleLabels = data.visit.modules_reviewed
+      .map(id => VISIT_MODULES.find(m => m.id === id)?.label ?? id)
+      .join(', ');
+    pdf.setFont('helvetica', 'normal');
+    const lines = pdf.splitTextToSize(moduleLabels, contentW - 38);
+    pdf.text(lines, margin + 38, ny);
+    ny += lines.length * 5 + 5;
+  }
+
+  if (data.visit.summary) {
+    ny += 4;
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Session Summary', margin, ny);
+    ny += 7;
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    const summaryLines = pdf.splitTextToSize(data.visit.summary, contentW);
+    for (const line of summaryLines) {
+      if (ny > pageH - 25) {
+        addFooter(pageNum);
+        pdf.addPage();
+        pageNum++;
+        ny = margin;
+      }
+      pdf.text(line, margin, ny);
+      ny += 5;
+    }
+  }
+
+  if (data.visit.next_visit_date) {
+    ny += 6;
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Next visit', margin, ny);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(format(new Date(data.visit.next_visit_date), 'dd MMMM yyyy'), margin + 38, ny);
+  }
+
+  addFooter(pageNum);
+
+  // ── PAGE 2: PERFORMANCE SNAPSHOT ─────────────────────────────────────
+  pdf.addPage();
+  pageNum++;
+  ny = margin;
+
+  pdf.setFontSize(14);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(0, 0, 0);
+  pdf.text('Performance at Time of Visit', margin, ny);
+  ny += 5;
+  pdf.setDrawColor(210, 210, 210);
+  pdf.line(margin, ny, pageW - margin, ny);
+  ny += 10;
+
+  const DEPT_ORDER_PDF = [
+    'new-vehicle-sales',
+    'used-vehicle-sales',
+    'service-performance',
+    'parts-inventory',
+    'financial-operations',
+  ] as const;
+
+  for (const sectionId of DEPT_ORDER_PDF) {
+    const score = data.scores[sectionId];
+    if (score === undefined) continue;
+    const benchmark = data.benchmarks[sectionToModuleCode(sectionId)]?.meanScore ?? 70;
+    const gap = Math.round(score - benchmark);
+    const deptLabel = DEPT_NAMES[sectionId]?.[lang] ?? sectionId;
+
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(deptLabel, margin, ny);
+
+    const barX = margin + 58;
+    const barW = 75;
+    const barH = 4;
+
+    pdf.setFillColor(235, 235, 235);
+    pdf.rect(barX, ny - 3.5, barW, barH, 'F');
+
+    const fillW = (Math.min(Math.max(score, 0), 100) / 100) * barW;
+    if (score >= 75) pdf.setFillColor(22, 163, 74);
+    else if (score >= 55) pdf.setFillColor(234, 179, 8);
+    else pdf.setFillColor(220, 38, 38);
+    pdf.rect(barX, ny - 3.5, fillW, barH, 'F');
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(String(Math.round(score)), barX + barW + 4, ny);
+
+    pdf.setFontSize(7);
+    pdf.setFont('helvetica', 'normal');
+    if (gap >= 0) pdf.setTextColor(22, 163, 74);
+    else pdf.setTextColor(220, 38, 38);
+    pdf.text(gap >= 0 ? `▲ +${gap}` : `▼ ${gap}`, barX + barW + 18, ny);
+    pdf.setTextColor(0, 0, 0);
+
+    ny += 13;
+  }
+
+  ny += 4;
+  pdf.setFontSize(7);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setTextColor(150, 150, 150);
+  pdf.text('Gap vs indicative industry benchmark. Scores from most recent assessment at time of visit.', margin, ny);
+
+  addFooter(pageNum);
+
+  // ── PAGE 3: AGREED ACTIONS ────────────────────────────────────────────
+  pdf.addPage();
+  pageNum++;
+  ny = margin;
+
+  pdf.setFontSize(14);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(0, 0, 0);
+  pdf.text('Agreed Actions', margin, ny);
+  ny += 5;
+  pdf.setDrawColor(210, 210, 210);
+  pdf.line(margin, ny, pageW - margin, ny);
+  ny += 10;
+
+  if (data.agreedActions.length === 0) {
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(130, 130, 130);
+    pdf.text('No actions were formally agreed in this session.', margin, ny);
+  } else {
+    pdf.setFillColor(245, 245, 242);
+    pdf.rect(margin, ny - 4, contentW, 7, 'F');
+    pdf.setFontSize(7);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(0, 0, 0);
+    const colAction   = margin + 2;
+    const colDept     = margin + 95;
+    const colPriority = margin + 130;
+    const colStatus   = margin + 155;
+    pdf.text('Action', colAction, ny);
+    pdf.text('Department', colDept, ny);
+    pdf.text('Priority', colPriority, ny);
+    pdf.text('Status', colStatus, ny);
+    ny += 6;
+
+    pdf.setFont('helvetica', 'normal');
+    for (const action of data.agreedActions) {
+      if (ny > pageH - 20) {
+        addFooter(pageNum);
+        pdf.addPage();
+        pageNum++;
+        ny = margin;
+      }
+      pdf.setDrawColor(230, 228, 220);
+      pdf.line(margin, ny - 3, margin + contentW, ny - 3);
+      const titleLines = pdf.splitTextToSize(action.action_title ?? '', 90);
+      pdf.text(titleLines, colAction, ny);
+      pdf.text(action.department ?? '', colDept, ny);
+      const priorityLabel = (action.priority ?? '');
+      pdf.text(priorityLabel.charAt(0).toUpperCase() + priorityLabel.slice(1), colPriority, ny);
+      pdf.text(action.status ?? '', colStatus, ny);
+      ny += Math.max(titleLines.length * 4.5, 7) + 2;
+    }
+  }
+
+  addFooter(pageNum);
+
+  // ── Save ──────────────────────────────────────────────────────────────
+  const safeDealer = data.dealerName.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30);
+  const visitDateFile = data.visit.visit_date.replace(/-/g, '');
+  pdf.save(`Visit_Report_${safeDealer}_${visitDateFile}.pdf`);
 }
