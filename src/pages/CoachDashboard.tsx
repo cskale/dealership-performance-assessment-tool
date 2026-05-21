@@ -18,12 +18,13 @@ import { SharedLoadingState } from '@/components/shared/SharedLoadingState';
 import { SharedEmptyState } from '@/components/shared/SharedEmptyState';
 import { ScoreGauge } from '@/components/shared/ScoreGauge';
 import { format } from 'date-fns';
-import { TrendingUp, TrendingDown, Minus, StickyNote, Calendar, Database, BookOpen, MapPin } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, StickyNote, Calendar, CalendarDays, Database, BookOpen, MapPin } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { computeStatsBar, computeTrend, daysSince, getScoreBand, isOverdue } from '@/lib/coachDashboardUtils';
 import { CoachNoteSheet } from '@/components/coach/CoachNoteSheet';
 import { VisitSheet } from '@/components/coach/VisitSheet';
 import { VisitLogSheet } from '@/components/coach/VisitLogSheet';
+import { VisitBriefingSheet } from '@/components/coach/VisitBriefingSheet';
 import { type CoachVisit } from '@/lib/coachVisitUtils';
 import { KPI_DEFINITIONS } from '@/lib/kpiDefinitions';
 import { ACTION_TEMPLATES } from '@/data/actionTemplates';
@@ -273,6 +274,8 @@ export default function CoachDashboard() {
   const [lastCompletedVisit, setLastCompletedVisit] = useState<{ date: string; dealerName: string } | null>(null);
   const [visitHistoryDealerId, setVisitHistoryDealerId] = useState<string | null>(null);
   const [visitLogSheetOpen, setVisitLogSheetOpen] = useState(false);
+  const [briefingDealerId, setBriefingDealerId] = useState<string | null>(null);
+  const [briefingSheetOpen, setBriefingSheetOpen] = useState(false);
   const [selectedVisitForLog, setSelectedVisitForLog] = useState<CoachVisit | null>(null);
   const [dealerVisits, setDealerVisits] = useState<Record<string, CoachVisit[]>>({});
   const [visitHistoryLoading, setVisitHistoryLoading] = useState(false);
@@ -1060,6 +1063,18 @@ export default function CoachDashboard() {
                     >
                       History
                     </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs gap-1"
+                      onClick={() => {
+                        setBriefingDealerId(dealer.dealershipId);
+                        setBriefingSheetOpen(true);
+                      }}
+                    >
+                      <CalendarDays className="h-3 w-3" />
+                      Briefing
+                    </Button>
                   </div>
                   {dealer.latestAssessmentId ? (
                     <Button
@@ -1176,6 +1191,18 @@ export default function CoachDashboard() {
             setVisitLogSheetOpen(false);
             fetchDealerVisits(visitHistoryDealerId);
           }}
+        />
+      )}
+
+      {briefingDealerId && (
+        <VisitBriefingSheet
+          open={briefingSheetOpen}
+          onOpenChange={setBriefingSheetOpen}
+          dealershipId={briefingDealerId}
+          dealerName={dealers.find(d => d.dealershipId === briefingDealerId)?.dealerName ?? ''}
+          latestAssessmentId={dealers.find(d => d.dealershipId === briefingDealerId)?.latestAssessmentId ?? null}
+          latestScore={dealers.find(d => d.dealershipId === briefingDealerId)?.latestScore ?? null}
+          latestDate={dealers.find(d => d.dealershipId === briefingDealerId)?.latestDate ?? null}
         />
       )}
 
