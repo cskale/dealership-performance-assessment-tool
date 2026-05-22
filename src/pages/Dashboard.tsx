@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { calculateWeightedScore } from '@/lib/scoringEngine';
 import { getMaturityLevel, MATURITY_LEVELS } from '@/lib/maturityConfig';
 import { CoachNotesPanel } from '@/components/CoachNotesPanel';
+import { Calendar } from '@/components/ui/calendar';
 import {
   DEPT_DISPLAY_NAMES,
   DEPT_ORDER,
@@ -613,9 +614,13 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [upcomingVisit, setUpcomingVisit] = useState<{
     visit_date: string;
-    status: 'proposed' | 'confirmed';
+    status: 'proposed' | 'confirmed' | 'counter_proposed' | 'cancelled';
     id: string;
+    dealer_proposed_date: string | null;
   } | null>(null);
+  const [counterMode, setCounterMode] = useState(false);
+  const [counterDate, setCounterDate] = useState<Date | undefined>(undefined);
+  const [negotiating, setNegotiating] = useState(false);
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
@@ -681,15 +686,15 @@ export default function Dashboard() {
         .eq('user_id', user.id)
         .single();
       if (!profile?.active_dealership_id) return;
-      const { data } = await supabase
+      const { data: visitData } = await supabase
         .from('coach_visits')
-        .select('id, visit_date, status')
+        .select('id, visit_date, status, dealer_proposed_date')
         .eq('dealership_id', profile.active_dealership_id)
-        .in('status', ['proposed', 'confirmed'])
+        .in('status', ['proposed', 'confirmed', 'counter_proposed'])
         .order('visit_date', { ascending: true })
         .limit(1)
         .maybeSingle();
-      setUpcomingVisit(data ?? null);
+      setUpcomingVisit(visitData ? { ...visitData, dealer_proposed_date: visitData.dealer_proposed_date ?? null } : null);
     };
     fetchVisit();
   }, [user?.id, actorType]);
@@ -726,6 +731,44 @@ export default function Dashboard() {
       .update({ status: 'confirmed' })
       .eq('id', upcomingVisit.id);
     if (!error) setUpcomingVisit(prev => prev ? { ...prev, status: 'confirmed' } : null);
+  };
+
+  const handleDeclineVisit = async () => {
+    if (!upcomingVisit) return;
+    setNegotiating(true);
+    try {
+      const { error } = await supabase
+        .from('coach_visits')
+        .update({ status: 'cancelled', declined_by: 'dealer' })
+        .eq('id', upcomingVisit.id);
+      if (!error) setUpcomingVisit(null);
+    } finally {
+      setNegotiating(false);
+    }
+  };
+
+  const handleCounterPropose = async () => {
+    if (!upcomingVisit || !counterDate) return;
+    setNegotiating(true);
+    try {
+      const { error } = await supabase
+        .from('coach_visits')
+        .update({
+          status: 'counter_proposed',
+          dealer_proposed_date: format(counterDate, 'yyyy-MM-dd'),
+        })
+        .eq('id', upcomingVisit.id);
+      if (!error) {
+        setUpcomingVisit(prev => prev
+          ? { ...prev, status: 'counter_proposed', dealer_proposed_date: format(counterDate!, 'yyyy-MM-dd') }
+          : null
+        );
+        setCounterMode(false);
+        setCounterDate(undefined);
+      }
+    } finally {
+      setNegotiating(false);
+    }
   };
 
   if (loading || hasAssessments === null) {
@@ -798,33 +841,108 @@ export default function Dashboard() {
 
         {/* ── Visit confirmation banner ── */}
         {upcomingVisit && (
-          <div className={`rounded-xl border px-4 py-3 flex items-center justify-between gap-4 ${
+          <div className={`rounded-xl border px-4 py-3 space-y-3 ${
             upcomingVisit.status === 'confirmed'
               ? 'bg-[#16a34a]/5 border-[#16a34a]/20'
+              : upcomingVisit.status === 'counter_proposed'
+              ? 'bg-amber-50 border-amber-200'
               : 'bg-[#2563eb]/5 border-[#2563eb]/20'
           }`}>
-            <div className="flex items-center gap-3">
-              <CalendarIcon className={`h-4 w-4 shrink-0 ${
-                upcomingVisit.status === 'confirmed' ? 'text-[#16a34a]' : 'text-[#2563eb]'
-              }`} />
-              <div>
-                <p className="text-sm font-medium">
-                  {upcomingVisit.status === 'confirmed' ? 'Confirmed coaching visit' : 'Upcoming coaching visit'}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {format(new Date(upcomingVisit.visit_date), 'EEEE, dd MMMM yyyy')}
-                </p>
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-3">
+                <CalendarIcon className={`h-4 w-4 shrink-0 ${
+                  upcomingVisit.status === 'confirmed' ? 'text-[#16a34a]'
+                  : upcomingVisit.status === 'counter_proposed' ? 'text-amber-600'
+                  : 'text-[#2563eb]'
+                }`} />
+                <div>
+                  <p className="text-sm font-medium">
+                    {upcomingVisit.status === 'confirmed'
+                      ? 'Confirmed coaching visit'
+                      : upcomingVisit.status === 'counter_proposed'
+                      ? 'You suggested a new date'
+                      : 'Proposed coaching visit'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {upcomingVisit.status === 'counter_proposed' && upcomingVisit.dealer_proposed_date
+                      ? format(new Date(upcomingVisit.dealer_proposed_date), 'EEEE, dd MMMM yyyy')
+                      : format(new Date(upcomingVisit.visit_date), 'EEEE, dd MMMM yyyy')}
+                  </p>
+                </div>
               </div>
+
+              {upcomingVisit.status === 'confirmed' && (
+                <Badge variant="outline" className="bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20 shrink-0">
+                  Confirmed ✓
+                </Badge>
+              )}
+
+              {upcomingVisit.status === 'counter_proposed' && (
+                <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-200 shrink-0">
+                  Awaiting coach response
+                </Badge>
+              )}
+
+              {upcomingVisit.status === 'proposed' && !counterMode && (
+                <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                  <Button
+                    size="sm"
+                    className="h-8 text-xs"
+                    disabled={negotiating}
+                    onClick={handleConfirmVisit}
+                  >
+                    Accept ✓
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 text-xs"
+                    disabled={negotiating}
+                    onClick={() => setCounterMode(true)}
+                  >
+                    Suggest new date
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 text-xs text-red-600 hover:text-red-600"
+                    disabled={negotiating}
+                    onClick={handleDeclineVisit}
+                  >
+                    Decline
+                  </Button>
+                </div>
+              )}
             </div>
-            {upcomingVisit.status === 'proposed' && (
-              <Button size="sm" className="h-8 text-xs shrink-0" onClick={handleConfirmVisit}>
-                Confirm
-              </Button>
-            )}
-            {upcomingVisit.status === 'confirmed' && (
-              <Badge variant="outline" className="bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20 shrink-0">
-                Confirmed ✓
-              </Badge>
+
+            {upcomingVisit.status === 'proposed' && counterMode && (
+              <div className="space-y-3 pt-1">
+                <Calendar
+                  mode="single"
+                  selected={counterDate}
+                  onSelect={setCounterDate}
+                  disabled={{ before: new Date() }}
+                  className="rounded-md border mx-auto w-fit"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="h-8 text-xs"
+                    disabled={!counterDate || negotiating}
+                    onClick={handleCounterPropose}
+                  >
+                    {negotiating ? 'Saving…' : 'Suggest this date'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 text-xs"
+                    onClick={() => { setCounterMode(false); setCounterDate(undefined); }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
             )}
           </div>
         )}
