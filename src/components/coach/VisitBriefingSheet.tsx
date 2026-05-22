@@ -112,7 +112,7 @@ export function VisitBriefingSheet({
           .select('visit_date, status')
           .eq('coach_user_id', user.id)
           .eq('dealership_id', dealershipId)
-          .in('status', ['proposed', 'confirmed'])
+          .in('status', ['proposed', 'confirmed', 'counter_proposed'])
           .order('visit_date', { ascending: true })
           .limit(1)
           .maybeSingle(),

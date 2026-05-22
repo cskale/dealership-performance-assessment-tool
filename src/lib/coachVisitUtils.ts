@@ -1,6 +1,6 @@
 import { questionnaire } from '@/data/questionnaire';
 
-export type VisitStatus = 'proposed' | 'confirmed' | 'cancelled' | 'completed';
+export type VisitStatus = 'proposed' | 'confirmed' | 'cancelled' | 'completed' | 'counter_proposed';
 export type VisitType = 'in-person' | 'remote' | 'phone';
 
 export const VISIT_MODULES: { id: string; label: string }[] = [
@@ -34,6 +34,8 @@ export interface CoachVisit {
   agreed_action_ids: string[];
   created_at: string | null;
   updated_at: string | null;
+  dealer_proposed_date: string | null;
+  declined_by: string | null;
 }
 
 export interface OpenAction {
