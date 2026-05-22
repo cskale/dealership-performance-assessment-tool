@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { format } from 'date-fns';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useActiveRole } from '@/hooks/useActiveRole';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
@@ -216,6 +217,7 @@ export default function OemDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [tierFilter, setTierFilter] = useState<string>('all');
   const [selectedDealer, setSelectedDealer] = useState<DealerScore | null>(null);
+  const [dealerNextVisits, setDealerNextVisits] = useState<Record<string, { visit_date: string; status: string } | null>>({});
 
   useEffect(() => {
     if (!currentOrganization?.id) return;
@@ -319,11 +321,31 @@ export default function OemDashboard() {
         countMap.set(a.dealership_id, count + 1);
       }
 
-      setDealerScores(Array.from(dealerMap.values()));
+      const loadedDealers = Array.from(dealerMap.values());
+      setDealerScores(loadedDealers);
+      fetchDealerNextVisits(loadedDealers.map(d => d.dealershipId));
       setLoadingDealers(false);
     };
     fetchDealerScores();
   }, [selectedNetworkId]);
+
+  const fetchDealerNextVisits = async (dealershipIds: string[]) => {
+    if (!dealershipIds.length) return;
+    const { data } = await supabase
+      .from('coach_visits')
+      .select('dealership_id, visit_date, status')
+      .in('dealership_id', dealershipIds)
+      .in('status', ['proposed', 'confirmed'])
+      .order('visit_date', { ascending: true });
+
+    const visitMap: Record<string, { visit_date: string; status: string }> = {};
+    for (const row of (data ?? [])) {
+      if (!visitMap[row.dealership_id]) {
+        visitMap[row.dealership_id] = { visit_date: row.visit_date, status: row.status };
+      }
+    }
+    setDealerNextVisits(visitMap);
+  };
 
   const sortedDealers = useMemo(() =>
     [...dealerScores].sort((a, b) => (b.latestScore ?? 0) - (a.latestScore ?? 0)),
@@ -896,6 +918,7 @@ export default function OemDashboard() {
                         <TableHead className="text-right hidden sm:table-cell">{t('oem.previousScore')}</TableHead>
                         <TableHead className="text-center hidden sm:table-cell">{t('oem.trend')}</TableHead>
                         <TableHead className="text-center">{t('oem.benchmarkBand')}</TableHead>
+                        <TableHead className="text-center hidden lg:table-cell">Next Visit</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -969,6 +992,29 @@ export default function OemDashboard() {
                                 <span className="text-muted-foreground">—</span>
                               )}
                             </TableCell>
+                            <TableCell className="text-center hidden lg:table-cell">
+                              {(() => {
+                                const visit = dealerNextVisits[dealer.dealershipId];
+                                if (!visit) return <span className="text-xs text-muted-foreground">—</span>;
+                                return (
+                                  <div className="flex flex-col items-center gap-0.5">
+                                    <span className="text-xs font-medium">
+                                      {format(new Date(visit.visit_date), 'dd MMM')}
+                                    </span>
+                                    <Badge
+                                      variant="outline"
+                                      className={`text-[10px] ${
+                                        visit.status === 'confirmed'
+                                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                          : 'bg-blue-50 text-blue-700 border-blue-200'
+                                      }`}
+                                    >
+                                      {visit.status === 'confirmed' ? 'Confirmed' : 'Proposed'}
+                                    </Badge>
+                                  </div>
+                                );
+                              })()}
+                            </TableCell>
                           </TableRow>
                         );
                       })}
@@ -984,6 +1030,7 @@ export default function OemDashboard() {
                             {getScoreBand(filteredStats.avg).label}
                           </Badge>
                         </TableCell>
+                        <TableCell className="hidden lg:table-cell" />
                       </TableRow>
                     </TableBody>
                   </Table>
