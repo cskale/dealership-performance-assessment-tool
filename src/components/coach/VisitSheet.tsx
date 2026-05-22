@@ -13,8 +13,9 @@ import { toast } from 'sonner';
 interface CoachVisit {
   id: string;
   visit_date: string;
-  status: 'proposed' | 'confirmed' | 'cancelled' | 'completed';
+  status: 'proposed' | 'confirmed' | 'cancelled' | 'completed' | 'counter_proposed';
   visit_notes: string | null;
+  dealer_proposed_date: string | null;
   created_at: string;
 }
 
@@ -27,10 +28,11 @@ interface VisitSheetProps {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  proposed:  'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20',
-  confirmed: 'bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20',
-  cancelled: 'bg-muted text-muted-foreground border-border',
-  completed: 'bg-[#7c3aed]/10 text-[#7c3aed] border-[#7c3aed]/20',
+  proposed:          'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20',
+  confirmed:         'bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20',
+  cancelled:         'bg-muted text-muted-foreground border-border',
+  completed:         'bg-[#7c3aed]/10 text-[#7c3aed] border-[#7c3aed]/20',
+  counter_proposed:  'bg-amber-100 text-amber-800 border-amber-200',
 };
 
 export function VisitSheet({ open, onOpenChange, dealershipId, dealerName, onVisitSaved }: VisitSheetProps) {
@@ -40,6 +42,9 @@ export function VisitSheet({ open, onOpenChange, dealershipId, dealerName, onVis
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [activeVisit, setActiveVisit] = useState<CoachVisit | null>(null);
+  const [coachResponseMode, setCoachResponseMode] = useState(false);
+  const [coachCounterDate, setCoachCounterDate] = useState<Date | undefined>(undefined);
+  const [responding, setResponding] = useState(false);
 
   useEffect(() => {
     if (open && dealershipId && user?.id) fetchVisits();
@@ -55,7 +60,7 @@ export function VisitSheet({ open, onOpenChange, dealershipId, dealerName, onVis
       .order('visit_date', { ascending: false });
     const rows = (data ?? []) as CoachVisit[];
     setVisits(rows);
-    const active = rows.find(v => v.status === 'proposed' || v.status === 'confirmed') ?? null;
+    const active = rows.find(v => ['proposed', 'confirmed', 'counter_proposed'].includes(v.status)) ?? null;
     setActiveVisit(active);
   };
 
@@ -112,6 +117,59 @@ export function VisitSheet({ open, onOpenChange, dealershipId, dealerName, onVis
     onVisitSaved();
   };
 
+  const handleAcceptCounterProposal = async (visitId: string, dealerDate: string) => {
+    setResponding(true);
+    try {
+      const { error } = await supabase
+        .from('coach_visits')
+        .update({
+          status: 'confirmed',
+          visit_date: dealerDate,
+          dealer_proposed_date: null,
+        })
+        .eq('id', visitId);
+      if (!error) {
+        toast.success("Visit confirmed on dealer's date");
+        await fetchVisits();
+        onVisitSaved();
+      } else {
+        toast.error('Failed to confirm visit');
+      }
+    } catch {
+      toast.error('Failed to confirm visit');
+    } finally {
+      setResponding(false);
+    }
+  };
+
+  const handleRejectAndRepropose = async (visitId: string) => {
+    if (!coachCounterDate) return;
+    setResponding(true);
+    try {
+      const { error } = await supabase
+        .from('coach_visits')
+        .update({
+          status: 'proposed',
+          visit_date: format(coachCounterDate, 'yyyy-MM-dd'),
+          dealer_proposed_date: null,
+        })
+        .eq('id', visitId);
+      if (!error) {
+        toast.success('New date proposed to dealer');
+        setCoachResponseMode(false);
+        setCoachCounterDate(undefined);
+        await fetchVisits();
+        onVisitSaved();
+      } else {
+        toast.error('Failed to propose new date');
+      }
+    } catch {
+      toast.error('Failed to propose new date');
+    } finally {
+      setResponding(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
@@ -125,12 +183,70 @@ export function VisitSheet({ open, onOpenChange, dealershipId, dealerName, onVis
         <div className="mt-6 space-y-6">
           {activeVisit && (
             <div className="rounded-lg border border-border p-4 space-y-2">
+              {activeVisit.status === 'counter_proposed' && activeVisit.dealer_proposed_date && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-3 mb-3">
+                  <div>
+                    <p className="text-sm font-semibold text-amber-800">Dealer suggested a new date</p>
+                    <p className="text-xs text-amber-700 mt-0.5">
+                      {format(new Date(activeVisit.dealer_proposed_date), 'EEEE, dd MMMM yyyy')}
+                    </p>
+                  </div>
+                  {!coachResponseMode ? (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        className="h-8 text-xs"
+                        disabled={responding}
+                        onClick={() => handleAcceptCounterProposal(activeVisit.id, activeVisit.dealer_proposed_date!)}
+                      >
+                        {responding ? 'Saving…' : 'Accept this date'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs"
+                        onClick={() => setCoachResponseMode(true)}
+                      >
+                        Propose different date
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <Calendar
+                        mode="single"
+                        selected={coachCounterDate}
+                        onSelect={setCoachCounterDate}
+                        disabled={{ before: new Date() }}
+                        className="rounded-md border"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          className="h-8 text-xs"
+                          disabled={!coachCounterDate || responding}
+                          onClick={() => handleRejectAndRepropose(activeVisit.id)}
+                        >
+                          {responding ? 'Saving…' : 'Propose this date'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 text-xs"
+                          onClick={() => { setCoachResponseMode(false); setCoachCounterDate(undefined); }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">
                   {format(new Date(activeVisit.visit_date), 'dd MMM yyyy')}
                 </span>
                 <Badge variant="outline" className={`text-xs capitalize ${STATUS_STYLES[activeVisit.status]}`}>
-                  {activeVisit.status}
+                  {activeVisit.status === 'counter_proposed' ? 'Counter proposed' : activeVisit.status}
                 </Badge>
               </div>
               {activeVisit.visit_notes && (
