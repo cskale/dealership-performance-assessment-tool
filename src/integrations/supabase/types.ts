@@ -718,7 +718,9 @@ export type Database = {
           agreed_action_ids: string[]
           coach_user_id: string
           created_at: string | null
+          dealer_proposed_date: string | null
           dealership_id: string
+          declined_by: string | null
           id: string
           modules_reviewed: string[]
           next_visit_date: string | null
@@ -733,7 +735,9 @@ export type Database = {
           agreed_action_ids?: string[]
           coach_user_id: string
           created_at?: string | null
+          dealer_proposed_date?: string | null
           dealership_id: string
+          declined_by?: string | null
           id?: string
           modules_reviewed?: string[]
           next_visit_date?: string | null
@@ -748,7 +752,9 @@ export type Database = {
           agreed_action_ids?: string[]
           coach_user_id?: string
           created_at?: string | null
+          dealer_proposed_date?: string | null
           dealership_id?: string
+          declined_by?: string | null
           id?: string
           modules_reviewed?: string[]
           next_visit_date?: string | null
