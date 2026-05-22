@@ -17,6 +17,9 @@ interface VisitBriefingSheetProps {
   latestAssessmentId: string | null;
   latestScore: number | null;
   latestDate: string | null;
+  onOpenHistory?: () => void;
+  onOpenVisit?: () => void;
+  onOpenNotes?: () => void;
 }
 
 const DEPT_ORDER = [
@@ -53,6 +56,10 @@ interface BriefingData {
     note_text: string;
     created_at: string;
   }>;
+  upcomingVisit: {
+    visit_date: string;
+    status: string;
+  } | null;
 }
 
 export function VisitBriefingSheet({
@@ -63,6 +70,9 @@ export function VisitBriefingSheet({
   latestAssessmentId,
   latestScore,
   latestDate,
+  onOpenHistory,
+  onOpenVisit,
+  onOpenNotes,
 }: VisitBriefingSheetProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -76,7 +86,7 @@ export function VisitBriefingSheet({
     if (!user?.id) return;
     setLoading(true);
     try {
-      const [scoresResult, assessmentsResult, visitResult, notesResult] = await Promise.all([
+      const [scoresResult, assessmentsResult, visitResult, notesResult, upcomingVisitResult] = await Promise.all([
         latestAssessmentId
           ? supabase.from('assessments').select('scores').eq('id', latestAssessmentId).single()
           : Promise.resolve({ data: null }),
@@ -97,6 +107,15 @@ export function VisitBriefingSheet({
           .eq('dealership_id', dealershipId)
           .order('created_at', { ascending: false })
           .limit(3),
+        supabase
+          .from('coach_visits')
+          .select('visit_date, status')
+          .eq('coach_user_id', user.id)
+          .eq('dealership_id', dealershipId)
+          .in('status', ['proposed', 'confirmed'])
+          .order('visit_date', { ascending: true })
+          .limit(1)
+          .maybeSingle(),
       ]);
 
       const assessmentIds = (assessmentsResult.data ?? []).map((a: { id: string }) => a.id);
@@ -116,6 +135,7 @@ export function VisitBriefingSheet({
         topActions: (actionsResult.data ?? []) as BriefingData['topActions'],
         lastVisit: (visitResult.data as BriefingData['lastVisit']) ?? null,
         recentNotes: (notesResult.data ?? []) as BriefingData['recentNotes'],
+        upcomingVisit: (upcomingVisitResult.data as BriefingData['upcomingVisit']) ?? null,
       });
     } catch {
       // Silently fail — briefing shows empty sections rather than crashing
@@ -256,6 +276,15 @@ export function VisitBriefingSheet({
                   )}
                 </div>
               )}
+              {onOpenHistory && (
+                <button
+                  type="button"
+                  className="text-xs text-[hsl(var(--brand-500))] underline mt-1 block"
+                  onClick={() => { onOpenChange(false); onOpenHistory(); }}
+                >
+                  View history →
+                </button>
+              )}
             </section>
 
             {/* Section 4: Coach Notes */}
@@ -278,6 +307,45 @@ export function VisitBriefingSheet({
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+              {onOpenNotes && (
+                <button
+                  type="button"
+                  className="text-xs text-[hsl(var(--brand-500))] underline mt-2 block"
+                  onClick={() => { onOpenChange(false); onOpenNotes(); }}
+                >
+                  Add note →
+                </button>
+              )}
+            </section>
+
+            {/* Section 5: Upcoming Visit */}
+            <section>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                Upcoming visit
+              </p>
+              {data.upcomingVisit ? (
+                <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
+                  <span className="text-xs font-medium">
+                    {format(new Date(data.upcomingVisit.visit_date), 'dd MMM yyyy')}
+                  </span>
+                  <Badge variant="outline" className="text-[10px] capitalize">
+                    {data.upcomingVisit.status}
+                  </Badge>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">No visit scheduled</p>
+                  {onOpenVisit && (
+                    <button
+                      type="button"
+                      className="text-xs text-[hsl(var(--brand-500))] underline"
+                      onClick={() => { onOpenChange(false); onOpenVisit(); }}
+                    >
+                      Schedule →
+                    </button>
+                  )}
                 </div>
               )}
             </section>
