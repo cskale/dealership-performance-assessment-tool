@@ -20,6 +20,7 @@ interface VisitLogSheetProps {
   visit: CoachVisit;
   dealershipId: string;
   dealerName: string;
+  latestAssessmentId?: string | null;
   onLogSaved: () => void;
 }
 
@@ -29,7 +30,7 @@ const VISIT_TYPE_OPTIONS: { value: VisitType; label: string }[] = [
   { value: 'phone',     label: 'Phone call' },
 ];
 
-export function VisitLogSheet({ open, onOpenChange, visit, dealershipId, dealerName, onLogSaved }: VisitLogSheetProps) {
+export function VisitLogSheet({ open, onOpenChange, visit, dealershipId, dealerName, latestAssessmentId, onLogSaved }: VisitLogSheetProps) {
   const { user } = useAuth();
 
   // Form state — pre-fill from existing visit log if present
@@ -63,13 +64,22 @@ export function VisitLogSheet({ open, onOpenChange, visit, dealershipId, dealerN
   }, [open, visit]);
 
   const fetchOpenActions = async () => {
-    // Get all assessments for this dealership
+    if (latestAssessmentId) {
+      const { data } = await supabase
+        .from('improvement_actions')
+        .select('id, action_title, department, priority, status')
+        .eq('assessment_id', latestAssessmentId)
+        .in('status', ['Open', 'In Progress'])
+        .order('priority');
+      setOpenActions((data ?? []) as OpenAction[]);
+      return;
+    }
+    // Fallback: fetch from all dealership assessments
     const { data: assessments } = await supabase
       .from('assessments')
       .select('id')
       .eq('dealership_id', dealershipId);
     if (!assessments?.length) return;
-
     const assessmentIds = assessments.map(a => a.id);
     const { data } = await supabase
       .from('improvement_actions')
