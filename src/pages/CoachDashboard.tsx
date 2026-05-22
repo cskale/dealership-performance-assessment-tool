@@ -528,6 +528,8 @@ export default function CoachDashboard() {
       });
 
       setDealers(dealerList);
+      // Pre-fetch visits for badge display (counter_proposed / declined)
+      dealerList.forEach(d => fetchDealerVisits(d.dealershipId));
       await fetchNotes(0);
 
       // Fetch active visits for dealer cards
@@ -951,6 +953,11 @@ export default function CoachDashboard() {
           const visitParts = visitLabel ? visitLabel.split(' · ') : null;
           const visitConfirmed = visitParts?.[1]?.toLowerCase() === 'confirmed';
 
+          const activeVisit = (dealerVisits[dealer.dealershipId] ?? [])
+            .find(v => ['proposed', 'confirmed', 'counter_proposed', 'cancelled'].includes(v.status as string));
+          const isCounterProposed = (activeVisit as any)?.status === 'counter_proposed';
+          const isDeclined = activeVisit?.status === 'cancelled' && (activeVisit as any)?.declined_by === 'dealer';
+
           const openMinusOverdue = Math.max(0, dealer.openCount - dealer.overdueCount);
           const progressPct = dealer.openCount > 0
             ? (openMinusOverdue / dealer.openCount) * 100
@@ -1052,6 +1059,20 @@ export default function CoachDashboard() {
                     <span className="text-muted-foreground">No visit scheduled</span>
                   )}
                 </div>
+                {(isCounterProposed || isDeclined) && (
+                  <div className="mt-1">
+                    {isCounterProposed && (activeVisit as any)?.dealer_proposed_date && (
+                      <span className="inline-flex items-center text-[10px] bg-amber-100 text-amber-700 border border-amber-200 rounded px-1.5 py-0.5">
+                        Dealer suggested {format(new Date((activeVisit as any).dealer_proposed_date), 'dd MMM')}
+                      </span>
+                    )}
+                    {isDeclined && (
+                      <span className="inline-flex items-center text-[10px] bg-red-100 text-red-700 border border-red-200 rounded px-1.5 py-0.5">
+                        Dealer declined visit
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 {/* Bottom action row — single line */}
                 <div className="border-t border-border/50 pt-2 flex items-center justify-between gap-2">
