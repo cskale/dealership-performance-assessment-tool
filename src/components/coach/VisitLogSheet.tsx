@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -166,17 +166,17 @@ export function VisitLogSheet({ open, onOpenChange, visit, dealershipId, dealerN
   const DEPT_OPTIONS = ['New Vehicle Sales', 'Used Vehicle Sales', 'Service', 'Parts & Inventory', 'Financial Operations'];
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
             <ClipboardList className="h-4 w-4 text-[hsl(var(--brand-500))]" />
             Session Log — {dealerName}
-          </SheetTitle>
+          </DialogTitle>
           <p className="text-xs text-muted-foreground">
             Visit on {format(new Date(visit.visit_date), 'dd MMM yyyy')}
           </p>
-        </SheetHeader>
+        </DialogHeader>
 
         <div className="mt-6 space-y-6">
           {/* Visit type */}
@@ -348,7 +348,7 @@ export function VisitLogSheet({ open, onOpenChange, visit, dealershipId, dealerN
             {saving ? 'Saving…' : 'Save session log'}
           </Button>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

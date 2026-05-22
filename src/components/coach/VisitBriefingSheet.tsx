@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -130,20 +130,20 @@ export function VisitBriefingSheet({
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2 text-base">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-base">
             <CalendarDays className="h-4 w-4 text-[hsl(var(--brand-500))]" />
             Pre-Visit Briefing — {dealerName}
-          </SheetTitle>
+          </DialogTitle>
           {latestScore !== null && latestDate && (
             <p className="text-xs text-muted-foreground">
               Assessment {format(new Date(latestDate), 'dd MMM yyyy')} · Overall{' '}
               <span className="font-semibold text-foreground">{Math.round(latestScore)}/100</span>
             </p>
           )}
-        </SheetHeader>
+        </DialogHeader>
 
         {loading ? (
           <div className="mt-8 flex items-center justify-center">
@@ -284,7 +284,7 @@ export function VisitBriefingSheet({
 
           </div>
         )}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

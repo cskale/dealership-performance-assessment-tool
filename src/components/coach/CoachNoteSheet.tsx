@@ -3,8 +3,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle,
-} from '@/components/ui/sheet';
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -152,11 +152,11 @@ export function CoachNoteSheet({ open, onOpenChange, dealershipId, dealerName, o
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[420px] sm:w-[480px] flex flex-col gap-0 p-0">
-        <SheetHeader className="px-5 py-4 border-b border-border">
-          <SheetTitle className="text-base font-semibold">{dealerName}</SheetTitle>
-        </SheetHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto flex flex-col gap-0 p-0">
+        <DialogHeader className="px-5 py-4 border-b border-border">
+          <DialogTitle className="text-base font-semibold">{dealerName}</DialogTitle>
+        </DialogHeader>
 
         <div className="flex-1 overflow-y-auto flex flex-col">
           {/* Compose */}
@@ -272,7 +272,7 @@ export function CoachNoteSheet({ open, onOpenChange, dealershipId, dealerName, o
             )}
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }
