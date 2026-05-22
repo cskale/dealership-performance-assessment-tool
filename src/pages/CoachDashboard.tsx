@@ -1270,6 +1270,29 @@ export default function CoachDashboard() {
           latestAssessmentId={dealers.find(d => d.dealershipId === briefingDealerId)?.latestAssessmentId ?? null}
           latestScore={dealers.find(d => d.dealershipId === briefingDealerId)?.latestScore ?? null}
           latestDate={dealers.find(d => d.dealershipId === briefingDealerId)?.latestDate ?? null}
+          onOpenHistory={() => {
+            setBriefingSheetOpen(false);
+            if (briefingDealerId) {
+              setVisitHistoryDealerId(briefingDealerId);
+              fetchDealerVisits(briefingDealerId);
+            }
+          }}
+          onOpenVisit={() => {
+            setBriefingSheetOpen(false);
+            const dealer = dealers.find(d => d.dealershipId === briefingDealerId);
+            if (dealer) {
+              setVisitSheetDealer(dealer);
+              setVisitSheetOpen(true);
+            }
+          }}
+          onOpenNotes={() => {
+            setBriefingSheetOpen(false);
+            const dealer = dealers.find(d => d.dealershipId === briefingDealerId);
+            if (dealer) {
+              setNoteSheetDealer(dealer);
+              setNoteSheetOpen(true);
+            }
+          }}
         />
       )}
 
