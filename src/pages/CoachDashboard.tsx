@@ -85,7 +85,7 @@ function getQuarterLabel(): string {
   return `Q${q} ${now.getFullYear()}`;
 }
 
-interface AssignedDealer {
+export interface AssignedDealer {
   dealershipId: string;
   dealerName: string;
   location: string;
