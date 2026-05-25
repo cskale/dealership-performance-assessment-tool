@@ -19,18 +19,13 @@ import { SharedLoadingState } from '@/components/shared/SharedLoadingState';
 import { SharedEmptyState } from '@/components/shared/SharedEmptyState';
 import { ScoreGauge } from '@/components/shared/ScoreGauge';
 import { format } from 'date-fns';
-import { TrendingUp, TrendingDown, Minus, StickyNote, Calendar, CalendarDays, Database, BookOpen, MapPin } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Calendar, Database, BookOpen, MapPin } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { computeStatsBar, computeTrend, daysSince, getScoreBand, isOverdue } from '@/lib/coachDashboardUtils';
-import { CoachNoteSheet } from '@/components/coach/CoachNoteSheet';
-import { VisitSheet } from '@/components/coach/VisitSheet';
-import { VisitLogSheet } from '@/components/coach/VisitLogSheet';
-import { VisitBriefingSheet } from '@/components/coach/VisitBriefingSheet';
+import { DealerPanel } from '@/components/coach/DealerPanel';
 import { type CoachVisit } from '@/lib/coachVisitUtils';
 import { KPI_DEFINITIONS } from '@/lib/kpiDefinitions';
 import { ACTION_TEMPLATES } from '@/data/actionTemplates';
-import { generateVisitReport, type VisitReportData } from '@/lib/pdfReportGenerator';
-import { STATIC_BENCHMARKS } from '@/lib/benchmarkUtils';
 
 const BRAND_MAP: Record<string, { accent: string; domain: string | null }> = {
   bmw:             { accent: '#1C69D4', domain: 'bmw.com' },
@@ -120,18 +115,6 @@ interface ActionItem {
   assessmentId: string;
   daysStale: number;
 }
-
-interface CoachNote {
-  id: string;
-  coach_user_id: string;
-  dealership_id: string;
-  assessment_id: string | null;
-  action_id: string | null;
-  note_text: string;
-  created_at: string;
-  note_type: 'observation' | 'action' | 'follow-up' | null;
-}
-
 
 function ResourceKpiPanel() {
   const [search, setSearch] = useState('');
@@ -259,102 +242,24 @@ export default function CoachDashboard() {
   const [dealers, setDealers] = useState<AssignedDealer[]>([]);
   const [allAssessments, setAllAssessments] = useState<AssessmentRecord[]>([]);
   const [allActions, setAllActions] = useState<ActionItem[]>([]);
-  const [notes, setNotes] = useState<CoachNote[]>([]);
   const [loading, setLoading] = useState(true);
   const [dashboardView, setDashboardView] = useState<'dashboard' | 'resources'>('dashboard');
   const [sortBy, setSortBy] = useState<'score' | 'name' | 'overdue'>('score');
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'in_progress'>('all');
   const [activeTab, setActiveTab] = useState<'overdue' | 'stale' | 'all'>('overdue');
   const [actionDealerFilter, setActionDealerFilter] = useState<string>('all');
-  const [noteSheetOpen, setNoteSheetOpen] = useState(false);
-  const [noteSheetDealer, setNoteSheetDealer] = useState<AssignedDealer | null>(null);
-  const [visitSheetOpen, setVisitSheetOpen] = useState(false);
-  const [visitSheetDealer, setVisitSheetDealer] = useState<AssignedDealer | null>(null);
   const [activeVisitsByDealer, setActiveVisitsByDealer] = useState<Map<string, string>>(new Map());
   const [activeNetworkId, setActiveNetworkId] = useState<string>('all');
   const [lastCompletedVisit, setLastCompletedVisit] = useState<{ date: string; dealerName: string } | null>(null);
-  const [visitHistoryDealerId, setVisitHistoryDealerId] = useState<string | null>(null);
-  const [visitLogSheetOpen, setVisitLogSheetOpen] = useState(false);
-  const [briefingDealerId, setBriefingDealerId] = useState<string | null>(null);
-  const [briefingSheetOpen, setBriefingSheetOpen] = useState(false);
-  const [selectedVisitForLog, setSelectedVisitForLog] = useState<CoachVisit | null>(null);
-  const [dealerVisits, setDealerVisits] = useState<Record<string, CoachVisit[]>>({});
-  const [visitHistoryLoading, setVisitHistoryLoading] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [panelDealer, setPanelDealer] = useState<AssignedDealer | null>(null);
+  const [panelInitialTab, setPanelInitialTab] = useState<'activity' | 'visits' | 'briefing'>('activity');
 
   const networkTabs = useMemo(() => {
     const seen = new Map<string, { id: string; name: string; brand: string }>();
     dealers.forEach(d => d.networks.forEach(n => seen.set(n.id, n)));
     return Array.from(seen.values());
   }, [dealers]);
-
-  const fetchDealerVisits = async (dealershipId: string) => {
-    if (!user?.id) return;
-    setVisitHistoryLoading(true);
-    const { data } = await supabase
-      .from('coach_visits')
-      .select('*')
-      .eq('coach_user_id', user.id)
-      .eq('dealership_id', dealershipId)
-      .order('visit_date', { ascending: false });
-    setDealerVisits(prev => ({
-      ...prev,
-      [dealershipId]: (data ?? []) as CoachVisit[],
-    }));
-    setVisitHistoryLoading(false);
-  };
-
-  const downloadVisitReport = async (visit: CoachVisit, dealer: AssignedDealer) => {
-    try {
-      // Fetch latest assessment scores for this dealership
-      const { data: assessments } = await supabase
-        .from('assessments')
-        .select('scores')
-        .eq('dealership_id', dealer.dealershipId)
-        .order('created_at', { ascending: false })
-        .limit(1);
-      const scores = (assessments?.[0] as any)?.scores ?? {};
-
-      // Fetch agreed actions by IDs (if any)
-      let agreedActions: VisitReportData['agreedActions'] = [];
-      if (visit.agreed_action_ids.length > 0) {
-        const { data: actions } = await supabase
-          .from('improvement_actions')
-          .select('action_title, department, priority, status')
-          .in('id', visit.agreed_action_ids);
-        agreedActions = (actions ?? []) as VisitReportData['agreedActions'];
-      }
-
-      const reportData: VisitReportData = {
-        dealerName: dealer.dealerName,
-        dealerLocation: dealer.location,
-        coachName: user?.email ?? 'Coach',
-        visit,
-        scores,
-        benchmarks: STATIC_BENCHMARKS,
-        agreedActions,
-        lang: 'en',
-      };
-
-      await generateVisitReport(reportData);
-    } catch {
-      toast.error('Failed to generate visit report');
-    }
-  };
-
-  const fetchNotes = async (page = 0) => {
-    if (!user?.id) return;
-    const { data } = await supabase
-      .from('coach_notes')
-      .select('*')
-      .eq('coach_user_id', user.id)
-      .order('created_at', { ascending: false })
-      .range(page * 20, page * 20 + 19);
-    if (page === 0) {
-      setNotes((data as CoachNote[]) ?? []);
-    } else {
-      setNotes(prev => [...prev, ...((data as CoachNote[]) ?? [])]);
-    }
-  };
 
   useEffect(() => {
     if (!user?.id) return;
@@ -528,9 +433,6 @@ export default function CoachDashboard() {
       });
 
       setDealers(dealerList);
-      // Pre-fetch visits for badge display (counter_proposed / declined)
-      dealerList.forEach(d => fetchDealerVisits(d.dealershipId));
-      await fetchNotes(0);
 
       // Fetch active visits for dealer cards
       const { data: visitData } = await supabase
@@ -948,16 +850,9 @@ export default function CoachDashboard() {
           const { accent } = getBrandStyle(dealer.brand);
           const trend = computeTrend(dealer.latestScore, dealer.previousScore);
           const since = daysSince(dealer.latestDate);
-          const hasNotes = notes.some(n => n.dealership_id === dealer.dealershipId);
           const visitLabel = activeVisitsByDealer.get(dealer.dealershipId);
           const visitParts = visitLabel ? visitLabel.split(' · ') : null;
           const visitConfirmed = visitParts?.[1]?.toLowerCase() === 'confirmed';
-
-          const activeVisit = (dealerVisits[dealer.dealershipId] ?? [])
-            .find(v => ['proposed', 'confirmed', 'counter_proposed', 'cancelled'].includes(v.status as string));
-          const isCounterProposed = (activeVisit as any)?.status === 'counter_proposed';
-          const isDeclined = activeVisit?.status === 'cancelled' && (activeVisit as any)?.declined_by === 'dealer';
-
           const openMinusOverdue = Math.max(0, dealer.openCount - dealer.overdueCount);
           const progressPct = dealer.openCount > 0
             ? (openMinusOverdue / dealer.openCount) * 100
@@ -997,55 +892,51 @@ export default function CoachDashboard() {
                   </p>
                 </div>
 
-                <div className="border-t border-border/50 pt-3 flex items-start gap-4">
-                  {/* Score gauge */}
-                  <div className="shrink-0">
-                    {dealer.latestScore != null ? (
-                      <ScoreGauge score={dealer.latestScore} size={88} />
-                    ) : (
-                      <div className="w-[88px] h-[88px] flex items-center justify-center text-[10px] text-muted-foreground text-center leading-tight">
-                        No score yet
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Action plan */}
-                  <div className="flex-1 space-y-1.5 pt-1">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Action Plan</p>
-                    <div className="w-full h-1.5 rounded-full bg-muted">
-                      <div
-                        className="h-1.5 rounded-full bg-[hsl(var(--brand-500))] transition-all"
-                        style={{ width: `${progressPct}%` }}
-                      />
+                {/* Score gauge — centred hero */}
+                <div className="flex flex-col items-center gap-2 py-2">
+                  {dealer.latestScore != null ? (
+                    <>
+                      <ScoreGauge score={dealer.latestScore} size={120} />
+                      {trend.direction !== 'none' && (
+                        <div className="flex items-center gap-1">
+                          {trend.direction === 'up' && <TrendingUp className="w-3 h-3 text-[#16a34a]" />}
+                          {trend.direction === 'down' && <TrendingDown className="w-3 h-3 text-[#dc2626]" />}
+                          {trend.direction === 'flat' && <Minus className="w-3 h-3 text-muted-foreground" />}
+                          <span className={`text-xs font-medium ${
+                            trend.direction === 'up' ? 'text-[#16a34a]' :
+                            trend.direction === 'down' ? 'text-[#dc2626]' :
+                            'text-muted-foreground'
+                          }`}>
+                            {trend.delta != null && trend.delta !== 0
+                              ? `${trend.delta > 0 ? '+' : ''}${trend.delta}`
+                              : '—'}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="w-[120px] h-[120px] flex items-center justify-center text-[10px] text-muted-foreground text-center leading-tight">
+                      No score yet
                     </div>
-                    <p className="text-xs text-foreground font-medium">
-                      {dealer.openCount > 0
-                        ? `${openMinusOverdue} / ${dealer.openCount} on track`
-                        : 'No open actions'
-                      }
-                    </p>
-                    {dealer.overdueCount > 0 && (
-                      <p className="text-[11px] text-[#dc2626] font-medium">{dealer.overdueCount} overdue</p>
-                    )}
-                    {/* Trend */}
-                    {trend.direction !== 'none' && (
-                      <div className="flex items-center gap-1 pt-0.5">
-                        {trend.direction === 'up' && <TrendingUp className="w-3 h-3 text-[#16a34a]" />}
-                        {trend.direction === 'down' && <TrendingDown className="w-3 h-3 text-[#dc2626]" />}
-                        {trend.direction === 'flat' && <Minus className="w-3 h-3 text-muted-foreground" />}
-                        <span className={`text-[11px] font-medium ${
-                          trend.direction === 'up' ? 'text-[#16a34a]' :
-                          trend.direction === 'down' ? 'text-[#dc2626]' :
-                          'text-muted-foreground'
-                        }`}>
-                          {trend.delta != null && trend.delta !== 0
-                            ? `${trend.delta > 0 ? '+' : ''}${trend.delta}`
-                            : '—'
-                          }
-                        </span>
-                      </div>
-                    )}
+                  )}
+                </div>
+
+                {/* Action plan — compact muted line */}
+                <div className="space-y-1">
+                  <div className="w-full h-1 rounded-full bg-muted">
+                    <div
+                      className="h-1 rounded-full bg-[hsl(var(--brand-500))] transition-all"
+                      style={{ width: `${progressPct}%` }}
+                    />
                   </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    {dealer.openCount > 0
+                      ? `${openMinusOverdue}/${dealer.openCount} on track`
+                      : 'No open actions'}
+                    {dealer.overdueCount > 0 && (
+                      <span className="text-[#dc2626] ml-1">· {dealer.overdueCount} overdue</span>
+                    )}
+                  </p>
                 </div>
 
                 {/* Visit chip */}
@@ -1059,74 +950,32 @@ export default function CoachDashboard() {
                     <span className="text-muted-foreground">No visit scheduled</span>
                   )}
                 </div>
-                {(isCounterProposed || isDeclined) && (
-                  <div className="mt-1">
-                    {isCounterProposed && (activeVisit as any)?.dealer_proposed_date && (
-                      <span className="inline-flex items-center text-[10px] bg-amber-100 text-amber-700 border border-amber-200 rounded px-1.5 py-0.5">
-                        Dealer suggested {format(new Date((activeVisit as any).dealer_proposed_date), 'dd MMM')}
-                      </span>
-                    )}
-                    {isDeclined && (
-                      <span className="inline-flex items-center text-[10px] bg-red-100 text-red-700 border border-red-200 rounded px-1.5 py-0.5">
-                        Dealer declined visit
-                      </span>
-                    )}
-                  </div>
-                )}
 
-                {/* Bottom action row — single line */}
-                <div className="border-t border-border/50 pt-2 flex items-center justify-between gap-2">
+                {/* Bottom action row */}
+                <div className="border-t border-border/50 pt-2 flex items-center gap-2">
                   <div className="flex items-center gap-1 shrink-0">
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="relative h-7 w-7 p-0"
-                      onClick={() => { setNoteSheetDealer(dealer); setNoteSheetOpen(true); }}
-                      aria-label="Add note"
+                      className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                      onClick={() => { setPanelDealer(dealer); setPanelInitialTab('activity'); setPanelOpen(true); }}
                     >
-                      <StickyNote className="h-4 w-4 text-muted-foreground" />
-                      {hasNotes && (
-                        <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
-                      )}
+                      Notes
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="relative h-7 w-7 p-0"
-                      onClick={() => { setVisitSheetDealer(dealer); setVisitSheetOpen(true); }}
-                      aria-label="Schedule visit"
+                      className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                      onClick={() => { setPanelDealer(dealer); setPanelInitialTab('visits'); setPanelOpen(true); }}
                     >
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      {activeVisitsByDealer.has(dealer.dealershipId) && (
-                        <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-[#16a34a]" />
-                      )}
+                      Visits
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className={`h-7 px-2 text-xs ${visitHistoryDealerId === dealer.dealershipId ? 'text-[hsl(var(--brand-500))]' : 'text-muted-foreground'}`}
-                      onClick={() => {
-                        if (visitHistoryDealerId === dealer.dealershipId) {
-                          setVisitHistoryDealerId(null);
-                        } else {
-                          setVisitHistoryDealerId(dealer.dealershipId);
-                          fetchDealerVisits(dealer.dealershipId);
-                        }
-                      }}
-                      aria-label="Visit history"
+                      className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                      onClick={() => { setPanelDealer(dealer); setPanelInitialTab('briefing'); setPanelOpen(true); }}
                     >
-                      History
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 text-xs gap-1"
-                      onClick={() => {
-                        setBriefingDealerId(dealer.dealershipId);
-                        setBriefingSheetOpen(true);
-                      }}
-                    >
-                      <CalendarDays className="h-3 w-3" />
                       Briefing
                     </Button>
                   </div>
@@ -1145,153 +994,36 @@ export default function CoachDashboard() {
                     </Button>
                   )}
                 </div>
-
-                {/* Visit history panel */}
-                {visitHistoryDealerId === dealer.dealershipId && (
-                  <div className="mt-3 border-t border-border pt-3 space-y-2">
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground px-1">Visit history</p>
-                    {visitHistoryLoading ? (
-                      <p className="text-xs text-muted-foreground px-1">Loading…</p>
-                    ) : (dealerVisits[dealer.dealershipId] ?? []).length === 0 ? (
-                      <p className="text-xs text-muted-foreground px-1">No visits recorded.</p>
-                    ) : (
-                      (dealerVisits[dealer.dealershipId] ?? []).map(v => (
-                        <div
-                          key={v.id}
-                          className="flex items-start justify-between gap-2 rounded-md border border-border px-3 py-2 text-sm"
-                        >
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-xs font-medium">
-                                {format(new Date(v.visit_date), 'dd MMM yyyy')}
-                              </span>
-                              {v.status === 'completed' && v.visit_type && (
-                                <Badge variant="outline" className="text-[10px] capitalize">
-                                  {v.visit_type}
-                                </Badge>
-                              )}
-                              {v.modules_reviewed?.length > 0 && (
-                                <span className="text-[10px] text-muted-foreground">
-                                  {v.modules_reviewed.length} module{v.modules_reviewed.length > 1 ? 's' : ''}
-                                </span>
-                              )}
-                            </div>
-                            {v.summary && (
-                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{v.summary}</p>
-                            )}
-                          </div>
-                          {v.status === 'completed' && (
-                            <div className="flex items-center gap-1 shrink-0">
-                              {v.summary && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 text-xs shrink-0"
-                                  onClick={() => downloadVisitReport(v, dealer)}
-                                >
-                                  ↓ Report
-                                </Button>
-                              )}
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 text-xs shrink-0"
-                                onClick={() => {
-                                  setSelectedVisitForLog(v);
-                                  setVisitLogSheetOpen(true);
-                                }}
-                              >
-                                {v.summary ? 'Edit log' : 'Log session'}
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
               </CardContent>
             </Card>
           );
         })}
       </div>
 
-      {/* Note sheet — rendered once, driven by noteSheetDealer state */}
-      <CoachNoteSheet
-        open={noteSheetOpen}
-        onOpenChange={setNoteSheetOpen}
-        dealershipId={noteSheetDealer?.dealershipId ?? null}
-        dealerName={noteSheetDealer?.dealerName ?? ''}
-        onNoteAdded={() => fetchNotes(0)}
-      />
-
-      <VisitSheet
-        open={visitSheetOpen}
-        onOpenChange={setVisitSheetOpen}
-        dealershipId={visitSheetDealer?.dealershipId ?? null}
-        dealerName={visitSheetDealer?.dealerName ?? ''}
-        onVisitSaved={async () => {
-          const { data } = await supabase
-            .from('coach_visits')
-            .select('dealership_id, visit_date, status')
-            .eq('coach_user_id', user!.id)
-            .in('status', ['proposed', 'confirmed']);
-          const map = new Map<string, string>();
-          (data ?? []).forEach((v: any) => {
-            map.set(v.dealership_id, `${format(new Date(v.visit_date), 'dd MMM')} · ${v.status}`);
-          });
-          setActiveVisitsByDealer(map);
-        }}
-      />
-
-      {selectedVisitForLog && visitHistoryDealerId && (
-        <VisitLogSheet
-          open={visitLogSheetOpen}
-          onOpenChange={setVisitLogSheetOpen}
-          visit={selectedVisitForLog}
-          dealershipId={visitHistoryDealerId}
-          dealerName={
-            dealers.find(d => d.dealershipId === visitHistoryDealerId)?.dealerName ?? ''
-          }
-          latestAssessmentId={dealers.find(d => d.dealershipId === visitHistoryDealerId)?.latestAssessmentId ?? null}
-          onLogSaved={() => {
-            setVisitLogSheetOpen(false);
-            fetchDealerVisits(visitHistoryDealerId);
+      {/* Unified dealer panel */}
+      {panelDealer && (
+        <DealerPanel
+          open={panelOpen}
+          onOpenChange={setPanelOpen}
+          dealer={panelDealer}
+          latestAssessmentId={panelDealer.latestAssessmentId}
+          latestScore={panelDealer.latestScore}
+          latestDate={panelDealer.latestDate}
+          initialTab={panelInitialTab}
+          onVisitSaved={async () => {
+            const { data } = await supabase
+              .from('coach_visits')
+              .select('dealership_id, visit_date, status')
+              .eq('coach_user_id', user!.id)
+              .in('status', ['proposed', 'confirmed']);
+            const map = new Map<string, string>();
+            (data ?? []).forEach((v: any) => {
+              map.set(v.dealership_id, `${format(new Date(v.visit_date), 'dd MMM')} · ${v.status}`);
+            });
+            setActiveVisitsByDealer(map);
           }}
-        />
-      )}
-
-      {briefingDealerId && (
-        <VisitBriefingSheet
-          open={briefingSheetOpen}
-          onOpenChange={setBriefingSheetOpen}
-          dealershipId={briefingDealerId}
-          dealerName={dealers.find(d => d.dealershipId === briefingDealerId)?.dealerName ?? ''}
-          latestAssessmentId={dealers.find(d => d.dealershipId === briefingDealerId)?.latestAssessmentId ?? null}
-          latestScore={dealers.find(d => d.dealershipId === briefingDealerId)?.latestScore ?? null}
-          latestDate={dealers.find(d => d.dealershipId === briefingDealerId)?.latestDate ?? null}
-          onOpenHistory={() => {
-            setBriefingSheetOpen(false);
-            if (briefingDealerId) {
-              setVisitHistoryDealerId(briefingDealerId);
-              fetchDealerVisits(briefingDealerId);
-            }
-          }}
-          onOpenVisit={() => {
-            setBriefingSheetOpen(false);
-            const dealer = dealers.find(d => d.dealershipId === briefingDealerId);
-            if (dealer) {
-              setVisitSheetDealer(dealer);
-              setVisitSheetOpen(true);
-            }
-          }}
-          onOpenNotes={() => {
-            setBriefingSheetOpen(false);
-            const dealer = dealers.find(d => d.dealershipId === briefingDealerId);
-            if (dealer) {
-              setNoteSheetDealer(dealer);
-              setNoteSheetOpen(true);
-            }
+          onNoteAdded={() => {
+            // Notes badge removed from cards — no-op
           }}
         />
       )}
