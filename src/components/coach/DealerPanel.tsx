@@ -9,14 +9,19 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { MapPin, Loader2, Trash2 } from 'lucide-react';
+import { MapPin, Loader2, Trash2, X, CheckCircle } from 'lucide-react';
 import { format, formatDistanceToNowStrict } from 'date-fns';
 import { toast } from 'sonner';
+import { Calendar } from '@/components/ui/calendar';
 import { getScoreBand } from '@/lib/coachDashboardUtils';
 import { type AssignedDealer } from '@/pages/CoachDashboard';
 import { type CoachVisit } from '@/lib/coachVisitUtils';
+import { VISIT_MODULES } from '@/lib/coachVisitUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { VisitLogSheet } from '@/components/coach/VisitLogSheet';
+import { generateVisitReport, type VisitReportData } from '@/lib/pdfReportGenerator';
+import { STATIC_BENCHMARKS } from '@/lib/benchmarkUtils';
 
 // ── Local types ────────────────────────────────────────────────────────────────
 
@@ -108,6 +113,431 @@ function buildActivityFeed(data: PanelData): ActivityEntry[] {
   });
 
   return entries.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+}
+
+// ── Visits tab ─────────────────────────────────────────────────────────────────
+
+const STATUS_STYLES: Record<string, string> = {
+  proposed:         'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20',
+  confirmed:        'bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20',
+  cancelled:        'bg-muted text-muted-foreground border-border',
+  completed:        'bg-[#7c3aed]/10 text-[#7c3aed] border-[#7c3aed]/20',
+  counter_proposed: 'bg-amber-100 text-amber-800 border-amber-200',
+};
+
+function VisitsTab({
+  data,
+  dataLoading,
+  dealer,
+  latestAssessmentId,
+  user,
+  onDataRefresh,
+  onVisitSaved,
+}: {
+  data: PanelData | null;
+  dataLoading: boolean;
+  dealer: AssignedDealer;
+  latestAssessmentId: string | null;
+  user: { id: string; email?: string } | null;
+  onDataRefresh: () => void;
+  onVisitSaved: () => void;
+}) {
+  const [showProposeForm, setShowProposeForm] = useState(false);
+  const [proposeDate, setProposeDate] = useState<Date | undefined>();
+  const [proposeNotes, setProposeNotes] = useState('');
+  const [proposeSaving, setProposeSaving] = useState(false);
+  const [coachResponseMode, setCoachResponseMode] = useState(false);
+  const [coachCounterDate, setCoachCounterDate] = useState<Date | undefined>();
+  const [responding, setResponding] = useState(false);
+  const [visitLogOpen, setVisitLogOpen] = useState(false);
+  const [selectedVisit, setSelectedVisit] = useState<CoachVisit | null>(null);
+
+  const visits = data?.visits ?? [];
+  const activeVisit = visits.find(v =>
+    ['proposed', 'confirmed', 'counter_proposed'].includes(v.status as string)
+  ) ?? null;
+  const pastVisits = visits.filter(v =>
+    ['cancelled', 'completed'].includes(v.status as string)
+  );
+
+  const handlePropose = async () => {
+    if (!proposeDate || !user?.id) return;
+    setProposeSaving(true);
+    try {
+      const { error } = await supabase.from('coach_visits').insert({
+        coach_user_id: user.id,
+        dealership_id: dealer.dealershipId,
+        visit_date: format(proposeDate, 'yyyy-MM-dd'),
+        visit_notes: proposeNotes.trim() || null,
+        status: 'proposed',
+      });
+      if (error) {
+        if (error.code === '23505') {
+          toast.error('Cancel the existing proposed visit before scheduling a new one.');
+        } else {
+          throw error;
+        }
+        return;
+      }
+      toast.success('Visit proposed');
+      setProposeDate(undefined);
+      setProposeNotes('');
+      setShowProposeForm(false);
+      onVisitSaved();
+    } catch {
+      toast.error('Failed to propose visit');
+    } finally {
+      setProposeSaving(false);
+    }
+  };
+
+  const handleCancel = async (visitId: string) => {
+    const { error } = await supabase
+      .from('coach_visits')
+      .update({ status: 'cancelled' })
+      .eq('id', visitId);
+    if (error) { toast.error('Failed to cancel visit'); return; }
+    toast.success('Visit cancelled');
+    onVisitSaved();
+  };
+
+  const handleMarkCompleted = async (visitId: string) => {
+    const { error } = await supabase
+      .from('coach_visits')
+      .update({ status: 'completed', updated_at: new Date().toISOString() })
+      .eq('id', visitId);
+    if (error) { toast.error('Failed to mark visit as completed'); return; }
+    toast.success('Visit marked as completed');
+    onVisitSaved();
+  };
+
+  const handleAcceptCounterProposal = async (visitId: string, dealerDate: string) => {
+    setResponding(true);
+    try {
+      const { error } = await supabase
+        .from('coach_visits')
+        .update({ status: 'confirmed', visit_date: dealerDate, dealer_proposed_date: null })
+        .eq('id', visitId);
+      if (!error) {
+        toast.success("Visit confirmed on dealer's date");
+        onVisitSaved();
+      } else {
+        toast.error('Failed to confirm visit');
+      }
+    } catch {
+      toast.error('Failed to confirm visit');
+    } finally {
+      setResponding(false);
+    }
+  };
+
+  const handleRejectAndRepropose = async (visitId: string) => {
+    if (!coachCounterDate) return;
+    setResponding(true);
+    try {
+      const { error } = await supabase
+        .from('coach_visits')
+        .update({
+          status: 'proposed',
+          visit_date: format(coachCounterDate, 'yyyy-MM-dd'),
+          dealer_proposed_date: null,
+        })
+        .eq('id', visitId);
+      if (!error) {
+        toast.success('New date proposed to dealer');
+        setCoachResponseMode(false);
+        setCoachCounterDate(undefined);
+        onVisitSaved();
+      } else {
+        toast.error('Failed to propose new date');
+      }
+    } catch {
+      toast.error('Failed to propose new date');
+    } finally {
+      setResponding(false);
+    }
+  };
+
+  const handleDownloadReport = async (visit: CoachVisit) => {
+    try {
+      const { data: assessments } = await supabase
+        .from('assessments')
+        .select('scores')
+        .eq('dealership_id', dealer.dealershipId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      const scores = (assessments?.[0] as any)?.scores ?? {};
+      let agreedActions: VisitReportData['agreedActions'] = [];
+      if (visit.agreed_action_ids.length > 0) {
+        const { data: actions } = await supabase
+          .from('improvement_actions')
+          .select('action_title, department, priority, status')
+          .in('id', visit.agreed_action_ids);
+        agreedActions = (actions ?? []) as VisitReportData['agreedActions'];
+      }
+      const reportData: VisitReportData = {
+        dealerName: dealer.dealerName,
+        dealerLocation: dealer.location,
+        coachName: user?.email ?? 'Coach',
+        visit,
+        scores,
+        benchmarks: STATIC_BENCHMARKS,
+        agreedActions,
+        lang: 'en',
+      };
+      await generateVisitReport(reportData);
+    } catch {
+      toast.error('Failed to generate visit report');
+    }
+  };
+
+  if (dataLoading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* Active visit */}
+      {activeVisit && (
+        <div className="space-y-3">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+            Upcoming
+          </p>
+
+          {/* Counter-proposal banner */}
+          {activeVisit.status === 'counter_proposed' && activeVisit.dealer_proposed_date && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-3">
+              <div>
+                <p className="text-sm font-semibold text-amber-800">Dealer suggested a new date</p>
+                <p className="text-xs text-amber-700 mt-0.5">
+                  {format(new Date(activeVisit.dealer_proposed_date), 'EEEE, dd MMMM yyyy')}
+                </p>
+              </div>
+              {!coachResponseMode ? (
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="h-8 text-xs"
+                    disabled={responding}
+                    onClick={() => handleAcceptCounterProposal(activeVisit.id, activeVisit.dealer_proposed_date!)}
+                  >
+                    {responding ? 'Saving…' : 'Accept this date'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 text-xs"
+                    onClick={() => setCoachResponseMode(true)}
+                  >
+                    Propose different date
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <Calendar
+                    mode="single"
+                    selected={coachCounterDate}
+                    onSelect={setCoachCounterDate}
+                    disabled={{ before: new Date() }}
+                    className="rounded-md border"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      className="h-8 text-xs"
+                      disabled={!coachCounterDate || responding}
+                      onClick={() => handleRejectAndRepropose(activeVisit.id)}
+                    >
+                      {responding ? 'Saving…' : 'Propose this date'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 text-xs"
+                      onClick={() => { setCoachResponseMode(false); setCoachCounterDate(undefined); }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="rounded-lg border border-border p-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">
+                {format(new Date(activeVisit.visit_date), 'dd MMM yyyy')}
+              </span>
+              <Badge
+                variant="outline"
+                className={`text-xs capitalize ${STATUS_STYLES[activeVisit.status]}`}
+              >
+                {activeVisit.status === 'counter_proposed' ? 'Counter proposed' : activeVisit.status}
+              </Badge>
+            </div>
+            {activeVisit.visit_notes && (
+              <p className="text-xs text-muted-foreground">{activeVisit.visit_notes}</p>
+            )}
+            <div className="flex items-center gap-2 pt-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs text-[#dc2626] hover:text-[#dc2626] px-2"
+                onClick={() => handleCancel(activeVisit.id)}
+              >
+                <X className="h-3 w-3 mr-1" />Cancel visit
+              </Button>
+              {activeVisit.status === 'confirmed' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs text-[#16a34a] hover:text-[#16a34a] px-2"
+                  onClick={() => handleMarkCompleted(activeVisit.id)}
+                >
+                  <CheckCircle className="h-3 w-3 mr-1" />Mark as completed
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Past visits */}
+      {pastVisits.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+            Past visits
+          </p>
+          <div className="rounded-lg border border-border divide-y divide-border">
+            {pastVisits.map(v => (
+              <div key={v.id} className="px-4 py-3 space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-medium">
+                      {format(new Date(v.visit_date), 'dd MMM yyyy')}
+                    </span>
+                    {v.status === 'completed' && v.visit_type && (
+                      <Badge variant="outline" className="text-[10px] capitalize">
+                        {v.visit_type}
+                      </Badge>
+                    )}
+                    {v.modules_reviewed?.length > 0 && (
+                      <span className="text-[10px] text-muted-foreground">
+                        {v.modules_reviewed.length} module{v.modules_reviewed.length > 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={`text-[10px] capitalize shrink-0 ${STATUS_STYLES[v.status]}`}
+                  >
+                    {v.status}
+                  </Badge>
+                </div>
+                {v.summary && (
+                  <p className="text-xs text-muted-foreground line-clamp-2">{v.summary}</p>
+                )}
+                {v.status === 'completed' && (
+                  <div className="flex items-center gap-2 pt-1">
+                    {v.summary && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs px-2"
+                        onClick={() => handleDownloadReport(v)}
+                      >
+                        ↓ Report
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs px-2"
+                      onClick={() => { setSelectedVisit(v); setVisitLogOpen(true); }}
+                    >
+                      {v.summary ? 'Edit log' : 'Log session'}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Propose new visit */}
+      {!activeVisit && (
+        <div>
+          {!showProposeForm ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => setShowProposeForm(true)}
+            >
+              + Propose New Visit
+            </Button>
+          ) : (
+            <div className="rounded-lg border border-border p-4 space-y-3">
+              <p className="text-sm font-medium">Propose a visit date</p>
+              <Calendar
+                mode="single"
+                selected={proposeDate}
+                onSelect={setProposeDate}
+                disabled={{ before: new Date() }}
+                className="rounded-md border"
+              />
+              <Textarea
+                placeholder="Optional notes for this visit…"
+                value={proposeNotes}
+                onChange={e => setProposeNotes(e.target.value)}
+                className="resize-none text-sm"
+                rows={2}
+              />
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1"
+                  size="sm"
+                  disabled={!proposeDate || proposeSaving}
+                  onClick={handlePropose}
+                >
+                  {proposeSaving ? 'Proposing…' : 'Propose Visit'}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => { setShowProposeForm(false); setProposeDate(undefined); setProposeNotes(''); }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* VisitLogSheet nested dialog */}
+      {selectedVisit && (
+        <VisitLogSheet
+          open={visitLogOpen}
+          onOpenChange={setVisitLogOpen}
+          visit={selectedVisit}
+          dealershipId={dealer.dealershipId}
+          dealerName={dealer.dealerName}
+          latestAssessmentId={latestAssessmentId}
+          onLogSaved={() => {
+            setVisitLogOpen(false);
+            onDataRefresh();
+          }}
+        />
+      )}
+    </div>
+  );
 }
 
 // ── ActivityEntryRow ───────────────────────────────────────────────────────────
@@ -455,7 +885,6 @@ export function DealerPanel({
 
   // Suppress unused-variable warnings for props reserved for later tasks
   void latestDate;
-  void onVisitSaved;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -520,12 +949,15 @@ export function DealerPanel({
             />
           )}
           {activeTab === 'visits' && (
-            <div className="p-6">
-              {dataLoading
-                ? <p className="text-sm text-muted-foreground">Loading…</p>
-                : <p className="text-sm text-muted-foreground">Visits coming in Task 4.</p>
-              }
-            </div>
+            <VisitsTab
+              data={data}
+              dataLoading={dataLoading}
+              dealer={dealer}
+              latestAssessmentId={latestAssessmentId}
+              user={user}
+              onDataRefresh={fetchData}
+              onVisitSaved={() => { fetchData(); onVisitSaved(); }}
+            />
           )}
           {activeTab === 'briefing' && (
             <div className="p-6">
