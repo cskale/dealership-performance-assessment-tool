@@ -21,7 +21,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { VisitLogSheet } from '@/components/coach/VisitLogSheet';
 import { generateVisitReport, type VisitReportData } from '@/lib/pdfReportGenerator';
-import { STATIC_BENCHMARKS } from '@/lib/benchmarkUtils';
+import { STATIC_BENCHMARKS, sectionToModuleCode } from '@/lib/benchmarkUtils';
+import { getDepartmentName } from '@/lib/departmentNames';
+import { AlertCircle } from 'lucide-react';
 
 // ── Local types ────────────────────────────────────────────────────────────────
 
@@ -773,6 +775,220 @@ function ActivityTab({
   );
 }
 
+// ── Briefing tab ───────────────────────────────────────────────────────────────
+
+const DEPT_ORDER = [
+  'new-vehicle-sales',
+  'used-vehicle-sales',
+  'service-performance',
+  'parts-inventory',
+  'financial-operations',
+] as const;
+
+const PRIORITY_COLORS: Record<string, string> = {
+  critical: 'bg-red-100 text-red-700 border-red-200',
+  high:     'bg-orange-100 text-orange-700 border-orange-200',
+  medium:   'bg-amber-100 text-amber-700 border-amber-200',
+  low:      'bg-slate-100 text-slate-600 border-slate-200',
+};
+
+function BriefingTab({
+  data,
+  dataLoading,
+  latestScore,
+  latestDate,
+  onSwitchToVisits,
+  onSwitchToActivity,
+}: {
+  data: PanelData | null;
+  dataLoading: boolean;
+  latestScore: number | null;
+  latestDate: string | null;
+  onSwitchToVisits: () => void;
+  onSwitchToActivity: () => void;
+}) {
+  if (dataLoading || !data) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  const lastVisit = data.visits.find(v => v.status === 'completed' && v.summary) ?? null;
+  const upcomingVisit = data.visits.find(v =>
+    ['proposed', 'confirmed', 'counter_proposed'].includes(v.status as string)
+  ) ?? null;
+
+  const getDaysStale = (lastUpdated: string | null): number | null => {
+    if (!lastUpdated) return null;
+    return Math.floor((Date.now() - new Date(lastUpdated).getTime()) / 86_400_000);
+  };
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* Assessment context */}
+      {latestScore != null && latestDate && (
+        <p className="text-xs text-muted-foreground">
+          Assessment {format(new Date(latestDate), 'dd MMM yyyy')} · Overall{' '}
+          <span className="font-semibold text-foreground">{Math.round(latestScore)}/100</span>
+        </p>
+      )}
+
+      {/* Dept scores vs benchmark */}
+      <section className="space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Dept scores vs benchmark
+        </p>
+        <div className="space-y-2.5">
+          {DEPT_ORDER.map(sectionId => {
+            const score = data.assessmentScores[sectionId];
+            if (score === undefined) return null;
+            const benchmark = STATIC_BENCHMARKS[sectionToModuleCode(sectionId)]?.meanScore ?? 70;
+            const gap = Math.round(score - benchmark);
+            return (
+              <div key={sectionId} className="flex items-center gap-3">
+                <span className="text-xs text-muted-foreground w-32 shrink-0 truncate">
+                  {getDepartmentName(sectionId, 'en')}
+                </span>
+                <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${
+                      score >= 75 ? 'bg-emerald-500' :
+                      score >= 55 ? 'bg-amber-400' : 'bg-red-500'
+                    }`}
+                    style={{ width: `${Math.min(score, 100)}%` }}
+                  />
+                </div>
+                <span className="text-xs font-medium w-7 text-right">{Math.round(score)}</span>
+                <span className={`text-[10px] w-10 text-right font-medium ${
+                  gap >= 0 ? 'text-emerald-600' : 'text-red-500'
+                }`}>
+                  {gap >= 0 ? `▲ +${gap}` : `▼ ${gap}`}
+                </span>
+              </div>
+            );
+          })}
+          {DEPT_ORDER.every(id => data.assessmentScores[id] === undefined) && (
+            <p className="text-xs text-muted-foreground">No assessment scores available.</p>
+          )}
+        </div>
+      </section>
+
+      {/* Focus actions */}
+      <section className="space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Focus actions
+        </p>
+        {data.focusActions.length === 0 ? (
+          <p className="text-xs text-muted-foreground">No open actions — dealer is on track.</p>
+        ) : (
+          <div className="space-y-2">
+            {data.focusActions.map(action => {
+              const daysStale = getDaysStale(action.last_status_updated_at);
+              return (
+                <div key={action.id} className="flex items-start gap-2 rounded-md border border-border px-3 py-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium leading-snug truncate">{action.action_title}</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Badge variant="outline" className={`text-[10px] capitalize ${PRIORITY_COLORS[action.priority] ?? ''}`}>
+                      {action.priority}
+                    </Badge>
+                    {daysStale !== null && daysStale > 14 && (
+                      <span className="text-[10px] text-amber-600 flex items-center gap-0.5">
+                        <AlertCircle className="h-2.5 w-2.5" />
+                        {daysStale}d
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* Last visit */}
+      <section className="space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Last visit
+        </p>
+        {!lastVisit ? (
+          <p className="text-xs text-muted-foreground">No previous visit logged.</p>
+        ) : (
+          <div className="rounded-md border border-border px-3 py-2.5 space-y-1.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-medium">
+                {format(new Date(lastVisit.visit_date), 'dd MMM yyyy')}
+              </span>
+              {lastVisit.visit_type && (
+                <Badge variant="outline" className="text-[10px] capitalize">
+                  {lastVisit.visit_type}
+                </Badge>
+              )}
+              {lastVisit.modules_reviewed.length > 0 && (
+                <span className="text-[10px] text-muted-foreground">
+                  {lastVisit.modules_reviewed
+                    .map(id => VISIT_MODULES.find(m => m.id === id)?.label ?? id)
+                    .join(', ')}
+                </span>
+              )}
+            </div>
+            {lastVisit.summary && (
+              <p className="text-xs text-muted-foreground line-clamp-3">{lastVisit.summary}</p>
+            )}
+          </div>
+        )}
+        <button
+          type="button"
+          className="text-xs text-[hsl(var(--brand-500))] underline block"
+          onClick={onSwitchToVisits}
+        >
+          View history →
+        </button>
+      </section>
+
+      {/* Upcoming visit */}
+      <section className="space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Upcoming visit
+        </p>
+        {upcomingVisit ? (
+          <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
+            <span className="text-xs font-medium">
+              {format(new Date(upcomingVisit.visit_date), 'dd MMM yyyy')}
+            </span>
+            <Badge variant="outline" className={`text-[10px] capitalize ${STATUS_STYLES[upcomingVisit.status]}`}>
+              {upcomingVisit.status === 'counter_proposed' ? 'Counter proposed' : upcomingVisit.status}
+            </Badge>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">No visit scheduled</p>
+            <button
+              type="button"
+              className="text-xs text-[hsl(var(--brand-500))] underline"
+              onClick={onSwitchToVisits}
+            >
+              Schedule →
+            </button>
+          </div>
+        )}
+      </section>
+
+      {/* Add note shortcut */}
+      <button
+        type="button"
+        className="text-xs text-[hsl(var(--brand-500))] underline block"
+        onClick={onSwitchToActivity}
+      >
+        Add note →
+      </button>
+    </div>
+  );
+}
+
 // ── Tab constant (module-level so it is stable across renders) ─────────────────
 
 const TABS = ['activity', 'visits', 'briefing'] as const;
@@ -883,9 +1099,6 @@ export function DealerPanel({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, dealer.dealershipId]);
 
-  // Suppress unused-variable warnings for props reserved for later tasks
-  void latestDate;
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col gap-0 p-0 overflow-hidden">
@@ -960,12 +1173,14 @@ export function DealerPanel({
             />
           )}
           {activeTab === 'briefing' && (
-            <div className="p-6">
-              {dataLoading
-                ? <p className="text-sm text-muted-foreground">Loading…</p>
-                : <p className="text-sm text-muted-foreground">Briefing coming in Task 5.</p>
-              }
-            </div>
+            <BriefingTab
+              data={data}
+              dataLoading={dataLoading}
+              latestScore={latestScore}
+              latestDate={latestDate}
+              onSwitchToVisits={() => setActiveTab('visits')}
+              onSwitchToActivity={() => setActiveTab('activity')}
+            />
           )}
         </div>
       </DialogContent>
