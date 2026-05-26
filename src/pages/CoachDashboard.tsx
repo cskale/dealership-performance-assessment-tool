@@ -958,7 +958,7 @@ export default function CoachDashboard() {
                       variant="ghost"
                       size="sm"
                       className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                      onClick={() => { setPanelDealer(dealer); setPanelInitialTab('activity'); setPanelOpen(true); }}
+                      onClick={() => navigate(`/app/coach/dealer/${dealer.dealershipId}?tab=notes`)}
                     >
                       Notes
                     </Button>
@@ -966,7 +966,7 @@ export default function CoachDashboard() {
                       variant="ghost"
                       size="sm"
                       className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                      onClick={() => { setPanelDealer(dealer); setPanelInitialTab('visits'); setPanelOpen(true); }}
+                      onClick={() => navigate(`/app/coach/dealer/${dealer.dealershipId}?tab=visits`)}
                     >
                       Visits
                     </Button>
@@ -974,26 +974,21 @@ export default function CoachDashboard() {
                       variant="ghost"
                       size="sm"
                       className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                      onClick={() => { setPanelDealer(dealer); setPanelInitialTab('briefing'); setPanelOpen(true); }}
+                      onClick={() => navigate(`/app/coach/dealer/${dealer.dealershipId}?tab=briefing`)}
                     >
                       Briefing
                     </Button>
                   </div>
-                  {dealer.latestAssessmentId ? (
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="h-7 text-xs flex-1"
-                      onClick={() => navigate(`/app/results/${dealer.latestAssessmentId}`)}
-                    >
-                      Enter Dealership →
-                    </Button>
-                  ) : (
-                    <Button variant="outline" size="sm" className="h-7 text-xs flex-1" disabled>
-                      No assessment yet
-                    </Button>
-                  )}
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="h-7 text-xs flex-1"
+                    onClick={() => navigate(`/app/coach/dealer/${dealer.dealershipId}`)}
+                  >
+                    Enter Dealership →
+                  </Button>
                 </div>
+
               </CardContent>
             </Card>
           );
