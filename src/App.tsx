@@ -21,6 +21,7 @@ import OemDashboard from "./pages/OemDashboard";
 import OemSettings from "./pages/OemSettings";
 import CoachDashboard from "./pages/CoachDashboard";
 import CoachActions from "./pages/CoachActions";
+import CoachDealerPage from "./pages/CoachDealerPage";
 import { AuthProvider } from "@/hooks/useAuth";
 import { MultiTenantProvider } from "@/hooks/useMultiTenant";
 import { RoleProvider } from "@/contexts/RoleContext";
@@ -64,6 +65,14 @@ const App = () => (
                     <Route path="/auth/callback" element={<AuthCallback />} />
                     <Route path="/methodology" element={<Methodology />} />
                     <Route path="/invite/:token" element={<AcceptInvite />} />
+
+                    {/* Coach dealer full-page view — no AppSidebar, has own internal nav */}
+                    <Route path="/app/coach/dealer/:dealershipId" element={
+                      <ProtectedRoute requiresActorType="coach">
+                        <CoachDealerPage />
+                      </ProtectedRoute>
+                    } />
+
 
                     {/* Authenticated routes — wrapped in sidebar layout */}
                     <Route path="/app/*" element={

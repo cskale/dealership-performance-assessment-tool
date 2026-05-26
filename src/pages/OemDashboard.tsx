@@ -270,21 +270,28 @@ export default function OemDashboard() {
         .eq('status', 'completed')
         .order('created_at', { ascending: false });
 
-      const { data: openActions } = await supabase
-        .from('improvement_actions')
-        .select('dealership_id')
-        .in('dealership_id', dealershipIds)
-        .neq('status', 'Completed');
+      const assessmentIdToDealer = new Map<string, string>();
+      for (const a of (assessments as Array<{ id: string; dealership_id: string }> | null) ?? []) {
+        assessmentIdToDealer.set(a.id, a.dealership_id);
+      }
+      const assessmentIds = Array.from(assessmentIdToDealer.keys());
+
+      const { data: openActionsRaw } = assessmentIds.length
+        ? await supabase
+            .from('improvement_actions')
+            .select('assessment_id')
+            .in('assessment_id', assessmentIds)
+            .neq('status', 'Completed')
+        : { data: [] as Array<{ assessment_id: string }> };
 
       const openCountByDealer = new Map<string, number>();
-      for (const a of openActions ?? []) {
-        if (a.dealership_id) {
-          openCountByDealer.set(
-            a.dealership_id,
-            (openCountByDealer.get(a.dealership_id) ?? 0) + 1,
-          );
+      for (const a of (openActionsRaw as Array<{ assessment_id: string }> | null) ?? []) {
+        const dealerId = assessmentIdToDealer.get(a.assessment_id);
+        if (dealerId) {
+          openCountByDealer.set(dealerId, (openCountByDealer.get(dealerId) ?? 0) + 1);
         }
       }
+
 
       const dealerMap = new Map<string, DealerScore>();
       for (const d of dealerships || []) {

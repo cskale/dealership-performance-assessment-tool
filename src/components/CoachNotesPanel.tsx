@@ -47,7 +47,7 @@ export function CoachNotesPanel({ dealershipId }: CoachNotesPanelProps) {
       .order('created_at', { ascending: false })
       .limit(5)
       .then(({ data, error }) => {
-        if (!error && data) setNotes(data as CoachNote[]);
+        if (!error && data) setNotes(data as unknown as CoachNote[]);
         setLoaded(true);
       });
   }, [dealershipId]);

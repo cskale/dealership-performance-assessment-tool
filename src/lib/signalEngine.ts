@@ -298,7 +298,7 @@ export function generateSignals(
 
     if (!signalGroups.has(groupKey)) {
       signalGroups.set(groupKey, {
-        signalCode: resolved.primarySignalCode,
+        signalCode: resolved.primarySignalCode as Exclude<SignalCode, 'NONE'>,
         moduleKey: resolved.moduleKey,
         questionIds: [],
         scores: {},
