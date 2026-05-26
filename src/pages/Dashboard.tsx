@@ -694,7 +694,7 @@ export default function Dashboard() {
         .order('visit_date', { ascending: true })
         .limit(1)
         .maybeSingle();
-      setUpcomingVisit(visitData ? { ...visitData, dealer_proposed_date: visitData.dealer_proposed_date ?? null } : null);
+      setUpcomingVisit(visitData ? { ...visitData, status: visitData.status as 'confirmed' | 'proposed', dealer_proposed_date: visitData.dealer_proposed_date ?? null } : null);
     };
     fetchVisit();
   }, [user?.id, actorType]);
