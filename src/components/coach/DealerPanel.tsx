@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { MapPin, Loader2, Trash2, X, CheckCircle } from 'lucide-react';
+import { MapPin, Loader2, Trash2, X, CheckCircle, AlertCircle } from 'lucide-react';
 import { format, formatDistanceToNowStrict } from 'date-fns';
 import { toast } from 'sonner';
 import { Calendar } from '@/components/ui/calendar';
@@ -24,7 +24,6 @@ import { VisitLogSheet } from '@/components/coach/VisitLogSheet';
 import { generateVisitReport, type VisitReportData } from '@/lib/pdfReportGenerator';
 import { STATIC_BENCHMARKS, sectionToModuleCode } from '@/lib/benchmarkUtils';
 import { getDepartmentName } from '@/lib/departmentNames';
-import { AlertCircle } from 'lucide-react';
 
 // ── Local types ────────────────────────────────────────────────────────────────
 
@@ -1044,25 +1043,29 @@ function DeptHealthCard({
 
             return (
               <div key={sectionId} className="space-y-1">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs text-muted-foreground truncate w-28 shrink-0">
+                {/* Row 1: dept name + score + delta */}
+                <div className="flex items-center justify-between gap-1 min-w-0">
+                  <span className="text-xs text-muted-foreground truncate flex-1 min-w-0">
                     {getDepartmentName(sectionId, 'en')}
                   </span>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="text-xs font-semibold w-6 text-right">{Math.round(score)}</span>
-                    <span className={`text-[10px] font-medium w-12 text-right ${gap >= 0 ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>
-                      {gap >= 0 ? `▲ +${gap}` : `▼ ${gap}`}
+                  <div className="flex items-center gap-1 shrink-0 ml-2">
+                    <span className="text-xs font-semibold">{Math.round(score)}</span>
+                    <span className={`text-[10px] font-medium ${gap >= 0 ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>
+                      {gap >= 0 ? `▲+${gap}` : `▼${gap}`}
                     </span>
-                    <Badge variant="outline" className={`text-[10px] ${cls} shrink-0`}>
-                      {label}
-                    </Badge>
                   </div>
                 </div>
-                <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${barColor}`}
-                    style={{ width: `${Math.min(Math.round(score), 100)}%` }}
-                  />
+                {/* Row 2: progress bar + badge */}
+                <div className="flex items-center gap-1.5">
+                  <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${barColor}`}
+                      style={{ width: `${Math.min(Math.round(score), 100)}%` }}
+                    />
+                  </div>
+                  <Badge variant="outline" className={`text-[10px] shrink-0 whitespace-nowrap ${cls}`}>
+                    {label}
+                  </Badge>
                 </div>
               </div>
             );
