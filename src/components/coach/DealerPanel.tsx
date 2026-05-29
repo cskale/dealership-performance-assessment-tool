@@ -827,18 +827,66 @@ function BriefingTab({
 
   return (
     <div className="p-6 space-y-6">
-      {/* Assessment context */}
-      {latestScore != null && latestDate && (
-        <p className="text-xs text-muted-foreground">
-          Assessment {format(new Date(latestDate), 'dd MMM yyyy')} · Overall{' '}
-          <span className="font-semibold text-foreground">{Math.round(latestScore)}/100</span>
-        </p>
-      )}
-
-      {/* Dept scores vs benchmark */}
+      {/* VISIT STATUS */}
       <section className="space-y-3">
         <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          Dept scores vs benchmark
+          VISIT STATUS
+        </p>
+
+        {/* Last visit card */}
+        {!lastVisit ? (
+          <p className="text-xs text-muted-foreground">No previous visit logged.</p>
+        ) : (
+          <div className="rounded-lg border border-border px-3 py-2.5 space-y-1.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-medium">
+                {format(new Date(lastVisit.visit_date), 'dd MMM yyyy')}
+              </span>
+              {lastVisit.visit_type && (
+                <Badge variant="outline" className="text-[10px] capitalize">
+                  {lastVisit.visit_type}
+                </Badge>
+              )}
+              {lastVisit.modules_reviewed.length > 0 && (
+                <span className="text-[10px] text-muted-foreground">
+                  {lastVisit.modules_reviewed.length} module{lastVisit.modules_reviewed.length > 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
+            {lastVisit.summary && (
+              <p className="line-clamp-2 text-xs text-muted-foreground">{lastVisit.summary}</p>
+            )}
+          </div>
+        )}
+
+        {/* Upcoming visit row */}
+        {upcomingVisit ? (
+          <div className="flex items-center justify-between rounded-md border border-border px-3 py-2 mt-2">
+            <span className="text-xs font-medium">
+              {format(new Date(upcomingVisit.visit_date), 'dd MMM yyyy')}
+            </span>
+            <Badge variant="outline" className={`text-[10px] capitalize ${STATUS_STYLES[upcomingVisit.status]}`}>
+              {upcomingVisit.status === 'counter_proposed' ? 'Counter proposed' : upcomingVisit.status}
+            </Badge>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-xs text-muted-foreground">No visit scheduled</p>
+            <button
+              type="button"
+              className="text-xs text-[hsl(var(--brand-500))] underline cursor-pointer"
+              onClick={onSwitchToVisits}
+            >
+              Schedule →
+            </button>
+          </div>
+        )}
+      </section>
+
+      {/* PERFORMANCE SNAPSHOT */}
+      <section className="space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          PERFORMANCE SNAPSHOT
         </p>
         <div className="space-y-2.5">
           {DEPT_ORDER.map(sectionId => {
@@ -848,20 +896,20 @@ function BriefingTab({
             const gap = Math.round(score - benchmark);
             return (
               <div key={sectionId} className="flex items-center gap-3">
-                <span className="text-xs text-muted-foreground w-32 shrink-0 truncate">
+                <span className="w-28 shrink-0 truncate text-xs text-muted-foreground">
                   {getDepartmentName(sectionId, 'en')}
                 </span>
                 <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${
+                    className={`h-full rounded-full transition-all ${
                       score >= 75 ? 'bg-emerald-500' :
                       score >= 55 ? 'bg-amber-400' : 'bg-red-500'
                     }`}
                     style={{ width: `${Math.min(score, 100)}%` }}
                   />
                 </div>
-                <span className="text-xs font-medium w-7 text-right">{Math.round(score)}</span>
-                <span className={`text-[10px] w-10 text-right font-medium ${
+                <span className="w-7 text-right text-xs font-medium text-foreground">{Math.round(score)}</span>
+                <span className={`w-12 text-right text-[10px] font-medium ${
                   gap >= 0 ? 'text-emerald-600' : 'text-red-500'
                 }`}>
                   {gap >= 0 ? `▲ +${gap}` : `▼ ${gap}`}
@@ -875,115 +923,63 @@ function BriefingTab({
         </div>
       </section>
 
-      {/* Focus actions */}
+      {/* PRIORITY ACTIONS */}
       <section className="space-y-3">
         <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          Focus actions
+          PRIORITY ACTIONS
         </p>
-        {data.focusActions.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No open actions — dealer is on track.</p>
-        ) : (
-          <div className="space-y-2">
-            {data.focusActions.map(action => {
-              const daysStale = getDaysStale(action.last_status_updated_at);
-              return (
-                <div key={action.id} className="flex items-start gap-2 rounded-md border border-border px-3 py-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium leading-snug truncate">{action.action_title}</p>
+        {(() => {
+          const priorityWeight: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+          const sortedActions = [...data.focusActions].sort(
+            (a, b) => (priorityWeight[a.priority] ?? 4) - (priorityWeight[b.priority] ?? 4)
+          );
+          if (sortedActions.length === 0) {
+            return (
+              <p className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                ✓ All actions on track
+              </p>
+            );
+          }
+          return (
+            <div className="space-y-2">
+              {sortedActions.map(action => {
+                const daysStale = getDaysStale(action.last_status_updated_at);
+                const dotColor =
+                  action.priority === 'critical' ? 'bg-red-500' :
+                  action.priority === 'high' ? 'bg-orange-500' :
+                  action.priority === 'medium' ? 'bg-blue-500' : 'bg-gray-400';
+                return (
+                  <div key={action.id} className="flex items-start gap-2 rounded-md border border-border px-3 py-2">
+                    <div className={`w-2 h-2 rounded-full mt-1 shrink-0 ${dotColor}`} />
+                    <p className="flex-1 min-w-0 text-xs font-medium leading-snug truncate">
+                      {action.action_title}
+                    </p>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Badge variant="outline" className={`text-[10px] capitalize ${PRIORITY_COLORS[action.priority] ?? ''}`}>
+                        {action.priority}
+                      </Badge>
+                      {daysStale !== null && daysStale > 7 && (
+                        <span className="text-[10px] text-amber-600 flex items-center gap-0.5">
+                          <AlertCircle className="h-2.5 w-2.5" />
+                          {daysStale}d
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <Badge variant="outline" className={`text-[10px] capitalize ${PRIORITY_COLORS[action.priority] ?? ''}`}>
-                      {action.priority}
-                    </Badge>
-                    {daysStale !== null && daysStale > 14 && (
-                      <span className="text-[10px] text-amber-600 flex items-center gap-0.5">
-                        <AlertCircle className="h-2.5 w-2.5" />
-                        {daysStale}d
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      {/* Last visit */}
-      <section className="space-y-3">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          Last visit
-        </p>
-        {!lastVisit ? (
-          <p className="text-xs text-muted-foreground">No previous visit logged.</p>
-        ) : (
-          <div className="rounded-md border border-border px-3 py-2.5 space-y-1.5">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-medium">
-                {format(new Date(lastVisit.visit_date), 'dd MMM yyyy')}
-              </span>
-              {lastVisit.visit_type && (
-                <Badge variant="outline" className="text-[10px] capitalize">
-                  {lastVisit.visit_type}
-                </Badge>
-              )}
-              {lastVisit.modules_reviewed.length > 0 && (
-                <span className="text-[10px] text-muted-foreground">
-                  {lastVisit.modules_reviewed
-                    .map(id => VISIT_MODULES.find(m => m.id === id)?.label ?? id)
-                    .join(', ')}
-                </span>
-              )}
+                );
+              })}
             </div>
-            {lastVisit.summary && (
-              <p className="text-xs text-muted-foreground line-clamp-3">{lastVisit.summary}</p>
-            )}
-          </div>
-        )}
-        <button
-          type="button"
-          className="text-xs text-[hsl(var(--brand-500))] underline block"
-          onClick={onSwitchToVisits}
-        >
-          View history →
-        </button>
+          );
+        })()}
       </section>
 
-      {/* Upcoming visit */}
-      <section className="space-y-3">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          Upcoming visit
-        </p>
-        {upcomingVisit ? (
-          <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
-            <span className="text-xs font-medium">
-              {format(new Date(upcomingVisit.visit_date), 'dd MMM yyyy')}
-            </span>
-            <Badge variant="outline" className={`text-[10px] capitalize ${STATUS_STYLES[upcomingVisit.status]}`}>
-              {upcomingVisit.status === 'counter_proposed' ? 'Counter proposed' : upcomingVisit.status}
-            </Badge>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">No visit scheduled</p>
-            <button
-              type="button"
-              className="text-xs text-[hsl(var(--brand-500))] underline"
-              onClick={onSwitchToVisits}
-            >
-              Schedule →
-            </button>
-          </div>
-        )}
-      </section>
-
-      {/* Add note shortcut */}
+      {/* Add field note shortcut */}
       <button
         type="button"
         className="text-xs text-[hsl(var(--brand-500))] underline block"
         onClick={onSwitchToActivity}
       >
-        Add note →
+        ＋ Add field note →
       </button>
     </div>
   );
