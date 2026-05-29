@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle,
-} from '@/components/ui/sheet';
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -776,15 +776,7 @@ function ActivityTab({
   );
 }
 
-// ── Briefing tab ───────────────────────────────────────────────────────────────
-
-const DEPT_ORDER = [
-  'new-vehicle-sales',
-  'used-vehicle-sales',
-  'service-performance',
-  'parts-inventory',
-  'financial-operations',
-] as const;
+// ── Priority colours (module-level) ───────────────────────────────────────────
 
 const PRIORITY_COLORS: Record<string, string> = {
   critical: 'bg-red-100 text-red-700 border-red-200',
@@ -793,309 +785,424 @@ const PRIORITY_COLORS: Record<string, string> = {
   low:      'bg-slate-100 text-slate-600 border-slate-200',
 };
 
-function BriefingTab({
+// ── CoachNotesTab ──────────────────────────────────────────────────────────────
+
+function CoachNotesTab({
   data,
   dataLoading,
-  latestScore,
-  latestDate,
-  onSwitchToVisits,
-  onSwitchToActivity,
+  dealer,
+  user,
+  onNoteAdded,
+  onNoteDeleted,
 }: {
   data: PanelData | null;
   dataLoading: boolean;
-  latestScore: number | null;
-  latestDate: string | null;
-  onSwitchToVisits: () => void;
-  onSwitchToActivity: () => void;
+  dealer: AssignedDealer;
+  user: { id: string; email?: string } | null;
+  onNoteAdded: () => void;
+  onNoteDeleted: () => void;
 }) {
-  if (dataLoading || !data) {
-    return (
-      <div className="flex justify-center py-12">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+  const [noteText, setNoteText] = useState('');
+  const [noteType, setNoteType] = useState<'observation' | 'action' | 'follow-up' | ''>('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const lastVisit = data.visits.find(v => v.status === 'completed' && v.summary) ?? null;
-  const upcomingVisit = data.visits.find(v =>
-    ['proposed', 'confirmed', 'counter_proposed'].includes(v.status as string)
-  ) ?? null;
+  const coachInitials = user?.email
+    ? user.email.split('@')[0].slice(0, 2).toUpperCase()
+    : 'ME';
 
-  const getDaysStale = (lastUpdated: string | null): number | null => {
-    if (!lastUpdated) return null;
-    return Math.floor((Date.now() - new Date(lastUpdated).getTime()) / 86_400_000);
+  const handleSaveNote = async () => {
+    if (!noteText.trim() || !user?.id) return;
+    setSubmitting(true);
+    const { error } = await supabase.from('coach_notes').insert({
+      coach_user_id: user.id,
+      dealership_id: dealer.dealershipId,
+      note_text: noteText.trim(),
+      note_type: noteType || null,
+    });
+    setSubmitting(false);
+    if (error) { toast.error('Failed to save note'); return; }
+    setNoteText('');
+    setNoteType('');
+    onNoteAdded();
   };
 
+  const handleDeleteNote = async (noteId: string) => {
+    await supabase.from('coach_notes').delete().eq('id', noteId);
+    onNoteDeleted();
+  };
+
+  const notes = data?.notes ?? [];
+
   return (
-    <div className="p-6 space-y-6">
-      {/* VISIT STATUS */}
-      <section className="space-y-3">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          VISIT STATUS
-        </p>
-
-        {/* Last visit card */}
-        {!lastVisit ? (
-          <p className="text-xs text-muted-foreground">No previous visit logged.</p>
-        ) : (
-          <div className="rounded-lg border border-border px-3 py-2.5 space-y-1.5">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-medium">
-                {format(new Date(lastVisit.visit_date), 'dd MMM yyyy')}
-              </span>
-              {lastVisit.visit_type && (
-                <Badge variant="outline" className="text-[10px] capitalize">
-                  {lastVisit.visit_type}
-                </Badge>
-              )}
-              {lastVisit.modules_reviewed.length > 0 && (
-                <span className="text-[10px] text-muted-foreground">
-                  {lastVisit.modules_reviewed.length} module{lastVisit.modules_reviewed.length > 1 ? 's' : ''}
-                </span>
-              )}
-            </div>
-            {lastVisit.summary && (
-              <p className="line-clamp-2 text-xs text-muted-foreground">{lastVisit.summary}</p>
-            )}
-          </div>
-        )}
-
-        {/* Upcoming visit row */}
-        {upcomingVisit ? (
-          <div className="flex items-center justify-between rounded-md border border-border px-3 py-2 mt-2">
-            <span className="text-xs font-medium">
-              {format(new Date(upcomingVisit.visit_date), 'dd MMM yyyy')}
-            </span>
-            <Badge variant="outline" className={`text-[10px] capitalize ${STATUS_STYLES[upcomingVisit.status]}`}>
-              {upcomingVisit.status === 'counter_proposed' ? 'Counter proposed' : upcomingVisit.status}
-            </Badge>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between mt-2">
-            <p className="text-xs text-muted-foreground">No visit scheduled</p>
-            <button
-              type="button"
-              className="text-xs text-[hsl(var(--brand-500))] underline cursor-pointer"
-              onClick={onSwitchToVisits}
-            >
-              Schedule →
-            </button>
-          </div>
-        )}
-      </section>
-
-      {/* PERFORMANCE SNAPSHOT */}
-      <section className="space-y-3">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          PERFORMANCE SNAPSHOT
-        </p>
-        <div className="space-y-2.5">
-          {DEPT_ORDER.map(sectionId => {
-            const score = data.assessmentScores[sectionId];
-            if (score === undefined) return null;
-            const benchmark = STATIC_BENCHMARKS[sectionToModuleCode(sectionId)]?.meanScore ?? 70;
-            const gap = Math.round(score - benchmark);
-            return (
-              <div key={sectionId} className="flex items-center gap-3">
-                <span className="w-28 shrink-0 truncate text-xs text-muted-foreground">
-                  {getDepartmentName(sectionId, 'en')}
-                </span>
-                <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      score >= 75 ? 'bg-emerald-500' :
-                      score >= 55 ? 'bg-amber-400' : 'bg-red-500'
-                    }`}
-                    style={{ width: `${Math.min(score, 100)}%` }}
-                  />
-                </div>
-                <span className="w-7 text-right text-xs font-medium text-foreground">{Math.round(score)}</span>
-                <span className={`w-12 text-right text-[10px] font-medium ${
-                  gap >= 0 ? 'text-emerald-600' : 'text-red-500'
-                }`}>
-                  {gap >= 0 ? `▲ +${gap}` : `▼ ${gap}`}
-                </span>
-              </div>
-            );
-          })}
-          {DEPT_ORDER.every(id => data.assessmentScores[id] === undefined) && (
-            <p className="text-xs text-muted-foreground">No assessment scores available.</p>
-          )}
+    <div className="p-6 space-y-5">
+      <div className="rounded-lg border border-border p-4 space-y-3">
+        <Select value={noteType} onValueChange={v => setNoteType(v as typeof noteType)}>
+          <SelectTrigger className="h-8 text-xs">
+            <SelectValue placeholder="Note type (optional)" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="observation">Observation</SelectItem>
+            <SelectItem value="action">Action</SelectItem>
+            <SelectItem value="follow-up">Follow-up</SelectItem>
+          </SelectContent>
+        </Select>
+        <Textarea
+          placeholder="Add a field note…"
+          value={noteText}
+          onChange={e => setNoteText(e.target.value)}
+          maxLength={2000}
+          rows={3}
+          className="resize-none text-sm"
+        />
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">{noteText.length}/2000</span>
+          <Button size="sm" onClick={handleSaveNote} disabled={!noteText.trim() || submitting}>
+            {submitting && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
+            Save Note
+          </Button>
         </div>
-      </section>
+      </div>
 
-      {/* PRIORITY ACTIONS */}
-      <section className="space-y-3">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          PRIORITY ACTIONS
-        </p>
-        {(() => {
-          const priorityWeight: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
-          const sortedActions = [...data.focusActions].sort(
-            (a, b) => (priorityWeight[a.priority] ?? 4) - (priorityWeight[b.priority] ?? 4)
-          );
-          if (sortedActions.length === 0) {
-            return (
-              <p className="text-xs text-emerald-600 font-medium flex items-center gap-1">
-                ✓ All actions on track
-              </p>
-            );
-          }
-          return (
-            <div className="space-y-2">
-              {sortedActions.map(action => {
-                const daysStale = getDaysStale(action.last_status_updated_at);
-                const dotColor =
-                  action.priority === 'critical' ? 'bg-red-500' :
-                  action.priority === 'high' ? 'bg-orange-500' :
-                  action.priority === 'medium' ? 'bg-blue-500' : 'bg-gray-400';
-                return (
-                  <div key={action.id} className="flex items-start gap-2 rounded-md border border-border px-3 py-2">
-                    <div className={`w-2 h-2 rounded-full mt-1 shrink-0 ${dotColor}`} />
-                    <p className="flex-1 min-w-0 text-xs font-medium leading-snug truncate">
-                      {action.action_title}
-                    </p>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <Badge variant="outline" className={`text-[10px] capitalize ${PRIORITY_COLORS[action.priority] ?? ''}`}>
-                        {action.priority}
-                      </Badge>
-                      {daysStale !== null && daysStale > 7 && (
-                        <span className="text-[10px] text-amber-600 flex items-center gap-0.5">
-                          <AlertCircle className="h-2.5 w-2.5" />
-                          {daysStale}d
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+      {dataLoading ? (
+        <div className="flex justify-center py-8">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </div>
+      ) : notes.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-8">No notes yet</p>
+      ) : (
+        <div className="divide-y divide-border">
+          {notes.map(note => (
+            <div key={note.id} className="flex gap-3 py-4">
+              <div className="h-8 w-8 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 bg-[hsl(var(--brand-500))] text-white">
+                {coachInitials}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline justify-between gap-2">
+                  <p className="text-sm font-semibold">You</p>
+                  <span className="text-[11px] text-muted-foreground shrink-0">
+                    {formatDistanceToNowStrict(new Date(note.created_at), { addSuffix: true })}
+                  </span>
+                </div>
+                {note.note_type && (
+                  <Badge variant="outline" className="text-[10px] capitalize px-1.5 py-0 mt-1">
+                    {note.note_type}
+                  </Badge>
+                )}
+                <p className="text-sm text-foreground mt-1.5">{note.note_text}</p>
+              </div>
+              <button
+                className="shrink-0 text-muted-foreground hover:text-[#dc2626] transition-colors mt-0.5"
+                onClick={() => handleDeleteNote(note.id)}
+                aria-label="Delete note"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
             </div>
-          );
-        })()}
-      </section>
-
-      {/* Add field note shortcut */}
-      <button
-        type="button"
-        className="text-xs text-[hsl(var(--brand-500))] underline block"
-        onClick={onSwitchToActivity}
-      >
-        ＋ Add field note →
-      </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-// ── Results Tab ───────────────────────────────────────────────────────────────
+// ── TopFocusActionsCard ────────────────────────────────────────────────────────
 
-function ResultsTab({
-  data,
-  dataLoading,
-  latestScore,
-  latestDate,
+function TopFocusActionsCard({
+  focusActions,
   latestAssessmentId,
-  onEnter,
 }: {
-  data: PanelData | null;
-  dataLoading: boolean;
-  latestScore: number | null;
-  latestDate: string | null;
+  focusActions: FocusAction[];
   latestAssessmentId: string | null;
-  onEnter: () => void;
 }) {
-  if (dataLoading || !data) {
-    return (
-      <div className="flex justify-center py-12">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+  const navigate = useNavigate();
+
+  const getDaysUntilDue = (dateStr: string | null): number | null => {
+    if (!dateStr) return null;
+    return Math.ceil((new Date(dateStr).getTime() - Date.now()) / 86_400_000);
+  };
+
+  const getDaysStale = (dateStr: string | null): number | null => {
+    if (!dateStr) return null;
+    return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86_400_000);
+  };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Score overview */}
-      <section className="space-y-3">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          OVERALL SCORE
+    <div className="mx-6 mt-5 space-y-2 shrink-0">
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+          Top Focus Actions
         </p>
-        {latestScore != null ? (
-          <div className="space-y-2">
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-bold text-foreground">{Math.round(latestScore)}</span>
-              <span className="text-lg text-muted-foreground">/ 100</span>
-              {(() => {
-                const band = getScoreBand(latestScore);
-                return (
-                  <Badge variant="outline" className={`text-xs ml-1 ${band.className}`}>
-                    {band.label}
-                  </Badge>
-                );
-              })()}
-            </div>
-            <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all ${
-                  latestScore < 46 ? 'bg-red-500' :
-                  latestScore < 70 ? 'bg-amber-400' : 'bg-emerald-500'
-                }`}
-                style={{ width: `${latestScore}%` }}
-              />
-            </div>
-            {latestDate && (
-              <p className="text-xs text-muted-foreground">
-                Last assessed {format(new Date(latestDate), 'dd MMM yyyy')}
-              </p>
-            )}
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">No assessment completed yet.</p>
-        )}
-      </section>
+        <span className="text-[10px] text-muted-foreground">
+          Priority: High ({focusActions.filter(a => a.priority === 'high' || a.priority === 'critical').length})
+        </span>
+      </div>
+      {focusActions.map(action => {
+        const daysUntil = getDaysUntilDue((action as any).target_completion_date ?? null);
+        const daysStale = getDaysStale(action.last_status_updated_at);
+        const isUrgent = daysUntil !== null && daysUntil <= 14;
 
-      {/* Dept breakdown */}
-      <section className="space-y-3">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          DEPARTMENT BREAKDOWN
-        </p>
-        <div className="space-y-2.5">
-          {DEPT_ORDER.map(sectionId => {
-            const score = data.assessmentScores[sectionId];
+        return (
+          <div key={action.id} className="rounded-lg border border-border p-3 space-y-2">
+            <div className="flex items-start gap-2">
+              <AlertCircle className={`h-4 w-4 shrink-0 mt-0.5 ${
+                action.priority === 'critical' || action.priority === 'high'
+                  ? 'text-[#dc2626]'
+                  : 'text-[#d97706]'
+              }`} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm font-semibold leading-snug">{action.action_title}</p>
+                  {isUrgent && daysUntil !== null ? (
+                    <span className="text-[10px] font-bold text-[#dc2626] shrink-0 whitespace-nowrap">
+                      DUE IN {daysUntil}D
+                    </span>
+                  ) : (action.priority === 'high' || action.priority === 'critical') ? (
+                    <span className="text-[10px] font-bold text-[#d97706] shrink-0 whitespace-nowrap">
+                      HIGH PRIORITY
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                <Badge variant="outline" className={`text-[10px] capitalize ${PRIORITY_COLORS[action.priority] ?? ''}`}>
+                  {action.priority}
+                </Badge>
+                {daysStale !== null && daysStale > 14 && (
+                  <span className="text-[10px] text-amber-600 flex items-center gap-0.5">
+                    <AlertCircle className="h-2.5 w-2.5" />{daysStale}d stale
+                  </span>
+                )}
+              </div>
+              {latestAssessmentId && (
+                <button
+                  className="text-[10px] text-[hsl(var(--brand-500))] hover:underline"
+                  onClick={() => navigate(`/app/results/${latestAssessmentId}`)}
+                >
+                  Open Steps →
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── DeptHealthCard ─────────────────────────────────────────────────────────────
+
+const DEPT_HEALTH_ORDER = [
+  'new-vehicle-sales',
+  'used-vehicle-sales',
+  'service-performance',
+  'parts-inventory',
+  'financial-operations',
+] as const;
+
+function DeptHealthCard({
+  assessmentScores,
+  latestAssessmentId,
+  dataLoading,
+}: {
+  assessmentScores: Record<string, number>;
+  latestAssessmentId: string | null;
+  dataLoading: boolean;
+}) {
+  const navigate = useNavigate();
+  const hasScores = DEPT_HEALTH_ORDER.some(id => assessmentScores[id] !== undefined);
+
+  const getStatusChip = (score: number) => {
+    if (score >= 75) return { label: 'Performing', cls: 'bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20' };
+    if (score >= 46) return { label: 'Developing', cls: 'bg-amber-100 text-amber-700 border-amber-200' };
+    return { label: 'Foundational', cls: 'bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20' };
+  };
+
+  return (
+    <div className="rounded-lg border border-border p-4 space-y-3">
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+        Department Health
+      </p>
+
+      {dataLoading ? (
+        <div className="flex justify-center py-4">
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        </div>
+      ) : !hasScores ? (
+        <p className="text-xs text-muted-foreground">No assessment scores available.</p>
+      ) : (
+        <div className="space-y-3">
+          {DEPT_HEALTH_ORDER.map(sectionId => {
+            const score = assessmentScores[sectionId];
             if (score === undefined) return null;
             const benchmark = STATIC_BENCHMARKS[sectionToModuleCode(sectionId)]?.meanScore ?? 70;
             const gap = Math.round(score - benchmark);
+            const { label, cls } = getStatusChip(score);
+            const barColor = score >= 75 ? 'bg-[#16a34a]' : score >= 46 ? 'bg-amber-400' : 'bg-[#dc2626]';
+
             return (
-              <div key={sectionId} className="flex items-center gap-3">
-                <span className="w-32 shrink-0 truncate text-xs text-muted-foreground">
-                  {getDepartmentName(sectionId, 'en')}
-                </span>
-                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+              <div key={sectionId} className="space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs text-muted-foreground truncate w-28 shrink-0">
+                    {getDepartmentName(sectionId, 'en')}
+                  </span>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-xs font-semibold w-6 text-right">{Math.round(score)}</span>
+                    <span className={`text-[10px] font-medium w-12 text-right ${gap >= 0 ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>
+                      {gap >= 0 ? `▲ +${gap}` : `▼ ${gap}`}
+                    </span>
+                    <Badge variant="outline" className={`text-[10px] ${cls} shrink-0`}>
+                      {label}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all ${
-                      score >= 75 ? 'bg-emerald-500' :
-                      score >= 55 ? 'bg-amber-400' : 'bg-red-500'
-                    }`}
-                    style={{ width: `${Math.min(score, 100)}%` }}
+                    className={`h-full rounded-full ${barColor}`}
+                    style={{ width: `${Math.min(Math.round(score), 100)}%` }}
                   />
                 </div>
-                <span className="w-8 text-right text-xs font-medium text-foreground">{Math.round(score)}</span>
-                <span className={`w-12 text-right text-[10px] font-medium ${
-                  gap >= 0 ? 'text-emerald-600' : 'text-red-500'
-                }`}>
-                  {gap >= 0 ? `▲ +${gap}` : `▼ ${gap}`}
-                </span>
               </div>
             );
           })}
-          {DEPT_ORDER.every(id => data.assessmentScores[id] === undefined) && (
-            <p className="text-xs text-muted-foreground">No assessment scores available.</p>
-          )}
         </div>
-      </section>
+      )}
 
-      {/* CTA */}
       {latestAssessmentId && (
-        <Button className="w-full" onClick={onEnter}>
-          View Full Results →
+        <button
+          className="text-xs text-[hsl(var(--brand-500))] hover:underline font-medium block pt-1"
+          onClick={() => navigate(`/app/results/${latestAssessmentId}`)}
+        >
+          Full Assessment →
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── UpcomingVisitCard ──────────────────────────────────────────────────────────
+
+const VISIT_STATUS_STYLES: Record<string, string> = {
+  proposed:         'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20',
+  confirmed:        'bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20',
+  cancelled:        'bg-muted text-muted-foreground border-border',
+  completed:        'bg-[#7c3aed]/10 text-[#7c3aed] border-[#7c3aed]/20',
+  counter_proposed: 'bg-amber-100 text-amber-800 border-amber-200',
+};
+
+function UpcomingVisitCard({
+  upcomingVisit,
+  onSwitchToVisits,
+}: {
+  upcomingVisit: CoachVisit | null;
+  onSwitchToVisits: () => void;
+}) {
+  return (
+    <div className="rounded-lg border border-border p-4 space-y-3">
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+        Upcoming Visit
+      </p>
+
+      {!upcomingVisit ? (
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">No visit scheduled</p>
+          <button
+            className="text-xs text-[hsl(var(--brand-500))] underline"
+            onClick={onSwitchToVisits}
+          >
+            Schedule →
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm font-semibold">
+              {format(new Date(upcomingVisit.visit_date), 'dd MMM yyyy')}
+            </span>
+            <Badge
+              variant="outline"
+              className={`text-[10px] capitalize ${VISIT_STATUS_STYLES[upcomingVisit.status] ?? ''}`}
+            >
+              {upcomingVisit.status === 'counter_proposed' ? 'Counter proposed' : upcomingVisit.status}
+            </Badge>
+          </div>
+          {upcomingVisit.visit_type && (
+            <p className="text-xs text-muted-foreground capitalize">{upcomingVisit.visit_type}</p>
+          )}
+          {upcomingVisit.visit_notes && (
+            <p className="text-xs text-muted-foreground line-clamp-2">{upcomingVisit.visit_notes}</p>
+          )}
+          <div className="flex items-center gap-2 pt-1">
+            <Button
+              size="sm"
+              className="h-7 text-xs flex-1"
+              disabled={upcomingVisit.status !== 'proposed'}
+              onClick={onSwitchToVisits}
+            >
+              Confirm
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs flex-1"
+              onClick={onSwitchToVisits}
+            >
+              Modify
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── InsightCard ────────────────────────────────────────────────────────────────
+
+function InsightCard({
+  latestDate,
+  latestAssessmentId,
+}: {
+  latestDate: string | null;
+  latestAssessmentId: string | null;
+}) {
+  const navigate = useNavigate();
+
+  const daysStale = latestDate
+    ? Math.floor((Date.now() - new Date(latestDate).getTime()) / 86_400_000)
+    : null;
+
+  if (daysStale !== null && daysStale < 60) return null;
+
+  const message = daysStale === null
+    ? 'No assessment on record. A baseline assessment would unlock full coaching intelligence.'
+    : `Assessment data is ${daysStale} days old. This may obscure current operational trends.`;
+
+  return (
+    <div className="rounded-lg bg-[#0b1f3a] text-white p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] uppercase tracking-wider text-white/50 font-semibold">Insight</p>
+        <Badge variant="outline" className="text-[10px] border-white/20 text-white/70">
+          ALERT
+        </Badge>
+      </div>
+      <div className="flex items-start gap-2">
+        <AlertCircle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <p className="text-sm font-semibold">
+            {daysStale === null ? 'No Assessment' : 'High Staleness Risk'}
+          </p>
+          <p className="text-xs text-white/60">{message}</p>
+        </div>
+      </div>
+      {latestAssessmentId && (
+        <Button
+          size="sm"
+          variant="outline"
+          className="w-full h-7 text-xs border-white/20 text-white hover:bg-white/10 hover:text-white"
+          onClick={() => navigate(`/app/results/${latestAssessmentId}`)}
+        >
+          Request Reassessment →
         </Button>
       )}
     </div>
@@ -1104,7 +1211,7 @@ function ResultsTab({
 
 // ── Tab constant (module-level so it is stable across renders) ─────────────────
 
-const TABS = ['briefing', 'activity', 'visits', 'results'] as const;
+const TABS = ['activity', 'visits', 'notes'] as const;
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -1115,7 +1222,7 @@ export interface DealerPanelProps {
   latestAssessmentId: string | null;
   latestScore: number | null;
   latestDate: string | null;
-  initialTab?: 'briefing' | 'activity' | 'visits' | 'results';
+  initialTab?: 'activity' | 'visits' | 'notes';
   onVisitSaved: () => void;
   onNoteAdded: () => void;
 }
@@ -1127,12 +1234,11 @@ export function DealerPanel({
   latestAssessmentId,
   latestScore,
   latestDate,
-  initialTab = 'briefing',
+  initialTab = 'activity',
   onVisitSaved,
   onNoteAdded,
 }: DealerPanelProps) {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'briefing' | 'activity' | 'visits' | 'results'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'activity' | 'visits' | 'notes'>(initialTab);
 
   useEffect(() => {
     if (open) setActiveTab(initialTab);
@@ -1211,32 +1317,40 @@ export function DealerPanel({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, dealer.dealershipId]);
 
+  const criticalGaps = data
+    ? Object.values(data.assessmentScores).filter(s => s < 46).length
+    : 0;
+
+  const upcomingVisit = data?.visits.find(v =>
+    ['proposed', 'confirmed', 'counter_proposed'].includes(v.status as string)
+  ) ?? null;
+
+  const nextVisitLabel = upcomingVisit
+    ? format(new Date(upcomingVisit.visit_date), 'dd MMM yyyy')
+    : 'None scheduled';
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        className="w-full sm:w-[80vw] max-w-none flex flex-col gap-0 p-0 overflow-hidden"
-      >
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="w-[95vw] max-w-7xl h-[90vh] flex flex-col gap-0 p-0 overflow-hidden">
         {/* Header */}
-        <SheetHeader className="px-6 py-4 border-b border-border shrink-0">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <SheetTitle className="text-base font-semibold leading-tight">
+        <DialogHeader className="px-6 py-4 border-b border-border shrink-0 space-y-3">
+          {/* Row 1: dealer identity + score */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <DialogTitle className="text-base font-semibold leading-tight truncate">
                 {dealer.dealerName}
-              </SheetTitle>
-              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                <MapPin className="h-3 w-3 shrink-0" />
+              </DialogTitle>
+              <p className="text-xs text-muted-foreground flex items-center gap-1 shrink-0">
+                <MapPin className="h-3 w-3" />
                 {dealer.location}
               </p>
             </div>
-            <div className="flex items-center gap-2 shrink-0 pt-0.5">
+            <div className="flex items-center gap-2 shrink-0">
               {latestScore != null && (() => {
                 const band = getScoreBand(latestScore);
                 return (
                   <>
-                    <span className="text-sm font-bold text-foreground">
-                      {Math.round(latestScore)}
-                    </span>
+                    <span className="text-lg font-bold text-foreground">{Math.round(latestScore)}</span>
                     <Badge variant="outline" className={`text-[10px] ${band.className}`}>
                       {band.label}
                     </Badge>
@@ -1245,7 +1359,22 @@ export function DealerPanel({
               })()}
             </div>
           </div>
-        </SheetHeader>
+
+          {/* Row 2: 4-stat chips */}
+          <div className="flex items-center gap-6 flex-wrap">
+            {[
+              { label: 'Overall Score', value: latestScore != null ? `${Math.round(latestScore)} / 100` : '—' },
+              { label: 'Active Actions', value: data ? String(data.focusActions.length) : '—' },
+              { label: 'Critical Gaps', value: String(criticalGaps) },
+              { label: 'Next Visit', value: nextVisitLabel },
+            ].map(chip => (
+              <div key={chip.label} className="flex flex-col">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{chip.label}</span>
+                <span className="text-sm font-semibold text-foreground">{chip.value}</span>
+              </div>
+            ))}
+          </div>
+        </DialogHeader>
 
         {/* Tab strip */}
         <div className="flex border-b border-border px-6 shrink-0">
@@ -1253,65 +1382,84 @@ export function DealerPanel({
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors capitalize ${
+              className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
                 activeTab === tab
                   ? 'border-[hsl(var(--brand-500))] text-foreground'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
-              {tab}
+              {tab === 'activity' ? 'Activity Log' : tab === 'visits' ? 'Visit History' : 'Coach Notes'}
             </button>
           ))}
         </div>
 
-        {/* Tab bodies */}
-        <div className="flex-1 overflow-y-auto">
-          {activeTab === 'briefing' && (
-            <BriefingTab
-              data={data}
+        {/* Two-column body */}
+        <div className="flex flex-1 min-h-0 flex-col md:flex-row">
+
+          {/* Left column: focus actions + tab content */}
+          <div className="flex-1 min-w-0 flex flex-col overflow-hidden border-r border-border">
+            {/* Top Focus Actions — above tabs, non-scrolling */}
+            {data && data.focusActions.length > 0 && (
+              <TopFocusActionsCard
+                focusActions={data.focusActions}
+                latestAssessmentId={latestAssessmentId}
+              />
+            )}
+            {/* Tab body — scrollable */}
+            <div className="flex-1 overflow-y-auto">
+              {activeTab === 'activity' && (
+                <ActivityTab
+                  data={data}
+                  dataLoading={dataLoading}
+                  dealer={dealer}
+                  user={user}
+                  onNoteAdded={() => { fetchData(); onNoteAdded(); }}
+                  onNoteDeleted={fetchData}
+                />
+              )}
+              {activeTab === 'visits' && (
+                <VisitsTab
+                  data={data}
+                  dataLoading={dataLoading}
+                  dealer={dealer}
+                  latestAssessmentId={latestAssessmentId}
+                  user={user}
+                  onDataRefresh={fetchData}
+                  onVisitSaved={() => { fetchData(); onVisitSaved(); }}
+                />
+              )}
+              {activeTab === 'notes' && (
+                <CoachNotesTab
+                  data={data}
+                  dataLoading={dataLoading}
+                  dealer={dealer}
+                  user={user}
+                  onNoteAdded={() => { fetchData(); onNoteAdded(); }}
+                  onNoteDeleted={fetchData}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Right sidebar */}
+          <div className="w-full md:w-80 shrink-0 overflow-y-auto p-4 space-y-4">
+            <DeptHealthCard
+              assessmentScores={data?.assessmentScores ?? {}}
+              latestAssessmentId={latestAssessmentId}
               dataLoading={dataLoading}
-              latestScore={latestScore}
-              latestDate={latestDate}
+            />
+            <UpcomingVisitCard
+              upcomingVisit={upcomingVisit}
               onSwitchToVisits={() => setActiveTab('visits')}
-              onSwitchToActivity={() => setActiveTab('activity')}
             />
-          )}
-          {activeTab === 'activity' && (
-            <ActivityTab
-              data={data}
-              dataLoading={dataLoading}
-              dealer={dealer}
-              user={user}
-              onNoteAdded={() => { fetchData(); onNoteAdded(); }}
-              onNoteDeleted={fetchData}
-            />
-          )}
-          {activeTab === 'visits' && (
-            <VisitsTab
-              data={data}
-              dataLoading={dataLoading}
-              dealer={dealer}
-              latestAssessmentId={latestAssessmentId}
-              user={user}
-              onDataRefresh={fetchData}
-              onVisitSaved={() => { fetchData(); onVisitSaved(); }}
-            />
-          )}
-          {activeTab === 'results' && (
-            <ResultsTab
-              data={data}
-              dataLoading={dataLoading}
-              latestScore={latestScore}
+            <InsightCard
               latestDate={latestDate}
               latestAssessmentId={latestAssessmentId}
-              onEnter={() => {
-                onOpenChange(false);
-                if (latestAssessmentId) navigate(`/app/results/${latestAssessmentId}`);
-              }}
             />
-          )}
+          </div>
+
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }
