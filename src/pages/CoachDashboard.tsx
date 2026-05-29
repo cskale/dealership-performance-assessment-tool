@@ -847,147 +847,137 @@ export default function CoachDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredDealers.map((dealer, i) => {
           const { accent } = getBrandStyle(dealer.brand);
-          const trend = computeTrend(dealer.latestScore, dealer.previousScore);
           const since = daysSince(dealer.latestDate);
           const visitLabel = activeVisitsByDealer.get(dealer.dealershipId);
           const visitParts = visitLabel ? visitLabel.split(' · ') : null;
           const visitConfirmed = visitParts?.[1]?.toLowerCase() === 'confirmed';
           const openMinusOverdue = Math.max(0, dealer.openCount - dealer.overdueCount);
-          const progressPct = dealer.openCount > 0
-            ? (openMinusOverdue / dealer.openCount) * 100
-            : 100;
+          const band = dealer.latestScore != null ? getScoreBand(dealer.latestScore) : null;
+          const barColor = dealer.latestScore == null
+            ? 'bg-muted'
+            : dealer.latestScore < 46 ? 'bg-red-500'
+            : dealer.latestScore < 70 ? 'bg-amber-400'
+            : 'bg-emerald-500';
 
           return (
             <Card
               key={dealer.dealershipId}
-              className="opacity-0 animate-fade-in shadow-card rounded-xl overflow-hidden"
+              className="opacity-0 animate-fade-in shadow-card rounded-xl overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
               style={{
                 animationDelay: `${Math.min(i, 4) * 50}ms`,
                 animationFillMode: 'forwards',
                 borderTop: `3px solid ${accent}`,
               }}
+              onClick={() => {
+                setPanelDealer(dealer);
+                setPanelInitialTab('briefing');
+                setPanelOpen(true);
+              }}
             >
-              <CardContent className="p-4 space-y-3">
-                {/* Brand row */}
+              <CardContent className="p-4">
+                {/* Header row */}
                 <div className="flex items-center justify-between gap-2">
                   <BrandLogo brand={dealer.brand} size={28} />
-                  {dealer.latestScore != null && (() => {
-                    const band = getScoreBand(dealer.latestScore);
-                    return (
-                      <Badge variant="outline" className={`text-[10px] shrink-0 ${band.className}`}>
-                        {band.label}
-                      </Badge>
-                    );
-                  })()}
-                </div>
-
-                {/* Dealer name + location */}
-                <div>
-                  <p className="text-sm font-semibold leading-tight text-foreground">{dealer.dealerName}</p>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                    <MapPin className="h-3 w-3 shrink-0" />
-                    {dealer.location}
-                    {since != null && <span className="text-[hsl(var(--neutral-400))] ml-1">· {since}d ago</span>}
+                  <p className="flex-1 px-2 text-sm font-semibold leading-tight text-foreground truncate">
+                    {dealer.dealerName}
                   </p>
+                  {band && (
+                    <Badge variant="outline" className={`text-[10px] shrink-0 ${band.className}`}>
+                      {band.label}
+                    </Badge>
+                  )}
                 </div>
 
-                {/* Score gauge — centred hero */}
-                <div className="flex flex-col items-center gap-2 py-2">
+                {/* Meta row */}
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                  <MapPin className="h-3 w-3 shrink-0" />
+                  <span className="truncate">
+                    {dealer.location}
+                    {dealer.brand && ` · ${dealer.brand}`}
+                    {since != null && ` · ${since}d ago`}
+                  </span>
+                </div>
+
+                {/* Score tile */}
+                <div className="mt-3">
                   {dealer.latestScore != null ? (
                     <>
-                      <ScoreGauge score={dealer.latestScore} size={120} />
-                      {trend.direction !== 'none' && (
-                        <div className="flex items-center gap-1">
-                          {trend.direction === 'up' && <TrendingUp className="w-3 h-3 text-[#16a34a]" />}
-                          {trend.direction === 'down' && <TrendingDown className="w-3 h-3 text-[#dc2626]" />}
-                          {trend.direction === 'flat' && <Minus className="w-3 h-3 text-muted-foreground" />}
-                          <span className={`text-xs font-medium ${
-                            trend.direction === 'up' ? 'text-[#16a34a]' :
-                            trend.direction === 'down' ? 'text-[#dc2626]' :
-                            'text-muted-foreground'
-                          }`}>
-                            {trend.delta != null && trend.delta !== 0
-                              ? `${trend.delta > 0 ? '+' : ''}${trend.delta}`
-                              : '—'}
-                          </span>
-                        </div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-bold text-foreground">{Math.round(dealer.latestScore)}</span>
+                        <span className="text-sm text-muted-foreground">/ 100</span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-muted mt-1 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${barColor}`}
+                          style={{ width: `${dealer.latestScore}%` }}
+                        />
+                      </div>
+                      {band && (
+                        <p className="text-xs text-muted-foreground mt-1">{band.label}</p>
                       )}
                     </>
                   ) : (
-                    <div className="w-[120px] h-[120px] flex items-center justify-center text-[10px] text-muted-foreground text-center leading-tight">
-                      No score yet
-                    </div>
+                    <>
+                      <span className="text-sm text-muted-foreground">No assessment yet</span>
+                      <div className="w-full h-2 rounded-full bg-muted mt-1" />
+                    </>
                   )}
                 </div>
 
-                {/* Action plan — compact muted line */}
-                <div className="space-y-1">
-                  <div className="w-full h-1 rounded-full bg-muted">
-                    <div
-                      className="h-1 rounded-full bg-[hsl(var(--brand-500))] transition-all"
-                      style={{ width: `${progressPct}%` }}
-                    />
-                  </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    {dealer.openCount > 0
-                      ? `${openMinusOverdue}/${dealer.openCount} on track`
-                      : 'No open actions'}
-                    {dealer.overdueCount > 0 && (
-                      <span className="text-[#dc2626] ml-1">· {dealer.overdueCount} overdue</span>
+                {/* Two-tile row */}
+                <div className="grid grid-cols-2 divide-x divide-border mt-3 rounded-lg border border-border overflow-hidden">
+                  {/* Actions tile */}
+                  <div className="p-3 space-y-0.5">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">ACTIONS</p>
+                    {dealer.openCount > 0 ? (
+                      <>
+                        <p className="text-sm font-medium text-foreground">
+                          {openMinusOverdue}/{dealer.openCount} on track
+                        </p>
+                        {dealer.overdueCount > 0 ? (
+                          <p className="text-xs text-red-500 font-medium">{dealer.overdueCount} overdue</p>
+                        ) : (
+                          <p className="text-xs text-emerald-600">✓ All on track</p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No open actions</p>
                     )}
-                  </p>
-                </div>
-
-                {/* Visit chip */}
-                <div className="text-xs flex items-center gap-1">
-                  <Calendar className="h-3 w-3 text-muted-foreground shrink-0" />
-                  {visitParts ? (
-                    <span className={visitConfirmed ? 'text-[#16a34a] font-medium' : 'text-[#d97706] font-medium'}>
-                      Next visit: {visitParts[0]} · {visitParts[1]}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">No visit scheduled</span>
-                  )}
-                </div>
-
-                {/* Bottom action row */}
-                <div className="border-t border-border/50 pt-2 flex items-center gap-2">
-                  <div className="flex items-center gap-1 shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                      onClick={() => navigate(`/app/coach/dealer/${dealer.dealershipId}?tab=notes`)}
-                    >
-                      Notes
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                      onClick={() => navigate(`/app/coach/dealer/${dealer.dealershipId}?tab=visits`)}
-                    >
-                      Visits
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                      onClick={() => navigate(`/app/coach/dealer/${dealer.dealershipId}?tab=briefing`)}
-                    >
-                      Briefing
-                    </Button>
                   </div>
+
+                  {/* Visit tile */}
+                  <div className="p-3 space-y-0.5">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">NEXT VISIT</p>
+                    {visitParts ? (
+                      <>
+                        <p className="text-sm font-medium text-foreground">{visitParts[0]}</p>
+                        <p className={`text-xs font-medium ${visitConfirmed ? 'text-emerald-600' : 'text-amber-600'}`}>
+                          {visitParts[1]}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No visit scheduled</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* CTA row */}
+                <div className="mt-3">
                   <Button
                     variant="default"
                     size="sm"
-                    className="h-7 text-xs flex-1"
-                    onClick={() => navigate(`/app/coach/dealer/${dealer.dealershipId}`)}
+                    className="w-full h-8 text-xs"
+                    disabled={!dealer.latestAssessmentId}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (dealer.latestAssessmentId) {
+                        navigate(`/app/results/${dealer.latestAssessmentId}`);
+                      }
+                    }}
                   >
-                    Enter Dealership →
+                    {dealer.latestAssessmentId ? 'Enter Dealership →' : 'No assessment yet'}
                   </Button>
                 </div>
-
               </CardContent>
             </Card>
           );
