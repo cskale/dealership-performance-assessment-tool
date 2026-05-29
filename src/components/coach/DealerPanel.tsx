@@ -1478,15 +1478,15 @@ export function DealerPanel({
         </DialogHeader>
 
         {/* Tab strip */}
-        <div className="flex border-b border-border px-6 shrink-0">
+        <div className="flex items-center gap-1 border-b border-border px-4 py-2 shrink-0 bg-background">
           {TABS.map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 activeTab === tab
-                  ? 'border-[hsl(var(--brand-500))] text-foreground'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
+                  ? 'bg-[hsl(var(--brand-500))] text-white'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
               }`}
             >
               {tab === 'activity' ? 'Activity Log' : tab === 'visits' ? 'Visit History' : 'Coach Notes'}
