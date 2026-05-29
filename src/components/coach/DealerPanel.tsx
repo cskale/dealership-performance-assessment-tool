@@ -418,7 +418,7 @@ function VisitsTab({
           </p>
           <div className="rounded-lg border border-border divide-y divide-border">
             {pastVisits.map(v => (
-              <div key={v.id} className="px-4 py-3 space-y-1">
+              <div key={v.id} className="px-4 py-3.5 space-y-1">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-medium">
@@ -605,20 +605,20 @@ function ActivityEntryRow({
   }
 
   return (
-    <div className="flex gap-3 py-4">
+    <div className="flex gap-3 py-5">
       <div
-        className={`h-8 w-8 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${avatarCls}`}
+        className={`h-9 w-9 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${avatarCls}`}
       >
         {avatarText}
       </div>
-      <div className="flex-1 min-w-0">
+      <div className="rounded-lg hover:bg-muted/40 transition-colors px-2 -mx-2 flex-1 min-w-0">
         <div className="flex items-baseline justify-between gap-2">
           <p className="text-sm leading-snug">
             <span className="font-semibold">{isCoachEntry ? 'You' : 'System'}</span>
             {' '}
             <span className="text-muted-foreground">{actionText}</span>
           </p>
-          <span className="text-[11px] text-muted-foreground shrink-0">{timestamp}</span>
+          <span className="text-xs text-muted-foreground shrink-0">{timestamp}</span>
         </div>
         <div className="flex items-center gap-1.5 mt-1">
           <Badge variant="outline" className="text-[10px] uppercase px-1.5 py-0">
@@ -872,8 +872,8 @@ function CoachNotesTab({
       ) : (
         <div className="divide-y divide-border">
           {notes.map(note => (
-            <div key={note.id} className="flex gap-3 py-4">
-              <div className="h-8 w-8 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 bg-[hsl(var(--brand-500))] text-white">
+            <div key={note.id} className="flex gap-3 py-5">
+              <div className="h-9 w-9 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 bg-[hsl(var(--brand-500))] text-white">
                 {coachInitials}
               </div>
               <div className="flex-1 min-w-0">
@@ -888,7 +888,7 @@ function CoachNotesTab({
                     {note.note_type}
                   </Badge>
                 )}
-                <p className="text-sm text-foreground mt-1.5">{note.note_text}</p>
+                <p className="text-[13px] leading-relaxed text-foreground mt-1.5">{note.note_text}</p>
               </div>
               <button
                 className="shrink-0 text-muted-foreground hover:text-[#dc2626] transition-colors mt-0.5"
