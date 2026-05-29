@@ -252,7 +252,7 @@ export default function CoachDashboard() {
   const [lastCompletedVisit, setLastCompletedVisit] = useState<{ date: string; dealerName: string } | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelDealer, setPanelDealer] = useState<AssignedDealer | null>(null);
-  const [panelInitialTab, setPanelInitialTab] = useState<'activity' | 'visits' | 'briefing'>('activity');
+  const [panelInitialTab, setPanelInitialTab] = useState<'activity' | 'visits' | 'briefing'>('briefing');
 
   const networkTabs = useMemo(() => {
     const seen = new Map<string, { id: string; name: string; brand: string }>();
