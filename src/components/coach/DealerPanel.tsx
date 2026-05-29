@@ -1280,17 +1280,31 @@ export function DealerPanel({
       const assessmentIds = completedAssessments.map(a => a.id);
 
       let actionCounts = { pending: 0, inProgress: 0, completed: 0 };
+      let focusActions: FocusAction[] = [];
       if (assessmentIds.length) {
-        const { data: allActionsData } = await supabase
-          .from('improvement_actions')
-          .select('status')
-          .in('assessment_id', assessmentIds);
+        const [allActionsRes, focusActionsRes] = await Promise.all([
+          supabase
+            .from('improvement_actions')
+            .select('status')
+            .not('status', 'is', null)
+            .in('assessment_id', assessmentIds),
+          supabase
+            .from('improvement_actions')
+            .select('id, action_title, priority, last_status_updated_at')
+            .in('assessment_id', assessmentIds)
+            .in('status', ['Open', 'In Progress'])
+            .order('urgency_score', { ascending: false, nullsFirst: false })
+            .limit(3),
+        ]);
+
+        if (allActionsRes.error) throw allActionsRes.error;
 
         actionCounts = {
-          pending:    (allActionsData ?? []).filter(a => a.status === 'Open').length,
-          inProgress: (allActionsData ?? []).filter(a => a.status === 'In Progress').length,
-          completed:  (allActionsData ?? []).filter(a => a.status === 'Completed').length,
+          pending:    (allActionsRes.data ?? []).filter(a => a.status === 'Open').length,
+          inProgress: (allActionsRes.data ?? []).filter(a => a.status === 'In Progress').length,
+          completed:  (allActionsRes.data ?? []).filter(a => a.status === 'Completed').length,
         };
+        focusActions = (focusActionsRes.data ?? []) as FocusAction[];
       }
 
       let assessmentScores: Record<string, number> = {};
@@ -1301,18 +1315,6 @@ export function DealerPanel({
           .eq('id', latestAssessmentId)
           .single();
         assessmentScores = (scoreRow as any)?.scores ?? {};
-      }
-
-      let focusActions: FocusAction[] = [];
-      if (assessmentIds.length) {
-        const { data: actionsData } = await supabase
-          .from('improvement_actions')
-          .select('id, action_title, priority, last_status_updated_at')
-          .in('assessment_id', assessmentIds)
-          .in('status', ['Open', 'In Progress'])
-          .order('urgency_score', { ascending: false, nullsFirst: false })
-          .limit(3);
-        focusActions = (actionsData ?? []) as FocusAction[];
       }
 
       setData({
