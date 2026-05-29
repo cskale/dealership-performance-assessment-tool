@@ -1497,15 +1497,8 @@ export function DealerPanel({
         {/* Two-column body */}
         <div className="flex flex-1 min-h-0 flex-col md:flex-row">
 
-          {/* Left column: focus actions + tab content */}
+          {/* Left column: tab content */}
           <div className="flex-1 min-w-0 flex flex-col overflow-hidden border-r border-border">
-            {/* Top Focus Actions — above tabs, non-scrolling */}
-            {data && data.focusActions.length > 0 && (
-              <TopFocusActionsCard
-                focusActions={data.focusActions}
-                latestAssessmentId={latestAssessmentId}
-              />
-            )}
             {/* Tab body — scrollable */}
             <div className="flex-1 overflow-y-auto">
               {activeTab === 'activity' && (
