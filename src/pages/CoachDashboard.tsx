@@ -252,11 +252,7 @@ export default function CoachDashboard() {
   const [lastCompletedVisit, setLastCompletedVisit] = useState<{ date: string; dealerName: string } | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelDealer, setPanelDealer] = useState<AssignedDealer | null>(null);
-<<<<<<< HEAD
-  const [panelInitialTab, setPanelInitialTab] = useState<'briefing' | 'activity' | 'visits' | 'results'>('briefing');
-=======
   const [panelInitialTab, setPanelInitialTab] = useState<'activity' | 'visits' | 'notes'>('activity');
->>>>>>> a233238 (fix(coach): restore DealerPanel wiring in CoachDashboard)
 
   const networkTabs = useMemo(() => {
     const seen = new Map<string, { id: string; name: string; brand: string }>();
