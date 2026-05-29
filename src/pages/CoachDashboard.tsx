@@ -939,7 +939,6 @@ export default function CoachDashboard() {
                   )}
                 </div>
 
-<<<<<<< HEAD
                 {/* CTA row */}
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <Button
@@ -949,7 +948,7 @@ export default function CoachDashboard() {
                     onClick={(e) => {
                       e.stopPropagation();
                       setPanelDealer(dealer);
-                      setPanelInitialTab('briefing');
+                      setPanelInitialTab('activity');
                       setPanelOpen(true);
                     }}
                   >
@@ -969,50 +968,6 @@ export default function CoachDashboard() {
                   >
                     {dealer.latestAssessmentId ? 'Enter Dealership →' : 'No assessment yet'}
                   </Button>
-=======
-                {/* Bottom action row */}
-                <div className="border-t border-border/50 pt-2 flex items-center gap-2">
-                  <div className="flex items-center gap-1 shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                      onClick={() => { setPanelDealer(dealer); setPanelInitialTab('activity'); setPanelOpen(true); }}
-                    >
-                      Notes
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                      onClick={() => { setPanelDealer(dealer); setPanelInitialTab('visits'); setPanelOpen(true); }}
-                    >
-                      Visits
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                      onClick={() => { setPanelDealer(dealer); setPanelInitialTab('activity'); setPanelOpen(true); }}
-                    >
-                      Briefing
-                    </Button>
-                  </div>
-                  {dealer.latestAssessmentId ? (
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="h-7 text-xs flex-1"
-                      onClick={(e) => { e.stopPropagation(); navigate(`/app/results/${dealer.latestAssessmentId}`); }}
-                    >
-                      Enter Dealership →
-                    </Button>
-                  ) : (
-                    <Button variant="outline" size="sm" className="h-7 text-xs flex-1" disabled>
-                      No assessment yet
-                    </Button>
-                  )}
->>>>>>> a233238 (fix(coach): restore DealerPanel wiring in CoachDashboard)
                 </div>
               </CardContent>
             </Card>
