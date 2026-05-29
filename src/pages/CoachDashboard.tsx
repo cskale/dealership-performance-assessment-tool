@@ -252,7 +252,7 @@ export default function CoachDashboard() {
   const [lastCompletedVisit, setLastCompletedVisit] = useState<{ date: string; dealerName: string } | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelDealer, setPanelDealer] = useState<AssignedDealer | null>(null);
-  const [panelInitialTab, setPanelInitialTab] = useState<'activity' | 'visits' | 'briefing'>('briefing');
+  const [panelInitialTab, setPanelInitialTab] = useState<'briefing' | 'activity' | 'visits' | 'results'>('briefing');
 
   const networkTabs = useMemo(() => {
     const seen = new Map<string, { id: string; name: string; brand: string }>();
@@ -862,16 +862,11 @@ export default function CoachDashboard() {
           return (
             <Card
               key={dealer.dealershipId}
-              className="opacity-0 animate-fade-in shadow-card rounded-xl overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+              className="opacity-0 animate-fade-in shadow-card rounded-xl overflow-hidden"
               style={{
                 animationDelay: `${Math.min(i, 4) * 50}ms`,
                 animationFillMode: 'forwards',
                 borderTop: `3px solid ${accent}`,
-              }}
-              onClick={() => {
-                setPanelDealer(dealer);
-                setPanelInitialTab('briefing');
-                setPanelOpen(true);
               }}
             >
               <CardContent className="p-4">
@@ -924,49 +919,44 @@ export default function CoachDashboard() {
                   )}
                 </div>
 
-                {/* Two-tile row */}
-                <div className="grid grid-cols-2 divide-x divide-border mt-3 rounded-lg border border-border overflow-hidden">
-                  {/* Actions tile */}
-                  <div className="p-3 space-y-0.5">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider">ACTIONS</p>
+                {/* Compact actions row */}
+                <div className="mt-3 flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">
                     {dealer.openCount > 0 ? (
                       <>
-                        <p className="text-sm font-medium text-foreground">
-                          {openMinusOverdue}/{dealer.openCount} on track
-                        </p>
-                        {dealer.overdueCount > 0 ? (
-                          <p className="text-xs text-red-500 font-medium">{dealer.overdueCount} overdue</p>
-                        ) : (
-                          <p className="text-xs text-emerald-600">✓ All on track</p>
+                        <span className="font-medium text-foreground">{openMinusOverdue}/{dealer.openCount}</span> on track
+                        {dealer.overdueCount > 0 && (
+                          <span className="text-red-500 ml-2 font-medium">{dealer.overdueCount} overdue</span>
                         )}
                       </>
                     ) : (
-                      <p className="text-sm text-muted-foreground">No open actions</p>
+                      <span className="text-muted-foreground">No open actions</span>
                     )}
-                  </div>
-
-                  {/* Visit tile */}
-                  <div className="p-3 space-y-0.5">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider">NEXT VISIT</p>
-                    {visitParts ? (
-                      <>
-                        <p className="text-sm font-medium text-foreground">{visitParts[0]}</p>
-                        <p className={`text-xs font-medium ${visitConfirmed ? 'text-emerald-600' : 'text-amber-600'}`}>
-                          {visitParts[1]}
-                        </p>
-                      </>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No visit scheduled</p>
-                    )}
-                  </div>
+                  </span>
+                  {dealer.overdueCount === 0 && dealer.openCount > 0 && (
+                    <span className="text-emerald-600 text-xs">✓ All on track</span>
+                  )}
                 </div>
 
                 {/* CTA row */}
-                <div className="mt-3">
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPanelDealer(dealer);
+                      setPanelInitialTab('briefing');
+                      setPanelOpen(true);
+                    }}
+                  >
+                    Open Briefing
+                  </Button>
                   <Button
                     variant="default"
                     size="sm"
-                    className="w-full h-8 text-xs"
+                    className="h-8 text-xs"
                     disabled={!dealer.latestAssessmentId}
                     onClick={(e) => {
                       e.stopPropagation();

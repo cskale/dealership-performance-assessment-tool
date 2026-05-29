@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from '@/components/ui/dialog';
+  Sheet, SheetContent, SheetHeader, SheetTitle,
+} from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -985,13 +986,127 @@ function BriefingTab({
   );
 }
 
+// ── Results Tab ───────────────────────────────────────────────────────────────
+
+function ResultsTab({
+  data,
+  dataLoading,
+  latestScore,
+  latestDate,
+  latestAssessmentId,
+  onEnter,
+}: {
+  data: PanelData | null;
+  dataLoading: boolean;
+  latestScore: number | null;
+  latestDate: string | null;
+  latestAssessmentId: string | null;
+  onEnter: () => void;
+}) {
+  if (dataLoading || !data) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* Score overview */}
+      <section className="space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          OVERALL SCORE
+        </p>
+        {latestScore != null ? (
+          <div className="space-y-2">
+            <div className="flex items-baseline gap-2">
+              <span className="text-4xl font-bold text-foreground">{Math.round(latestScore)}</span>
+              <span className="text-lg text-muted-foreground">/ 100</span>
+              {(() => {
+                const band = getScoreBand(latestScore);
+                return (
+                  <Badge variant="outline" className={`text-xs ml-1 ${band.className}`}>
+                    {band.label}
+                  </Badge>
+                );
+              })()}
+            </div>
+            <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  latestScore < 46 ? 'bg-red-500' :
+                  latestScore < 70 ? 'bg-amber-400' : 'bg-emerald-500'
+                }`}
+                style={{ width: `${latestScore}%` }}
+              />
+            </div>
+            {latestDate && (
+              <p className="text-xs text-muted-foreground">
+                Last assessed {format(new Date(latestDate), 'dd MMM yyyy')}
+              </p>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">No assessment completed yet.</p>
+        )}
+      </section>
+
+      {/* Dept breakdown */}
+      <section className="space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          DEPARTMENT BREAKDOWN
+        </p>
+        <div className="space-y-2.5">
+          {DEPT_ORDER.map(sectionId => {
+            const score = data.assessmentScores[sectionId];
+            if (score === undefined) return null;
+            const benchmark = STATIC_BENCHMARKS[sectionToModuleCode(sectionId)]?.meanScore ?? 70;
+            const gap = Math.round(score - benchmark);
+            return (
+              <div key={sectionId} className="flex items-center gap-3">
+                <span className="w-32 shrink-0 truncate text-xs text-muted-foreground">
+                  {getDepartmentName(sectionId, 'en')}
+                </span>
+                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${
+                      score >= 75 ? 'bg-emerald-500' :
+                      score >= 55 ? 'bg-amber-400' : 'bg-red-500'
+                    }`}
+                    style={{ width: `${Math.min(score, 100)}%` }}
+                  />
+                </div>
+                <span className="w-8 text-right text-xs font-medium text-foreground">{Math.round(score)}</span>
+                <span className={`w-12 text-right text-[10px] font-medium ${
+                  gap >= 0 ? 'text-emerald-600' : 'text-red-500'
+                }`}>
+                  {gap >= 0 ? `▲ +${gap}` : `▼ ${gap}`}
+                </span>
+              </div>
+            );
+          })}
+          {DEPT_ORDER.every(id => data.assessmentScores[id] === undefined) && (
+            <p className="text-xs text-muted-foreground">No assessment scores available.</p>
+          )}
+        </div>
+      </section>
+
+      {/* CTA */}
+      {latestAssessmentId && (
+        <Button className="w-full" onClick={onEnter}>
+          View Full Results →
+        </Button>
+      )}
+    </div>
+  );
+}
+
 // ── Tab constant (module-level so it is stable across renders) ─────────────────
 
-const TABS = ['activity', 'visits', 'briefing'] as const;
+const TABS = ['briefing', 'activity', 'visits', 'results'] as const;
 
 // ── Props ─────────────────────────────────────────────────────────────────────
-// Live now:   open, onOpenChange, dealer, latestScore, latestAssessmentId, onNoteAdded
-// Reserved:   latestDate, onVisitSaved, initialTab  (wired in later tasks)
 
 export interface DealerPanelProps {
   open: boolean;
@@ -1000,7 +1115,7 @@ export interface DealerPanelProps {
   latestAssessmentId: string | null;
   latestScore: number | null;
   latestDate: string | null;
-  initialTab?: 'activity' | 'visits' | 'briefing';
+  initialTab?: 'briefing' | 'activity' | 'visits' | 'results';
   onVisitSaved: () => void;
   onNoteAdded: () => void;
 }
@@ -1012,11 +1127,12 @@ export function DealerPanel({
   latestAssessmentId,
   latestScore,
   latestDate,
-  initialTab = 'activity',
+  initialTab = 'briefing',
   onVisitSaved,
   onNoteAdded,
 }: DealerPanelProps) {
-  const [activeTab, setActiveTab] = useState<'activity' | 'visits' | 'briefing'>(initialTab);
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<'briefing' | 'activity' | 'visits' | 'results'>(initialTab);
 
   useEffect(() => {
     if (open) setActiveTab(initialTab);
@@ -1096,15 +1212,18 @@ export function DealerPanel({
   }, [open, dealer.dealershipId]);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col gap-0 p-0 overflow-hidden">
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="right"
+        className="w-full sm:w-[80vw] max-w-none flex flex-col gap-0 p-0 overflow-hidden"
+      >
         {/* Header */}
-        <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
+        <SheetHeader className="px-6 py-4 border-b border-border shrink-0">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <DialogTitle className="text-base font-semibold leading-tight">
+              <SheetTitle className="text-base font-semibold leading-tight">
                 {dealer.dealerName}
-              </DialogTitle>
+              </SheetTitle>
               <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                 <MapPin className="h-3 w-3 shrink-0" />
                 {dealer.location}
@@ -1126,7 +1245,7 @@ export function DealerPanel({
               })()}
             </div>
           </div>
-        </DialogHeader>
+        </SheetHeader>
 
         {/* Tab strip */}
         <div className="flex border-b border-border px-6 shrink-0">
@@ -1147,6 +1266,16 @@ export function DealerPanel({
 
         {/* Tab bodies */}
         <div className="flex-1 overflow-y-auto">
+          {activeTab === 'briefing' && (
+            <BriefingTab
+              data={data}
+              dataLoading={dataLoading}
+              latestScore={latestScore}
+              latestDate={latestDate}
+              onSwitchToVisits={() => setActiveTab('visits')}
+              onSwitchToActivity={() => setActiveTab('activity')}
+            />
+          )}
           {activeTab === 'activity' && (
             <ActivityTab
               data={data}
@@ -1168,18 +1297,21 @@ export function DealerPanel({
               onVisitSaved={() => { fetchData(); onVisitSaved(); }}
             />
           )}
-          {activeTab === 'briefing' && (
-            <BriefingTab
+          {activeTab === 'results' && (
+            <ResultsTab
               data={data}
               dataLoading={dataLoading}
               latestScore={latestScore}
               latestDate={latestDate}
-              onSwitchToVisits={() => setActiveTab('visits')}
-              onSwitchToActivity={() => setActiveTab('activity')}
+              latestAssessmentId={latestAssessmentId}
+              onEnter={() => {
+                onOpenChange(false);
+                if (latestAssessmentId) navigate(`/app/results/${latestAssessmentId}`);
+              }}
             />
           )}
         </div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }
