@@ -1350,47 +1350,130 @@ export function DealerPanel({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] max-w-7xl h-[90vh] flex flex-col gap-0 p-0 overflow-hidden">
-        {/* Header */}
-        <DialogHeader className="px-6 py-4 border-b border-border shrink-0 space-y-3">
-          {/* Row 1: dealer identity + score */}
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <DialogTitle className="text-base font-semibold leading-tight truncate">
-                {dealer.dealerName}
-              </DialogTitle>
-              <p className="text-xs text-muted-foreground flex items-center gap-1 shrink-0">
-                <MapPin className="h-3 w-3" />
-                {dealer.location}
+        {/* Hero — dark card matching dealer/coach dashboard */}
+        <DialogHeader className="bg-[#0b1f3a] text-white px-6 pt-5 pb-0 shrink-0 space-y-0 [&>button]:text-white [&>button]:opacity-70 [&>button:hover]:opacity-100">
+          {/* Row 1: dealer identity */}
+          <div className="flex items-center gap-2.5 mb-4 pr-8">
+            <DialogTitle className="text-base font-semibold text-white leading-tight truncate">
+              {dealer.dealerName}
+            </DialogTitle>
+            <span className="text-xs text-white/50 flex items-center gap-1 shrink-0">
+              <MapPin className="h-3 w-3" />
+              {dealer.location}
+            </span>
+          </div>
+
+          {/* Row 2: 4-column metrics grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 pb-5">
+            {/* Col 1: Overall Score */}
+            <div className="pr-6 md:border-r md:border-white/10">
+              <p className="text-[10px] uppercase tracking-[0.1em] text-white/50 font-semibold">
+                Overall Score
               </p>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-5xl font-extrabold text-white leading-none">
+                  {latestScore != null ? Math.round(latestScore) : '—'}
+                </span>
+                {latestScore != null && (
+                  <span className="text-sm text-white/40 font-medium">/100</span>
+                )}
+              </div>
+              {latestScore != null && (
+                <div className="mt-2 h-[5px] rounded-full bg-white/10">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-[#1d7afc] to-[#60aafb]"
+                    style={{ width: `${Math.min(Math.round(latestScore), 100)}%` }}
+                  />
+                </div>
+              )}
               {latestScore != null && (() => {
+                const darkCls = latestScore >= 75
+                  ? 'bg-[#16a34a]/20 text-[#4ade80] border-[#16a34a]/30'
+                  : latestScore >= 46
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                  : 'bg-[#dc2626]/20 text-red-300 border-[#dc2626]/30';
                 const band = getScoreBand(latestScore);
                 return (
-                  <>
-                    <span className="text-lg font-bold text-foreground">{Math.round(latestScore)}</span>
-                    <Badge variant="outline" className={`text-[10px] ${band.className}`}>
-                      {band.label}
-                    </Badge>
-                  </>
+                  <Badge variant="outline" className={`mt-2 text-[10px] font-semibold ${darkCls}`}>
+                    {band.label}
+                  </Badge>
                 );
               })()}
             </div>
-          </div>
 
-          {/* Row 2: 4-stat chips */}
-          <div className="flex items-center gap-6 flex-wrap">
-            {[
-              { label: 'Overall Score', value: latestScore != null ? `${Math.round(latestScore)} / 100` : '—' },
-              { label: 'Active Actions', value: data ? String(data.focusActions.length) : '—' },
-              { label: 'Critical Gaps', value: String(criticalGaps) },
-              { label: 'Next Visit', value: nextVisitLabel },
-            ].map(chip => (
-              <div key={chip.label} className="flex flex-col">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{chip.label}</span>
-                <span className="text-sm font-semibold text-foreground">{chip.value}</span>
+            {/* Col 2: Actions Status */}
+            <div className="pl-6 md:border-r md:border-white/10">
+              <p className="text-[10px] uppercase tracking-[0.1em] text-white/50 font-semibold">
+                Actions
+              </p>
+              <div className="mt-2 space-y-2">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-xs text-white/50">Pending</span>
+                  <span className="text-2xl font-bold text-white leading-none">
+                    {data?.actionCounts.pending ?? '—'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-xs text-white/50">In Progress</span>
+                  <span className="text-2xl font-bold text-amber-400 leading-none">
+                    {data?.actionCounts.inProgress ?? '—'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-xs text-white/50">Completed</span>
+                  <span className="text-2xl font-bold text-[#4ade80] leading-none">
+                    {data?.actionCounts.completed ?? '—'}
+                  </span>
+                </div>
               </div>
-            ))}
+            </div>
+
+            {/* Col 3: Next Visit */}
+            <div className="pl-6 md:border-r md:border-white/10 mt-4 md:mt-0">
+              <p className="text-[10px] uppercase tracking-[0.1em] text-white/50 font-semibold">
+                Next Visit
+              </p>
+              <div className="mt-1">
+                {upcomingVisit ? (
+                  <>
+                    <p className="text-xl font-bold text-white leading-snug">
+                      {format(new Date(upcomingVisit.visit_date), 'dd MMM yyyy')}
+                    </p>
+                    <Badge
+                      variant="outline"
+                      className="mt-1 text-[10px] capitalize border-white/20 text-white/70"
+                    >
+                      {upcomingVisit.status === 'counter_proposed' ? 'Counter proposed' : upcomingVisit.status}
+                    </Badge>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-white/40 mt-1">None scheduled</p>
+                    <button
+                      className="text-xs text-[#60aafb] hover:underline mt-1 block"
+                      onClick={() => setActiveTab('visits')}
+                    >
+                      Schedule →
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Col 4: Critical Gaps */}
+            <div className="pl-6 mt-4 md:mt-0">
+              <p className="text-[10px] uppercase tracking-[0.1em] text-white/50 font-semibold">
+                Critical Gaps
+              </p>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-5xl font-extrabold leading-none text-white">
+                  {criticalGaps}
+                </span>
+              </div>
+              <p className="text-[10px] text-white/40 mt-1.5">
+                dept{criticalGaps !== 1 ? 's' : ''} below benchmark
+              </p>
+            </div>
           </div>
         </DialogHeader>
 
