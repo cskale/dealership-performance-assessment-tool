@@ -58,6 +58,7 @@ interface PanelData {
   assessmentScores: Record<string, number>;
   focusActions: FocusAction[];
   completedAssessments: CompletedAssessment[];
+  actionCounts: { pending: number; inProgress: number; completed: number };
 }
 
 // ── Activity feed ──────────────────────────────────────────────────────────────
@@ -1278,6 +1279,20 @@ export function DealerPanel({
       const completedAssessments = (assessmentsRes.data ?? []) as CompletedAssessment[];
       const assessmentIds = completedAssessments.map(a => a.id);
 
+      let actionCounts = { pending: 0, inProgress: 0, completed: 0 };
+      if (assessmentIds.length) {
+        const { data: allActionsData } = await supabase
+          .from('improvement_actions')
+          .select('status')
+          .in('assessment_id', assessmentIds);
+
+        actionCounts = {
+          pending:    (allActionsData ?? []).filter(a => a.status === 'Open').length,
+          inProgress: (allActionsData ?? []).filter(a => a.status === 'In Progress').length,
+          completed:  (allActionsData ?? []).filter(a => a.status === 'Completed').length,
+        };
+      }
+
       let assessmentScores: Record<string, number> = {};
       if (latestAssessmentId) {
         const { data: scoreRow } = await supabase
@@ -1306,6 +1321,7 @@ export function DealerPanel({
         assessmentScores,
         focusActions,
         completedAssessments,
+        actionCounts,
       });
     } finally {
       setDataLoading(false);
