@@ -17,9 +17,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { SharedLoadingState } from '@/components/shared/SharedLoadingState';
 import { SharedEmptyState } from '@/components/shared/SharedEmptyState';
-import { ScoreGauge } from '@/components/shared/ScoreGauge';
 import { format } from 'date-fns';
-import { TrendingUp, TrendingDown, Minus, Calendar, Database, BookOpen, MapPin } from 'lucide-react';
+import { Calendar, Database, BookOpen, MapPin } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { computeStatsBar, computeTrend, daysSince, getScoreBand, isOverdue } from '@/lib/coachDashboardUtils';
 import { DealerPanel } from '@/components/coach/DealerPanel';
