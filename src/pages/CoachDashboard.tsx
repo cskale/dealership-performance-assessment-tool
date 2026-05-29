@@ -20,7 +20,7 @@ import { SharedEmptyState } from '@/components/shared/SharedEmptyState';
 import { format } from 'date-fns';
 import { Calendar, Database, BookOpen, MapPin } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { computeStatsBar, computeTrend, daysSince, getScoreBand, isOverdue } from '@/lib/coachDashboardUtils';
+import { computeStatsBar, daysSince, getScoreBand, isOverdue } from '@/lib/coachDashboardUtils';
 import { DealerPanel } from '@/components/coach/DealerPanel';
 import { type CoachVisit } from '@/lib/coachVisitUtils';
 import { KPI_DEFINITIONS } from '@/lib/kpiDefinitions';
