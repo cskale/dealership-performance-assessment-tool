@@ -252,7 +252,11 @@ export default function CoachDashboard() {
   const [lastCompletedVisit, setLastCompletedVisit] = useState<{ date: string; dealerName: string } | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelDealer, setPanelDealer] = useState<AssignedDealer | null>(null);
+<<<<<<< HEAD
   const [panelInitialTab, setPanelInitialTab] = useState<'briefing' | 'activity' | 'visits' | 'results'>('briefing');
+=======
+  const [panelInitialTab, setPanelInitialTab] = useState<'activity' | 'visits' | 'notes'>('activity');
+>>>>>>> a233238 (fix(coach): restore DealerPanel wiring in CoachDashboard)
 
   const networkTabs = useMemo(() => {
     const seen = new Map<string, { id: string; name: string; brand: string }>();
@@ -862,12 +866,13 @@ export default function CoachDashboard() {
           return (
             <Card
               key={dealer.dealershipId}
-              className="opacity-0 animate-fade-in shadow-card rounded-xl overflow-hidden"
+              className="opacity-0 animate-fade-in shadow-card rounded-xl overflow-hidden cursor-pointer"
               style={{
                 animationDelay: `${Math.min(i, 4) * 50}ms`,
                 animationFillMode: 'forwards',
                 borderTop: `3px solid ${accent}`,
               }}
+              onClick={() => { setPanelDealer(dealer); setPanelInitialTab('activity'); setPanelOpen(true); }}
             >
               <CardContent className="p-4">
                 {/* Header row */}
@@ -938,6 +943,7 @@ export default function CoachDashboard() {
                   )}
                 </div>
 
+<<<<<<< HEAD
                 {/* CTA row */}
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <Button
@@ -967,6 +973,50 @@ export default function CoachDashboard() {
                   >
                     {dealer.latestAssessmentId ? 'Enter Dealership →' : 'No assessment yet'}
                   </Button>
+=======
+                {/* Bottom action row */}
+                <div className="border-t border-border/50 pt-2 flex items-center gap-2">
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                      onClick={() => { setPanelDealer(dealer); setPanelInitialTab('activity'); setPanelOpen(true); }}
+                    >
+                      Notes
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                      onClick={() => { setPanelDealer(dealer); setPanelInitialTab('visits'); setPanelOpen(true); }}
+                    >
+                      Visits
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                      onClick={() => { setPanelDealer(dealer); setPanelInitialTab('activity'); setPanelOpen(true); }}
+                    >
+                      Briefing
+                    </Button>
+                  </div>
+                  {dealer.latestAssessmentId ? (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="h-7 text-xs flex-1"
+                      onClick={(e) => { e.stopPropagation(); navigate(`/app/results/${dealer.latestAssessmentId}`); }}
+                    >
+                      Enter Dealership →
+                    </Button>
+                  ) : (
+                    <Button variant="outline" size="sm" className="h-7 text-xs flex-1" disabled>
+                      No assessment yet
+                    </Button>
+                  )}
+>>>>>>> a233238 (fix(coach): restore DealerPanel wiring in CoachDashboard)
                 </div>
               </CardContent>
             </Card>
@@ -985,20 +1035,22 @@ export default function CoachDashboard() {
           latestDate={panelDealer.latestDate}
           initialTab={panelInitialTab}
           onVisitSaved={async () => {
+            if (!user?.id) return;
+            const dealershipIds = dealers.map(d => d.dealershipId);
             const { data } = await supabase
               .from('coach_visits')
               .select('dealership_id, visit_date, status')
-              .eq('coach_user_id', user!.id)
-              .in('status', ['proposed', 'confirmed']);
+              .eq('coach_user_id', user.id)
+              .in('dealership_id', dealershipIds)
+              .in('status', ['proposed', 'confirmed'])
+              .order('visit_date', { ascending: true });
             const map = new Map<string, string>();
             (data ?? []).forEach((v: any) => {
               map.set(v.dealership_id, `${format(new Date(v.visit_date), 'dd MMM')} · ${v.status}`);
             });
             setActiveVisitsByDealer(map);
           }}
-          onNoteAdded={() => {
-            // Notes badge removed from cards — no-op
-          }}
+          onNoteAdded={() => { /* no-op — notes badge removed from cards */ }}
         />
       )}
 
