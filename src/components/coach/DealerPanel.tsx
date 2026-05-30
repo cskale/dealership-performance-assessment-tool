@@ -1352,7 +1352,7 @@ export function DealerPanel({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-7xl h-[90vh] flex flex-col gap-0 p-0 overflow-hidden">
+      <DialogContent className="w-screen max-w-none h-screen sm:rounded-none flex flex-col gap-0 p-0 overflow-hidden border-0">
         {/* Hero — dark card matching dealer/coach dashboard */}
         <DialogHeader className="bg-[#0b1f3a] text-white px-6 pt-5 pb-0 shrink-0 space-y-0 [&>button]:text-white [&>button]:opacity-70 [&>button:hover]:opacity-100">
           {/* Row 1: dealer identity */}
@@ -1405,26 +1405,26 @@ export function DealerPanel({
             </div>
 
             {/* Col 2: Actions Status */}
-            <div className="pl-6 md:border-r md:border-white/10">
+            <div className="px-6 md:border-r md:border-white/10">
               <p className="text-[10px] uppercase tracking-[0.1em] text-white/50 font-semibold">
                 Actions
               </p>
-              <div className="mt-2 space-y-2">
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-xs text-white/50">Pending</span>
-                  <span className="text-2xl font-bold text-white leading-none">
+              <div className="mt-3 space-y-1.5">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs text-white/60">Pending</span>
+                  <span className="text-lg font-bold text-white tabular-nums leading-none">
                     {data?.actionCounts.pending ?? '—'}
                   </span>
                 </div>
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-xs text-white/50">In Progress</span>
-                  <span className="text-2xl font-bold text-amber-400 leading-none">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs text-white/60">In Progress</span>
+                  <span className="text-lg font-bold text-amber-300 tabular-nums leading-none">
                     {data?.actionCounts.inProgress ?? '—'}
                   </span>
                 </div>
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-xs text-white/50">Completed</span>
-                  <span className="text-2xl font-bold text-[#4ade80] leading-none">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs text-white/60">Completed</span>
+                  <span className="text-lg font-bold text-[#4ade80] tabular-nums leading-none">
                     {data?.actionCounts.completed ?? '—'}
                   </span>
                 </div>
@@ -1432,7 +1432,7 @@ export function DealerPanel({
             </div>
 
             {/* Col 3: Next Visit */}
-            <div className="pl-6 md:border-r md:border-white/10 mt-4 md:mt-0">
+            <div className="px-6 md:border-r md:border-white/10 mt-4 md:mt-0">
               <p className="text-[10px] uppercase tracking-[0.1em] text-white/50 font-semibold">
                 Next Visit
               </p>
@@ -1464,7 +1464,7 @@ export function DealerPanel({
             </div>
 
             {/* Col 4: Critical Gaps */}
-            <div className="pl-6 mt-4 md:mt-0">
+            <div className="px-6 mt-4 md:mt-0">
               <p className="text-[10px] uppercase tracking-[0.1em] text-white/50 font-semibold">
                 Critical Gaps
               </p>
@@ -1544,10 +1544,6 @@ export function DealerPanel({
               assessmentScores={data?.assessmentScores ?? {}}
               latestAssessmentId={latestAssessmentId}
               dataLoading={dataLoading}
-            />
-            <UpcomingVisitCard
-              upcomingVisit={upcomingVisit}
-              onSwitchToVisits={() => setActiveTab('visits')}
             />
             <InsightCard
               latestDate={latestDate}
