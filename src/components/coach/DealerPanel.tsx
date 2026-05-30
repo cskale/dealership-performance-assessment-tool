@@ -1432,7 +1432,7 @@ export function DealerPanel({
             </div>
 
             {/* Col 3: Next Visit */}
-            <div className="pl-6 md:border-r md:border-white/10 mt-4 md:mt-0">
+            <div className="px-6 md:border-r md:border-white/10 mt-4 md:mt-0">
               <p className="text-[10px] uppercase tracking-[0.1em] text-white/50 font-semibold">
                 Next Visit
               </p>
