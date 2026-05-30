@@ -1352,7 +1352,7 @@ export function DealerPanel({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-7xl h-[90vh] flex flex-col gap-0 p-0 overflow-hidden">
+      <DialogContent className="w-screen max-w-none h-screen sm:rounded-none flex flex-col gap-0 p-0 overflow-hidden border-0">
         {/* Hero — dark card matching dealer/coach dashboard */}
         <DialogHeader className="bg-[#0b1f3a] text-white px-6 pt-5 pb-0 shrink-0 space-y-0 [&>button]:text-white [&>button]:opacity-70 [&>button:hover]:opacity-100">
           {/* Row 1: dealer identity */}
