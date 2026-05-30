@@ -1464,7 +1464,7 @@ export function DealerPanel({
             </div>
 
             {/* Col 4: Critical Gaps */}
-            <div className="pl-6 mt-4 md:mt-0">
+            <div className="px-6 mt-4 md:mt-0">
               <p className="text-[10px] uppercase tracking-[0.1em] text-white/50 font-semibold">
                 Critical Gaps
               </p>
