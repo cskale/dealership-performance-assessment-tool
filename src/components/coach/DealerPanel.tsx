@@ -1545,10 +1545,6 @@ export function DealerPanel({
               latestAssessmentId={latestAssessmentId}
               dataLoading={dataLoading}
             />
-            <UpcomingVisitCard
-              upcomingVisit={upcomingVisit}
-              onSwitchToVisits={() => setActiveTab('visits')}
-            />
             <InsightCard
               latestDate={latestDate}
               latestAssessmentId={latestAssessmentId}
