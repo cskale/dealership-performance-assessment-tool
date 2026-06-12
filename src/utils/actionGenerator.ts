@@ -1,9 +1,10 @@
 /**
- * @deprecated Use src/lib/signalEngine.ts instead.
- * This legacy generator is kept for reference only.
- * All action generation should go through the canonical signal engine.
+ * @deprecated DEAD CODE — do not extend. Use src/lib/signalEngine.ts instead.
+ * This legacy generator has zero imports anywhere in the codebase and is kept
+ * for reference only. All action generation goes through the canonical signal engine.
  */
-import { Question, Section } from '@/data/questionnaire';
+import { Section } from '@/data/questionnaire';
+import { getScoredQuestions } from '@/lib/scoringEngine';
 
 /**
  * Intelligent Action Generator
@@ -47,16 +48,16 @@ export function analyzeAssessmentAnswers(
   const weakPoints: ActionContext[] = [];
 
   sections.forEach((section) => {
-    section.questions.forEach((question) => {
+    getScoredQuestions(section.questions).forEach((question) => {
       const score = answers[question.id];
-      
+
       // Consider questions with score 1-3 as needing attention
       if (score && score <= 3) {
         weakPoints.push({
           questionId: question.id,
           questionText: question.text,
           score,
-          weight: question.weight || 1,
+          weight: question.weight,
           purpose: question.purpose,
           situationAnalysis: question.situationAnalysis,
           linkedKPIs: question.linkedKPIs,

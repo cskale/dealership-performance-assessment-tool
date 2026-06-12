@@ -10,18 +10,10 @@ export interface QuestionTranslation {
   scaleLabels?: string[];
 }
 
-export interface Question {
+export interface BaseQuestion {
   id: string;
   text: string;
   description?: string;
-  type: "scale" | "multiple_choice" | "rating";
-  options?: string[];
-  scale?: {
-    min: number;
-    max: number;
-    labels: string[];
-  };
-  weight: number;
   category: string;
   purpose?: string;
   situationAnalysis?: string;
@@ -31,6 +23,40 @@ export interface Question {
   secondarySignalCode?: SignalCode;
   rootCauseDimension?: RootCauseDimension;
   translations?: Record<Language, QuestionTranslation>;
+}
+
+export interface ScoredQuestion extends BaseQuestion {
+  kind: "scored";
+  type: "scale" | "multiple_choice" | "rating";
+  options?: string[];
+  scale: {
+    min: number;
+    max: number;
+    labels: string[];
+  };
+  weight: number;
+}
+
+export interface DataQuestion extends BaseQuestion {
+  kind: "data";
+  type: "numeric" | "percentage" | "currency" | "ratio";
+  kpiKey: string;
+  unit: string;
+  referencePeriod: "last_calendar_month" | "last_financial_year" | "current";
+  validRange?: { min: number; max: number };
+  formula?: { expression: string; example?: string; dataSource?: string };
+  benchmarkRef?: string;
+  subSection?: string;
+}
+
+export type Question = ScoredQuestion | DataQuestion;
+
+export function isScoredQuestion(q: Question): q is ScoredQuestion {
+  return q.kind === "scored";
+}
+
+export function isDataQuestion(q: Question): q is DataQuestion {
+  return q.kind === "data";
 }
 
 export interface SectionTranslation {
@@ -75,6 +101,7 @@ export const questionnaire: Questionnaire = {
       questions: [
         {
           id: "nvs-1",
+          kind: "scored",
           text: "How many new vehicles does your dealership sell on average per month?",
           description: "Consider your sales volume over the last 12 months to provide an accurate assessment",
           type: "scale",
@@ -109,6 +136,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "nvs-2",
+          kind: "scored",
           text: "What percentage of your sales leads successfully convert into actual vehicle purchases?",
           description: "Calculate the ratio of completed sales to total qualified leads received",
           type: "scale",
@@ -143,6 +171,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "nvs-3",
+          kind: "scored",
           text: "How would customers rate their overall satisfaction with your new vehicle sales experience?",
           description: "Based on customer surveys, feedback forms, and post-purchase reviews",
           type: "scale",
@@ -176,6 +205,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "nvs-4",
+          kind: "scored",
           text: "What is the average gross profit your dealership earns on each new vehicle sold?",
           description: "Calculate front-end profit after all discounts and incentives",
           type: "scale",
@@ -210,6 +240,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "nvs-5",
+          kind: "scored",
           text: "How long does it typically take from a customer's initial inquiry to vehicle delivery?",
           description: "Measure the average time from first contact to keys-in-hand",
           type: "scale",
@@ -243,6 +274,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "nvs-6",
+          kind: "scored",
           text: "What percentage of your online leads result in actual showroom visits?",
           description: "Track conversion from digital inquiry to physical dealership visit",
           type: "scale",
@@ -277,6 +309,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "nvs-7",
+          kind: "scored",
           text: "How frequently does your sales team receive formal training and skill development?",
           description: "Include product training, sales techniques, and customer service skills",
           type: "scale",
@@ -310,6 +343,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "nvs-8",
+          kind: "scored",
           text: "How many times per year does your new vehicle inventory completely turn over?",
           description: "Calculate annual sales divided by average inventory value",
           type: "scale",
@@ -344,6 +378,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "nvs-9",
+          kind: "scored",
           text: "What percentage of your new vehicle customers purchase finance and insurance products?",
           description: "Include loans, leases, extended warranties, and protection packages",
           type: "scale",
@@ -378,6 +413,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "nvs-10",
+          kind: "scored",
           text: "How effectively does your team utilize the CRM system for lead management and follow-up?",
           description: "Consider data entry consistency, follow-up automation, and reporting usage",
           type: "scale",
@@ -411,6 +447,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "nvs-11",
+          kind: "scored",
           text: "How quickly and consistently does your team engage with incoming sales enquiries across all channels?",
           description: "Consider phone, email, website form, and third-party listing leads during and outside business hours",
           type: "scale",
@@ -444,6 +481,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "nvs-12",
+          kind: "scored",
           text: "On average, how many new vehicle sales does each active sales consultant close per month?",
           description: "Divide total monthly new vehicle units sold by the number of active salespeople carrying a target",
           type: "scale",
@@ -477,6 +515,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "nvs-13",
+          kind: "scored",
           text: "How stable has your sales team composition been over the past 12 months?",
           description: "Think about voluntary departures, dismissals, and how long your current team has been in their roles",
           type: "scale",
@@ -528,6 +567,7 @@ export const questionnaire: Questionnaire = {
       questions: [
         {
           id: "uvs-1",
+          kind: "scored",
           text: "On average, how many days do used vehicles remain in your inventory before being sold?",
           description: "Calculate the average days from acquisition to sale completion",
           type: "scale",
@@ -556,6 +596,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "uvs-2",
+          kind: "scored",
           text: "What is the average gross profit margin your dealership achieves on used vehicle sales?",
           description: "Calculate the profit per unit after reconditioning and acquisition costs",
           type: "scale",
@@ -584,6 +625,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "uvs-3",
+          kind: "scored",
           text: "How accurate are your initial trade-in valuations compared to the final selling prices achieved?",
           description: "Measure the consistency between appraisal values and actual sale outcomes",
           type: "scale",
@@ -611,6 +653,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "uvs-4",
+          kind: "scored",
           text: "What is your average cost per vehicle for reconditioning and preparing used vehicles for sale?",
           description: "Include mechanical repairs, detailing, and cosmetic improvements",
           type: "scale",
@@ -639,6 +682,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "uvs-5",
+          kind: "scored",
           text: "How would you rate the quality and effectiveness of your online used vehicle listings?",
           description: "Consider photo quality, description accuracy, pricing transparency, and response time",
           type: "scale",
@@ -666,6 +710,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "uvs-6",
+          kind: "scored",
           text: "What percentage of vehicles you purchase at auctions turn out to be profitable after resale?",
           description: "Track which auction purchases result in positive margins",
           type: "scale",
@@ -693,6 +738,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "uvs-7",
+          kind: "scored",
           text: "How do customers rate their overall satisfaction with your used vehicle purchase experience?",
           description: "Based on post-purchase surveys and feedback within 30 days of sale",
           type: "scale",
@@ -720,6 +766,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "uvs-8",
+          kind: "scored",
           text: "What percentage of used vehicle buyers purchase extended warranties or service contracts?",
           description: "Include all protection products offered at point of sale",
           type: "scale",
@@ -748,6 +795,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "uvs-9",
+          kind: "scored",
           text: "How does your used vehicle pricing compare to similar vehicles in your local market?",
           description: "Consider pricing relative to competitors within a 50-mile radius",
           type: "scale",
@@ -775,6 +823,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "uvs-10",
+          kind: "scored",
           text: "How effective is your strategy for managing vehicles that remain unsold for more than 60 days?",
           description: "Describe your aged inventory reduction approach and pricing adjustments",
           type: "scale",
@@ -803,6 +852,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "uvs-11",
+          kind: "scored",
           text: "When customers buy a new vehicle from you, how often do they trade in their existing car with the dealership rather than selling it privately?",
           description: "Estimate the proportion of new vehicle transactions that also include an in-house trade-in appraisal and acquisition",
           type: "scale",
@@ -836,6 +886,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "uvs-12",
+          kind: "scored",
           text: "How does your current used vehicle stock level relate to the number of units you typically sell per month?",
           description: "Consider whether your stocking policy and current inventory depth are well-matched to your actual sales rate",
           type: "scale",
@@ -869,6 +920,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "uvs-13",
+          kind: "scored",
           text: "How would you describe the experience level and specialist knowledge of the people managing your used vehicle operation?",
           description: "Think about your used car manager's tenure, market knowledge, and how independently the function operates",
           type: "scale",
@@ -920,6 +972,7 @@ export const questionnaire: Questionnaire = {
       questions: [
         {
           id: "svc-1",
+          kind: "scored",
           text: "What percentage of your technicians' available hours are spent on billable, productive work?",
           description: "Calculate productive labor hours divided by total available hours",
           type: "scale",
@@ -948,6 +1001,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "svc-2",
+          kind: "scored",
           text: "What percentage of your posted labor rate do you actually realize on customer-pay work?",
           description: "Compare effective labor rate to your posted door rate",
           type: "scale",
@@ -976,6 +1030,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "svc-3",
+          kind: "scored",
           text: "How soon can customers typically get an appointment for routine service at your dealership?",
           description: "Measure average wait time from request to available appointment slot",
           type: "scale",
@@ -1003,6 +1058,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "svc-4",
+          kind: "scored",
           text: "What percentage of repairs are completed correctly on the first visit without requiring a return?",
           description: "Track comebacks and repeat repairs for the same issue",
           type: "scale",
@@ -1031,6 +1087,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "svc-5",
+          kind: "scored",
           text: "How do customers rate their overall experience with your service department?",
           description: "Based on post-service surveys and satisfaction ratings",
           type: "scale",
@@ -1058,6 +1115,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "svc-6",
+          kind: "scored",
           text: "What percentage of your warranty claims are successfully approved and reimbursed by the manufacturer?",
           description: "Track warranty claim submission success rate",
           type: "scale",
@@ -1085,6 +1143,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "svc-7",
+          kind: "scored",
           text: "What percentage of your technicians hold current ASE certifications or equivalent manufacturer credentials?",
           description: "Count certified technicians as a percentage of total technical staff",
           type: "scale",
@@ -1112,6 +1171,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "svc-8",
+          kind: "scored",
           text: "What percentage of your service customers return for additional service within 12 months?",
           description: "Track repeat customer visits excluding warranty-required service",
           type: "scale",
@@ -1140,6 +1200,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "svc-9",
+          kind: "scored",
           text: "When a technician needs a part, how often is it immediately available in your parts inventory?",
           description: "Track parts availability for service work orders",
           type: "scale",
@@ -1167,6 +1228,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "svc-10",
+          kind: "scored",
           text: "How effectively do you use digital tools to keep customers informed about their vehicle's service status?",
           description: "Include text updates, service videos, digital inspections, and online payment",
           type: "scale",
@@ -1194,6 +1256,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "svc-11",
+          kind: "scored",
           text: "How many repair orders does each service advisor typically process per day?",
           description: "Calculate average daily RO count per advisor",
           type: "scale",
@@ -1222,6 +1285,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "svc-12",
+          kind: "scored",
           text: "How would you rate the efficiency and throughput of your express or quick service lane?",
           description: "Consider wait times, service speed, and customer satisfaction for quick service",
           type: "scale",
@@ -1249,6 +1313,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "svc-13",
+          kind: "scored",
           text: "How often do vehicles return to your service department within 30 days for the same reported fault?",
           description: "Think about repair comebacks — cases where the original repair did not resolve the customer's complaint",
           type: "scale",
@@ -1282,6 +1347,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "svc-14",
+          kind: "scored",
           text: "When a service advisor recommends additional work or maintenance items beyond what a customer originally booked for, how often do customers approve that work?",
           description: "Consider all upsell and additional repair recommendations made at the point of vehicle check-in or mid-service",
           type: "scale",
@@ -1315,6 +1381,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "svc-15",
+          kind: "scored",
           text: "Of the customers who bought a vehicle from you in the last two years, what proportion regularly return to your workshop for servicing?",
           description: "Think about vehicle owners who could service with you but choose a competitor, an independent, or not at all",
           type: "scale",
@@ -1366,6 +1433,7 @@ export const questionnaire: Questionnaire = {
       questions: [
         {
           id: "pts-1",
+          kind: "scored",
           text: "How many times per year does your entire parts inventory turn over through sales?",
           description: "Calculate annual parts sales divided by average inventory value",
           type: "scale",
@@ -1391,6 +1459,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "pts-2",
+          kind: "scored",
           text: "What percentage of parts requests can you fulfill immediately from your on-hand stock?",
           description: "Track first-time fill rate for both customer and internal service requests",
           type: "scale",
@@ -1416,6 +1485,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "pts-3",
+          kind: "scored",
           text: "What is the average gross profit margin you achieve on parts sales across all channels?",
           description: "Calculate total parts gross profit as a percentage of parts revenue",
           type: "scale",
@@ -1441,6 +1511,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "pts-4",
+          kind: "scored",
           text: "What percentage of your parts inventory is considered obsolete with no movement in 12+ months?",
           description: "Identify slow-moving and dead stock as a percentage of total inventory value",
           type: "scale",
@@ -1466,6 +1537,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "pts-5",
+          kind: "scored",
           text: "How accurate are your parts orders in terms of ordering the correct part and quantity?",
           description: "Track orders that don't require corrections or returns",
           type: "scale",
@@ -1491,6 +1563,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "pts-6",
+          kind: "scored",
           text: "How would you rate your success in selling parts to external customers such as independent shops?",
           description: "Evaluate your wholesale and retail parts business outside of internal service",
           type: "scale",
@@ -1516,6 +1589,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "pts-7",
+          kind: "scored",
           text: "What percentage of parts sold are returned due to ordering errors or incorrect parts?",
           description: "Track return rate attributed to dealership mistakes",
           type: "scale",
@@ -1541,6 +1615,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "pts-8",
+          kind: "scored",
           text: "How effectively can you source and obtain urgently needed parts that are not in stock?",
           description: "Rate your emergency sourcing capabilities for critical customer needs",
           type: "scale",
@@ -1566,6 +1641,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "pts-9",
+          kind: "scored",
           text: "How long does it typically take to process and fulfill a standard parts counter request?",
           description: "Measure time from customer request to parts in hand",
           type: "scale",
@@ -1591,6 +1667,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "pts-10",
+          kind: "scored",
           text: "How strong are your relationships and communication with your parts suppliers and vendors?",
           description: "Consider pricing, delivery reliability, and support quality",
           type: "scale",
@@ -1634,6 +1711,7 @@ export const questionnaire: Questionnaire = {
       questions: [
         {
           id: "fin-1",
+          kind: "scored",
           text: "How would you describe your dealership's overall profitability trend over the past 12 months?",
           description: "Consider net profit growth, stability, or decline patterns",
           type: "scale",
@@ -1662,6 +1740,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "fin-2",
+          kind: "scored",
           text: "How consistent and predictable is your dealership's monthly cash flow?",
           description: "Rate the stability of cash inflows and outflows",
           type: "scale",
@@ -1690,6 +1769,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "fin-3",
+          kind: "scored",
           text: "How effectively do you manage your floor plan financing to minimize interest costs?",
           description: "Consider inventory turn rate relative to floor plan terms and payment timing",
           type: "scale",
@@ -1717,6 +1797,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "fin-4",
+          kind: "scored",
           text: "How effectively does your dealership control and manage operational expenses?",
           description: "Consider cost monitoring, budget adherence, and expense reduction initiatives",
           type: "scale",
@@ -1745,6 +1826,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "fin-5",
+          kind: "scored",
           text: "How does your revenue per employee compare to industry benchmarks for your market?",
           description: "Evaluate staff productivity and efficiency across all departments",
           type: "scale",
@@ -1772,6 +1854,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "fin-6",
+          kind: "scored",
           text: "What return are you achieving on your technology and equipment investments?",
           description: "Consider DMS, CRM, service equipment, and digital marketing tools",
           type: "scale",
@@ -1799,6 +1882,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "fin-7",
+          kind: "scored",
           text: "How efficiently are you utilizing your showroom floor space and service bay capacity?",
           description: "Consider revenue per square foot and bay utilization rates",
           type: "scale",
@@ -1826,6 +1910,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "fin-8",
+          kind: "scored",
           text: "How well do you maintain and leverage your customer database for marketing and retention?",
           description: "Consider data quality, segmentation capabilities, and utilization for targeted campaigns",
           type: "scale",
@@ -1853,6 +1938,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "fin-9",
+          kind: "scored",
           text: "To what extent does the gross profit generated by your service and parts departments cover the total fixed overhead of your dealership?",
           description: "Think about whether fixed operations alone could sustain the business if vehicle sales had a poor month — without relying on variable sales gross",
           type: "scale",
@@ -1886,6 +1972,7 @@ export const questionnaire: Questionnaire = {
         },
         {
           id: "fin-10",
+          kind: "scored",
           text: "How structured and consistent is the way your dealership reviews individual staff performance and links it to development and compensation?",
           description: "Consider whether targets are clear, reviews happen on schedule, and outcomes actually influence pay, coaching, or role progression",
           type: "scale",
@@ -1923,24 +2010,32 @@ export const questionnaire: Questionnaire = {
 };
 
 // Helper function to get translated question content
-export function getTranslatedQuestion(question: Question, language: Language): Question {
+export function getTranslatedQuestion<T extends Question>(question: T, language: Language): T {
   if (!question.translations || !question.translations[language]) {
     return question;
   }
 
   const translation = question.translations[language];
-  return {
+  const base = {
     ...question,
     text: translation.text || question.text,
     description: translation.description || question.description,
     purpose: translation.purpose || question.purpose,
     situationAnalysis: translation.situationAnalysis || question.situationAnalysis,
     benefits: translation.benefits || question.benefits,
-    scale: question.scale ? {
-      ...question.scale,
-      labels: translation.scaleLabels || question.scale.labels
-    } : undefined
   };
+
+  if (isScoredQuestion(question)) {
+    return {
+      ...base,
+      scale: {
+        ...question.scale,
+        labels: translation.scaleLabels || question.scale.labels
+      }
+    } as T;
+  }
+
+  return base as T;
 }
 
 // Helper function to get translated section content

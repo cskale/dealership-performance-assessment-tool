@@ -12,7 +12,7 @@
 
 import { Signal, SignalCode, Severity } from '@/data/signalTypes';
 import { SIGNAL_MAPPINGS, getSignalMapping } from '@/data/signalMappings';
-import { questionnaire, Question } from '@/data/questionnaire';
+import { questionnaire, Question, isDataQuestion } from '@/data/questionnaire';
 import { ACTION_TEMPLATES, getTemplatesForSignal, ActionTemplate, ImplementationStep } from '@/data/actionTemplates';
 import { getTemplateIdsForSignal, getMaxActionsForSignal, getKPISpecificTemplateIds } from '@/data/signalToActionMap';
 import {
@@ -286,6 +286,10 @@ export function generateSignals(
     if (score > config.weakScoreThreshold) {
       continue;
     }
+
+    // Data/KPI questions don't drive signal generation - exclude them from scoring.
+    const question = allQuestions.get(questionId);
+    if (question && isDataQuestion(question)) continue;
 
     const resolved = getResolvedSignalMapping(questionId, allQuestions);
     if (!resolved) continue;

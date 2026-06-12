@@ -1,4 +1,4 @@
-import type { Question, Section } from '@/data/questionnaire';
+import { isScoredQuestion, type Question, type Section, type ScoredQuestion } from '@/data/questionnaire';
 import type { SignalCode } from '@/data/signalTypes';
 import { BusinessModel, isSectionSuppressed } from '@/lib/moduleGating';
 
@@ -59,8 +59,17 @@ export function calculateWeightedScore(departmentScores: Record<string, number>)
 }
 
 /**
+ * Filter a question list down to scored (numeric-weight) questions only.
+ * Use this before any calculation that reads `.weight` — DataQuestion
+ * has no weight field, and this is the single gateway that excludes it.
+ */
+export function getScoredQuestions(questions: Question[]): ScoredQuestion[] {
+  return questions.filter(isScoredQuestion);
+}
+
+/**
  * Calculate weighted section score using question weights
- * 
+ *
  * weighted_avg = sum(answer * weight) / sum(weights)
  */
 export function calculateWeightedSectionScore(
@@ -69,18 +78,17 @@ export function calculateWeightedSectionScore(
 ): number | null {
   let weightedSum = 0;
   let totalWeight = 0;
-  
-  for (const q of questions) {
+
+  for (const q of getScoredQuestions(questions)) {
     const answer = answers[q.id];
     if (answer === undefined) continue;
-    
-    const weight = q.weight || 1.0;
-    weightedSum += answer * weight;
-    totalWeight += weight;
+
+    weightedSum += answer * q.weight;
+    totalWeight += q.weight;
   }
-  
+
   if (totalWeight === 0) return null;
-  
+
   const weightedAvg = weightedSum / totalWeight;
   // Convert from 1-5 scale to 0-100
   return Math.round((weightedAvg / 5) * 100);
@@ -133,16 +141,15 @@ export function calculateSubCategoryScores(
   for (const section of sections) {
     const groups: Record<string, { weightedSum: number; totalWeight: number; count: number }> = {};
     
-    for (const q of section.questions) {
+    for (const q of getScoredQuestions(section.questions)) {
       const answer = answers[q.id];
       if (answer === undefined) continue;
-      
+
       const cat = q.category || 'general';
       if (!groups[cat]) groups[cat] = { weightedSum: 0, totalWeight: 0, count: 0 };
-      
-      const w = q.weight || 1.0;
-      groups[cat].weightedSum += answer * w;
-      groups[cat].totalWeight += w;
+
+      groups[cat].weightedSum += answer * q.weight;
+      groups[cat].totalWeight += q.weight;
       groups[cat].count++;
     }
     
@@ -216,10 +223,10 @@ export function calculateAllConfidenceMetrics(
   const result: Record<string, ConfidenceMetrics> = {};
   
   for (const section of sections) {
-    const values = section.questions
+    const values = getScoredQuestions(section.questions)
       .map(q => answers[q.id])
       .filter((v): v is number => v !== undefined);
-    
+
     result[section.id] = calculateConfidenceMetrics(values);
   }
   
@@ -250,10 +257,10 @@ export function detectSystemicPatterns(
   const categoryWeakness: Record<string, string[]> = {};
   
   for (const section of sections) {
-    for (const q of section.questions) {
+    for (const q of getScoredQuestions(section.questions)) {
       const answer = answers[q.id];
       if (answer === undefined || answer > weakThreshold) continue;
-      
+
       const cat = q.category || 'general';
       if (!categoryWeakness[cat]) categoryWeakness[cat] = [];
       if (!categoryWeakness[cat].includes(section.id)) {

@@ -20,6 +20,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { toast } from 'sonner';
 import { questionnaire } from '@/data/questionnaire';
+import { getScoredQuestions } from '@/lib/scoringEngine';
 import { generateActionsFromAssessment, formatActionsForDatabaseInsert } from '@/lib/signalEngine';
 import { cleanActionTitle, priorityDisplay, resetPatternUsage } from '@/lib/actionRationaleMap';
 import { cleanDescription } from '@/lib/cleanDescription';
@@ -259,7 +260,7 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
       if (!assessment) { toast.error('Failed to load assessment data'); setGenerating(false); return; }
       const questionWeights: Record<string, number> = {};
       for (const section of questionnaire.sections) {
-        for (const question of section.questions) questionWeights[question.id] = question.weight;
+        for (const question of getScoredQuestions(section.questions)) questionWeights[question.id] = question.weight;
       }
       const bm = (currentOrganization as any)?.business_model as string | undefined;
       const { actions: generatedActions } = generateActionsFromAssessment(assessment.answers as Record<string, number>, questionWeights, undefined, undefined, bm);

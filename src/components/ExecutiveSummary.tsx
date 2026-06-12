@@ -19,6 +19,7 @@ import {
   calculateSubCategoryScores,
   calculateAllConfidenceMetrics,
   detectSystemicPatterns,
+  getScoredQuestions,
   type ConfidenceMetrics,
   type DepartmentSubCategories,
   type SystemicPattern,
@@ -217,7 +218,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
     const weakestDept = DEPT_LABELS[sortedAsc[0]?.[0]] ?? 'New Vehicle Sales';
     const maturityLevelKey: MaturityLevel = getMaturityKey(overallScore);
     const questionWeights: Record<string, number> = {};
-    questionnaire.sections.forEach(s => s.questions.forEach(q => { questionWeights[q.id] = q.weight; }));
+    questionnaire.sections.forEach(s => getScoredQuestions(s.questions).forEach(q => { questionWeights[q.id] = q.weight; }));
     const signals = generateSignals(answers as Record<string, number>, questionWeights);
     const primarySignal = (signals[0]?.signalCode ?? 'PROCESS_NOT_STANDARDISED') as PrimarySignalCode;
     const isSystemic = systemicPatterns.some(p => p.severity === 'systemic');
@@ -231,7 +232,7 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
 
   const topSignals = useMemo(() => {
     const questionWeights: Record<string, number> = {};
-    questionnaire.sections.forEach(s => s.questions.forEach(q => { questionWeights[q.id] = q.weight; }));
+    questionnaire.sections.forEach(s => getScoredQuestions(s.questions).forEach(q => { questionWeights[q.id] = q.weight; }));
     return generateSignals(answers as Record<string, number>, questionWeights).slice(0, 3);
   }, [answers]);
 

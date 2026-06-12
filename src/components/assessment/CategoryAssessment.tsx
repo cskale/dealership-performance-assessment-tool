@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { MessageSquare, Save, ChevronRight, StickyNote, Check, ExternalLink } from "lucide-react";
-import { Question, Section } from "@/data/questionnaire";
+import { Question, Section, isScoredQuestion } from "@/data/questionnaire";
 import { useAssessmentNotes } from "@/hooks/useAssessmentNotes";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -186,61 +186,64 @@ export function CategoryAssessment({
                 )}
 
                 {/* ── Rating tiles ── */}
-                {question.type === 'scale' && question.scale && (
-                  <div className="grid grid-cols-5 gap-2 mt-4">
-                    {Array.from({ length: question.scale.max }, (_, i) => {
-                      const rating = i + 1;
-                      const isSelected = value === rating;
-                      const label = question.scale!.labels[i] || '';
+                {isScoredQuestion(question) && question.type === 'scale' && (() => {
+                  const scale = question.scale;
+                  return (
+                    <div className="grid grid-cols-5 gap-2 mt-4">
+                      {Array.from({ length: scale.max }, (_, i) => {
+                        const rating = i + 1;
+                        const isSelected = value === rating;
+                        const label = scale.labels[i] || '';
 
-                      return (
-                        <button
-                          key={rating}
-                          type="button"
-                          onClick={() => handleRatingClick(question.id, rating)}
-                          className="relative min-h-[80px] w-full flex flex-col items-center justify-center rounded-[10px] px-2.5 py-4 text-center transition-all duration-150 focus-visible:outline-2 focus-visible:outline-[#1D7AFC] focus-visible:outline-offset-2"
-                          style={
-                            isSelected
-                              ? {
-                                  border: '1.5px solid #1D7AFC',
-                                  borderLeft: '4px solid #1D7AFC',
-                                  background: 'rgba(29,122,252,0.04)',
-                                  boxShadow: '0 0 0 3px rgba(29,122,252,0.08)',
-                                }
-                              : {
-                                  border: '1px solid #d4dde4',
-                                  background: 'white',
-                                }
-                          }
-                          onMouseEnter={(e) => {
-                            if (!isSelected) {
-                              (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(29,122,252,0.35)';
-                              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(29,122,252,0.02)';
+                        return (
+                          <button
+                            key={rating}
+                            type="button"
+                            onClick={() => handleRatingClick(question.id, rating)}
+                            className="relative min-h-[80px] w-full flex flex-col items-center justify-center rounded-[10px] px-2.5 py-4 text-center transition-all duration-150 focus-visible:outline-2 focus-visible:outline-[#1D7AFC] focus-visible:outline-offset-2"
+                            style={
+                              isSelected
+                                ? {
+                                    border: '1.5px solid #1D7AFC',
+                                    borderLeft: '4px solid #1D7AFC',
+                                    background: 'rgba(29,122,252,0.04)',
+                                    boxShadow: '0 0 0 3px rgba(29,122,252,0.08)',
+                                  }
+                                : {
+                                    border: '1px solid #d4dde4',
+                                    background: 'white',
+                                  }
                             }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isSelected) {
-                              (e.currentTarget as HTMLButtonElement).style.borderColor = '#d4dde4';
-                              (e.currentTarget as HTMLButtonElement).style.background = 'white';
-                            }
-                          }}
-                        >
-                          {isSelected && (
-                            <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#1D7AFC] flex items-center justify-center">
-                              <Check className="h-2.5 w-2.5 text-white" strokeWidth={2.5} />
-                            </span>
-                          )}
-                          <span
-                            className="text-[13px] font-semibold leading-[1.35] break-words"
-                            style={{ color: isSelected ? '#0b1f3a' : '#263d57' }}
+                            onMouseEnter={(e) => {
+                              if (!isSelected) {
+                                (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(29,122,252,0.35)';
+                                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(29,122,252,0.02)';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isSelected) {
+                                (e.currentTarget as HTMLButtonElement).style.borderColor = '#d4dde4';
+                                (e.currentTarget as HTMLButtonElement).style.background = 'white';
+                              }
+                            }}
                           >
-                            {label}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+                            {isSelected && (
+                              <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#1D7AFC] flex items-center justify-center">
+                                <Check className="h-2.5 w-2.5 text-white" strokeWidth={2.5} />
+                              </span>
+                            )}
+                            <span
+                              className="text-[13px] font-semibold leading-[1.35] break-words"
+                              style={{ color: isSelected ? '#0b1f3a' : '#263d57' }}
+                            >
+                              {label}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* ── Context strip: Why this matters | Linked KPIs ── */}

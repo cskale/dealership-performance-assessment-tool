@@ -8,6 +8,7 @@ import {
   calculateAllConfidenceMetrics,
   detectSystemicPatterns,
   calculateEnhancedMaturity,
+  getScoredQuestions,
   CATEGORY_WEIGHTS,
   DEPARTMENT_TO_CATEGORY,
 } from '@/lib/scoringEngine';
@@ -43,11 +44,12 @@ describe('calculateWeightedSectionScore', () => {
   it('uses question weights instead of simple average', () => {
     const section = questionnaire.sections[0]; // new-vehicle-sales
     const questions = section.questions;
+    const scoredQuestions = getScoredQuestions(questions);
 
     // Give all questions score 3 except the highest-weight question gets 5
     const answers: Record<string, number> = {};
-    let maxWeightQ = questions[0];
-    for (const q of questions) {
+    let maxWeightQ = scoredQuestions[0];
+    for (const q of scoredQuestions) {
       if (q.weight > maxWeightQ.weight) maxWeightQ = q;
       answers[q.id] = 3;
     }
@@ -318,9 +320,10 @@ describe('Integration: weighted scoring differs from simple average', () => {
   it('section weighted scoring differs from simple average with varied question weights', () => {
     const section = questionnaire.sections[0];
     const questions = section.questions;
+    const scoredQuestions = getScoredQuestions(questions);
 
     // Find min and max weight questions
-    const sorted = [...questions].sort((a, b) => a.weight - b.weight);
+    const sorted = [...scoredQuestions].sort((a, b) => a.weight - b.weight);
     const lightest = sorted[0];
     const heaviest = sorted[sorted.length - 1];
 

@@ -398,6 +398,7 @@ export const useAssessmentData = () => {
 
     // Import signal engine dynamically to avoid circular deps
     const { generateActionsFromAssessment, formatActionsForDatabaseInsert } = await import('@/lib/signalEngine');
+    const { getScoredQuestions } = await import('@/lib/scoringEngine');
     const { questionnaire } = await import('@/data/questionnaire');
 
     const { data: profile } = await supabase
@@ -418,8 +419,8 @@ export const useAssessmentData = () => {
     // Build question weight map from questionnaire
     const questionWeights: Record<string, number> = {};
     for (const section of questionnaire.sections) {
-      for (const q of section.questions) {
-        questionWeights[q.id] = q.weight || 1.0;
+      for (const q of getScoredQuestions(section.questions)) {
+        questionWeights[q.id] = q.weight;
       }
     }
 

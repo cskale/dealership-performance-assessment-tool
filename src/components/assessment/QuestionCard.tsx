@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { HelpCircle, MessageSquare, Info, TrendingUp, Target, Search, BarChart3 } from "lucide-react";
-import { Question } from "@/data/questionnaire";
+import { Question, isScoredQuestion } from "@/data/questionnaire";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface QuestionCardProps {
@@ -30,7 +30,7 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
   };
 
   const getRatingText = (rating: number) => {
-    if (!question.scale) return "";
+    if (!isScoredQuestion(question)) return "";
     return question.scale.labels[rating - 1] || "";
   };
 
@@ -153,38 +153,41 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
         </div>
 
         {/* Rating Scale */}
-        {question.type === "scale" && question.scale && (
-          <div className="space-y-4">
-            {/* Rating Tiles — DESIGN.md §5.3 neutral tiles · §14 Lovable template · §17 OpenType/tracking · §31 focus rings */}
-            <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
-              {Array.from({ length: question.scale.max }, (_, i) => {
-                const rating = i + 1;
-                const isSelected = value === rating;
-                const label = getRatingText(rating);
+        {isScoredQuestion(question) && question.type === "scale" && (() => {
+          const scale = question.scale;
+          return (
+            <div className="space-y-4">
+              {/* Rating Tiles — DESIGN.md §5.3 neutral tiles · §14 Lovable template · §17 OpenType/tracking · §31 focus rings */}
+              <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+                {Array.from({ length: scale.max }, (_, i) => {
+                  const rating = i + 1;
+                  const isSelected = value === rating;
+                  const label = getRatingText(rating);
 
-                return (
-                  <button
-                    key={rating}
-                    type="button"
-                    onClick={() => handleRatingClick(rating)}
-                    className={`min-h-[80px] h-auto px-4 py-3 flex flex-col items-start justify-start gap-1 rounded-[8px] text-left transition-all duration-150 ${
-                      isSelected
-                        ? "bg-primary/[0.04] border border-primary/30 border-l-[3px] border-l-primary"
-                        : "bg-background border border-border hover:border-primary/30 hover:bg-muted/40"
-                    }`}
-                  >
-                    <span className="text-xs text-muted-foreground font-mono">
-                      {rating}
-                    </span>
-                    <span className="text-sm font-semibold text-foreground leading-snug whitespace-normal break-words w-full">
-                      {label}
-                    </span>
-                  </button>
-                );
-              })}
+                  return (
+                    <button
+                      key={rating}
+                      type="button"
+                      onClick={() => handleRatingClick(rating)}
+                      className={`min-h-[80px] h-auto px-4 py-3 flex flex-col items-start justify-start gap-1 rounded-[8px] text-left transition-all duration-150 ${
+                        isSelected
+                          ? "bg-primary/[0.04] border border-primary/30 border-l-[3px] border-l-primary"
+                          : "bg-background border border-border hover:border-primary/30 hover:bg-muted/40"
+                      }`}
+                    >
+                      <span className="text-xs text-muted-foreground font-mono">
+                        {rating}
+                      </span>
+                      <span className="text-sm font-semibold text-foreground leading-snug whitespace-normal break-words w-full">
+                        {label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Additional Features */}
         <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
@@ -198,10 +201,12 @@ export function QuestionCard({ question, value, onChange }: QuestionCardProps) {
             {showNotes ? t('assessment.additionalNotes') : t('assessment.additionalNotes')}
           </Button>
 
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <HelpCircle className="h-4 w-4" />
-            <span className="text-xs text-muted-foreground flex items-center gap-1.5"><Info className="h-3 w-3" />{getWeightLabel(question.weight)}</span>
-          </div>
+          {isScoredQuestion(question) && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <HelpCircle className="h-4 w-4" />
+              <span className="text-xs text-muted-foreground flex items-center gap-1.5"><Info className="h-3 w-3" />{getWeightLabel(question.weight)}</span>
+            </div>
+          )}
         </div>
 
         {/* Notes Section */}

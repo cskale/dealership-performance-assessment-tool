@@ -15,10 +15,11 @@ import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { questionnaire } from '@/data/questionnaire';
-import { 
-  generateActionsFromAssessment, 
+import { getScoredQuestions } from '@/lib/scoringEngine';
+import {
+  generateActionsFromAssessment,
   formatActionsForDatabaseInsert,
-  SignalEngineConfig 
+  SignalEngineConfig
 } from '@/lib/signalEngine';
 
 // Feature flag - can be disabled via environment variable
@@ -40,7 +41,7 @@ export function useAutoActionGeneration() {
     const weights: Record<string, number> = {};
     
     for (const section of questionnaire.sections) {
-      for (const question of section.questions) {
+      for (const question of getScoredQuestions(section.questions)) {
         weights[question.id] = question.weight;
       }
     }
