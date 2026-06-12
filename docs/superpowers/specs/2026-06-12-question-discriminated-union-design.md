@@ -17,6 +17,15 @@ for KPI input questions (added in a later task — not this one).
 - One commit, plain ASCII message
 - Never install new npm packages without confirmation (zod needs a check)
 
+## Execution Order
+
+1. Write `scoringBaseline.test.ts` against the CURRENT, untouched code.
+   Run it, capture the actual output values, freeze them as literal
+   expected constants, confirm green.
+2. Only then begin the type refactor (Steps 2-7). Constants captured
+   after any refactor work has started are invalid — the baseline must
+   reflect pre-refactor behaviour exactly.
+
 ## Type Definitions (src/data/questionnaire.ts)
 
 ```ts
@@ -39,7 +48,7 @@ export interface ScoredQuestion extends BaseQuestion {
   kind: "scored";
   type: "scale" | "multiple_choice" | "rating";
   options?: string[];
-  scale?: { min: number; max: number; labels: string[] };
+  scale: { min: number; max: number; labels: string[] }; // required — see below
   weight: number; // required, no fallback
 }
 
@@ -69,6 +78,13 @@ export function isDataQuestion(q: Question): q is DataQuestion {
 Codemod: add `kind: "scored"` to all 61 existing question objects across the
 5 sections. No other field changes — weights, scales, translations untouched.
 
+**`scale` is REQUIRED, not optional** — verified by grep: all 61 questions
+(nvs-1..13, uvs-1..13, svc-1..15, pts-1..10, fin-1..10 = 13+13+15+10+10=61)
+have `type: "scale"` and a populated `scale: {...}` field. No question lacks
+`scale`. This removes the need for `question.scale ?` guards in
+`getTranslatedQuestion`, `QuestionCard.tsx`, and `CategoryAssessment.tsx`
+(see below) — those guards become dead and are removed.
+
 No questionnaire version metadata field exists currently — nothing to bump.
 
 ## Scoring Gateway (src/lib/scoringEngine.ts)
@@ -97,9 +113,14 @@ type-guaranteed on `ScoredQuestion`):
 - `src/hooks/useAssessmentData.ts:422`
 - `src/utils/actionGenerator.ts:59,73-74,125` (dead file, see below)
 
-**`.scale` / `.weight` access in rendering — needs `isScoredQuestion` narrowing:**
-- `src/components/assessment/QuestionCard.tsx:33-34,156-160,203`
-- `src/components/assessment/CategoryAssessment.tsx:189-194`
+**`.scale` / `.weight` access in rendering — needs `isScoredQuestion` narrowing
+(and the now-redundant `question.scale &&` truthiness checks removed, since
+`scale` is required on `ScoredQuestion`):**
+- `src/components/assessment/QuestionCard.tsx:33-34,156-160,203` — narrow with
+  `isScoredQuestion`, drop the `&& question.scale` checks (the `question.type
+  === "scale"` check stays — it selects UI variant, not presence)
+- `src/components/assessment/CategoryAssessment.tsx:189-194` — same: narrow,
+  drop `&& question.scale`
 - `src/data/questionnaire.ts:1926-1944` (`getTranslatedQuestion`, see below)
 
 **No change needed (confirmed by inspection):**
@@ -150,10 +171,10 @@ export function getTranslatedQuestion<T extends Question>(
   if (isScoredQuestion(question)) {
     return {
       ...base,
-      scale: question.scale ? {
+      scale: {
         ...question.scale,
         labels: translation.scaleLabels || question.scale.labels
-      } : undefined
+      }
     } as T;
   }
   return base as T;
@@ -185,19 +206,47 @@ still type-checked by `tsc` — must compile.
 
 ## Zod Runtime Schema (new file: src/lib/questionSchema.ts)
 
+Both schemas declare every `BaseQuestion` field explicitly (including
+`translations`) — `.strict()` on `DataQuestionSchema` only rejects fields
+NOT in its own schema, so all shared base fields must be spelled out in
+both, or the next task's real KPI questions (which will carry purpose,
+situationAnalysis, linkedKPIs, translations, etc.) get incorrectly rejected.
+
 ```ts
+const baseQuestionFields = {
+  id: z.string(),
+  text: z.string(),
+  description: z.string().optional(),
+  category: z.string(),
+  purpose: z.string().optional(),
+  situationAnalysis: z.string().optional(),
+  linkedKPIs: z.array(z.string()).optional(),
+  benefits: z.string().optional(),
+  primarySignalCode: z.string().optional(),    // SignalCode
+  secondarySignalCode: z.string().optional(),  // SignalCode
+  rootCauseDimension: z.string().optional(),   // RootCauseDimension
+  translations: z.record(z.string(), z.object({
+    text: z.string(),
+    description: z.string().optional(),
+    purpose: z.string().optional(),
+    situationAnalysis: z.string().optional(),
+    benefits: z.string().optional(),
+    scaleLabels: z.array(z.string()).optional(),
+  })).optional(),
+};
+
 export const ScoredQuestionSchema = z.object({
+  ...baseQuestionFields,
   kind: z.literal("scored"),
-  // ...BaseQuestion fields...
   type: z.enum(["scale", "multiple_choice", "rating"]),
   options: z.array(z.string()).optional(),
-  scale: z.object({ min: z.number(), max: z.number(), labels: z.array(z.string()) }).optional(),
+  scale: z.object({ min: z.number(), max: z.number(), labels: z.array(z.string()) }),
   weight: z.number().positive().finite(),
-});
+}).strict();
 
 export const DataQuestionSchema = z.object({
+  ...baseQuestionFields,
   kind: z.literal("data"),
-  // ...BaseQuestion fields...
   type: z.enum(["numeric", "percentage", "currency", "ratio"]),
   kpiKey: z.string(),
   unit: z.string(),
@@ -206,7 +255,7 @@ export const DataQuestionSchema = z.object({
   formula: z.object({ expression: z.string(), example: z.string().optional(), dataSource: z.string().optional() }).optional(),
   benchmarkRef: z.string().optional(),
   subSection: z.string().optional(),
-}).strict(); // rejects stray `weight` field
+}).strict(); // rejects a stray `weight` or `scale` field
 
 export const QuestionSchema = z.discriminatedUnion("kind", [ScoredQuestionSchema, DataQuestionSchema]);
 
@@ -217,10 +266,16 @@ export function validateQuestionSet(questions: unknown[]): Question[] {
 
 `zod` is already a dependency (`^3.23.8` in package.json) — no install needed.
 
-**New test** (in questionSchema test or integrity suite):
+**New tests** (in questionSchema test or integrity suite):
 - entire static `questionnaire` passes `validateQuestionSet`
 - a `DataQuestion` carrying a stray `weight` field fails (`.strict()` rejection)
 - a `ScoredQuestion` with `weight: 0` fails (`.positive()`)
+- a fully-populated synthetic `DataQuestion` — every optional field present
+  (description, purpose, situationAnalysis, linkedKPIs, benefits,
+  primarySignalCode, secondarySignalCode, rootCauseDimension, translations,
+  validRange, formula, benchmarkRef, subSection) — passes `validateQuestionSet`
+  (guards against `.strict()` over-rejecting the real KPI questions in the
+  next task)
 
 ## Integrity Test Suite (new file: src/__tests__/questionnaireIntegrity.test.ts)
 
@@ -234,9 +289,13 @@ export function validateQuestionSet(questions: unknown[]): Question[] {
 
 - Build deterministic fixture: `answer = (index % 5) + 1` for every question
   across all 5 sections, in iteration order
-- Run against CURRENT code first, capture: all 5 section scores, overall
-  weighted score (`calculateWeightedScore`), confidence metrics per section
-  (`calculateAllConfidenceMetrics`)
+- Assert each section's fixture answers contain >= 3 distinct values (all 5
+  sections have >= 10 questions, so `(index % 5) + 1` naturally cycles
+  through 1-5 — this assertion protects the variance-based confidence
+  baseline if section sizes ever shrink below 5 questions)
+- Run against CURRENT code first (per Execution Order above), capture: all 5
+  section scores, overall weighted score (`calculateWeightedScore`),
+  confidence metrics per section (`calculateAllConfidenceMetrics`)
 - Freeze these as literal expected constants
 - This test must pass before AND after the refactor — the acceptance gate
 
