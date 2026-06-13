@@ -15,9 +15,18 @@ describe('questionnaire integrity', () => {
     }
   });
 
-  it('contains no data questions yet', () => {
+  it('contains exactly 22 data questions with unique kpiKeys, referencePeriod, unit, and subSection "performance_data"', () => {
     const dataQuestions = allQuestions.filter(isDataQuestion);
-    expect(dataQuestions.length).toBe(0);
+    expect(dataQuestions.length).toBe(22);
+
+    const kpiKeys = dataQuestions.map(q => q.kpiKey);
+    expect(new Set(kpiKeys).size).toBe(22);
+
+    for (const q of dataQuestions) {
+      expect(q.referencePeriod).toBeTruthy();
+      expect(q.unit).toBeTruthy();
+      expect(q.subSection).toBe('performance_data');
+    }
   });
 
   it('no SIGNAL_MAPPINGS entry references a data question', () => {

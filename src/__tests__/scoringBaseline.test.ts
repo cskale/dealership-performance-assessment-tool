@@ -4,13 +4,14 @@ import {
   calculateAllSectionScores,
   calculateWeightedScore,
   calculateAllConfidenceMetrics,
+  getScoredQuestions,
 } from '@/lib/scoringEngine';
 
 function buildFixtureAnswers(): Record<string, number> {
   const answers: Record<string, number> = {};
   let index = 0;
   for (const section of questionnaire.sections) {
-    for (const q of section.questions) {
+    for (const q of getScoredQuestions(section.questions)) {
       answers[q.id] = (index % 5) + 1;
       index++;
     }

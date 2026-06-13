@@ -546,6 +546,62 @@ export const questionnaire: Questionnaire = {
               scaleLabels: ["Hohe Fluktuation — mehr als die Hälfte des Teams in 12 Monaten gewechselt", "Erhebliche Fluktuation — 3 oder mehr Abgänge dieses Jahr", "Moderat — 1–2 Abgänge, mit ähnlichem Erfahrungsniveau ersetzt", "Stabil — minimale Abgänge, Betriebszugehörigkeit meist >18 Monate", "Sehr stabil — Kernteam seit 2+ Jahren unverändert, Nachfolgeplanung vorhanden"]
             }
           }
+        },
+        {
+          id: "nvs-kpi-4",
+          kind: "data",
+          text: "What is your average front-end gross profit per new vehicle retailed?",
+          description: "Average front-end gross profit (selling price minus invoice cost minus discounts) per new vehicle retailed, before finance and insurance income.",
+          type: "currency",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "nvs_gross_profit_per_unit",
+          unit: "EUR",
+          referencePeriod: "last_calendar_month",
+          validRange: { min: 0, max: 15000 },
+          formula: {
+            expression: "Total front-end gross profit on new vehicles sold ÷ number of new vehicles retailed",
+            example: "€420,000 total front-end gross ÷ 120 units sold = €3,500 per unit",
+            dataSource: "DMS sales journal — new vehicle deals report (front-end gross by unit)"
+          },
+          translations: {
+            en: {
+              text: "What is your average front-end gross profit per new vehicle retailed?",
+              description: "Average front-end gross profit (selling price minus invoice cost minus discounts) per new vehicle retailed, before finance and insurance income."
+            },
+            de: {
+              text: "Wie hoch ist Ihr durchschnittlicher Frontend-Bruttoertrag pro verkauftem Neufahrzeug?",
+              description: "Durchschnittlicher Frontend-Bruttoertrag (Verkaufspreis minus Einstandspreis minus Rabatte) pro verkauftem Neufahrzeug, vor Finanzierungs- und Versicherungserträgen."
+            }
+          }
+        },
+        {
+          id: "nvs-kpi-7",
+          kind: "data",
+          text: "What percentage of your new vehicle leads receive a response within 1 hour?",
+          description: "Share of all new vehicle sales leads (phone, web form, third-party portals) that receive a first response from a sales consultant within 60 minutes of arrival.",
+          type: "percentage",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "nvs_lead_response_1h_pct",
+          unit: "%",
+          referencePeriod: "last_calendar_month",
+          validRange: { min: 0, max: 100 },
+          formula: {
+            expression: "Number of new vehicle leads responded to within 1 hour ÷ total new vehicle leads received × 100",
+            example: "342 leads responded to within 1 hour ÷ 480 total leads × 100 = 71.3%",
+            dataSource: "CRM lead response time report (lead arrival timestamp vs. first outbound activity timestamp)"
+          },
+          translations: {
+            en: {
+              text: "What percentage of your new vehicle leads receive a response within 1 hour?",
+              description: "Share of all new vehicle sales leads (phone, web form, third-party portals) that receive a first response from a sales consultant within 60 minutes of arrival."
+            },
+            de: {
+              text: "Welcher Anteil Ihrer Neuwagen-Leads erhält innerhalb von 1 Stunde eine Antwort?",
+              description: "Anteil aller Neuwagen-Verkaufsanfragen (Telefon, Webformular, Drittportale), die innerhalb von 60 Minuten nach Eingang eine erste Antwort von einem Verkaufsberater erhalten."
+            }
+          }
         }
       ]
     },
@@ -949,6 +1005,146 @@ export const questionnaire: Questionnaire = {
               situationAnalysis: "Gebrauchtwagen-Rentabilität ist überproportional managerabhängig, da Margen deal-für-deal durch Bewertungs-, Beschaffungs- und Preisentscheidungen bestimmt werden, die tiefes Marktwissen erfordern.",
               benefits: "Investitionen in spezialisiertes Gebrauchtwagenmanagement zahlen sich schnell durch verbesserte Bewertungsgenauigkeit, bessere Einkäufe, engere Bestandskontrolle und höheres Einheitenbrutto aus.",
               scaleLabels: ["Kein dedizierter Gebrauchtwagenmanager — vom Neuwagenteam gehandhabt", "Gebrauchtwagenfunktion als Nebenaufgabe eines bestehenden Managers", "Dedizierter Gebrauchtwagenmanager, aber relativ neu (<2 Jahre)", "Erfahrener Manager (2–5 Jahre) mit klarem Preis- und Beschaffungsprozess", "Spezialist mit 5+ Jahren Erfahrung, eigener P&L-Verantwortung und Markt-Intelligence-Tools"]
+            }
+          }
+        },
+        {
+          id: "uvs-kpi-2",
+          kind: "data",
+          text: "What is your average days-to-sale for used vehicle stock?",
+          description: "Average number of days a used vehicle remains in stock from intake to retail sale (Standtage).",
+          type: "numeric",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "uvs_days_to_sale",
+          unit: "days",
+          referencePeriod: "last_calendar_month",
+          validRange: { min: 0, max: 365 },
+          formula: {
+            expression: "Sum of days in stock for all used vehicles sold in the period ÷ number of used vehicles sold",
+            example: "2,640 total stock-days across 60 units sold ÷ 60 = 44 days average days-to-sale",
+            dataSource: "DMS used vehicle inventory aging report"
+          },
+          translations: {
+            en: {
+              text: "What is your average days-to-sale for used vehicle stock?",
+              description: "Average number of days a used vehicle remains in stock from intake to retail sale (Standtage)."
+            },
+            de: {
+              text: "Wie hoch sind Ihre durchschnittlichen Standtage für Gebrauchtwagenbestand?",
+              description: "Durchschnittliche Anzahl der Tage, die ein Gebrauchtwagen von der Einlagerung bis zum Verkauf im Bestand verbleibt (Standtage)."
+            }
+          }
+        },
+        {
+          id: "uvs-kpi-3",
+          kind: "data",
+          text: "What is your average front-end gross profit per used vehicle retailed?",
+          description: "Average front-end gross profit per used vehicle retailed (sale price minus acquisition cost and reconditioning, before finance and insurance income).",
+          type: "currency",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "uvs_gross_profit_per_unit",
+          unit: "EUR",
+          referencePeriod: "last_calendar_month",
+          validRange: { min: 0, max: 15000 },
+          formula: {
+            expression: "Total front-end gross profit on used vehicles sold ÷ number of used vehicles retailed",
+            example: "€180,000 total front-end gross ÷ 60 units sold = €3,000 per unit",
+            dataSource: "DMS used vehicle deals report (front-end gross per unit)"
+          },
+          translations: {
+            en: {
+              text: "What is your average front-end gross profit per used vehicle retailed?",
+              description: "Average front-end gross profit per used vehicle retailed (sale price minus acquisition cost and reconditioning, before finance and insurance income)."
+            },
+            de: {
+              text: "Wie hoch ist Ihr durchschnittlicher Frontend-Bruttoertrag pro verkauftem Gebrauchtwagen?",
+              description: "Durchschnittlicher Frontend-Bruttoertrag pro verkauftem Gebrauchtwagen (Verkaufspreis minus Einkaufspreis und Aufbereitungskosten, vor F&I-Erträgen)."
+            }
+          }
+        },
+        {
+          id: "uvs-kpi-5",
+          kind: "data",
+          text: "What is your average vehicle reconditioning cost per unit?",
+          description: "Average reconditioning cost (parts, labour, and outsourced services) per used vehicle prepared for retail sale.",
+          type: "currency",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "uvs_recon_cost_per_unit",
+          unit: "EUR",
+          referencePeriod: "last_calendar_month",
+          validRange: { min: 0, max: 10000 },
+          formula: {
+            expression: "Total reconditioning cost across all used vehicles prepared ÷ number of used vehicles prepared",
+            example: "€42,000 total reconditioning cost ÷ 60 units = €700 per unit",
+            dataSource: "DMS reconditioning work order costs, summed by stock number"
+          },
+          translations: {
+            en: {
+              text: "What is your average vehicle reconditioning cost per unit?",
+              description: "Average reconditioning cost (parts, labour, and outsourced services) per used vehicle prepared for retail sale."
+            },
+            de: {
+              text: "Wie hoch sind Ihre durchschnittlichen Aufbereitungskosten pro Gebrauchtfahrzeug?",
+              description: "Durchschnittliche Aufbereitungskosten (Teile, Arbeitszeit und Fremdleistungen) pro für den Verkauf vorbereitetem Gebrauchtfahrzeug."
+            }
+          }
+        },
+        {
+          id: "uvs-kpi-6",
+          kind: "data",
+          text: "What is your used-to-new retail ratio (UV units / NV units)?",
+          description: "Ratio of used vehicle retail units sold to new vehicle retail units sold in the same period.",
+          type: "ratio",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "uvs_used_to_new_ratio",
+          unit: "x:1",
+          referencePeriod: "last_calendar_month",
+          validRange: { min: 0, max: 10 },
+          formula: {
+            expression: "Used vehicle units retailed ÷ new vehicle units retailed",
+            example: "60 used units ÷ 120 new units = 0.5:1",
+            dataSource: "DMS sales summary — new vs. used unit counts"
+          },
+          translations: {
+            en: {
+              text: "What is your used-to-new retail ratio (UV units / NV units)?",
+              description: "Ratio of used vehicle retail units sold to new vehicle retail units sold in the same period."
+            },
+            de: {
+              text: "Wie hoch ist Ihr Verhältnis von Gebrauchtwagen- zu Neuwagenverkäufen (GW-Einheiten / NW-Einheiten)?",
+              description: "Verhältnis der verkauften Gebrauchtwagen-Einheiten zu den verkauften Neuwagen-Einheiten im selben Zeitraum."
+            }
+          }
+        },
+        {
+          id: "uvs-kpi-7",
+          kind: "data",
+          text: "What percentage of used vehicle appraisals result in a purchase?",
+          description: "Share of used vehicle appraisals (trade-ins and outright purchase offers) that convert into an actual purchase by the dealership.",
+          type: "percentage",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "uvs_appraisal_to_buy_pct",
+          unit: "%",
+          referencePeriod: "last_calendar_month",
+          validRange: { min: 0, max: 100 },
+          formula: {
+            expression: "Number of appraisals resulting in a purchase ÷ total appraisals conducted × 100",
+            example: "45 appraisals purchased ÷ 150 appraisals conducted × 100 = 30%",
+            dataSource: "Appraisal tool / CRM appraisal log outcome report"
+          },
+          translations: {
+            en: {
+              text: "What percentage of used vehicle appraisals result in a purchase?",
+              description: "Share of used vehicle appraisals (trade-ins and outright purchase offers) that convert into an actual purchase by the dealership."
+            },
+            de: {
+              text: "Welcher Anteil Ihrer Gebrauchtwagen-Bewertungen führt zu einem Ankauf?",
+              description: "Anteil der Gebrauchtwagen-Bewertungen (Inzahlungnahmen und Ankaufsangebote), die zu einem tatsächlichen Ankauf durch den Betrieb führen."
             }
           }
         }
@@ -1412,6 +1608,90 @@ export const questionnaire: Questionnaire = {
               scaleLabels: ["Keine Sichtbarkeit — wir tracken das nicht", "Wir glauben <30% kehren zurück, kein aktives Bindungsprogramm", "Ca. 30–50% Servicebindung, gelegentliche Erinnerungskampagnen", "50–70% Bindung mit strukturiertem Serviceplan oder Erinnerungsprogramm", ">70% Bindung, aktives Loyalitätsprogramm, Serviceplan-Penetration >40%"]
             }
           }
+        },
+        {
+          id: "svc-kpi-2",
+          kind: "data",
+          text: "What is your average hours sold per repair order?",
+          description: "Average number of labour hours sold per repair order (RO) across all workshop visits.",
+          type: "numeric",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "svc_hours_per_ro",
+          unit: "hours",
+          referencePeriod: "last_calendar_month",
+          validRange: { min: 0, max: 20 },
+          formula: {
+            expression: "Total labour hours sold ÷ number of repair orders",
+            example: "2,850 labour hours sold ÷ 1,500 repair orders = 1.9 hours per RO",
+            dataSource: "DMS service invoicing report (sold hours by repair order)"
+          },
+          translations: {
+            en: {
+              text: "What is your average hours sold per repair order?",
+              description: "Average number of labour hours sold per repair order (RO) across all workshop visits."
+            },
+            de: {
+              text: "Wie viele Arbeitsstunden verkaufen Sie durchschnittlich pro Reparaturauftrag?",
+              description: "Durchschnittliche Anzahl verkaufter Arbeitsstunden pro Reparaturauftrag (RO) über alle Werkstattbesuche."
+            }
+          }
+        },
+        {
+          id: "svc-kpi-5",
+          kind: "data",
+          text: "What is your effective labour rate (total labour revenue / hours sold)?",
+          description: "Effective labour rate realised across all service work — total labour revenue divided by total hours sold, reflecting the blended rate after discounts and goodwill.",
+          type: "currency",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "svc_effective_labour_rate",
+          unit: "EUR/hr",
+          referencePeriod: "last_calendar_month",
+          validRange: { min: 0, max: 500 },
+          formula: {
+            expression: "Total labour revenue ÷ total labour hours sold",
+            example: "€299,250 labour revenue ÷ 2,850 hours sold = €105/hr effective rate",
+            dataSource: "DMS service invoicing report — labour revenue and sold hours totals"
+          },
+          translations: {
+            en: {
+              text: "What is your effective labour rate (total labour revenue / hours sold)?",
+              description: "Effective labour rate realised across all service work — total labour revenue divided by total hours sold, reflecting the blended rate after discounts and goodwill."
+            },
+            de: {
+              text: "Wie hoch ist Ihr effektiver Stundenverrechnungssatz (Gesamtarbeitserlös / verkaufte Stunden)?",
+              description: "Effektiv erzielter Stundenverrechnungssatz über alle Werkstattaufträge: Gesamtarbeitserlös geteilt durch verkaufte Stunden, einschließlich Rabatten und Kulanz."
+            }
+          }
+        },
+        {
+          id: "svc-kpi-6",
+          kind: "data",
+          text: "What percentage of your service capacity is currently booked?",
+          description: "Current workshop capacity utilisation — booked technician hours as a percentage of available productive technician hours.",
+          type: "percentage",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "svc_workshop_loading_pct",
+          unit: "%",
+          referencePeriod: "current",
+          validRange: { min: 0, max: 150 },
+          formula: {
+            expression: "Booked technician hours for the period ÷ available productive technician hours × 100",
+            example: "1,680 booked hours ÷ 1,600 available hours × 100 = 105%",
+            dataSource: "Service scheduling / DMS workshop loading report (booked vs. available technician hours)"
+          },
+          translations: {
+            en: {
+              text: "What percentage of your service capacity is currently booked?",
+              description: "Current workshop capacity utilisation — booked technician hours as a percentage of available productive technician hours."
+            },
+            de: {
+              text: "Wie hoch ist Ihre aktuelle Werkstattauslastung (gebuchte Stunden / verfügbare Kapazität)?",
+              description: "Aktuelle Auslastung der Werkstattkapazität: gebuchte Technikerstunden als Prozentsatz der verfügbaren produktiven Technikerstunden."
+            }
+          }
         }
       ]
     },
@@ -1688,6 +1968,146 @@ export const questionnaire: Questionnaire = {
               text: "Wie stark sind Ihre Beziehungen und Kommunikation mit Ihren Teilelieferanten und Anbietern?",
               description: "Berücksichtigen Sie Preisgestaltung, Lieferzuverlässigkeit und Supportqualität",
               scaleLabels: ["Keine Preiskontrolle", "Informelle Rabatte", "Teilweise Listenpreiseinhaltung", "Strukturierte Preise, Ausnahmen möglich", "Volle Listenpreisdisziplin mit Genehmigungsworkflow"]
+            }
+          }
+        },
+        {
+          id: "prt-kpi-1",
+          kind: "data",
+          text: "What is your parts department gross profit margin?",
+          description: "Gross profit margin on parts sales — gross profit as a percentage of total parts revenue.",
+          type: "percentage",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "prt_gross_margin_pct",
+          unit: "%",
+          referencePeriod: "last_calendar_month",
+          validRange: { min: 0, max: 100 },
+          formula: {
+            expression: "Parts gross profit ÷ parts sales revenue × 100",
+            example: "€58,000 parts gross profit ÷ €200,000 parts revenue × 100 = 29%",
+            dataSource: "DMS parts department P&L (gross profit and revenue)"
+          },
+          translations: {
+            en: {
+              text: "What is your parts department gross profit margin?",
+              description: "Gross profit margin on parts sales — gross profit as a percentage of total parts revenue."
+            },
+            de: {
+              text: "Wie hoch ist Ihre Bruttomarge im Teileverkauf?",
+              description: "Bruttoertragsmarge im Teilegeschäft: Bruttoertrag als Prozentsatz des gesamten Teileumsatzes."
+            }
+          }
+        },
+        {
+          id: "prt-kpi-3",
+          kind: "data",
+          text: "What is your parts inventory turn rate (annualised)?",
+          description: "Annualised parts inventory turn rate — how many times the parts inventory value is sold through and replenished per year.",
+          type: "numeric",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "prt_inventory_turns",
+          unit: "turns/yr",
+          referencePeriod: "last_financial_year",
+          validRange: { min: 0, max: 30 },
+          formula: {
+            expression: "Annual cost of parts sold ÷ average parts inventory value (at cost)",
+            example: "€1,800,000 annual cost of parts sold ÷ €300,000 average inventory value = 6 turns/year",
+            dataSource: "DMS parts inventory valuation + annual parts cost of sales from management accounts"
+          },
+          translations: {
+            en: {
+              text: "What is your parts inventory turn rate (annualised)?",
+              description: "Annualised parts inventory turn rate — how many times the parts inventory value is sold through and replenished per year."
+            },
+            de: {
+              text: "Wie hoch ist Ihr Teile-Lagerumschlag (Teileumschlag) pro Jahr?",
+              description: "Annualisierter Lagerumschlag im Teilebereich: wie oft der Wert des Teilebestands pro Jahr verkauft und wieder aufgefüllt wird."
+            }
+          }
+        },
+        {
+          id: "prt-kpi-5",
+          kind: "data",
+          text: "What is your average parts sales value per repair order?",
+          description: "Average value of parts sold per repair order in the workshop.",
+          type: "currency",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "prt_sales_per_ro",
+          unit: "EUR",
+          referencePeriod: "last_calendar_month",
+          validRange: { min: 0, max: 5000 },
+          formula: {
+            expression: "Total parts revenue from workshop repair orders ÷ number of repair orders",
+            example: "€112,500 parts revenue ÷ 1,500 repair orders = €75 per RO",
+            dataSource: "DMS service invoicing report — parts revenue by repair order"
+          },
+          translations: {
+            en: {
+              text: "What is your average parts sales value per repair order?",
+              description: "Average value of parts sold per repair order in the workshop."
+            },
+            de: {
+              text: "Wie hoch ist Ihr durchschnittlicher Teileumsatz pro Reparaturauftrag?",
+              description: "Durchschnittlicher Wert der verkauften Teile pro Reparaturauftrag in der Werkstatt."
+            }
+          }
+        },
+        {
+          id: "prt-kpi-6",
+          kind: "data",
+          text: "What percentage of your parts sales come from wholesale/external customers?",
+          description: "Share of total parts sales revenue generated from wholesale/trade customers and external workshops, rather than the dealership's own service department or retail counter.",
+          type: "percentage",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "prt_wholesale_pct",
+          unit: "%",
+          referencePeriod: "last_calendar_month",
+          validRange: { min: 0, max: 100 },
+          formula: {
+            expression: "Wholesale parts revenue ÷ total parts revenue × 100",
+            example: "€60,000 wholesale revenue ÷ €200,000 total parts revenue × 100 = 30%",
+            dataSource: "DMS parts sales report segmented by customer type (internal / retail / wholesale)"
+          },
+          translations: {
+            en: {
+              text: "What percentage of your parts sales come from wholesale/external customers?",
+              description: "Share of total parts sales revenue generated from wholesale/trade customers and external workshops, rather than the dealership's own service department or retail counter."
+            },
+            de: {
+              text: "Welcher Anteil Ihres Teileumsatzes entfällt auf Großhandel/externe Kunden?",
+              description: "Anteil des gesamten Teileumsatzes, der von Großhandels- und externen Werkstattkunden stammt, im Gegensatz zur eigenen Werkstatt oder dem Einzelhandelsverkauf."
+            }
+          }
+        },
+        {
+          id: "prt-kpi-7",
+          kind: "data",
+          text: "How many days does a typical parts back-order take to resolve?",
+          description: "Typical number of days it takes to resolve a parts back-order (from order placement to part availability) for a part not currently in stock.",
+          type: "numeric",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "prt_backorder_days",
+          unit: "days",
+          referencePeriod: "current",
+          validRange: { min: 0, max: 60 },
+          formula: {
+            expression: "Average elapsed days between back-order placement and parts receipt across recent back-orders",
+            example: "Average of 6 days across the last 20 back-orders resolved = 6 days",
+            dataSource: "DMS parts ordering system — back-order open/close timestamps"
+          },
+          translations: {
+            en: {
+              text: "How many days does a typical parts back-order take to resolve?",
+              description: "Typical number of days it takes to resolve a parts back-order (from order placement to part availability) for a part not currently in stock."
+            },
+            de: {
+              text: "Wie viele Tage dauert die Bearbeitung einer typischen Teile-Nachbestellung?",
+              description: "Typische Anzahl an Tagen, die die Bearbeitung einer Teile-Nachbestellung (von Bestellung bis Verfügbarkeit) für ein nicht vorrätiges Teil in Anspruch nimmt."
             }
           }
         }
@@ -2001,6 +2421,202 @@ export const questionnaire: Questionnaire = {
               situationAnalysis: "Autohäuser ohne strukturiertes Leistungsmanagement können nicht diagnostizieren, ob Unterleistung ein Fähigkeits-, Willens- oder Prozessproblem ist. Ohne klare Ziele und regelmäßiges Feedback driften selbst fähige Mitarbeiter ab.",
               benefits: "Strukturiertes Leistungsmanagement verbessert die Produktivität ohne Personalaufstockung, reduziert Fluktuation durch Anerkennung und Entwicklungsklarheit und schafft die Managementinfrastruktur für konsistentes Wachstum.",
               scaleLabels: ["Kein formaler Bewertungsprozess — Leistung informell oder gar nicht besprochen", "Nur Jahresgespräch, kaum Verbindung zu Vergütung oder Entwicklung", "Halbjährliche Bewertungen mit Grundzielen, teilweise variable Vergütung", "Vierteljährliche strukturierte Bewertungen mit KPIs, variable Vergütung an Ergebnisse gekoppelt", "Monatliche 1:1 KPI-Reviews + vierteljährliche Beurteilungen, vollständige variable Vergütungsausrichtung"]
+            }
+          }
+        },
+        {
+          id: "fin-kpi-1",
+          kind: "data",
+          text: "What is your dealership's net profit as a percentage of total revenue?",
+          description: "Dealership net profit (after all operating expenses, before tax) as a percentage of total revenue for the last financial year.",
+          type: "percentage",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "fin_net_profit_pct",
+          unit: "%",
+          referencePeriod: "last_financial_year",
+          validRange: { min: -20, max: 25 },
+          formula: {
+            expression: "Net profit before tax ÷ total revenue × 100",
+            example: "€450,000 net profit ÷ €18,000,000 total revenue × 100 = 2.5%",
+            dataSource: "Annual management accounts / profit and loss statement"
+          },
+          translations: {
+            en: {
+              text: "What is your dealership's net profit as a percentage of total revenue?",
+              description: "Dealership net profit (after all operating expenses, before tax) as a percentage of total revenue for the last financial year."
+            },
+            de: {
+              text: "Wie hoch ist der Nettogewinn Ihres Betriebs in Prozent des Gesamtumsatzes?",
+              description: "Nettogewinn des Betriebs (nach allen Betriebskosten, vor Steuern) als Prozentsatz des Gesamtumsatzes im letzten Geschäftsjahr."
+            }
+          }
+        },
+        {
+          id: "fin-kpi-2",
+          kind: "data",
+          text: "What is your total variable gross profit per new vehicle unit (front + back combined)?",
+          description: "Total variable gross profit per new vehicle unit retailed, combining front-end (vehicle sale) and back-end (finance, insurance, accessories) gross profit.",
+          type: "currency",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "fin_total_gp_per_nv_unit",
+          unit: "EUR",
+          referencePeriod: "last_calendar_month",
+          validRange: { min: 0, max: 20000 },
+          formula: {
+            expression: "(Front-end gross profit + back-end/F&I gross profit on new vehicles) ÷ new vehicle units retailed",
+            example: "(€420,000 front-end + €180,000 back-end) ÷ 120 units = €5,000 per unit",
+            dataSource: "DMS new vehicle deals report — combined front and back gross by unit"
+          },
+          translations: {
+            en: {
+              text: "What is your total variable gross profit per new vehicle unit (front + back combined)?",
+              description: "Total variable gross profit per new vehicle unit retailed, combining front-end (vehicle sale) and back-end (finance, insurance, accessories) gross profit."
+            },
+            de: {
+              text: "Wie hoch ist Ihr gesamter variabler Bruttoertrag pro Neuwagen-Einheit (Front- und Backend kombiniert)?",
+              description: "Gesamter variabler Bruttoertrag pro verkaufter Neuwagen-Einheit, bestehend aus Frontend (Fahrzeugverkauf) und Backend (Finanzierung, Versicherung, Zubehör)."
+            }
+          }
+        },
+        {
+          id: "fin-kpi-3",
+          kind: "data",
+          text: "What is your floorplan interest cost as a percentage of new vehicle gross profit?",
+          description: "Floorplan (inventory financing) interest cost as a percentage of new vehicle gross profit, indicating how much new vehicle margin is consumed by financing stock.",
+          type: "percentage",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "fin_floorplan_cost_pct",
+          unit: "%",
+          referencePeriod: "last_calendar_month",
+          validRange: { min: 0, max: 100 },
+          formula: {
+            expression: "Floorplan interest expense on new vehicle stock ÷ total new vehicle gross profit × 100",
+            example: "€21,000 floorplan interest ÷ €420,000 new vehicle gross profit × 100 = 5%",
+            dataSource: "Management accounts — floorplan interest expense line vs. new vehicle department gross profit"
+          },
+          translations: {
+            en: {
+              text: "What is your floorplan interest cost as a percentage of new vehicle gross profit?",
+              description: "Floorplan (inventory financing) interest cost as a percentage of new vehicle gross profit, indicating how much new vehicle margin is consumed by financing stock."
+            },
+            de: {
+              text: "Wie hoch sind Ihre Einstandsfinanzierungskosten (Floorplan) im Verhältnis zum Neuwagen-Bruttoertrag?",
+              description: "Zinskosten der Einstandsfinanzierung (Floorplan) für den Neuwagenbestand als Prozentsatz des gesamten Neuwagen-Bruttoertrags."
+            }
+          }
+        },
+        {
+          id: "fin-kpi-4",
+          kind: "data",
+          text: "What is your revenue per employee across the whole dealership?",
+          description: "Total dealership revenue divided by total headcount (full-time equivalent employees) for the last financial year.",
+          type: "currency",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "fin_revenue_per_employee",
+          unit: "EUR",
+          referencePeriod: "last_financial_year",
+          validRange: { min: 0, max: 2000000 },
+          formula: {
+            expression: "Total annual revenue ÷ average full-time equivalent (FTE) headcount",
+            example: "€18,000,000 total revenue ÷ 45 FTE = €400,000 revenue per employee",
+            dataSource: "Annual management accounts (revenue) + HR/payroll FTE headcount records"
+          },
+          translations: {
+            en: {
+              text: "What is your revenue per employee across the whole dealership?",
+              description: "Total dealership revenue divided by total headcount (full-time equivalent employees) for the last financial year."
+            },
+            de: {
+              text: "Wie hoch ist Ihr Umsatz pro Mitarbeiter über den gesamten Betrieb?",
+              description: "Gesamtumsatz des Betriebs geteilt durch die durchschnittliche Anzahl der Vollzeitäquivalente (VZÄ) im letzten Geschäftsjahr."
+            }
+          }
+        },
+        {
+          id: "fin-kpi-5",
+          kind: "data",
+          text: "What is your current debtor days outstanding (accounts receivable)?",
+          description: "Current debtor days outstanding — the average number of days it takes to collect accounts receivable (Debitorenlaufzeit).",
+          type: "numeric",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "fin_debtor_days",
+          unit: "days",
+          referencePeriod: "current",
+          validRange: { min: 0, max: 180 },
+          formula: {
+            expression: "(Accounts receivable ÷ annual credit sales) × 365",
+            example: "(€450,000 receivables ÷ €18,000,000 annual sales) × 365 = 9.1 days",
+            dataSource: "Balance sheet (accounts receivable) + annual revenue from management accounts"
+          },
+          translations: {
+            en: {
+              text: "What is your current debtor days outstanding (accounts receivable)?",
+              description: "Current debtor days outstanding — the average number of days it takes to collect accounts receivable (Debitorenlaufzeit)."
+            },
+            de: {
+              text: "Wie hoch ist Ihre aktuelle Debitorenlaufzeit (Forderungslaufzeit)?",
+              description: "Aktuelle Debitorenlaufzeit: die durchschnittliche Anzahl an Tagen, die zum Einzug offener Forderungen benötigt wird."
+            }
+          }
+        },
+        {
+          id: "fin-kpi-6",
+          kind: "data",
+          text: "What percentage of your total gross profit comes from aftersales (service + parts)?",
+          description: "Share of total dealership gross profit generated by aftersales (service plus parts departments combined), versus vehicle sales departments.",
+          type: "percentage",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "fin_aftersales_gp_share_pct",
+          unit: "%",
+          referencePeriod: "last_financial_year",
+          validRange: { min: 0, max: 100 },
+          formula: {
+            expression: "(Service gross profit + parts gross profit) ÷ total dealership gross profit × 100",
+            example: "(€620,000 service GP + €580,000 parts GP) ÷ €2,400,000 total GP × 100 = 50%",
+            dataSource: "Annual departmental profit and loss — gross profit by department"
+          },
+          translations: {
+            en: {
+              text: "What percentage of your total gross profit comes from aftersales (service + parts)?",
+              description: "Share of total dealership gross profit generated by aftersales (service plus parts departments combined), versus vehicle sales departments."
+            },
+            de: {
+              text: "Welcher Anteil Ihres Gesamtbruttoertrags stammt aus dem Aftersales-Geschäft (Service und Teile)?",
+              description: "Anteil des gesamten Bruttoertrags des Betriebs, der aus dem Aftersales-Geschäft (Service- und Teileabteilung zusammen) stammt, im Vergleich zu den Verkaufsabteilungen."
+            }
+          }
+        },
+        {
+          id: "fin-kpi-7",
+          kind: "data",
+          text: "What is your selling expense as a percentage of total variable gross profit?",
+          description: "Total selling (sales department operating) expenses as a percentage of total variable gross profit, indicating how much of the gross margin is consumed by sales overhead.",
+          type: "percentage",
+          category: "performance_data",
+          subSection: "performance_data",
+          kpiKey: "fin_selling_expense_pct",
+          unit: "%",
+          referencePeriod: "last_financial_year",
+          validRange: { min: 0, max: 200 },
+          formula: {
+            expression: "Total selling expenses ÷ total variable gross profit × 100",
+            example: "€1,080,000 selling expenses ÷ €2,400,000 total variable gross profit × 100 = 45%",
+            dataSource: "Annual departmental profit and loss — selling expense lines vs. total variable gross profit"
+          },
+          translations: {
+            en: {
+              text: "What is your selling expense as a percentage of total variable gross profit?",
+              description: "Total selling (sales department operating) expenses as a percentage of total variable gross profit, indicating how much of the gross margin is consumed by sales overhead."
+            },
+            de: {
+              text: "Wie hoch sind Ihre Vertriebskosten im Verhältnis zum gesamten variablen Bruttoertrag?",
+              description: "Gesamte Vertriebskosten (Betriebskosten der Verkaufsabteilung) als Prozentsatz des gesamten variablen Bruttoertrags."
             }
           }
         }
