@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { CategoryAssessment } from "@/components/assessment/CategoryAssessment";
 import { AssessmentHeroNav } from "@/components/assessment/AssessmentHeroNav";
-import { questionnaire, getTranslatedSection } from "@/data/questionnaire";
+import { questionnaire, getTranslatedSection, isDataQuestion } from "@/data/questionnaire";
 import { useAssessmentData, OnboardingError } from "@/hooks/useAssessmentData";
 import { calculateAllSectionScores, calculateWeightedScore } from "@/lib/scoringEngine";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -13,6 +13,8 @@ import { useAutoActionGeneration } from "@/hooks/useAutoActionGeneration";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useMultiTenant } from "@/hooks/useMultiTenant";
 import { getActiveSections, getSuppressedSectionCount } from "@/lib/moduleGating";
+import { getScoredQuestionCount, isSectionComplete } from "@/lib/assessmentUtils";
+import type { KpiAnswerState } from "@/lib/kpiAnswerPersistence";
 
 type CompletionState = 'idle' | 'saving' | 'generating_actions' | 'complete' | 'error';
 
@@ -20,14 +22,16 @@ export default function Assessment() {
   useEffect(() => { document.title = 'Assessment — Dealer Diagnostic'; }, []);
   const [currentSection, setCurrentSection] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [kpiAnswers, setKpiAnswers] = useState<Record<string, KpiAnswerState>>({});
   const [completionState, setCompletionState] = useState<CompletionState>('idle');
-  
+
   const { toast } = useToast();
   const navigate = useNavigate();
   const { language, t } = useLanguage();
   const {
     assessment,
     saveAssessment,
+    saveKpiAnswers,
     loadAssessment,
   } = useAssessmentData();
   
@@ -48,10 +52,15 @@ export default function Assessment() {
     return getActiveSections(questionnaire.sections, businessModel).map(section => getTranslatedSection(section, language));
   }, [language, businessModel]);
 
-  const totalQuestions = translatedSections.reduce((sum, section) => sum + section.questions.length, 0);
+  const totalQuestions = translatedSections.reduce((sum, section) => sum + getScoredQuestionCount(section), 0);
   const answeredQuestions = Object.keys(answers).length;
 
   const currentSectionData = translatedSections[currentSection];
+
+  // All KPI (DataQuestion) questions across active sections — used for KPI persistence
+  const allDataQuestions = useMemo(() => {
+    return translatedSections.flatMap(section => section.questions.filter(isDataQuestion));
+  }, [translatedSections]);
 
   // Calculate real-time scores using question weights
   const calculateScores = useCallback((currentAnswers: Record<string, number>) => {
@@ -67,28 +76,50 @@ export default function Assessment() {
 
     // Auto-save to local storage (in-progress, non-blocking)
     try {
-      const overallScore = Object.values(newScores).length > 0 
+      const overallScore = Object.values(newScores).length > 0
         ? calculateWeightedScore(newScores)
         : 0;
-        
-      await saveAssessment({
+
+      const savedAssessment = await saveAssessment({
         answers: newAnswers,
         scores: newScores,
         overallScore,
         status: 'in_progress' as const
       });
+
+      // Flush any pending KPI answers now that we have a DB-generated assessment ID
+      const assessmentId = savedAssessment.dbId || savedAssessment.id;
+      if (assessmentId && Object.keys(kpiAnswers).length > 0) {
+        await saveKpiAnswers(assessmentId, allDataQuestions, kpiAnswers);
+      }
     } catch (error) {
       // Don't show error for in-progress saves - just log
       if (import.meta.env.DEV) {
         console.warn('Failed to auto-save assessment:', error);
       }
     }
-    
+
     toast({
       title: t('assessment.answerSaved'),
       description: t('assessment.responseRecorded'),
       duration: 1000,
     });
+  };
+
+  const handleKpiAnswer = async (kpiKey: string, value: number | null, skipped: boolean) => {
+    const newKpiAnswers = { ...kpiAnswers, [kpiKey]: { value, skipped } };
+    setKpiAnswers(newKpiAnswers);
+
+    const assessmentId = assessment?.id;
+    if (!assessmentId) return;
+
+    try {
+      await saveKpiAnswers(assessmentId, allDataQuestions, newKpiAnswers);
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Failed to auto-save KPI answer:', error);
+      }
+    }
   };
 
   const nextSection = () => {
@@ -100,10 +131,7 @@ export default function Assessment() {
     }
   };
 
-  const canContinue = () => {
-    const sectionQuestions = currentSectionData.questions;
-    return sectionQuestions.every(q => answers[q.id] !== undefined);
-  };
+  const canContinue = () => isSectionComplete(currentSectionData, answers);
 
 
   // Load existing assessment data on mount (only once)
@@ -149,8 +177,8 @@ export default function Assessment() {
         ? calculateWeightedScore(finalScores)
         : 0;
         
-      // Check if all questions are answered
-      const totalQs = translatedSections.reduce((total, section) => total + section.questions.length, 0);
+      // Check if all scored questions are answered (KPI questions are optional)
+      const totalQs = translatedSections.reduce((total, section) => total + getScoredQuestionCount(section), 0);
       const answeredQs = Object.keys(answers).length;
       
       if (answeredQs < totalQs) {
@@ -183,7 +211,16 @@ export default function Assessment() {
       if (import.meta.env.DEV) {
         console.log('[Assessment] Saved with DB ID:', realAssessmentId);
       }
-      
+
+      // Persist any KPI answers against the final assessment record (non-blocking)
+      if (Object.keys(kpiAnswers).length > 0) {
+        try {
+          await saveKpiAnswers(realAssessmentId, allDataQuestions, kpiAnswers);
+        } catch (kpiError) {
+          console.warn('[Assessment] Failed to save KPI answers:', kpiError);
+        }
+      }
+
       // Clear in-progress data from localStorage
       localStorage.removeItem('assessment_data');
       
@@ -348,6 +385,8 @@ export default function Assessment() {
             section={currentSectionData}
             answers={answers}
             onAnswer={handleAnswer}
+            kpiAnswers={kpiAnswers}
+            onKpiAnswer={handleKpiAnswer}
             onContinue={nextSection}
             canContinue={canContinue()}
             isLastSection={currentSection === translatedSections.length - 1}
