@@ -414,6 +414,12 @@ const translations: Record<Language, Record<string, string>> = {
     'results.kpiMatrix.atBenchmark': 'At Benchmark',
     'results.kpiMatrix.belowBenchmark': 'Below Benchmark',
 
+    // Results — Performance Data Panel
+    'results.performanceData.title': 'Performance Data',
+    'results.performanceData.notProvided': 'Not provided',
+    'results.performanceData.benchmarkComingSoon': 'Benchmark coming soon',
+    'results.perceptionVsData.title': 'Perception vs Data',
+
     // Results — Causal Chain
     'results.causalChain.title': 'Root-Cause Analysis',
     'results.causalChain.noChains': 'No cross-department causal chains detected. All departments performing independently.',
@@ -829,6 +835,12 @@ const translations: Record<Language, Record<string, string>> = {
     'results.kpiMatrix.aboveBenchmark': 'Über Benchmark',
     'results.kpiMatrix.atBenchmark': 'Im Benchmark',
     'results.kpiMatrix.belowBenchmark': 'Unter Benchmark',
+
+    // Results — Performance Data Panel
+    'results.performanceData.title': 'Leistungsdaten',
+    'results.performanceData.notProvided': 'Nicht angegeben',
+    'results.performanceData.benchmarkComingSoon': 'Benchmark folgt in Kürze',
+    'results.perceptionVsData.title': 'Wahrnehmung vs. Daten',
 
     // Results — Causal Chain
     'results.causalChain.title': 'Ursachenanalyse',

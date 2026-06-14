@@ -18,6 +18,9 @@ import { generateBenchmarkDisclaimer } from '@/lib/benchmarkGovernance';
 import { KPI_DEFINITIONS, getKPILabel } from '@/lib/kpiDefinitions';
 import { sanitizeText } from '@/lib/sanitize';
 import { getMaturityLevel, SCORE_THRESHOLDS } from '@/lib/constants';
+import { isDataQuestion, type DataQuestion } from '@/data/questionnaire';
+import { getUnitLabel } from '@/components/assessment/KpiQuestionInput';
+import { evaluateKpiCrossValidations, type KpiValueInput } from '@/lib/kpiCrossValidation';
 
 // ── i18n labels ──
 const LABELS: Record<string, Record<string, string>> = {
@@ -64,6 +67,14 @@ const LABELS: Record<string, Record<string, string>> = {
     insightFocus: 'Priority Focus',
     user: 'User',
     kpiBenchmarkNote: 'Benchmarks are industry standards from automotive dealer networks. Your actual KPI values require connection to your business systems.',
+    performanceData: 'Performance Data',
+    notProvided: 'Not provided',
+    perceptionVsData: 'Perception vs Data',
+    referencePeriodLastMonth: 'Last full month',
+    referencePeriodLastFY: 'Last financial year',
+    referencePeriodCurrent: 'Current',
+    value: 'Value',
+    period: 'Reference Period',
   },
   de: {
     reportTitle: 'Haendler-Leistungsbewertungsbericht',
@@ -108,6 +119,14 @@ const LABELS: Record<string, Record<string, string>> = {
     insightFocus: 'Schwerpunkt',
     user: 'Benutzer',
     kpiBenchmarkNote: 'Benchmarks sind Branchenstandards aus Autohaendlernetzwerken. Ihre tatsaechlichen KPI-Werte erfordern die Anbindung an Ihre Geschaeftssysteme.',
+    performanceData: 'Leistungsdaten',
+    notProvided: 'Nicht angegeben',
+    perceptionVsData: 'Wahrnehmung vs. Daten',
+    referencePeriodLastMonth: 'Letzter voller Monat',
+    referencePeriodLastFY: 'Letztes Geschaeftsjahr',
+    referencePeriodCurrent: 'Aktuell',
+    value: 'Wert',
+    period: 'Referenzzeitraum',
   },
   fr: {
     reportTitle: "Rapport d'evaluation des performances du concessionnaire",
@@ -152,6 +171,14 @@ const LABELS: Record<string, Record<string, string>> = {
     insightFocus: 'Priorite',
     user: 'Utilisateur',
     kpiBenchmarkNote: 'Les benchmarks sont des standards industriels. Vos valeurs KPI reelles necessitent une connexion a vos systemes.',
+    performanceData: 'Donnees de performance',
+    notProvided: 'Non fourni',
+    perceptionVsData: 'Perception vs Donnees',
+    referencePeriodLastMonth: 'Dernier mois complet',
+    referencePeriodLastFY: 'Dernier exercice fiscal',
+    referencePeriodCurrent: 'Actuel',
+    value: 'Valeur',
+    period: 'Periode de reference',
   },
   es: {
     reportTitle: 'Informe de evaluacion del rendimiento del concesionario',
@@ -196,6 +223,14 @@ const LABELS: Record<string, Record<string, string>> = {
     insightFocus: 'Enfoque prioritario',
     user: 'Usuario',
     kpiBenchmarkNote: 'Los benchmarks son estandares de la industria. Sus valores KPI reales requieren conexion a sus sistemas.',
+    performanceData: 'Datos de rendimiento',
+    notProvided: 'No proporcionado',
+    perceptionVsData: 'Percepcion vs Datos',
+    referencePeriodLastMonth: 'Ultimo mes completo',
+    referencePeriodLastFY: 'Ultimo ano fiscal',
+    referencePeriodCurrent: 'Actual',
+    value: 'Valor',
+    period: 'Periodo de referencia',
   },
   it: {
     reportTitle: 'Rapporto di valutazione delle prestazioni del concessionario',
@@ -240,6 +275,14 @@ const LABELS: Record<string, Record<string, string>> = {
     insightFocus: 'Focus prioritario',
     user: 'Utente',
     kpiBenchmarkNote: 'I benchmark sono standard di settore. I valori KPI reali richiedono la connessione ai sistemi aziendali.',
+    performanceData: 'Dati di performance',
+    notProvided: 'Non fornito',
+    perceptionVsData: 'Percezione vs Dati',
+    referencePeriodLastMonth: 'Ultimo mese completo',
+    referencePeriodLastFY: 'Ultimo anno fiscale',
+    referencePeriodCurrent: 'Attuale',
+    value: 'Valore',
+    period: 'Periodo di riferimento',
   },
 };
 
@@ -288,6 +331,15 @@ export interface PDFExportData {
   }>;
   includeWatermark: boolean;
   fieldNotes?: Record<string, string>; // questionId → note text
+  kpiValues?: Array<{
+    question_id: string;
+    kpi_key: string;
+    value: number | null;
+    unit: string;
+    currency_code: string | null;
+    reference_period: string;
+    skipped: boolean;
+  }>;
 }
 
 export interface VisitReportData {
@@ -1089,6 +1141,173 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
         pdf.text(pdf.splitTextToSize(row.questionLabel, 63), colQ + 2, ny + 4);
         pdf.text(noteLines, colNote + 2, ny + 4);
         ny += rowH;
+      }
+
+      addFooter(pageNum);
+    }
+  }
+
+  // ── Performance Data appendix ────────────────────────────────────────────
+  if (data.kpiValues && data.kpiValues.length > 0) {
+    const questionLookup = new Map<string, { sectionId: string; question: DataQuestion }>();
+    for (const section of questionnaire.sections) {
+      for (const q of section.questions) {
+        if (!isDataQuestion(q)) continue;
+        questionLookup.set(q.id, { sectionId: section.id, question: q });
+      }
+    }
+
+    const DEPT_ORDER = ['new-vehicle-sales', 'used-vehicle-sales', 'service-performance', 'parts-inventory', 'financial-operations'];
+    const DEPT_LABELS: Record<string, string> = {
+      'new-vehicle-sales': DEPT_NAMES['new-vehicle-sales'][lang] ?? 'New Vehicle Sales',
+      'used-vehicle-sales': DEPT_NAMES['used-vehicle-sales'][lang] ?? 'Used Vehicle Sales',
+      'service-performance': DEPT_NAMES['service-performance'][lang] ?? 'Service Performance',
+      'parts-inventory': DEPT_NAMES['parts-inventory'][lang] ?? 'Parts & Inventory',
+      'financial-operations': DEPT_NAMES['financial-operations'][lang] ?? 'Financial Operations',
+    };
+    const PERIOD_LABELS: Record<string, string> = {
+      last_calendar_month: l(lang, 'referencePeriodLastMonth'),
+      last_financial_year: l(lang, 'referencePeriodLastFY'),
+      current: l(lang, 'referencePeriodCurrent'),
+    };
+
+    type KpiRow = { label: string; valueText: string; periodText: string };
+    const rowsBySection: Record<string, KpiRow[]> = {};
+    for (const kv of data.kpiValues) {
+      const entry = questionLookup.get(kv.question_id);
+      if (!entry) continue;
+      const { sectionId, question } = entry;
+      const label = question.text.length > 70 ? question.text.slice(0, 70) + '…' : question.text;
+      let valueText: string;
+      if (kv.skipped || kv.value === null) {
+        valueText = '—';
+      } else {
+        const unitLabel = getUnitLabel(question);
+        valueText = `${formatNumber(kv.value)}${unitLabel ? ` ${unitLabel}` : ''}`;
+      }
+      const periodText = kv.skipped ? '—' : (PERIOD_LABELS[kv.reference_period] ?? kv.reference_period);
+      (rowsBySection[sectionId] ??= []).push({ label, valueText, periodText });
+    }
+
+    const sectionsWithData = DEPT_ORDER.filter(s => (rowsBySection[s]?.length ?? 0) > 0);
+
+    const perceptionFindings = evaluateKpiCrossValidations(
+      data.kpiValues.map((kv): KpiValueInput => ({ kpi_key: kv.kpi_key, value: kv.value, skipped: kv.skipped })),
+      data.assessment.answers as Record<string, number>,
+      data.assessment.scores
+    );
+
+    if (sectionsWithData.length > 0 || perceptionFindings.length > 0) {
+      pdf.addPage();
+      pageNum++;
+      addHeader();
+      addWatermark();
+      let ny = contentTop;
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(24, 24, 27);
+      pdf.text(l(lang, 'performanceData'), margin, ny);
+      ny += 10;
+      pdf.setTextColor(0, 0, 0);
+
+      const colKpi = margin;
+      const colValue = margin + 105;
+      const colPeriod = margin + 150;
+      const tableWidth = pageW - margin * 2;
+
+      for (const sectionId of sectionsWithData) {
+        const rows = rowsBySection[sectionId];
+
+        if (ny + 20 > pageH - margin) {
+          addFooter(pageNum);
+          pdf.addPage();
+          pageNum++;
+          addHeader();
+          addWatermark();
+          ny = contentTop;
+        }
+
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(24, 24, 27);
+        pdf.text(DEPT_LABELS[sectionId] ?? sectionId, margin, ny);
+        ny += 6;
+
+        pdf.setFillColor(245, 245, 242);
+        pdf.rect(margin, ny, tableWidth, 7, 'F');
+        pdf.setFontSize(7);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(24, 24, 27);
+        pdf.text(l(lang, 'kpiName'), colKpi + 2, ny + 5);
+        pdf.text(l(lang, 'value'), colValue + 2, ny + 5);
+        pdf.text(l(lang, 'period'), colPeriod + 2, ny + 5);
+        ny += 9;
+
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(7);
+        for (const row of rows) {
+          const labelLines = pdf.splitTextToSize(row.label, colValue - colKpi - 4);
+          const rowH = Math.max(7, labelLines.length * 4 + 3);
+          if (ny + rowH > pageH - margin) {
+            addFooter(pageNum);
+            pdf.addPage();
+            pageNum++;
+            addHeader();
+            addWatermark();
+            ny = contentTop;
+          }
+          pdf.setDrawColor(230, 228, 220);
+          pdf.line(margin, ny, margin + tableWidth, ny);
+          pdf.setTextColor(60, 60, 60);
+          pdf.text(labelLines, colKpi + 2, ny + 4);
+          pdf.text(row.valueText, colValue + 2, ny + 4);
+          pdf.text(row.periodText, colPeriod + 2, ny + 4);
+          ny += rowH;
+        }
+
+        ny += 6;
+      }
+
+      if (perceptionFindings.length > 0) {
+        if (ny + 14 > pageH - margin) {
+          addFooter(pageNum);
+          pdf.addPage();
+          pageNum++;
+          addHeader();
+          addWatermark();
+          ny = contentTop;
+        }
+
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(24, 24, 27);
+        pdf.text(l(lang, 'perceptionVsData'), margin, ny);
+        ny += 6;
+
+        pdf.setFont('helvetica', 'normal');
+        for (const finding of perceptionFindings) {
+          pdf.setFontSize(8);
+          pdf.setFont('helvetica', 'bold');
+          const flagLines = pdf.splitTextToSize(finding.flagLabel, tableWidth);
+          const narrativeLines = pdf.splitTextToSize(finding.narrative, tableWidth);
+          const blockH = (flagLines.length + narrativeLines.length) * 4 + 4;
+          if (ny + blockH > pageH - margin) {
+            addFooter(pageNum);
+            pdf.addPage();
+            pageNum++;
+            addHeader();
+            addWatermark();
+            ny = contentTop;
+          }
+          pdf.setTextColor(24, 24, 27);
+          pdf.text(flagLines, margin, ny + 3);
+          ny += flagLines.length * 4 + 2;
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(7);
+          pdf.setTextColor(100, 100, 100);
+          pdf.text(narrativeLines, margin, ny + 3);
+          ny += narrativeLines.length * 4 + 4;
+        }
       }
 
       addFooter(pageNum);

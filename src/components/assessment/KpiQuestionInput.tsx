@@ -12,7 +12,7 @@ interface KpiQuestionInputProps {
   onChange: (value: number | null, skipped: boolean) => void;
 }
 
-function getUnitLabel(question: DataQuestion): string {
+export function getUnitLabel(question: DataQuestion): string {
   if (question.type === "currency") {
     return question.unit.replace("EUR", "€");
   }

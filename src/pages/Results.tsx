@@ -21,6 +21,8 @@ import { ExportPDFModal } from "@/components/ExportPDFModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useMultiTenant } from "@/hooks/useMultiTenant";
 import { useActiveRole } from "@/hooks/useActiveRole";
+import { useKpiValues } from "@/hooks/useKpiValues";
+import { PerformanceDataPanel } from "@/components/results/PerformanceDataPanel";
 import { TierBadge } from "@/components/shared/TierBadge";
 import { supabase } from "@/integrations/supabase/client";
 import type { PDFExportData } from "@/lib/pdfReportGenerator";
@@ -57,6 +59,7 @@ export default function Results() {
   const { currentOrganization, userMemberships } = useMultiTenant();
   const { actorType } = useActiveRole();
   const { notes } = useAssessmentNotes();
+  const { data: kpiValues = [] } = useKpiValues(resultsData?.assessmentId);
   const [oemDealerContext, setOemDealerContext] = useState<{
     name: string;
     tier: string | null;
@@ -250,6 +253,7 @@ export default function Results() {
     actions: pdfActions,
     includeWatermark: false,
     fieldNotes: notes,
+    kpiValues,
   } : null;
 
   const getScoreColor = (score: number) => {
@@ -570,6 +574,7 @@ export default function Results() {
                 answers={resultsData.answers}
                 completedAt={resultsData.completedAt}
                 benchmarks={benchmarks}
+                kpiValues={kpiValues}
                 onNavigateToEncyclopedia={(kpiKey) => {
                   navigate(kpiKey ? `/app/knowledge/kpi/${kpiKey}` : '/app/knowledge?tab=kpi');
                 }}
@@ -577,6 +582,9 @@ export default function Results() {
             </ErrorBoundary>
             <ErrorBoundary fallbackTitle={language === 'de' ? 'Performance-Radar nicht verfügbar' : 'Performance Radar unavailable'}>
               <RadarBenchmarkChart departmentScores={resultsData.scores as Record<string, number>} />
+            </ErrorBoundary>
+            <ErrorBoundary fallbackTitle={language === 'de' ? 'Leistungsdaten nicht verfügbar' : 'Performance data unavailable'}>
+              <PerformanceDataPanel kpiValues={kpiValues} />
             </ErrorBoundary>
             {ceilingInsights.length > 0 && (
               <ErrorBoundary fallbackTitle={language === 'de' ? 'Deckenanalyse nicht verfügbar' : 'Ceiling analysis unavailable'}>

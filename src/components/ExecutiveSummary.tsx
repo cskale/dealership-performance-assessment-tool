@@ -32,6 +32,7 @@ import type { MaturityLevel, PrimarySignalCode } from '@/lib/narrativeTemplates'
 import { MODULE_LABELS } from '@/lib/moduleLabels';
 import { generateCeilingInsights } from '@/lib/ceilingAnalysis';
 import { generateSignals } from '@/lib/signalEngine';
+import { evaluateKpiCrossValidations, type KpiValueInput } from '@/lib/kpiCrossValidation';
 
 interface ExecutiveSummaryProps {
   overallScore: number;
@@ -40,6 +41,7 @@ interface ExecutiveSummaryProps {
   completedAt: string;
   onNavigateToEncyclopedia?: (kpiKey: string) => void;
   benchmarks?: Record<string, ModuleBenchmark>;
+  kpiValues?: KpiValueInput[];
 }
 
 function getScoreInterpretation(score: number, language: string): string {
@@ -102,7 +104,7 @@ const PREFIX_TO_DEPT: Record<string, string> = {
   pts: 'parts-inventory',
 };
 
-export function ExecutiveSummary({ overallScore, scores, answers, completedAt, onNavigateToEncyclopedia, benchmarks }: ExecutiveSummaryProps) {
+export function ExecutiveSummary({ overallScore, scores, answers, completedAt, onNavigateToEncyclopedia, benchmarks, kpiValues = [] }: ExecutiveSummaryProps) {
   const { t, language } = useLanguage();
 
   // Enhanced analytics from the new scoring engine
@@ -235,6 +237,11 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
     questionnaire.sections.forEach(s => getScoredQuestions(s.questions).forEach(q => { questionWeights[q.id] = q.weight; }));
     return generateSignals(answers as Record<string, number>, questionWeights).slice(0, 3);
   }, [answers]);
+
+  const perceptionGapFindings = useMemo(() =>
+    evaluateKpiCrossValidations(kpiValues, answers as Record<string, number>, scores),
+    [kpiValues, answers, scores]
+  );
 
 
   const signalLabels: Record<string, string> = {
@@ -376,6 +383,41 @@ export function ExecutiveSummary({ overallScore, scores, answers, completedAt, o
                 </p>
               </div>
             );
+              })}
+            </div>
+          )}
+          {perceptionGapFindings.length > 0 && (
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 mb-3 mt-6">
+                {language === 'de' ? 'Wahrnehmung vs. Daten' : 'Perception vs Data'}
+              </div>
+              {perceptionGapFindings.map((finding) => {
+                const severityBadge = finding.severity === 'critical'
+                  ? 'bg-destructive/10 text-destructive border-destructive/20'
+                  : finding.severity === 'warning'
+                  ? 'bg-warning/10 text-foreground border-warning/20'
+                  : 'bg-info/10 text-info border-info/20';
+                const severityLabel = finding.severity === 'critical'
+                  ? (language === 'de' ? 'Kritisch' : 'Critical')
+                  : finding.severity === 'warning'
+                  ? (language === 'de' ? 'Warnung' : 'Warning')
+                  : (language === 'de' ? 'Info' : 'Info');
+                return (
+                  <div
+                    key={finding.ruleId}
+                    className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 mb-2"
+                  >
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <Badge variant="outline" className={`text-xs shrink-0 px-2 py-0.5 rounded-md ${severityBadge}`}>
+                        {severityLabel}
+                      </Badge>
+                      <span className="text-sm font-semibold text-neutral-900">{finding.flagLabel}</span>
+                    </div>
+                    <p className="text-xs text-neutral-500 leading-relaxed">
+                      {finding.narrative}
+                    </p>
+                  </div>
+                );
               })}
             </div>
           )}
