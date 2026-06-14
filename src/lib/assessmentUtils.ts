@@ -1,3 +1,5 @@
+import { Section, isDataQuestion } from '@/data/questionnaire';
+
 /**
  * Merges purpose, situationAnalysis, and benefits into a single prose paragraph
  * for display in the "Why this matters" context strip column.
@@ -42,4 +44,46 @@ export function estimateTimeRemaining(
   if (seconds < 60) return '< 1 min';
   const minutes = Math.ceil(seconds / 60);
   return `~${minutes} min`;
+}
+
+/**
+ * Number of scored (non-KPI) questions in a section.
+ * DataQuestions are excluded — they have no weight and are optional.
+ */
+export function getScoredQuestionCount(section: Section): number {
+  return section.questions.filter(q => !isDataQuestion(q)).length;
+}
+
+/**
+ * Number of scored questions in a section that have a recorded answer.
+ */
+export function getAnsweredScoredCount(
+  section: Section,
+  answers: Record<string, number>
+): number {
+  return section.questions.filter(q => !isDataQuestion(q) && answers[q.id] !== undefined).length;
+}
+
+/**
+ * A section is complete once every scored (non-KPI) question is answered.
+ * DataQuestions never block completion.
+ */
+export function isSectionComplete(section: Section, answers: Record<string, number>): boolean {
+  return section.questions.every(q => isDataQuestion(q) || answers[q.id] !== undefined);
+}
+
+/**
+ * Percentage (0-100) of scored questions in a section that are answered.
+ */
+export function getSectionProgress(section: Section, answers: Record<string, number>): number {
+  const total = getScoredQuestionCount(section);
+  if (total === 0) return 0;
+  return Math.round((getAnsweredScoredCount(section, answers) / total) * 100);
+}
+
+/**
+ * An assessment is complete once every scored question across all sections is answered.
+ */
+export function isAssessmentComplete(sections: Section[], answers: Record<string, number>): boolean {
+  return sections.every(section => isSectionComplete(section, answers));
 }
