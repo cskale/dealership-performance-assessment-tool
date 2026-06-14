@@ -378,6 +378,66 @@ export type Database = {
           },
         ]
       }
+      assessment_kpi_values: {
+        Row: {
+          assessment_id: string
+          created_at: string
+          currency_code: string | null
+          dealership_id: string
+          id: string
+          kpi_key: string
+          question_id: string
+          reference_period: string
+          skipped: boolean
+          unit: string
+          updated_at: string
+          value: number | null
+        }
+        Insert: {
+          assessment_id: string
+          created_at?: string
+          currency_code?: string | null
+          dealership_id: string
+          id?: string
+          kpi_key: string
+          question_id: string
+          reference_period: string
+          skipped?: boolean
+          unit: string
+          updated_at?: string
+          value?: number | null
+        }
+        Update: {
+          assessment_id?: string
+          created_at?: string
+          currency_code?: string | null
+          dealership_id?: string
+          id?: string
+          kpi_key?: string
+          question_id?: string
+          reference_period?: string
+          skipped?: boolean
+          unit?: string
+          updated_at?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_kpi_values_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_kpi_values_dealership_id_fkey"
+            columns: ["dealership_id"]
+            isOneToOne: false
+            referencedRelation: "dealerships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessment_notes: {
         Row: {
           assessment_id: string | null
@@ -1913,35 +1973,20 @@ export type Database = {
       send_weekly_digests: { Args: never; Returns: undefined }
       toggle_oem_mode: { Args: { p_activate?: boolean }; Returns: Json }
       trigger_stale_action_check: { Args: never; Returns: undefined }
-      update_action_if_unchanged:
-        | {
-            Args: {
-              p_description: string
-              p_expected_updated_at: string
-              p_id: string
-              p_priority: string
-              p_responsible_person: string
-              p_status: string
-              p_target_completion_date: string
-              p_title: string
-              p_updated_at: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              p_description: string
-              p_expected_updated_at: string
-              p_id: string
-              p_priority: string
-              p_responsible_person: string
-              p_status: string
-              p_target_completion_date: string
-              p_title: string
-              p_updated_at: string
-            }
-            Returns: Json
-          }
+      update_action_if_unchanged: {
+        Args: {
+          p_description: string
+          p_expected_updated_at: string
+          p_id: string
+          p_priority: string
+          p_responsible_person: string
+          p_status: string
+          p_target_completion_date: string
+          p_title: string
+          p_updated_at: string
+        }
+        Returns: Json
+      }
       user_can_access_assessment_as_oem: {
         Args: { _dealership_id: string }
         Returns: boolean
