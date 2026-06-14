@@ -1,6 +1,6 @@
 // src/components/assessment/AssessmentHeroNav.tsx
 import { Section } from '@/data/questionnaire';
-import { shortenSectionName, estimateTimeRemaining } from '@/lib/assessmentUtils';
+import { shortenSectionName, estimateTimeRemaining, getSectionProgress, isSectionComplete } from '@/lib/assessmentUtils';
 import { cn } from '@/lib/utils';
 
 interface AssessmentHeroNavProps {
@@ -31,16 +31,6 @@ export function AssessmentHeroNav({
   const timeRemaining = estimateTimeRemaining(totalQuestions, answeredQuestions);
 
   const activeSection = sections[currentSection];
-
-  const getSectionProgress = (section: Section) => {
-    const answered = section.questions.filter(q => answers[q.id] !== undefined).length;
-    return section.questions.length > 0
-      ? Math.round((answered / section.questions.length) * 100)
-      : 0;
-  };
-
-  const isSectionComplete = (section: Section) =>
-    section.questions.every(q => answers[q.id] !== undefined);
 
   return (
     <div className="shrink-0 z-20">
@@ -120,8 +110,8 @@ export function AssessmentHeroNav({
         {/* ── Tab navigation ── */}
         <div className="flex px-6">
           {sections.map((section, idx) => {
-            const pct = getSectionProgress(section);
-            const complete = isSectionComplete(section);
+            const pct = getSectionProgress(section, answers);
+            const complete = isSectionComplete(section, answers);
             const active = idx === currentSection;
 
             return (
