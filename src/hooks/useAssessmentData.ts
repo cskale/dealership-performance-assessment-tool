@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DealershipInfo, AssessmentData, BenchmarkData, ImprovementAction } from '@/types/dealership';
 import { useAuth } from './useAuth';
+import type { DataQuestion } from '@/data/questionnaire';
+import { buildKpiValueRows, type KpiAnswerState } from '@/lib/kpiAnswerPersistence';
 
 // Error types for proper error handling
 export class OnboardingError extends Error {
@@ -320,6 +322,34 @@ export const useAssessmentData = () => {
     }
   }, [assessment, user, getSessionId, validateAssessmentContext]);
 
+  /**
+   * Upsert KPI answers into assessment_kpi_values, keyed on (assessment_id, kpi_key).
+   * Questions that were never touched, or touched-but-incomplete, are skipped.
+   */
+  const saveKpiAnswers = useCallback(async (
+    assessmentId: string,
+    dataQuestions: DataQuestion[],
+    kpiAnswers: Record<string, KpiAnswerState>
+  ): Promise<void> => {
+    if (!user) {
+      throw new Error('User must be authenticated');
+    }
+    if (!assessmentId) {
+      throw new Error('Invalid assessment ID - cannot save KPI answers without a saved assessment');
+    }
+
+    const context = await validateAssessmentContext();
+    const rows = buildKpiValueRows(assessmentId, context.dealershipId, dataQuestions, kpiAnswers);
+
+    if (rows.length === 0) return;
+
+    const { error: upsertError } = await supabase
+      .from('assessment_kpi_values')
+      .upsert(rows, { onConflict: 'assessment_id,kpi_key' });
+
+    if (upsertError) throw upsertError;
+  }, [user, validateAssessmentContext]);
+
   // Load assessment data
   const loadAssessment = useCallback(async () => {
     setIsLoading(true);
@@ -481,6 +511,7 @@ export const useAssessmentData = () => {
     error,
     saveDealership,
     saveAssessment,
+    saveKpiAnswers,
     loadAssessment,
     loadBenchmarks,
     generateImprovementActions,
