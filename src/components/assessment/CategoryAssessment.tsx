@@ -1,15 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import { MessageSquare, Save, ChevronRight, StickyNote, Check, ExternalLink } from "lucide-react";
-import { Question, Section, isScoredQuestion } from "@/data/questionnaire";
+import { Question, Section, isScoredQuestion, isDataQuestion } from "@/data/questionnaire";
 import { useAssessmentNotes } from "@/hooks/useAssessmentNotes";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { mergeWhyThisMatters } from "@/lib/assessmentUtils";
+import { mergeWhyThisMatters, getScoredQuestionCount, getAnsweredScoredCount } from "@/lib/assessmentUtils";
+import type { KpiAnswerState } from "@/lib/kpiAnswerPersistence";
 
 interface CategoryAssessmentProps {
   section: Section;
   answers: Record<string, number>;
   onAnswer: (questionId: string, value: number) => void;
+  kpiAnswers: Record<string, KpiAnswerState>;
+  onKpiAnswer: (kpiKey: string, value: number | null, skipped: boolean) => void;
   onContinue: () => void;
   canContinue: boolean;
   isLastSection: boolean;
@@ -19,6 +22,8 @@ export function CategoryAssessment({
   section,
   answers,
   onAnswer,
+  kpiAnswers,
+  onKpiAnswer,
   onContinue,
   canContinue,
   isLastSection
@@ -51,29 +56,32 @@ export function CategoryAssessment({
     setNotesText(initialNotesText);
   }, [notes, section.questions]);
 
-  const answeredQuestions = section.questions.filter(q => answers[q.id] !== undefined).length;
+  const scoredCount = getScoredQuestionCount(section);
+  const answeredQuestions = getAnsweredScoredCount(section, answers);
   const noteCount = getCategoryNoteCount(section.questions.map(q => q.id));
 
   const handleRatingClick = (questionId: string, rating: number) => {
     onAnswer(questionId, rating);
 
-    // Find the next unanswered question and scroll to it
+    // Find the next unanswered scored question and scroll to it
     const currentIndex = section.questions.findIndex(q => q.id === questionId);
     let nextQuestion = null;
 
-    // First, look for the next unanswered question after the current one
+    // First, look for the next unanswered scored question after the current one
     for (let i = currentIndex + 1; i < section.questions.length; i++) {
-      if (answers[section.questions[i].id] === undefined) {
-        nextQuestion = section.questions[i];
+      const candidate = section.questions[i];
+      if (isScoredQuestion(candidate) && answers[candidate.id] === undefined) {
+        nextQuestion = candidate;
         break;
       }
     }
 
-    // If no unanswered question found after current, check from the beginning
+    // If no unanswered scored question found after current, check from the beginning
     if (!nextQuestion) {
       for (let i = 0; i < currentIndex; i++) {
-        if (answers[section.questions[i].id] === undefined) {
-          nextQuestion = section.questions[i];
+        const candidate = section.questions[i];
+        if (isScoredQuestion(candidate) && answers[candidate.id] === undefined) {
+          nextQuestion = candidate;
           break;
         }
       }
@@ -244,6 +252,43 @@ export function CategoryAssessment({
                     </div>
                   );
                 })()}
+
+                {isDataQuestion(question) && (() => {
+                  const kpiAnswer = kpiAnswers[question.kpiKey] ?? { value: null, skipped: false };
+                  const unitLabel = question.type === 'currency' ? '€' : question.unit;
+
+                  return (
+                    <div className="mt-4 mb-2">
+                      <div className="flex items-center gap-2 max-w-[240px]">
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          step="any"
+                          value={kpiAnswer.value ?? ''}
+                          disabled={kpiAnswer.skipped}
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            onKpiAnswer(question.kpiKey, raw === '' ? null : Number(raw), false);
+                          }}
+                          placeholder={t('assessment.kpiInputPlaceholder')}
+                          className="w-full rounded-lg border border-[#d4dde4] px-3 py-2 text-[14px] text-[#0b1f3a] focus:outline-none focus:border-[#1D7AFC] focus:ring-2 focus:ring-[#1D7AFC]/20 disabled:bg-[#f4f6f8] disabled:text-[#94a3b8]"
+                        />
+                        <span className="text-[13px] font-medium text-[#6e7e8a] whitespace-nowrap">
+                          {unitLabel}
+                        </span>
+                      </div>
+                      <label className="mt-2 inline-flex items-center gap-2 text-[12px] text-[#6e7e8a] cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={kpiAnswer.skipped}
+                          onChange={(e) => onKpiAnswer(question.kpiKey, null, e.target.checked)}
+                          className="h-3.5 w-3.5 rounded border-[#d4dde4]"
+                        />
+                        {t('assessment.dontHaveFigure')}
+                      </label>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* ── Context strip: Why this matters | Linked KPIs ── */}
@@ -336,12 +381,12 @@ export function CategoryAssessment({
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-[15px] font-semibold text-[#0b1f3a]">
-              {answeredQuestions === section.questions.length
+              {answeredQuestions === scoredCount
                 ? t('assessment.sectionComplete')
-                : `${answeredQuestions} / ${section.questions.length} ${t('assessment.questionsAnswered')}`}
+                : `${answeredQuestions} / ${scoredCount} ${t('assessment.questionsAnswered')}`}
             </h3>
             <p className="text-[13px] text-[#6e7e8a] mt-0.5">
-              {answeredQuestions === section.questions.length
+              {answeredQuestions === scoredCount
                 ? isLastSection
                   ? t('assessment.readyToView')
                   : t('assessment.continueToNext')
