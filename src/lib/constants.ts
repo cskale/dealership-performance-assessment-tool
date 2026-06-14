@@ -5,13 +5,15 @@
 
 import { questionnaire } from "@/data/questionnaire";
 import { getMaturityLevel as _getMaturityKey, MATURITY_LEVELS as MATURITY_CONFIG } from "@/lib/maturityConfig";
+import { getScoredQuestions } from "@/lib/scoringEngine";
 
 /**
- * Total number of questions in the assessment
- * Dynamically calculated from the questionnaire schema
+ * Total number of scored questions in the assessment.
+ * DataQuestions (KPI questions) are excluded — they are optional and
+ * never appear in `answers`, so they must not be in this denominator.
  */
 export const TOTAL_QUESTIONS = questionnaire.sections.reduce(
-  (total, section) => total + section.questions.length,
+  (total, section) => total + getScoredQuestions(section.questions).length,
   0
 );
 
