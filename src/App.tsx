@@ -111,6 +111,7 @@ const App = () => (
                             <Route path="results/:assessmentId" element={<Results />} />
                             <Route path="knowledge" element={<KnowledgeHub />} />
                             <Route path="knowledge/kpi/:kpiKey" element={<KpiDetailPage />} />
+                            <Route path="playground" element={<Playground />} />
                           </Routes>
                         </AuthenticatedLayout>
                       </ProtectedRoute>
