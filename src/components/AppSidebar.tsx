@@ -81,6 +81,7 @@ export function AppSidebar() {
       label: 'Reference',
       items: [
         { path: '/app/knowledge', label: 'Knowledge', icon: GraduationCap },
+        { path: '/app/playground', label: 'Playground', icon: Calculator },
         { path: '/methodology', label: 'Methodology', icon: FileText },
       ],
     },
