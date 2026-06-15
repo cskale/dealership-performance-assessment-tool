@@ -5,7 +5,7 @@ import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { useActiveRole } from '@/hooks/useActiveRole';
 import {
   BarChart3, Plus, ClipboardList, CheckSquare,
-  GraduationCap, FileText, LogOut, Globe, Users, Settings,
+  GraduationCap, FileText, LogOut, Globe, Users, Settings, Calculator,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
@@ -81,6 +81,7 @@ export function AppSidebar() {
       label: 'Reference',
       items: [
         { path: '/app/knowledge', label: 'Knowledge', icon: GraduationCap },
+        { path: '/app/playground', label: 'Playground', icon: Calculator },
         { path: '/methodology', label: 'Methodology', icon: FileText },
       ],
     },

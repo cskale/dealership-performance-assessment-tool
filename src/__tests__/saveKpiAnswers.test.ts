@@ -101,7 +101,7 @@ describe('saveKpiAnswers', () => {
     });
 
     expect(mockUpsert).toHaveBeenCalledTimes(1);
-    const [rows, options] = mockUpsert.mock.calls[0];
+    const [rows, options] = (mockUpsert.mock.calls[0] as unknown) as [any, any];
     expect(options).toEqual({ onConflict: 'assessment_id,kpi_key' });
     expect(rows).toEqual([
       {

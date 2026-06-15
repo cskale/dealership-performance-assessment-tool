@@ -22,6 +22,7 @@ import OemSettings from "./pages/OemSettings";
 import CoachDashboard from "./pages/CoachDashboard";
 import CoachActions from "./pages/CoachActions";
 import CoachDealerPage from "./pages/CoachDealerPage";
+import Playground from "./pages/Playground";
 import { AuthProvider } from "@/hooks/useAuth";
 import { MultiTenantProvider } from "@/hooks/useMultiTenant";
 import { RoleProvider } from "@/contexts/RoleContext";
@@ -110,6 +111,7 @@ const App = () => (
                             <Route path="results/:assessmentId" element={<Results />} />
                             <Route path="knowledge" element={<KnowledgeHub />} />
                             <Route path="knowledge/kpi/:kpiKey" element={<KpiDetailPage />} />
+                            <Route path="playground" element={<Playground />} />
                           </Routes>
                         </AuthenticatedLayout>
                       </ProtectedRoute>
