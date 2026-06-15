@@ -36,9 +36,43 @@ export function useKpiValues(assessmentId: string | null | undefined) {
   });
 }
 
+export interface LatestKpiValue {
+  row: AssessmentKpiValue;
+  /** created_at of the assessment the row belongs to */
+  assessmentCreatedAt: string;
+}
+
+/**
+ * Fetches the most recent non-skipped value for a given KPI across all of a
+ * dealership's assessments, ordered by the parent assessment's created_at.
+ * Shared by useLatestKpiValue and the Playground prefill hook.
+ */
+export async function fetchLatestKpiValue(
+  dealershipId: string,
+  kpiKey: string
+): Promise<LatestKpiValue | null> {
+  const { data, error } = await supabase
+    .from('assessment_kpi_values')
+    .select('*, assessments!inner(created_at)')
+    .eq('dealership_id', dealershipId)
+    .eq('kpi_key', kpiKey)
+    .eq('skipped', false)
+    .order('created_at', { referencedTable: 'assessments', ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+
+  const { assessments, ...row } = data as AssessmentKpiValue & {
+    assessments: { created_at: string };
+  };
+  return { row: row as AssessmentKpiValue, assessmentCreatedAt: assessments.created_at };
+}
+
 /**
  * Most recent non-skipped value for a given KPI across all of a dealership's
- * assessments, ordered by the parent assessment's created_at.
+ * assessments.
  *
  * This powers Playground seeding (pre-filling simulator inputs with real
  * historical figures) and future delta/trend queries across assessment cycles.
@@ -49,21 +83,8 @@ export function useLatestKpiValue(dealershipId: string | null | undefined, kpiKe
     enabled: !!dealershipId,
     staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<AssessmentKpiValue | null> => {
-      const { data, error } = await supabase
-        .from('assessment_kpi_values')
-        .select('*, assessments!inner(created_at)')
-        .eq('dealership_id', dealershipId!)
-        .eq('kpi_key', kpiKey)
-        .eq('skipped', false)
-        .order('created_at', { referencedTable: 'assessments', ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error) throw error;
-      if (!data) return null;
-
-      const { assessments, ...row } = data as AssessmentKpiValue & { assessments: unknown };
-      return row as AssessmentKpiValue;
+      const result = await fetchLatestKpiValue(dealershipId!, kpiKey);
+      return result?.row ?? null;
     },
   });
 }
