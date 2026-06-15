@@ -143,7 +143,7 @@ export default function ReverseSalesFunnelPage() {
           onChange={(e) => handleChange(field.id, e.target.value)}
         />
         {showChip && (
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-brand-500/10 text-brand-700 dark:text-brand-300 px-2.5 py-1 text-xs">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-[#1D7AFC]/10 text-[#1D7AFC] px-2.5 py-1 text-xs">
             <span>{chipText}</span>
             <button
               type="button"
@@ -162,7 +162,6 @@ export default function ReverseSalesFunnelPage() {
   const volumeFields = FIELDS.filter((f) => f.group === 'volume');
   const conversionFields = FIELDS.filter((f) => f.group === 'conversion');
 
-  // Funnel widths (tapering visualization)
   const funnelStages = [
     { label: 'Leads', value: outputs.requiredLeads, width: 100 },
     { label: 'Appointments', value: outputs.requiredAppointments, width: 78 },
@@ -171,102 +170,103 @@ export default function ReverseSalesFunnelPage() {
   ];
 
   const leftCard = (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-serif text-lg">Operational Inputs</CardTitle>
-        <CardDescription>Configure target volume and current conversion performance.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-5">
+    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+        Inputs
+      </p>
+      <h2 className="text-[15px] font-bold text-[#172B4D] mb-1">Operational Inputs</h2>
+      <p className="text-xs text-muted-foreground mb-5">
+        Configure target volume and current conversion performance.
+      </p>
+      <div className="space-y-4">
         {volumeFields.map(renderField)}
-        <div className="pt-2">
-          <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground font-medium mb-3">
-            Conversion Engineering
-          </div>
-          <div className="space-y-5">{conversionFields.map(renderField)}</div>
+        <div className="pt-3 border-t border-[#DFE1E6]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-3">
+            Conversion Rates
+          </p>
+          <div className="space-y-4">{conversionFields.map(renderField)}</div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 
   const rightCard = (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-serif text-lg">Model Architecture</CardTitle>
-        <CardDescription>
-          Calculated volume requirements based on input conversion delta.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Funnel visualization */}
-          <div className="flex flex-col items-center justify-center gap-1.5 py-2">
-            {funnelStages.map((stage, i) => (
-              <div
-                key={stage.label}
-                className="flex items-center justify-center text-xs font-medium text-white rounded-sm"
-                style={{
-                  width: `${stage.width}%`,
-                  height: 42,
-                  background: `hsl(var(--brand-500) / ${0.45 + i * 0.15})`,
-                }}
-              >
-                <span className="opacity-90">{stage.label}</span>
-                <span className="mx-1.5 opacity-50">·</span>
-                <span className="font-mono">
-                  {stage.value === null ? '—' : formatNumber(stage.value)}
-                </span>
-              </div>
-            ))}
-          </div>
+    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+        Output
+      </p>
+      <h2 className="text-[15px] font-bold text-[#172B4D] mb-1">Required Funnel Volume</h2>
+      <p className="text-xs text-muted-foreground mb-5">
+        Calculated volume requirements based on input conversion rates.
+      </p>
 
-          {/* Stat list */}
-          <div className="rounded-lg border bg-muted/30 divide-y self-start">
-            <StatRow label="Required Leads" value={renderRequired(outputs.requiredLeads)} />
-            <StatRow
-              label="Required Appointments"
-              value={renderRequired(outputs.requiredAppointments)}
-            />
-            <StatRow
-              label="Required Showroom Visits"
-              value={renderRequired(outputs.requiredShows)}
-            />
-            <StatRow
-              label="Targeted Unit Output"
-              value={<span className="text-brand-600 dark:text-brand-300">{formatNumber(inputs.targetUnitSales)}</span>}
-              emphasised
-            />
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {/* Funnel visualization */}
+        <div className="flex flex-col items-center justify-center gap-1.5 py-2">
+          {funnelStages.map((stage, i) => (
+            <div
+              key={stage.label}
+              className="flex items-center justify-center text-xs font-medium text-white rounded-sm w-full"
+              style={{
+                width: `${stage.width}%`,
+                height: 42,
+                background: `hsl(var(--brand-500) / ${0.45 + i * 0.15})`,
+              }}
+            >
+              <span className="opacity-90">{stage.label}</span>
+              <span className="mx-1.5 opacity-50">·</span>
+              <span>{stage.value === null ? '—' : formatNumber(stage.value)}</span>
+            </div>
+          ))}
         </div>
 
-        {/* Insight callout */}
-        <div className="mt-6 flex gap-3 rounded-md border border-brand-500/30 bg-brand-500/5 px-4 py-3">
-          <Info className="h-4 w-4 text-brand-600 dark:text-brand-300 mt-0.5 flex-shrink-0" />
-          <p className="text-sm text-foreground/90">
-            <span className="font-medium">Calculated Insight: </span>
-            {outputs.requiredLeads === null ? (
-              <>Enter non-zero conversion rates to generate a lead-volume insight.</>
-            ) : (
-              <>
-                To reach <span className="font-mono">{formatNumber(inputs.targetUnitSales)}</span> unit sales
-                at your current conversion rates, you'll need approximately{' '}
-                <span className="font-mono">{formatNumber(outputs.requiredLeads)}</span> leads,{' '}
-                <span className="font-mono">{formatNumber(outputs.requiredAppointments!)}</span>{' '}
-                appointments, and{' '}
-                <span className="font-mono">{formatNumber(outputs.requiredShows!)}</span> showroom visits.
-              </>
-            )}
-          </p>
+        {/* Stat list */}
+        <div className="rounded-lg border border-[#DFE1E6] divide-y divide-[#DFE1E6] self-start">
+          <StatRow label="Required Leads" value={renderRequired(outputs.requiredLeads)} />
+          <StatRow
+            label="Required Appointments"
+            value={renderRequired(outputs.requiredAppointments)}
+          />
+          <StatRow
+            label="Required Showroom Visits"
+            value={renderRequired(outputs.requiredShows)}
+          />
+          <StatRow
+            label="Targeted Unit Output"
+            value={<span className="text-[#1D7AFC]">{formatNumber(inputs.targetUnitSales)}</span>}
+            emphasised
+          />
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Insight callout */}
+      <div className="mt-5 flex gap-3 rounded-lg border border-[#1D7AFC]/20 bg-[#1D7AFC]/5 px-4 py-3">
+        <Info className="h-4 w-4 text-[#1D7AFC] mt-0.5 flex-shrink-0" />
+        <p className="text-xs text-foreground leading-relaxed">
+          <span className="font-semibold text-[#172B4D]">Calculated Insight: </span>
+          {outputs.requiredLeads === null ? (
+            <>Enter non-zero conversion rates to generate a lead-volume insight.</>
+          ) : (
+            <>
+              To reach <span className="font-semibold text-[#172B4D]">{formatNumber(inputs.targetUnitSales)}</span> unit sales
+              at your current conversion rates, you'll need approximately{' '}
+              <span className="font-semibold text-[#172B4D]">{formatNumber(outputs.requiredLeads)}</span> leads,{' '}
+              <span className="font-semibold text-[#172B4D]">{formatNumber(outputs.requiredAppointments!)}</span>{' '}
+              appointments, and{' '}
+              <span className="font-semibold text-[#172B4D]">{formatNumber(outputs.requiredShows!)}</span> showroom visits.
+            </>
+          )}
+        </p>
+      </div>
+    </div>
   );
 
   return (
     <PlaygroundCalculatorShell
       breadcrumbLabel="Reverse Sales Funnel Calculator"
       icon={TrendingUp}
-      category="Funnel Architect"
-      title="Financial Modeling: Reverse Sales Funnel"
+      category="Sales Optimization"
+      title="Reverse Sales Funnel"
       documentationKpiKey={documentationKpiKey}
       description="Work backward from a unit-sales target to the required funnel volume at each stage, based on your current conversion rates."
       kpiStrip={[
@@ -277,10 +277,7 @@ export default function ReverseSalesFunnelPage() {
         },
         {
           label: 'Lead Efficiency',
-          value:
-            leadEfficiency === null
-              ? '—'
-              : `${leadEfficiency.toFixed(1)}%`,
+          value: leadEfficiency === null ? '—' : `${leadEfficiency.toFixed(1)}%`,
         },
         {
           label: 'Required Lead Volume',
@@ -309,9 +306,11 @@ function StatRow({
   emphasised?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between px-4 py-3">
+    <div className="flex items-center justify-between px-4 py-2.5">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={emphasised ? 'font-serif text-lg' : 'font-mono text-base'}>{value}</span>
+      <span className={emphasised ? 'text-base font-bold text-[#172B4D]' : 'text-sm font-semibold text-[#172B4D]'}>
+        {value}
+      </span>
     </div>
   );
 }
