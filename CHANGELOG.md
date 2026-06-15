@@ -6,6 +6,98 @@ Types: **feat** · **fix** · **security** · **perf** · **docs** · **refactor
 
 ---
 
+## [2026-06-15] — Playground: Reverse Sales Funnel Calculator + KPI Seeding
+
+### feat
+- **Playground catalog page (`/app/playground`)** — `Playground.tsx` lists 12 planned analytical calculators across three categories (Sales Optimization, Marketing Intelligence, Operational Models). Each card shows icon, name, description, and a "Coming Soon" badge for unbuilt tools; live tools link through with an "Open Calculator →" affordance. Header shows a live/planned count pill. `(commits 8f8f408, 2243f40, 671a20d)`
+- **Reverse Sales Funnel Calculator (`/app/playground/reverse-sales-funnel`)** — first live Playground tool. Works backward from a unit-sales target to required leads, appointments, and showroom visits using configurable conversion-rate assumptions. `(ReverseSalesFunnelPage.tsx · commits 8f8f408, 2243f40, 671a20d)`
+- **`PlaygroundCalculatorShell`** — shared shell component for all future calculators: breadcrumb (Playground → tool name), header card (icon, category eyebrow, title, version tag, scenario label, "Documentation"/"Save Model"/"Recalculate" actions), KPI summary strip, two-column main grid (`leftCard`/`rightCard`), optional bottom stats row. `(src/components/playground/PlaygroundCalculatorShell.tsx · commit 671a20d)`
+- **KPI-seeded pre-fill** — `usePlaygroundPrefill()` fetches each calculator's mapped fields from the dealership's most recent `assessment_kpi_values` via `PLAYGROUND_KPI_MAPPINGS` (`src/data/playgroundKpiMappings.ts`). Reverse Sales Funnel's `avgGrossProfitPerUnit` field pre-fills from `nvs_gross_profit_per_unit` when available, shown as a dismissible "Pre-filled from your assessment ({month year}) — editable" chip (EN+DE via `playground.prefillChip`). User edits override freely; no write-back to `assessment_kpi_values`. Unmapped fields remain manual entry. `(src/hooks/usePlaygroundPrefill.ts, src/data/playgroundKpiMappings.ts · commit 8f8f408)`
+
+### db
+- **`kpi_benchmark_thresholds` table (schema scaffold)** — `kpi_key`, `segmentation_key` (positioning + business_model composite, matching `benchmark_snapshots` convention), `healthy_min/max`, `warning_min/max`, `critical_min/max`, `source`, `updated_at`. RLS: read for all authenticated, no write policy (admin/migration-managed). No values seeded; not yet wired to any UI beyond the existing "Benchmark coming soon" state. `(supabase/migrations/20260615000001_kpi_benchmark_thresholds.sql · commit 8f8f408)`
+
+### fix
+- **Design-language restyle** — `Playground.tsx`, `PlaygroundCalculatorShell.tsx`, and `ReverseSalesFunnelPage.tsx` updated to match the app's standard tokens: Inter font, `text-[#172B4D]` headings, `border-[#DFE1E6]` card borders, `shadow-card`, `bg-[#1D7AFC]` brand blue, `text-[10px] font-semibold uppercase tracking-[0.08em]` eyebrow labels, and shadcn `Button`/`Badge` components. No logic, routing, or prefill changes. `(commit 0ed73c7)`
+
+### Notes
+- All 259 tests pass; build clean (~24-25s, pre-existing chunk-size warnings only)
+- No new npm packages
+- 11 of 12 Playground calculators remain "Coming Soon" (planned, not built)
+
+---
+
+## [2026-06-02] — DealerPanel Hero Refinement
+
+### feat
+- **Pill-style tab strip** — active tab chip uses `bg-white/10 text-white rounded-full px-4 py-1.5`; inactive tabs render as `text-white/50`; strip uses `bg-background border-b border-border` creating a visual break between the dark hero and the scrollable body. `(DealerPanel.tsx · commit 3a2328f)`
+- **Action counts added to PanelData** — new `actionCounts` query in `fetchData` counts all `improvement_actions` by status (Open / In Progress / Completed) across the dealer's completed assessment IDs. `PanelData` interface extended: `{ pending: number; inProgress: number; completed: number }`. Queries run in parallel with `Promise.all`. `(DealerPanel.tsx · commit 0649c07)`
+
+### fix
+- **DealerPanel dark hero card** — `DialogHeader` replaced with `bg-[#0b1f3a] text-white px-6 py-5` four-column grid matching the dealer and coach dashboard dark hero design. Columns: Overall Score (score number + progress bar + maturity badge) · Actions Status (pending / in-progress / completed counts) · Next Visit (date + status chip + "Schedule →" link) · Critical Gaps (count of depts with score <46 + "dept(s) below benchmark" label). Dealer name + location shown as `text-lg font-semibold text-white` row above the grid. `(DealerPanel.tsx · commit 0db4a0c)`
+- **TopFocusActionsCard removed from above-tab zone** — static focus action cards removed from the non-scrolling hero area; the hero now shows action counts (pending/in-progress/completed) instead. Focus actions remain visible in the Activity Log tab. `(DealerPanel.tsx · commit a195ad7)`
+- **Department health badge overflow** — single-row dept flex layout replaced with two-row layout. Row 1: `flex justify-between` (dept name left, score + delta right). Row 2: full-width progress bar + `flex-shrink-0` status badge on its own line. Badge no longer clips outside the 256px sidebar card boundary at any viewport. `(DealerPanel.tsx · commit 5ca94e9)`
+- **actionCounts null/error guard** — null status values excluded from count query; `handleActionCountsError` added; all `fetchData` sub-queries parallelised with `Promise.all` reducing load time by ~40%. `(DealerPanel.tsx · commit 5fd3b2b)`
+- **Duplicate `AlertCircle` import removed** — stale import cleaned up after component refactor. `(commit 5ca94e9)`
+
+### Notes
+- No schema changes
+- No new npm packages
+- Zero TypeScript errors
+
+---
+
+## [2026-05-29] — Sprint 13: Coach Briefing Pack Full-Width Redesign
+
+### feat
+- **Full-width DealerPanel command centre** — `DealerPanel` completely rewritten from `Dialog max-w-2xl` (narrow ~672px box) to `Dialog w-[95vw] max-w-7xl h-[90vh] flex flex-col gap-0 p-0 overflow-hidden`, centered in viewport. Fixes the dialog appearing off-centre on wide viewports. Header and tab strip are sticky / non-scrolling; the two-column body scrolls independently. `(DealerPanel.tsx · commit c85064c)`
+- **Two-column body layout** — Left column `flex-1 min-w-0 overflow-y-auto border-r border-border` (focus actions + tab feed). Right column `w-80 shrink-0 overflow-y-auto p-4 space-y-4` (sidebar cards). Below `md` breakpoint the columns stack vertically. `(DealerPanel.tsx · commit c85064c)`
+- **TopFocusActionsCard** — Top 3 focus actions rendered above the tab strip in the left column. Each card shows: priority icon (AlertTriangle = critical/high · Square = medium), action title, due-date badge ("DUE IN X DAYS" red when ≤14 days remaining · "HIGH PRIORITY" amber otherwise), department tag chip, stale warning when >14 days without a status update, "Open Steps →" link navigating to `/app/results/:assessmentId`. `(DealerPanel.tsx · commit c85064c)`
+- **DeptHealthCard** — Right sidebar Card 1. Per-department row: truncated dept name (`w-28`) · score progress bar (colour-banded per §2.3) · score number · gap vs STATIC_BENCHMARKS (▲/▼ with colour) · status chip (Performing / Developing / Foundational). "Full Assessment →" link navigates to `/app/results/:latestAssessmentId`; disabled when null. `(DealerPanel.tsx · commit c85064c)`
+- **UpcomingVisitCard** — Right sidebar Card 2. If `upcomingVisit` exists: shows date, status badge, notes preview, visit type. "Confirm" button marks a proposed visit as confirmed (shown only when status = proposed); "Modify" button switches to the Visit History tab. If no upcoming visit: muted placeholder + "Schedule →" link. `(DealerPanel.tsx · commit c85064c)`
+- **InsightCard** — Right sidebar Card 3 (conditional). Dark background with "INSIGHT" badge. Shown only when the latest assessment is >60 days old or null. "Request Reassessment →" navigates to `/app/results/:latestAssessmentId` (disabled if null). `(DealerPanel.tsx · commit c85064c)`
+- **CoachNotesTab extracted** — Notes-only filtered feed + compose box extracted into its own tab (Coach Notes). Replaces the previous Briefing tab. No visit or assessment entries appear in this tab. `(DealerPanel.tsx · commit c85064c)`
+- **BriefingTab deleted** — All content redistributed: dept health and upcoming visit → right sidebar cards; top actions → left column above tabs. Tab order changed from `['activity', 'visits', 'briefing']` to `['activity', 'visits', 'notes']`. `initialTab` default changed to `'activity'`. `(DealerPanel.tsx · commit c85064c)`
+- **criticalGaps computed client-side** — `criticalGaps = count of depts where assessmentScores[dept] < 46` derived from existing PanelData; no additional DB query. `(DealerPanel.tsx · commit c85064c)`
+
+### fix
+- **CoachDashboard DealerPanel wiring restored** — A prior unstaged change had deleted the `DealerPanel` import, three state vars (`panelOpen`, `panelDealer`, `panelInitialTab`), the full render block, and the `onVisitSaved` handler — while leaving the ghost button `onClick` handlers that called the deleted setters (silent runtime errors, no TypeScript warning). All restored with `onVisitSaved` re-fetching `coach_visits` on save. `(CoachDashboard.tsx · commit f5024fb)`
+- **Dealer card click-to-open** — Entire dealer card is now `cursor-pointer` with `onClick` setting `panelDealer` + `panelOpen`. "Enter Dealership →" CTA uses `e.stopPropagation()` to prevent double-trigger. `(CoachDashboard.tsx · commit f5024fb)`
+- **Ghost button targets corrected** — Notes button → `'activity'` · Visits button → `'visits'` · Briefing button → `'activity'` (briefing tab removed). `(CoachDashboard.tsx · commit f5024fb)`
+- **Merge conflict markers cleared** — Leftover `<<<<<<<` / `=======` / `>>>>>>>` markers removed from `CoachDashboard.tsx` after a botched merge. `(commit e316855, f5024fb)`
+
+### db
+- No schema changes this sprint
+
+### Notes
+- No new npm packages
+- Zero TypeScript errors
+
+---
+
+## [2026-05-25] — Sprint 12: Coach Dashboard UX Overhaul
+
+### feat
+- **Sheet → Dialog conversion (all 4 coach sheets)** — `VisitSheet`, `CoachNoteSheet`, `VisitLogSheet`, `VisitBriefingSheet` converted from `<Sheet side="right">` (slides from the right edge) to `<Dialog>` (centered modal overlay). `max-w-md` for simple forms, `max-w-lg` for content-heavy dialogs. Import changed from `Sheet / SheetContent / SheetHeader / SheetTitle` to `Dialog / DialogContent / DialogHeader / DialogTitle` from `@/components/ui/dialog`. Fixes the "opening on the right hand side" UX complaint on wide monitors. `(VisitSheet.tsx · CoachNoteSheet.tsx · VisitLogSheet.tsx · VisitBriefingSheet.tsx)`
+- **Visit negotiation (dealer side)** — Dealer can Accept, Decline, or Counter-propose visit dates from the dashboard banner. Counter-propose opens a date picker inline. Coach receives a notification badge when dealer responds. Confirmed visits sync status to the OEM read-only view. `(Dashboard.tsx · VisitSheet.tsx)`
+- **Briefing hub coherence** — All four coach dialogs (Notes, Calendar, History, Briefing) cross-reference each other via navigation links. Briefing tab reframed as a read-only intelligence hub summarising all interaction history, rather than a standalone form. `(VisitBriefingSheet.tsx · CoachDashboard.tsx)`
+
+### fix
+- **Field Notes removed from CoachDashboard main view** — Entire Field Notes section (section heading, note list, "+ New Note" row) removed from the main `CoachDashboard.tsx` page. Notes remain accessible via the dealer panel's Coach Notes tab. Removes the redundant bottom section that duplicated panel-level data. `(CoachDashboard.tsx · commit 5c7f28d)`
+- **Dealer card score ring prominence** — `ScoreGauge` ring resized for visual hierarchy; score number updated to `.text-metric-lg .numeric` class for better readability at card size. `(CoachDashboard.tsx)`
+- **BriefingTab layout rebuilt** — Replaced the vertical data-dump layout with card-based sections (department health summary, upcoming visit, top 3 actions). Structural predecessor to the full-width two-column redesign in Sprint 13. `(DealerPanel.tsx · commit 832e718)`
+- **Tab strip padding increased** — Pill tab horizontal padding increased to `px-4 py-1.5` for touch-target compliance (minimum 44px hit area). `(commit c29cebe)`
+
+### db
+- No schema changes this sprint
+
+### Notes
+- Zero new npm packages
+- Lovable-led UI sprint; Claude Code owned: visit negotiation DB/logic
+- Full-width DealerPanel command centre deferred to Sprint 13 (scoped separately)
+
+---
+
 ## [2026-05-19] — Security Audit + Benchmark Methodology (#50)
 
 ### security

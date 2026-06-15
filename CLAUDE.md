@@ -342,6 +342,12 @@ Creating a high-quality MCP server involves four main phases:
 - **Invite team members**: `src/components/InviteTeamMembers.tsx` — dealer team invites (Account → Team tab)
 - **Invite coach**: `src/components/InviteCoach.tsx` — coach invites (Account → Team tab, below InviteTeamMembers)
 - **Protected route**: `src/components/ProtectedRoute.tsx` — supports `requiresActorType` prop
+- **Playground catalog**: `src/pages/Playground.tsx` — live at `/app/playground`, lists all calculators (1 live, 11 "Coming Soon")
+- **Reverse Sales Funnel Calculator**: `src/pages/ReverseSalesFunnelPage.tsx` — live at `/app/playground/reverse-sales-funnel`
+- **Playground calculator shell**: `src/components/playground/PlaygroundCalculatorShell.tsx` — shared layout for all Playground tools
+- **Playground calculator logic**: `src/lib/playgroundCalculators.ts`
+- **Playground KPI mappings**: `src/data/playgroundKpiMappings.ts` — maps calculator input fields to `kpiKey`s for prefill
+- **Playground prefill hook**: `src/hooks/usePlaygroundPrefill.ts` — fetches latest KPI values for mapped fields
 
 ## Role Architecture (implemented as of 29 Apr 2026)
 
@@ -490,12 +496,13 @@ OEM admins manage their network at `/app/oem-settings` (Network Settings in side
 - `DialogContent` without `DialogTitle`: multiple dialogs missing accessible title — triggers React accessibility warnings in dev but does not break functionality.
 - `useOnboarding` RLS false negatives: RLS timing can make a valid `active_dealership_id` appear inaccessible on first load. The hook now logs a warning and preserves the stored value instead of nulling it — but the root cause (RLS propagation delay) is not fixed.
 
-## Current Tracker Status (as of 1 May 2026)
-- Total items: 62 (58 original + 4 new: #55 coach invite, #56 OEM activation, #57 OEM RLS, #58 Results OEM context)
-- Done: ~49 (79%)
+## Current Tracker Status (as of 15 June 2026)
+- Total items: 63 (62 from 1 May 2026 + #84 Playground KPI seeding)
+- Done: ~50 (79%)
 - Pending/Partial: ~13 (21%)
 - **Completed (April–May 2026 sessions)**: #01 role architecture, #05 network tables + RLS, #31 score decomposition, #35 30/60/90 roadmap, #38 OEM dashboard + settings, #39 coach dashboard + action tracker, #41 OEM peer rank, #45 confidence variance warning, #47 dashboard empty state/onboarding, #55 coach invite flow, #56 OEM self-service activation, #57 OEM cross-org RLS + lookup functions, signal mapping refactor (question-driven architecture), 11 KPI-proxy questions added (61 total)
-- **Remaining priorities (Claude Code)**: #58 Results page OEM "viewing as dealer" context, #36 delta scoring (needs DB design), #12 context intake questionnaire, coach assignment management UI, action_audit_log client call fix, ActionSheet PATCH body serialisation fix, DialogContent accessibility titles
+- **Completed (June 2026 session)**: #84 Playground — Reverse Sales Funnel Calculator (`/app/playground`), `PlaygroundCalculatorShell` reusable shell, KPI-seeded pre-fill (`usePlaygroundPrefill` + `PLAYGROUND_KPI_MAPPINGS`), `kpi_benchmark_thresholds` schema scaffold, design-language restyle (commits `8f8f408`, `2243f40`, `671a20d`, `0ed73c7`)
+- **Remaining priorities (Claude Code)**: #58 Results page OEM "viewing as dealer" context, #36 delta scoring (needs DB design), #12 context intake questionnaire, coach assignment management UI, action_audit_log client call fix, ActionSheet PATCH body serialisation fix, DialogContent accessibility titles, remaining 11 Playground calculators
 - **Remaining priorities (Lovable)**: #42 neutral option tiles (anchoring bias), #44 scrollable single-page results, #48 score trajectory card (blocked on #36), #14 modular assessment
 
 ## Improvement Tracker File

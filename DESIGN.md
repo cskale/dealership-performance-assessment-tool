@@ -1,6 +1,6 @@
 # DESIGN.md — Dealer Diagnostic Platform
 ## Visual Language & Component Specification
-### Version 4.0 · 8 May 2026 · Reference this file in every Lovable prompt
+### Version 4.1 · 2 June 2026 · Reference this file in every Lovable prompt
 
 > **v4 changes (May 2026):** 18 new sections added (§17–§34): display typography & OpenType features, surface hierarchy, permitted gradient model, background texture, custom icon language & maturity marks, score ring instrument spec, premium motion choreography, precision header pattern, number formatting, skeleton states, actor-context banner, tier badge system, benchmark corridor upgrade, data density modes, focus ring & accessibility, PDF/print spec, micro-copy tone rules, responsive breakpoints. Canonical score threshold rule added to §2.3. Seven new anti-patterns added to §15. See §16 for full change log.
 >
@@ -376,6 +376,94 @@ Header row/col: text-label uppercase bg-muted/50
 Row labels: department abbreviation in dept colour (chart context only — acceptable here)
 ```
 
+### 5.11 Full-Width Command Centre Modal
+
+The canonical pattern for coach–dealer deep-dive views (DealerPanel). Replaces narrow dialog (<800px) with a viewport-filling command centre.
+
+**Container:**
+```
+Dialog: w-[95vw] max-w-7xl h-[90vh] flex flex-col gap-0 p-0 overflow-hidden
+```
+Centered in viewport (default Dialog behaviour). Header and tab strip do NOT scroll. Body scrolls independently.
+
+**Dark hero header (full width, non-scrolling):**
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  bg-[#0b1f3a] text-white px-6 py-5                              [X close]   │
+│                                                                              │
+│  Dealer Name                              📍 Location                        │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  OVERALL SCORE  │  ACTIONS STATUS    │  NEXT VISIT        │  CRITICAL GAPS  │
+│  47             │  2  Pending        │  21 May 2026       │  1              │
+│  ████░░░        │  1  In Progress    │  [Proposed]        │  dept(s) below  │
+│  [Developing]   │  5  Completed      │  Schedule →        │  benchmark      │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+Hero anatomy:
+- Dealer name row: `text-lg font-semibold text-white` + `MapPin` icon + location text `text-white/70`
+- 4-column metric grid: `grid grid-cols-4 gap-0` with `border-r border-white/10` column separators
+- Column labels: `text-[10px] uppercase tracking-[0.1em] text-white/50`
+- Primary metric: `text-5xl font-extrabold` (score) or `text-3xl font-bold` (counts)
+- Supporting metrics: `text-sm text-white/70` below the primary metric
+- Progress bar: `h-[5px] rounded-full bg-white/10` track with brand-coloured fill
+- Maturity badge: `bg-[rgba(band-color)]/20 text-white text-xs px-2 py-0.5 rounded-full inline-flex`
+- Close button: `absolute right-4 top-4 text-white/70 hover:text-white`
+
+**Two-column body layout:**
+```
+┌──────────────────────────────────────────┬─────────────────┐
+│ LEFT COLUMN — flex-1 min-w-0             │ RIGHT — w-80    │
+│ overflow-y-auto border-r border-border   │ overflow-y-auto  │
+│                                          │ p-4 space-y-4   │
+│  [Top Focus Actions — above tab strip]   │ DeptHealthCard  │
+│  ─────────────────────────────────────   │ UpcomingVisit   │
+│  [Tab strip: Activity | Visits | Notes]  │ InsightCard*    │
+│  [Scrollable tab content]                │                 │
+└──────────────────────────────────────────┴─────────────────┘
+* InsightCard: conditional, shown when assessment >60 days old
+```
+
+Below `md` breakpoint: right sidebar stacks beneath left column.
+
+**Sidebar card hierarchy:**
+- All sidebar cards use Surface 1 (white + shadow-card, rounded-xl border border-border)
+- InsightCard is the exception: dark surface `bg-[#0b1f3a]` with a `[INSIGHT]` badge — surface 2 treatment on a dark background
+
+**Rules:**
+- Never use `max-w-2xl` or narrower for this pattern — the command centre requires width to convey authority
+- Hero background must be `bg-[#0b1f3a]` (the canonical midnight token) — do not use generic `bg-slate-900` or `bg-gray-900`
+- All four metric columns must be present — never reduce to 3
+
+### 5.12 Pill-Style Tab Strip
+
+Used as the tab navigation inside the command centre modal. Also applicable to any modal/dialog that contains tabbed content.
+
+**Container:**
+```
+bg-background border-b border-border px-6 py-2 flex items-center gap-1
+```
+
+**Tab item states:**
+```
+Active:   bg-white/10 text-white rounded-full px-4 py-1.5 text-sm font-medium
+          (inside dark hero) — or —
+          bg-brand-100 text-brand-700 rounded-full px-4 py-1.5 text-sm font-medium
+          (on light background)
+
+Inactive: text-white/50 hover:text-white/80 px-4 py-1.5 text-sm
+          (inside dark hero) — or —
+          text-muted-foreground hover:text-foreground px-4 py-1.5 text-sm
+          (on light background)
+```
+
+**Rules:**
+- Pill shape is `rounded-full` — not `rounded-md` (tabs ≠ badges)
+- Minimum touch target: `px-4 py-1.5` (≥44px total height)
+- Active state changes background, not just border or text colour alone — must be visually unambiguous
+- No underline indicator on pill tabs — the filled pill IS the indicator
+- Do NOT use default shadcn/ui `Tabs` component styling for this pattern — `Tabs` uses the underline indicator model
+
 ---
 
 ## 6. CHART & DATA VIZ SPECIFICATIONS
@@ -613,7 +701,7 @@ Never: "Poor", "Fair", "Good", "Excellent", "Very Good"
 Use this template for every Lovable prompt:
 
 ```
-DESIGN SYSTEM: Follow DESIGN.md v3 exactly.
+DESIGN SYSTEM: Follow DESIGN.md v4.1 exactly.
 - Font: Inter only
 - Colours: Use CSS variables (--brand-500, --neutral-900, etc.), not hex values
 - No new colour tokens, no gradients unless specified in DESIGN.md
@@ -669,6 +757,15 @@ CONSTRAINTS:
 ---
 
 ## 16. CHANGE LOG
+
+### v4.1 — 2 June 2026
+
+**New component specifications:**
+
+- **§5.11 Full-Width Command Centre Modal** — Canonical pattern for coach–dealer deep-dive views (`DealerPanel`). Spec covers: container dimensions (`w-[95vw] max-w-7xl h-[90vh]`), dark hero header anatomy (4-column metric grid, `bg-[#0b1f3a]`, label/metric/progress/badge typography rules), two-column body layout (left flex-1 + right `w-80` sidebar), sidebar card hierarchy (Surface 1 for data cards, dark surface for InsightCard), responsive collapse rule at `md` breakpoint.
+- **§5.12 Pill-Style Tab Strip** — Canonical tab navigation for modal dialogs with tabbed content. Active/inactive state spec for dark-hero and light-background contexts; touch-target minimum; `rounded-full` shape rule; anti-pattern note against using default shadcn/ui `Tabs` underline model.
+
+**Version header:** v3 reference in §14 Lovable Prompt Template updated to v4.1.
 
 ### v4.0 — 8 May 2026
 
@@ -1819,4 +1916,32 @@ The collapse toggle is a `24×24px` circular button (`rounded-full bg-white/10`)
 
 ---
 
-*Last updated: 9 May 2026. Update this file before any major UI sprint.*
+## 38. PLAYGROUND CALCULATOR SHELL
+
+`PlaygroundCalculatorShell.tsx` (`src/components/playground/`) is the shared layout for every Playground analytical tool. New calculators must use this shell rather than building bespoke page layouts — it keeps the catalog and all deep-dive pages visually consistent.
+
+### Structure
+
+| Region | Classes / pattern |
+|---|---|
+| Page wrapper | `px-6 py-8 max-w-7xl mx-auto` |
+| Breadcrumb | `flex items-center gap-1.5 text-xs text-muted-foreground mb-6` — `ChevronLeft` + "Playground" link (`hover:text-foreground`), `ChevronRight` separator, current tool name in `text-foreground` |
+| Header card | `bg-white rounded-xl border border-[#DFE1E6] shadow-card mb-6 px-5 py-4` — icon chip `rounded-md bg-[#1D7AFC]/10 text-[#1D7AFC] p-2`, category eyebrow `text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground`, title `text-[15px] font-bold text-[#172B4D]`, version tag `text-[10px] text-muted-foreground border border-[#DFE1E6] rounded px-1.5 py-0.5`, scenario label `text-xs text-muted-foreground`, description `text-xs text-muted-foreground mt-3 max-w-3xl` |
+| Header actions | shadcn `Button` — "Documentation" (ghost, links to `/app/knowledge/kpi/:kpiKey`, only if `documentationKpiKey` set), "Save Model" (outline, shows "coming soon" toast), "Recalculate" (default) |
+| KPI summary strip | `bg-white rounded-xl border border-[#DFE1E6] shadow-card mb-6`, `grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#DFE1E6]`; each cell `px-5 py-4` with eyebrow label + value `text-2xl font-bold text-[#172B4D]` (or `text-[#1D7AFC]` when `emphasis: true`) |
+| Main grid | `grid gap-6 lg:grid-cols-2 mb-6` — `leftCard` / `rightCard` slots, each a standard `bg-white rounded-xl border border-[#DFE1E6] shadow-card` panel |
+| Bottom stats row (optional) | `bg-white rounded-xl border border-[#DFE1E6] shadow-card`, `grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[#DFE1E6]`, eyebrow label + `text-lg font-bold text-[#172B4D]` value |
+
+### Catalog page (`Playground.tsx`, `/app/playground`)
+
+- Header: eyebrow "Playground", `text-[20px] font-bold text-[#172B4D]` title "Precision Playground", `text-sm text-muted-foreground max-w-2xl` subtitle, live/planned count pill (`bg-white border border-[#DFE1E6] rounded-full px-3 py-1` with a `bg-[#1D7AFC]` dot)
+- Categories rendered as sections with eyebrow title + description, then `grid gap-4 sm:grid-cols-2 lg:grid-cols-3` of calculator cards
+- Calculator card: `bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5`; live cards add `hover:border-[#1D7AFC]/40 hover:shadow-elevated cursor-pointer` and an "Open Calculator →" link in `text-[#1D7AFC]`; unbuilt cards render `opacity-60 cursor-not-allowed` with a "Coming Soon" `Badge`
+
+### KPI pre-fill chip
+
+When a calculator field is mapped in `PLAYGROUND_KPI_MAPPINGS` and a value exists in the dealer's latest assessment, the field renders pre-filled with a dismissible chip: "Pre-filled from your assessment ({month year}) — editable" (`playground.prefillChip`, EN+DE). Edits are not written back to `assessment_kpi_values`.
+
+---
+
+*Last updated: 15 June 2026. Update this file before any major UI sprint.*

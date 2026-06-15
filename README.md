@@ -10,7 +10,7 @@ Dealers complete a structured diagnostic assessment across five departments. The
 
 ---
 
-## Current State (May 2026)
+## Current State (June 2026)
 
 ### Assessment Engine
 - **61-question assessment** across 5 departments: New Vehicle Sales (NVS), Used Vehicle Sales (UVS), Service (SVC), Parts (PTS), Financial Operations (FIN)
@@ -53,6 +53,12 @@ Single unified section replacing separate Resource Hub and KPI Encyclopedia page
 - **Recommended** — score-driven: `mapSignalsToResources()` classifies department scores into CRITICAL_GAP / HIGH_PRIORITY / GROWTH_OPPORTUNITY, fetches Supabase resources matching those department topics, groups cards by department with signal badge. Learning Paths (courses) shown below gap cards with `user_learning_progress` progress bars.
 - **KPI Encyclopedia** — searchable grid of all 111 KPIs with department dropdown filter (all departments, sentence-cased). Uniform blue left border; no score overlay — equal for all users. Clicking a KPI opens the `KPIExplorer` dialog at `/app/knowledge/kpi/:kpiKey`; ESC/X navigates back to the tab.
 - **Downloads** — filterable grid (article / template / case_study). Pill filters for type + sort. Recommended Downloads strip when assessment gaps exist.
+
+### Playground (`/app/playground`)
+- **Precision Playground catalog** — 12 analytical calculators across Sales Optimization, Marketing Intelligence, and Operational Models; 1 live, 11 "Coming Soon"
+- **Reverse Sales Funnel Calculator** (`/app/playground/reverse-sales-funnel`) — works backward from a unit-sales target to required leads, appointments, and showroom visits, on a shared `PlaygroundCalculatorShell` layout
+- **KPI-seeded pre-fill** — inputs pre-fill from the dealer's most recent assessment via `usePlaygroundPrefill` + `PLAYGROUND_KPI_MAPPINGS`, shown as a dismissible "Pre-filled from your assessment ({month year}) — editable" chip (EN+DE); edits don't write back to the assessment
+- **`kpi_benchmark_thresholds`** table scaffolded (schema only, no seed data) for future benchmark-aware calculators
 
 ### Action Management
 - Kanban board (HTML5 DnD) with Open / In Progress / Completed columns; uniform blue priority dots
