@@ -1248,6 +1248,45 @@ export type Database = {
           },
         ]
       }
+      kpi_benchmark_thresholds: {
+        Row: {
+          critical_max: number | null
+          critical_min: number | null
+          healthy_max: number | null
+          healthy_min: number | null
+          kpi_key: string
+          segmentation_key: string
+          source: string | null
+          updated_at: string
+          warning_max: number | null
+          warning_min: number | null
+        }
+        Insert: {
+          critical_max?: number | null
+          critical_min?: number | null
+          healthy_max?: number | null
+          healthy_min?: number | null
+          kpi_key: string
+          segmentation_key: string
+          source?: string | null
+          updated_at?: string
+          warning_max?: number | null
+          warning_min?: number | null
+        }
+        Update: {
+          critical_max?: number | null
+          critical_min?: number | null
+          healthy_max?: number | null
+          healthy_min?: number | null
+          kpi_key?: string
+          segmentation_key?: string
+          source?: string | null
+          updated_at?: string
+          warning_max?: number | null
+          warning_min?: number | null
+        }
+        Relationships: []
+      }
       memberships: {
         Row: {
           created_at: string
