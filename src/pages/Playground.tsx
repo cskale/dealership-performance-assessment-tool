@@ -12,9 +12,9 @@ import {
   ShieldCheck,
   Clock,
   Sparkles,
+  ArrowRight,
   type LucideIcon,
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 interface CalculatorMeta {
@@ -147,24 +147,31 @@ const TOTAL_LIVE = CATEGORIES.reduce(
 
 export default function Playground() {
   return (
-    <div className="container mx-auto px-6 py-8 max-w-7xl">
-      <header className="mb-10">
-        <h1 className="font-serif text-3xl text-foreground">Precision Playground</h1>
-        <p className="text-muted-foreground mt-2 text-base max-w-2xl">
+    <div className="px-6 py-8 max-w-7xl mx-auto">
+      <header className="mb-8">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-2">
+          Playground
+        </p>
+        <h1 className="text-[20px] font-bold text-[#172B4D] mb-1">Precision Playground</h1>
+        <p className="text-sm text-muted-foreground max-w-2xl">
           High-fidelity analytical instruments for strategic scenario modeling.
         </p>
-        <div className="mt-4 inline-flex items-center gap-2 text-xs font-mono text-muted-foreground border rounded-full px-3 py-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
-          {TOTAL_LIVE} live · {TOTAL_PLANNED - TOTAL_LIVE} planned
+        <div className="mt-3 inline-flex items-center gap-2 text-xs text-muted-foreground bg-white border border-[#DFE1E6] rounded-full px-3 py-1">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#1D7AFC]" />
+          <span className="font-medium text-[#172B4D]">{TOTAL_LIVE}</span> live
+          <span className="text-[#DFE1E6]">·</span>
+          <span className="font-medium text-[#172B4D]">{TOTAL_PLANNED - TOTAL_LIVE}</span> planned
         </div>
       </header>
 
-      <div className="space-y-10">
+      <div className="space-y-8">
         {CATEGORIES.map((category) => (
           <section key={category.title}>
-            <div className="mb-4">
-              <h2 className="font-serif text-xl text-foreground">{category.title}</h2>
-              <p className="text-sm text-muted-foreground mt-0.5">{category.description}</p>
+            <div className="mb-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+                {category.title}
+              </p>
+              <p className="text-xs text-muted-foreground">{category.description}</p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {category.items.map((item) => (
@@ -182,43 +189,37 @@ function CalculatorCard({ item }: { item: CalculatorMeta }) {
   const Icon = item.icon;
 
   const inner = (
-    <Card
-      className={
+    <div
+      className={[
+        'h-full bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5 flex flex-col transition-all',
         item.live
-          ? 'h-full transition-all hover:border-brand-500/50 hover:shadow-md cursor-pointer'
-          : 'h-full opacity-60 cursor-not-allowed'
-      }
+          ? 'hover:border-[#1D7AFC]/40 hover:shadow-elevated cursor-pointer'
+          : 'opacity-60 cursor-not-allowed',
+      ].join(' ')}
     >
-      <CardContent className="p-5 flex flex-col h-full">
-        <div className="flex items-start justify-between mb-3">
-          <div
-            className={`rounded-md p-2 ${
-              item.live
-                ? 'bg-brand-500/10 text-brand-600 dark:text-brand-300'
-                : 'bg-muted text-muted-foreground'
-            }`}
-          >
-            <Icon className="h-4 w-4" />
-          </div>
-          {!item.live && (
-            <Badge variant="secondary" className="text-[10px] uppercase tracking-wider">
-              Coming Soon
-            </Badge>
-          )}
+      <div className="flex items-start justify-between mb-3">
+        <div
+          className={[
+            'rounded-md p-2',
+            item.live ? 'bg-[#1D7AFC]/10 text-[#1D7AFC]' : 'bg-muted text-muted-foreground',
+          ].join(' ')}
+        >
+          <Icon className="h-4 w-4" />
         </div>
-        <h3 className="font-serif text-base text-foreground leading-snug mb-1.5">
-          {item.name}
-        </h3>
-        <p className="text-xs text-muted-foreground leading-relaxed flex-1">
-          {item.description}
-        </p>
-        {item.live && (
-          <div className="mt-4 text-xs font-medium text-brand-600 dark:text-brand-300">
-            Open Calculator →
-          </div>
+        {!item.live && (
+          <Badge variant="secondary" className="text-[10px] uppercase tracking-wider">
+            Coming Soon
+          </Badge>
         )}
-      </CardContent>
-    </Card>
+      </div>
+      <h3 className="text-[13px] font-bold text-[#172B4D] leading-snug mb-1.5">{item.name}</h3>
+      <p className="text-xs text-muted-foreground leading-relaxed flex-1">{item.description}</p>
+      {item.live && (
+        <div className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#1D7AFC]">
+          Open Calculator <ArrowRight className="h-3 w-3" />
+        </div>
+      )}
+    </div>
   );
 
   if (item.live && item.href) {

@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, FileText, LucideIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 
@@ -42,89 +42,83 @@ export function PlaygroundCalculatorShell({
   bottomStats,
 }: PlaygroundCalculatorShellProps) {
   return (
-    <div className="container mx-auto px-6 py-8 max-w-7xl">
+    <div className="px-6 py-8 max-w-7xl mx-auto">
       {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1.5 text-sm text-muted-foreground">
-        <Link to="/app/playground" className="hover:text-foreground transition-colors">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-muted-foreground mb-6">
+        <Link to="/app/playground" className="hover:text-foreground flex items-center gap-1">
+          <ChevronLeft className="w-3 h-3" />
           Playground
         </Link>
-        <ChevronRight className="h-3.5 w-3.5" />
+        <ChevronRight className="w-3 h-3" />
         <span className="text-foreground">{breadcrumbLabel}</span>
       </nav>
 
-      {/* Header bar with left accent */}
-      <div className="relative rounded-lg border bg-card mb-6 overflow-hidden">
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-500" />
-        <div className="flex items-start justify-between gap-4 px-6 py-4 pl-7">
-          <div className="flex items-start gap-3">
-            <div className="rounded-md bg-brand-500/10 text-brand-600 dark:text-brand-300 p-2 mt-0.5">
+      {/* Header */}
+      <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card mb-6 px-5 py-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3 min-w-0">
+            <div className="rounded-md bg-[#1D7AFC]/10 text-[#1D7AFC] p-2 mt-0.5 shrink-0">
               <Icon className="h-4 w-4" />
             </div>
-            <div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+                {category}
+              </p>
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="font-serif text-xl text-foreground">{title}</h1>
-                <span className="font-mono text-xs text-muted-foreground border rounded px-1.5 py-0.5">
+                <h1 className="text-[15px] font-bold text-[#172B4D]">{title}</h1>
+                <span className="text-[10px] text-muted-foreground border border-[#DFE1E6] rounded px-1.5 py-0.5">
                   {versionTag}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                <span className="uppercase tracking-wide">Scenario:</span>{' '}
-                <span className="text-foreground">{scenario}</span>
+              <p className="text-xs text-muted-foreground mt-1">
+                Scenario: <span className="text-foreground">{scenario}</span>
               </p>
             </div>
           </div>
-          {documentationKpiKey && (
-            <Link
-              to={`/app/knowledge/kpi/${documentationKpiKey}`}
-              className="inline-flex items-center gap-1.5 text-sm text-brand-600 dark:text-brand-300 hover:underline whitespace-nowrap"
+          <div className="flex items-center gap-2 shrink-0">
+            {documentationKpiKey && (
+              <Button asChild variant="ghost" size="sm">
+                <Link to={`/app/knowledge/kpi/${documentationKpiKey}`}>
+                  <FileText className="h-3.5 w-3.5 mr-1.5" />
+                  Documentation
+                </Link>
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                toast({
+                  title: 'Scenario saving coming soon',
+                  description: 'Persistent scenarios will be available in a future release.',
+                })
+              }
             >
-              <FileText className="h-3.5 w-3.5" />
-              Documentation
-            </Link>
-          )}
-        </div>
-      </div>
-
-      {/* Intro row */}
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
-        <div className="max-w-2xl">
-          <div className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-600 dark:text-brand-300 mb-1.5">
-            {category}
+              Save Model
+            </Button>
+            <Button size="sm" onClick={onRecalculate}>
+              Recalculate
+            </Button>
           </div>
-          <p className="text-sm text-muted-foreground">{description}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              toast({
-                title: 'Scenario saving coming soon',
-                description: 'Persistent scenarios will be available in a future release.',
-              })
-            }
-          >
-            Save Model
-          </Button>
-          <Button size="sm" onClick={onRecalculate}>
-            Recalculate
-          </Button>
-        </div>
+        {description && (
+          <p className="text-xs text-muted-foreground mt-3 max-w-3xl">{description}</p>
+        )}
       </div>
 
       {/* KPI summary strip */}
-      <div className="rounded-lg border bg-card mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x">
+      <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#DFE1E6]">
           {kpiStrip.map((stat, i) => (
-            <div key={i} className="px-6 py-5">
-              <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground mb-1.5">
+            <div key={i} className="px-5 py-4">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-2">
                 {stat.label}
-              </div>
+              </p>
               <div
                 className={
                   stat.emphasis
-                    ? 'font-serif text-3xl text-brand-600 dark:text-brand-300'
-                    : 'font-mono text-2xl text-foreground'
+                    ? 'text-2xl font-bold text-[#1D7AFC]'
+                    : 'text-2xl font-bold text-[#172B4D]'
                 }
               >
                 {stat.value}
@@ -142,14 +136,14 @@ export function PlaygroundCalculatorShell({
 
       {/* Bottom stats */}
       {bottomStats && bottomStats.length > 0 && (
-        <div className="rounded-lg border bg-card">
-          <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x">
+        <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card">
+          <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[#DFE1E6]">
             {bottomStats.map((stat, i) => (
-              <div key={i} className="px-6 py-4">
-                <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground mb-1">
+              <div key={i} className="px-5 py-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1.5">
                   {stat.label}
-                </div>
-                <div className="font-mono text-xl text-foreground">{stat.value}</div>
+                </p>
+                <div className="text-lg font-bold text-[#172B4D]">{stat.value}</div>
               </div>
             ))}
           </div>
