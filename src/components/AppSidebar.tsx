@@ -9,12 +9,14 @@ import {
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 
 export function AppSidebar() {
   const { user, signOut } = useAuth();
   const { userMemberships, currentOrganization } = useMultiTenant();
   const { actorType } = useActiveRole();
+  const { t } = useLanguage();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -56,33 +58,33 @@ export function AppSidebar() {
 
   const sections = [
     {
-      label: 'Overview',
+      label: t('nav.overview'),
       items: [
-        ...(actorType !== 'coach' && actorType !== 'oem' ? [{ path: '/app/dashboard', label: 'Dashboard', icon: BarChart3 }] : []),
+        ...(actorType !== 'coach' && actorType !== 'oem' ? [{ path: '/app/dashboard', label: t('nav.dashboard'), icon: BarChart3 }] : []),
         ...(actorType === 'oem' ? [
-          { path: '/app/oem-dashboard', label: 'OEM Dashboard',    icon: Globe },
-          { path: '/app/oem-settings',  label: 'Network Settings', icon: Settings },
+          { path: '/app/oem-dashboard', label: t('nav.oemDashboard'),    icon: Globe },
+          { path: '/app/oem-settings',  label: t('nav.networkSettings'), icon: Settings },
         ] : []),
         ...(actorType === 'coach' ? [
-          { path: '/app/coach-dashboard', label: 'Coach Dashboard', icon: Users },
-          { path: '/app/coach-actions', label: 'Action Tracker', icon: CheckSquare },
+          { path: '/app/coach-dashboard', label: t('nav.coachDashboard'), icon: Users },
+          { path: '/app/coach-actions', label: t('nav.actionTracker'), icon: CheckSquare },
         ] : []),
       ],
     },
     ...(actorType !== 'coach' && actorType !== 'oem' ? [{
-      label: 'Diagnostic',
+      label: t('nav.diagnostic'),
       items: [
-        { path: '/app/assessment', label: 'New Assessment', icon: Plus },
-        { path: '/app/results', label: 'History', icon: ClipboardList },
-        { path: '/actions', label: 'Action Plans', icon: CheckSquare },
+        { path: '/app/assessment', label: t('nav.newAssessment'), icon: Plus },
+        { path: '/app/results', label: t('nav.history'), icon: ClipboardList },
+        { path: '/actions', label: t('nav.actionPlans'), icon: CheckSquare },
       ],
     }] : []),
     {
-      label: 'Reference',
+      label: t('nav.reference'),
       items: [
-        { path: '/app/knowledge', label: 'Knowledge', icon: GraduationCap },
-        { path: '/app/playground', label: 'Playground', icon: Calculator },
-        { path: '/methodology', label: 'Methodology', icon: FileText },
+        { path: '/app/knowledge', label: t('nav.knowledge'), icon: GraduationCap },
+        { path: '/app/playground', label: t('nav.playground'), icon: Calculator },
+        { path: '/methodology', label: t('nav.methodology'), icon: FileText },
       ],
     },
   ];
