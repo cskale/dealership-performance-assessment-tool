@@ -377,37 +377,18 @@ export default function Assessment() {
           );
         })()}
 
-        <div className="flex gap-6 items-start">
-          <div
-            key={currentSection}
-            className="flex-1 min-w-0 animate-in fade-in slide-in-from-right-4 duration-200"
-          >
-            <CategoryAssessment
-              section={currentSectionData}
-              answers={answers}
-              onAnswer={handleAnswer}
-              kpiAnswers={kpiAnswers}
-              onKpiAnswer={handleKpiAnswer}
-              onContinue={nextSection}
-              canContinue={canContinue()}
-              isLastSection={currentSection === translatedSections.length - 1}
-            />
-          </div>
-          <AssessmentContextPanel
-            sections={translatedSections}
-            currentSection={currentSection}
+        <div key={currentSection} className="animate-in fade-in slide-in-from-right-4 duration-200">
+          <CategoryAssessment
+            section={currentSectionData}
             answers={answers}
-            onSelectSection={(idx) => !isCompleting && handleNavigateToSection(idx)}
-            disabled={isCompleting}
+            onAnswer={handleAnswer}
+            kpiAnswers={kpiAnswers}
+            onKpiAnswer={handleKpiAnswer}
+            onContinue={nextSection}
+            canContinue={canContinue()}
+            isLastSection={currentSection === translatedSections.length - 1}
           />
         </div>
-        <AssessmentContextDrawer
-          sections={translatedSections}
-          currentSection={currentSection}
-          answers={answers}
-          onSelectSection={(idx) => !isCompleting && handleNavigateToSection(idx)}
-          disabled={isCompleting}
-        />
       </div>
     </div>
   );
