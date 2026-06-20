@@ -8,6 +8,8 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useLanguage, Language } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useSessionManager } from '@/hooks/useSessionManager';
 import { useGDPR } from '@/hooks/useGDPR';
@@ -56,6 +58,7 @@ const Account = () => {
   const { exportUserData, deleteAccount, updateConsent, loading: gdprLoading } = useGDPR();
   const { organizations, currentOrganization, switchOrganization, userMemberships } = useMultiTenant();
   const { toast } = useToast();
+  const { language, setLanguage } = useLanguage();
   const navigate = useNavigate();
   
   const [profile, setProfile] = useState<Tables<'profiles'> | null>(null);
@@ -445,6 +448,21 @@ const Account = () => {
                 )}
               </div>
               <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">LANGUAGE</div>
+                  <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
+                    <SelectTrigger className="text-sm mt-1 w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="de">Deutsch</SelectItem>
+                      <SelectItem value="fr">Français</SelectItem>
+                      <SelectItem value="es">Español</SelectItem>
+                      <SelectItem value="it">Italiano</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">TIMEZONE</div>
                   {isEditingPreferences ? (
