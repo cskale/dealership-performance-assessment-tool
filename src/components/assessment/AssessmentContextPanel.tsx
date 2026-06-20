@@ -58,7 +58,7 @@ function PanelBody({ sections, currentSection, answers, onSelectSection, disable
           Current department
         </p>
         <h3 className="text-[15px] font-semibold text-[#0b1f3a] leading-tight">
-          {section?.name ?? "—"}
+          {section?.title ?? "—"}
         </h3>
         <p className="text-[12px] text-[#6e7e8a] mt-1 tabular-nums">
           Question {currentQ} of {scoredCount}
@@ -110,7 +110,7 @@ function PanelBody({ sections, currentSection, answers, onSelectSection, disable
                       <span className="text-[9px] font-semibold tabular-nums">{i + 1}</span>
                     )}
                   </span>
-                  <span className="truncate">{s.name}</span>
+                  <span className="truncate">{s.title}</span>
                 </button>
               </li>
             );
