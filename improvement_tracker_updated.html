@@ -69,6 +69,7 @@
   .s-done{background:var(--done-bg);color:var(--done);border-color:var(--done-border)}.s-done .status-dot{background:var(--done-dot)}
   .s-partial{background:var(--partial-bg);color:var(--partial);border-color:var(--partial-border)}.s-partial .status-dot{background:var(--partial-dot)}
   .s-open{background:var(--pending-bg);color:var(--pending);border-color:var(--pending-border)}.s-open .status-dot{background:var(--pending-dot)}
+  .s-deferred{background:#f3f4f6;color:#6b7280;border-color:#d1d5db}.s-deferred .status-dot{background:#9ca3af}
   .effort{font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;white-space:nowrap}
   .e-low{background:#dcfce7;color:#14532d}.e-med{background:#fef9c3;color:#713f12}.e-high{background:#fee2e2;color:#7f1d1d}.e-na{background:var(--bg);color:var(--text-muted)}
   .method-badge{display:inline-flex;align-items:center;font-size:11px;font-weight:500;padding:3px 8px;border-radius:6px;white-space:nowrap}
@@ -87,7 +88,7 @@
 <div class="header">
   <div class="header-eyebrow">Dealer Diagnostic Platform · Munich 2026</div>
   <div class="header-title">Master Improvement Tracker <span class="v2-badge">v3.0</span></div>
-  <div class="header-sub">77 items total · Updated 18 June 2026</div>
+  <div class="header-sub">77 items total · Updated 20 June 2026</div>
 </div>
 
 <div class="summary-bar">
@@ -96,6 +97,8 @@
   <div class="stat"><span class="stat-num amber" id="cnt-partial">–</span><span class="stat-label">In Progress</span></div>
   <div class="summary-divider"></div>
   <div class="stat"><span class="stat-num blue" id="cnt-open">–</span><span class="stat-label">Open</span></div>
+  <div class="summary-divider"></div>
+  <div class="stat"><span class="stat-num" id="cnt-deferred" style="color:#9ca3af">–</span><span class="stat-label">Deferred</span></div>
   <div class="summary-divider"></div>
   <div class="progress-wrap">
     <div class="progress-track">
@@ -246,25 +249,25 @@
 
 <div class="category">
 <div class="category-header"><span class="category-icon">◎</span><span class="category-title">In Progress (partially built)</span></div>
-<div class="item" data-status="partial"><div class="item-num">03</div><div class="item-body"><div class="item-title">GDPR technical controls</div><div class="item-desc">Done: data export, account deletion, consent. Missing: assessment audit trail UI, DPA legal template (#51), GDPR PDF notice on assessment start.</div></div><div><span class="status-badge s-partial"><span class="status-dot"></span>In Progress</span></div><div><span class="method-badge m-both">Both</span></div><div><span class="effort e-med">Medium</span></div></div>
-<div class="item" data-status="partial"><div class="item-num">15</div><div class="item-body"><div class="item-title">Additional question types (binary, numeric input)</div><div class="item-desc">Done: numeric inputs (€, %) — KpiQuestionInput component, assessment_kpi_values table, 22 DataQuestion entries. Missing: binary yes/no questions, conditional branching.</div></div><div><span class="status-badge s-partial"><span class="status-dot"></span>In Progress</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="effort e-med">Medium</span></div></div>
+<div class="item" data-status="deferred"><div class="item-num">03</div><div class="item-body"><div class="item-title">GDPR technical controls</div><div class="item-desc">Done: data export, account deletion, consent. Deferred: audit trail UI, DPA legal template (#51), PDF notice. Core GDPR controls in place — remaining items deferred to post-pilot.</div></div><div><span class="status-badge s-deferred"><span class="status-dot"></span>Deferred</span></div><div><span class="method-badge m-both">Both</span></div><div><span class="effort e-med">Medium</span></div></div>
+<div class="item" data-status="deferred"><div class="item-num">15</div><div class="item-body"><div class="item-title">Additional question types (binary, numeric input)</div><div class="item-desc">Done: numeric inputs (€, %) — KpiQuestionInput component, assessment_kpi_values table, 22 DataQuestion entries. Deferred: binary yes/no questions, conditional branching.</div></div><div><span class="status-badge s-deferred"><span class="status-dot"></span>Deferred</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="effort e-med">Medium</span></div></div>
 <div class="item" data-status="done"><div class="item-num">43</div><div class="item-body"><div class="item-title">Always-visible context panel</div><div class="item-desc">Closed — redundant. Top hero nav + progress bar already cover department navigation and completion progress. Right-column panel tested and reverted.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Closed</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="effort e-na">–</span></div></div>
 <div class="item" data-status="done"><div class="item-num">53</div><div class="item-body"><div class="item-title">i18n translations (EN + DE + FR + ES + IT complete)</div><div class="item-desc">Done: All five languages fully implemented — English, German, French, Spanish, Italian. Both LanguageContext (420+ keys each) and i18next JSON files translated. Language selector shows all 5 languages active.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-cc">Claude Code</span></div><div><span class="effort e-med">Medium</span></div></div>
 </div>
 
 <div class="category">
 <div class="category-header"><span class="category-icon">◇</span><span class="category-title">Open (not started)</span></div>
-<div class="item" data-status="open"><div class="item-num">12</div><div class="item-body"><div class="item-title">Context intake questionnaire (pre-assessment baseline)</div><div class="item-desc">Dealership size, headcount, DMS/CRM, GM tenure to be captured before performance questions.</div></div><div><span class="status-badge s-open"><span class="status-dot"></span>Open</span></div><div><span class="method-badge m-both">Both</span></div><div><span class="effort e-med">Medium</span></div></div>
+<div class="item" data-status="deferred"><div class="item-num">12</div><div class="item-body"><div class="item-title">Context intake questionnaire (pre-assessment baseline)</div><div class="item-desc">Dealership size, headcount, DMS/CRM, GM tenure to be captured before performance questions. Deferred to post-pilot.</div></div><div><span class="status-badge s-deferred"><span class="status-dot"></span>Deferred</span></div><div><span class="method-badge m-both">Both</span></div><div><span class="effort e-med">Medium</span></div></div>
 <div class="item" data-status="open"><div class="item-num">37</div><div class="item-body"><div class="item-title">White-label PDF template registry</div><div class="item-desc">Template registry per OEM tenant: logo, colour palette, cover copy, section order. Build post-pilot when OEM format is known.</div></div><div><span class="status-badge s-open"><span class="status-dot"></span>Open</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="effort e-high">High</span></div></div>
 <div class="item" data-status="open"><div class="item-num">44</div><div class="item-body"><div class="item-title">Scrollable single-page results (replace tab structure)</div><div class="item-desc">Replace equal-weight tabs with sticky ToC + anchor-linked scroll. Currently under design review.</div></div><div><span class="status-badge s-open"><span class="status-dot"></span>Open</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="effort e-high">High</span></div></div>
-<div class="item" data-status="open"><div class="item-num">51</div><div class="item-body"><div class="item-title">GDPR Data Processing Agreement template</div><div class="item-desc">Procurement blocker for European OEM contracts. Munich data protection lawyer required (~€2–4K). Legal task, not development.</div></div><div><span class="status-badge s-open"><span class="status-dot"></span>Open</span></div><div><span class="method-badge m-manual">Manual</span></div><div><span class="effort e-low">Low</span></div></div>
+<div class="item" data-status="deferred"><div class="item-num">51</div><div class="item-body"><div class="item-title">GDPR Data Processing Agreement template</div><div class="item-desc">Procurement blocker for European OEM contracts. Munich data protection lawyer required (~€2–4K). Legal task, not development. Deferred.</div></div><div><span class="status-badge s-deferred"><span class="status-dot"></span>Deferred</span></div><div><span class="method-badge m-manual">Manual</span></div><div><span class="effort e-low">Low</span></div></div>
 <div class="item" data-status="done"><div class="item-num">58</div><div class="item-body"><div class="item-title">Results page "viewing as dealer" mode for OEM</div><div class="item-desc">OEM banner "Viewing as OEM · Dealer Name · Tier" with back link. Full Results page renders read-only with scores, narrative, tabs.</div></div><div><span class="status-badge s-done"><span class="status-dot"></span>Done</span></div><div><span class="method-badge m-both">Both</span></div><div><span class="effort e-med">Medium</span></div></div>
 <div class="item" data-status="open"><div class="item-num">65</div><div class="item-body"><div class="item-title">Revenue opportunity calculator on Results</div><div class="item-desc">"If your Service score reaches benchmark: estimated additional gross €18,000/month." Score gap × volume × margin assumptions. Highest commercial conversion driver.</div><span class="dep-tag">depends: #25 benchmarks</span></div><div><span class="status-badge s-open"><span class="status-dot"></span>Open</span></div><div><span class="method-badge m-cc">Claude Code</span></div><div><span class="effort e-med">Medium</span></div></div>
-<div class="item" data-status="open"><div class="item-num">69</div><div class="item-body"><div class="item-title">Network health map (OEM geo / grid view)</div><div class="item-desc">Grid or geo map of all dealers in a network. Each cell/pin coloured by score. Click opens dealer scorecard.</div><span class="dep-tag">depends: #38 OEM dashboard</span></div><div><span class="status-badge s-open"><span class="status-dot"></span>Open</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="effort e-med">Medium</span></div></div>
-<div class="item" data-status="open"><div class="item-num">75</div><div class="item-body"><div class="item-title">Google Reviews monitoring alert</div><div class="item-desc">Daily cron compares Google rating vs 30-day rolling average. Drop ≥0.2 stars → alert + email.</div><span class="dep-tag">depends: #76 Google Reviews</span></div><div><span class="status-badge s-open"><span class="status-dot"></span>Open</span></div><div><span class="method-badge m-supa">Supabase + CC</span></div><div><span class="effort e-low">Low</span></div></div>
-<div class="item" data-status="open"><div class="item-num">76</div><div class="item-body"><div class="item-title">Google Reviews integration</div><div class="item-desc">Google Places API → google_reviews_snapshots table. Triangulation: weak CSI AND Google &lt;4.0 → escalate. "Voice of Customer" card on Results.</div></div><div><span class="status-badge s-open"><span class="status-dot"></span>Open</span></div><div><span class="method-badge m-supa">Supabase + CC</span></div><div><span class="effort e-med">Medium</span></div></div>
-<div class="item" data-status="open"><div class="item-num">82</div><div class="item-body"><div class="item-title">Sentiment analysis on coach/dealer notes</div><div class="item-desc">Keyword taxonomy → sentiment_tags on coach_notes + coach_visits. OEM network-level theme reports.</div><span class="dep-tag">depends: #77, #79</span></div><div><span class="status-badge s-open"><span class="status-dot"></span>Open</span></div><div><span class="method-badge m-cc">Claude Code</span></div><div><span class="effort e-med">Medium</span></div></div>
-<div class="item" data-status="open"><div class="item-num">83</div><div class="item-body"><div class="item-title">Action plan export to OEM reporting template</div><div class="item-desc">oem_export_templates table per OEM brand. Maps action fields to OEM column headers for xlsx. Build after first pilot.</div><span class="dep-tag">depends: #30 exports</span></div><div><span class="status-badge s-open"><span class="status-dot"></span>Open</span></div><div><span class="method-badge m-cc">Claude Code</span></div><div><span class="effort e-med">Medium</span></div></div>
+<div class="item" data-status="deferred"><div class="item-num">69</div><div class="item-body"><div class="item-title">Network health map (OEM geo / grid view)</div><div class="item-desc">Grid or geo map of all dealers in a network. Each cell/pin coloured by score. Deferred — OEM dashboard covers core needs.</div><span class="dep-tag">depends: #38 OEM dashboard</span></div><div><span class="status-badge s-deferred"><span class="status-dot"></span>Deferred</span></div><div><span class="method-badge m-lovable">Lovable</span></div><div><span class="effort e-med">Medium</span></div></div>
+<div class="item" data-status="deferred"><div class="item-num">75</div><div class="item-body"><div class="item-title">Google Reviews monitoring alert</div><div class="item-desc">Daily cron compares Google rating vs 30-day rolling average. Drop ≥0.2 stars → alert + email. Deferred — external API dependency, post-pilot.</div><span class="dep-tag">depends: #76 Google Reviews</span></div><div><span class="status-badge s-deferred"><span class="status-dot"></span>Deferred</span></div><div><span class="method-badge m-supa">Supabase + CC</span></div><div><span class="effort e-low">Low</span></div></div>
+<div class="item" data-status="deferred"><div class="item-num">76</div><div class="item-body"><div class="item-title">Google Reviews integration</div><div class="item-desc">Google Places API → google_reviews_snapshots table. Triangulation: weak CSI AND Google &lt;4.0 → escalate. Deferred — external API, post-pilot.</div></div><div><span class="status-badge s-deferred"><span class="status-dot"></span>Deferred</span></div><div><span class="method-badge m-supa">Supabase + CC</span></div><div><span class="effort e-med">Medium</span></div></div>
+<div class="item" data-status="deferred"><div class="item-num">82</div><div class="item-body"><div class="item-title">Sentiment analysis on coach/dealer notes</div><div class="item-desc">Keyword taxonomy → sentiment_tags on coach_notes + coach_visits. Deferred — needs coach note volume that doesn't exist yet.</div><span class="dep-tag">depends: #77, #79</span></div><div><span class="status-badge s-deferred"><span class="status-dot"></span>Deferred</span></div><div><span class="method-badge m-cc">Claude Code</span></div><div><span class="effort e-med">Medium</span></div></div>
+<div class="item" data-status="deferred"><div class="item-num">83</div><div class="item-body"><div class="item-title">Action plan export to OEM reporting template</div><div class="item-desc">oem_export_templates table per OEM brand. Maps action fields to OEM column headers for xlsx. Deferred — build when OEM specifies format.</div><span class="dep-tag">depends: #30 exports</span></div><div><span class="status-badge s-deferred"><span class="status-dot"></span>Deferred</span></div><div><span class="method-badge m-cc">Claude Code</span></div><div><span class="effort e-med">Medium</span></div></div>
 </div>
 
 </div><!-- end content -->
@@ -277,24 +280,26 @@
 <script>
 const items=document.querySelectorAll('.item');
 function updateStats(){
-  let done=0,partial=0,open=0;
+  let done=0,partial=0,open=0,deferred=0;
   items.forEach(i=>{
     const s=i.dataset.status;
     if(s==='done')done++;
     else if(s==='partial')partial++;
     else if(s==='open')open++;
+    else if(s==='deferred')deferred++;
   });
-  const total=done+partial+open;
+  const active=done+partial+open;
   document.getElementById('cnt-done').textContent=done;
   document.getElementById('cnt-partial').textContent=partial;
   document.getElementById('cnt-open').textContent=open;
-  document.getElementById('bar-done').style.width=(done/total*100)+'%';
-  document.getElementById('bar-partial').style.width=(partial/total*100)+'%';
-  document.getElementById('bar-open').style.width=(open/total*100)+'%';
-  const pct=Math.round(((done+partial*0.5)/total)*100);
+  document.getElementById('cnt-deferred').textContent=deferred;
+  document.getElementById('bar-done').style.width=(done/active*100)+'%';
+  document.getElementById('bar-partial').style.width=(partial/active*100)+'%';
+  document.getElementById('bar-open').style.width=(open/active*100)+'%';
+  const pct=Math.round(((done+partial*0.5)/active)*100);
   document.getElementById('pct-label').textContent=pct+'% complete';
-  const doneCount=document.querySelectorAll('.item[data-status="done"]').length;
-  const remainCount=total-doneCount;
+  const doneCount=done;
+  const remainCount=active-doneCount;
   document.getElementById('s-done-count').textContent=doneCount+' items';
   document.getElementById('s-remaining-count').textContent=remainCount+' items';
 }
@@ -307,6 +312,7 @@ function filterItems(filter,btn){
     if(filter==='all')show=true;
     else if(filter==='done')show=s==='done';
     else if(filter==='remaining')show=s==='partial'||s==='open';
+    else if(filter==='deferred')show=s==='deferred';
     i.classList.toggle('hidden',!show);
   });
 }
