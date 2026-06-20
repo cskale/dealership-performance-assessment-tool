@@ -5,7 +5,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { CategoryAssessment } from "@/components/assessment/CategoryAssessment";
 import { AssessmentHeroNav } from "@/components/assessment/AssessmentHeroNav";
-import { AssessmentContextPanel, AssessmentContextDrawer } from "@/components/assessment/AssessmentContextPanel";
 import { questionnaire, getTranslatedSection, isDataQuestion } from "@/data/questionnaire";
 import { useAssessmentData, OnboardingError } from "@/hooks/useAssessmentData";
 import { calculateAllSectionScores, calculateWeightedScore } from "@/lib/scoringEngine";
