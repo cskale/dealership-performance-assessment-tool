@@ -7,11 +7,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Apple, Facebook, Mail } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
   const { user, signIn, signUp, signInWithMagicLink, signInWithOAuth } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   if (user) {
     return <Navigate to="/" replace />;
@@ -39,6 +42,25 @@ const Auth = () => {
     const formData = new FormData(e.currentTarget);
     await signInWithMagicLink(formData.get('email') as string);
     setIsLoading(false);
+  };
+
+  const handleForgotPassword = async () => {
+    const emailInput = document.getElementById('signin-email') as HTMLInputElement;
+    const email = emailInput?.value?.trim();
+    if (!email) {
+      toast({ title: 'Enter your email first', description: 'Type your email in the field above, then click Forgot Password.', variant: 'destructive' });
+      return;
+    }
+    setIsLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    });
+    setIsLoading(false);
+    if (error) {
+      toast({ title: 'Reset failed', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Reset link sent', description: 'Check your inbox for the password reset link.' });
+    }
   };
 
   const handleOAuthSignIn = async (provider: 'google' | 'apple' | 'facebook') => {
@@ -126,6 +148,9 @@ const Auth = () => {
                   <Button type="submit" className="w-full h-11" disabled={isLoading}>
                     {isLoading ? "Signing In..." : "Sign In with Email"}
                   </Button>
+                  <button type="button" onClick={handleForgotPassword} disabled={isLoading} className="w-full text-sm text-muted-foreground hover:text-primary transition-colors">
+                    Forgot password?
+                  </button>
                 </form>
               </TabsContent>
               
