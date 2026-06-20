@@ -1,1 +1,106 @@
-{}
+{
+  "nav": {
+    "home": "Inicio",
+    "assessment": "Evaluación",
+    "results": "Resultados",
+    "actions": "Plan de acción",
+    "dashboard": "Panel",
+    "account": "Cuenta",
+    "signIn": "Iniciar sesión",
+    "oemDashboard": "Panel del fabricante",
+    "coachDashboard": "Panel del coach"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "loading": "Cargando...",
+    "generating": "Generando...",
+    "generate": "Generar acciones",
+    "loadMore": "Cargar más acciones",
+    "export": "Exportar",
+    "downloadPdf": "Descargar informe PDF",
+    "exportExcel": "Exportar a Excel",
+    "generatingPdf": "Generando PDF..."
+  },
+  "assessment": {
+    "title": "Evaluación del concesionario",
+    "complete": "Evaluación completada",
+    "nextSteps": "Estos son los próximos pasos",
+    "actionsReady": "acciones recomendadas listas para revisión",
+    "viewActionPlan": "Ver plan de acción",
+    "downloadReport": "Descargar informe"
+  },
+  "actions": {
+    "title": "Plan de acción",
+    "unassigned": "Sin asignar",
+    "noActions": "No se encontraron acciones",
+    "rateLimitWarning": "Por favor espere {{seconds}} segundos antes de generar de nuevo.",
+    "hourlyLimitReached": "Límite de generación alcanzado. Por favor espere antes de reintentar."
+  },
+  "benchmark": {
+    "indicativeLabel": "Referencia indicativa (75 %) ⓘ",
+    "tooltip": "Esta referencia representa un promedio indicativo basado en observaciones de redes europeas de distribución automotriz. No está validada estadísticamente. Para referencias específicas por marca, contacte con su responsable de programa del fabricante.",
+    "footnote": "* Referencia indicativa. Hay referencias segmentadas por nivel de marca y tipo de mercado disponibles en la configuración empresarial."
+  },
+  "oem": {
+    "title": "Visión general de la red",
+    "totalDealers": "Total de concesionarios",
+    "avgScore": "Puntuación media",
+    "highestScore": "Puntuación más alta",
+    "lowestScore": "Puntuación más baja",
+    "leaderboard": "Clasificación de concesionarios",
+    "rank": "Posición",
+    "dealerName": "Concesionario",
+    "latestScore": "Última puntuación",
+    "previousScore": "Puntuación anterior",
+    "trend": "Tendencia",
+    "benchmarkBand": "Banda",
+    "selectNetwork": "Seleccionar red",
+    "noNetworks": "Sin membresías de red",
+    "noAssessments": "Aún no hay evaluaciones",
+    "loadError": "No se pudieron cargar los datos"
+  },
+  "coach": {
+    "title": "Concesionarios asignados",
+    "sortByScore": "Por puntuación",
+    "sortByName": "Por nombre",
+    "filterAll": "Todos",
+    "filterCompleted": "Completados",
+    "filterInProgress": "En curso",
+    "scoreTrend": "Evolución de la puntuación",
+    "selectDealers": "Seleccionar concesionarios a comparar",
+    "noAssignments": "Sin concesionarios asignados",
+    "noAssessments": "No se encontraron evaluaciones",
+    "latestAssessment": "Última evaluación",
+    "status": "Estado"
+  },
+  "results": {
+    "kpiMatrix": {
+      "title": "Matriz de KPI por departamento",
+      "noData": "Sin datos de KPI disponibles",
+      "score": "Puntuación",
+      "legend": "Leyenda",
+      "aboveBenchmark": "Por encima de la referencia",
+      "atBenchmark": "En la referencia",
+      "belowBenchmark": "Por debajo de la referencia"
+    },
+    "causalChain": {
+      "title": "Análisis de causa raíz",
+      "noChains": "No se han detectado cadenas causales entre departamentos.",
+      "viewAll": "Ver todas las cadenas",
+      "showLess": "Mostrar menos",
+      "sharedCause": "Causa raíz compartida",
+      "rootCause": "Causa raíz"
+    },
+    "ceiling": {
+      "title": "Brechas de excelencia — Hacia el cuartil superior",
+      "noInsights": "Todos los departamentos están optimizados. No se han identificado oportunidades inmediatas.",
+      "viewAll": "Ver todos los análisis",
+      "showLess": "Mostrar menos",
+      "badge": "Oportunidad de optimización",
+      "currentScore": "Puntuación actual"
+    }
+  }
+}

@@ -1,1 +1,106 @@
-{}
+{
+  "nav": {
+    "home": "Home",
+    "assessment": "Valutazione",
+    "results": "Risultati",
+    "actions": "Piano d'azione",
+    "dashboard": "Dashboard",
+    "account": "Account",
+    "signIn": "Accedi",
+    "oemDashboard": "Dashboard costruttore",
+    "coachDashboard": "Dashboard coach"
+  },
+  "common": {
+    "save": "Salva",
+    "cancel": "Annulla",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "loading": "Caricamento...",
+    "generating": "Generazione in corso...",
+    "generate": "Genera azioni",
+    "loadMore": "Carica altre azioni",
+    "export": "Esporta",
+    "downloadPdf": "Scarica report PDF",
+    "exportExcel": "Esporta in Excel",
+    "generatingPdf": "Generazione PDF..."
+  },
+  "assessment": {
+    "title": "Valutazione concessionaria",
+    "complete": "Valutazione completata",
+    "nextSteps": "Ecco i prossimi passi",
+    "actionsReady": "azioni consigliate pronte per la revisione",
+    "viewActionPlan": "Visualizza piano d'azione",
+    "downloadReport": "Scarica report"
+  },
+  "actions": {
+    "title": "Piano d'azione",
+    "unassigned": "Non assegnato",
+    "noActions": "Nessuna azione trovata",
+    "rateLimitWarning": "Attendere {{seconds}} secondi prima di generare nuovamente.",
+    "hourlyLimitReached": "Limite di generazione raggiunto. Attendere prima di riprovare."
+  },
+  "benchmark": {
+    "indicativeLabel": "Benchmark indicativo (75%) ⓘ",
+    "tooltip": "Questo benchmark rappresenta una media indicativa basata sulle osservazioni delle reti europee di distribuzione automobilistica. Non è validato statisticamente. Per benchmark specifici per marca, contattare il responsabile del programma costruttore.",
+    "footnote": "* Benchmark indicativo. Benchmark segmentati per livello di marca e tipo di mercato disponibili nella configurazione enterprise."
+  },
+  "oem": {
+    "title": "Panoramica della rete",
+    "totalDealers": "Totale concessionarie",
+    "avgScore": "Punteggio medio",
+    "highestScore": "Punteggio più alto",
+    "lowestScore": "Punteggio più basso",
+    "leaderboard": "Classifica concessionarie",
+    "rank": "Posizione",
+    "dealerName": "Concessionaria",
+    "latestScore": "Ultimo punteggio",
+    "previousScore": "Punteggio precedente",
+    "trend": "Andamento",
+    "benchmarkBand": "Fascia",
+    "selectNetwork": "Seleziona rete",
+    "noNetworks": "Nessuna appartenenza alla rete",
+    "noAssessments": "Nessuna valutazione disponibile",
+    "loadError": "Impossibile caricare i dati"
+  },
+  "coach": {
+    "title": "Concessionarie assegnate",
+    "sortByScore": "Per punteggio",
+    "sortByName": "Per nome",
+    "filterAll": "Tutte",
+    "filterCompleted": "Completate",
+    "filterInProgress": "In corso",
+    "scoreTrend": "Andamento del punteggio",
+    "selectDealers": "Seleziona concessionarie da confrontare",
+    "noAssignments": "Nessuna concessionaria assegnata",
+    "noAssessments": "Nessuna valutazione trovata",
+    "latestAssessment": "Ultima valutazione",
+    "status": "Stato"
+  },
+  "results": {
+    "kpiMatrix": {
+      "title": "Matrice KPI per reparto",
+      "noData": "Nessun dato KPI disponibile",
+      "score": "Punteggio",
+      "legend": "Legenda",
+      "aboveBenchmark": "Sopra il benchmark",
+      "atBenchmark": "In linea con il benchmark",
+      "belowBenchmark": "Sotto il benchmark"
+    },
+    "causalChain": {
+      "title": "Analisi delle cause profonde",
+      "noChains": "Nessuna catena causale tra reparti rilevata.",
+      "viewAll": "Visualizza tutte le catene",
+      "showLess": "Mostra meno",
+      "sharedCause": "Causa profonda condivisa",
+      "rootCause": "Causa profonda"
+    },
+    "ceiling": {
+      "title": "Gap di eccellenza — Verso il quartile superiore",
+      "noInsights": "Tutti i reparti sono ottimizzati. Nessuna opportunità immediata identificata.",
+      "viewAll": "Visualizza tutte le analisi",
+      "showLess": "Mostra meno",
+      "badge": "Opportunità di ottimizzazione",
+      "currentScore": "Punteggio attuale"
+    }
+  }
+}
