@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { CategoryAssessment } from "@/components/assessment/CategoryAssessment";
 import { AssessmentHeroNav } from "@/components/assessment/AssessmentHeroNav";
+import { AssessmentContextPanel, AssessmentContextDrawer } from "@/components/assessment/AssessmentContextPanel";
 import { questionnaire, getTranslatedSection, isDataQuestion } from "@/data/questionnaire";
 import { useAssessmentData, OnboardingError } from "@/hooks/useAssessmentData";
 import { calculateAllSectionScores, calculateWeightedScore } from "@/lib/scoringEngine";
@@ -377,21 +378,37 @@ export default function Assessment() {
           );
         })()}
 
-        <div
-          key={currentSection}
-          className="animate-in fade-in slide-in-from-right-4 duration-200"
-        >
-          <CategoryAssessment
-            section={currentSectionData}
+        <div className="flex gap-6 items-start">
+          <div
+            key={currentSection}
+            className="flex-1 min-w-0 animate-in fade-in slide-in-from-right-4 duration-200"
+          >
+            <CategoryAssessment
+              section={currentSectionData}
+              answers={answers}
+              onAnswer={handleAnswer}
+              kpiAnswers={kpiAnswers}
+              onKpiAnswer={handleKpiAnswer}
+              onContinue={nextSection}
+              canContinue={canContinue()}
+              isLastSection={currentSection === translatedSections.length - 1}
+            />
+          </div>
+          <AssessmentContextPanel
+            sections={translatedSections}
+            currentSection={currentSection}
             answers={answers}
-            onAnswer={handleAnswer}
-            kpiAnswers={kpiAnswers}
-            onKpiAnswer={handleKpiAnswer}
-            onContinue={nextSection}
-            canContinue={canContinue()}
-            isLastSection={currentSection === translatedSections.length - 1}
+            onSelectSection={(idx) => !isCompleting && handleNavigateToSection(idx)}
+            disabled={isCompleting}
           />
         </div>
+        <AssessmentContextDrawer
+          sections={translatedSections}
+          currentSection={currentSection}
+          answers={answers}
+          onSelectSection={(idx) => !isCompleting && handleNavigateToSection(idx)}
+          disabled={isCompleting}
+        />
       </div>
     </div>
   );
