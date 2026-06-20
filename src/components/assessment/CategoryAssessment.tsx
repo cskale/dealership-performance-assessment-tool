@@ -161,27 +161,23 @@ export function CategoryAssessment({
             <div
               key={question.id}
               ref={(el) => { questionRefs.current[question.id] = el; }}
-              className="bg-white border border-[#d4dde4] rounded-xl overflow-hidden mb-8 opacity-0 animate-fade-in"
+              className="bg-white border border-neutral-200 rounded-xl overflow-hidden mb-8 opacity-0 animate-fade-in shadow-card"
               style={{
                 animationDelay: `${index * 45}ms`,
                 animationFillMode: 'forwards',
-                boxShadow: '0 1px 3px rgba(15,23,42,0.06), 0 4px 12px rgba(15,23,42,0.05)',
               }}
             >
-              {/* ── Top bar: #D6E3FF background ── */}
-              <div
-                className="flex items-center justify-between px-5 py-2.5 border-b border-[#c7d4f0]"
-                style={{ background: '#D6E3FF' }}
-              >
+              {/* ── Top bar ── */}
+              <div className="flex items-center justify-between px-5 py-2.5 border-b border-brand-200 bg-brand-100">
                 <div className="flex items-center gap-2.5">
-                  <span className="bg-[#1D7AFC] text-white text-[11px] font-bold rounded-[5px] px-2 py-1 leading-none flex-shrink-0">
+                  <span className="bg-brand-500 text-white text-[11px] font-bold rounded-[5px] px-2 py-1 leading-none flex-shrink-0">
                     Q{index + 1}
                   </span>
-                  <span className="text-[12px] font-medium text-[#172d4d]">
+                  <span className="text-[12px] font-medium text-neutral-900">
                     {question.category}
                   </span>
                 </div>
-                <span className="text-[11px] font-medium text-[#94a3b8] tabular-nums">
+                <span className="text-[11px] font-medium text-neutral-400 tabular-nums">
                   Question {index + 1} of {scoredQuestions.length}
                 </span>
               </div>
@@ -189,13 +185,13 @@ export function CategoryAssessment({
               {/* ── Question body ── */}
               <div className="px-5 pt-5 pb-0">
                 <h3
-                  className="text-[18px] font-bold text-[#0b1f3a] leading-[1.4] mb-1"
+                  className="text-[18px] font-bold text-neutral-1000 leading-[1.4] mb-1"
                   style={{ letterSpacing: '-0.018em' } as React.CSSProperties}
                 >
                   {question.text}
                 </h3>
                 {question.description && (
-                  <p className="text-[13px] text-[#445166] leading-relaxed mb-4">
+                  <p className="text-[13px] text-neutral-700 leading-relaxed mb-4">
                     {question.description}
                   </p>
                 )}
@@ -215,41 +211,43 @@ export function CategoryAssessment({
                             key={rating}
                             type="button"
                             onClick={() => handleRatingClick(question.id, rating)}
-                            className="relative min-h-[80px] w-full flex flex-col items-center justify-center rounded-[10px] px-2.5 py-4 text-center transition-all duration-150 focus-visible:outline-2 focus-visible:outline-[#1D7AFC] focus-visible:outline-offset-2"
+                            className="relative min-h-[80px] w-full flex flex-col items-center justify-center rounded-[10px] px-2.5 py-4 text-center transition-all duration-150 focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2"
                             style={
                               isSelected
                                 ? {
-                                    border: '1.5px solid #1D7AFC',
-                                    borderLeft: '4px solid #1D7AFC',
-                                    background: 'rgba(29,122,252,0.04)',
-                                    boxShadow: '0 0 0 3px rgba(29,122,252,0.08)',
+                                    border: '1.5px solid hsl(var(--brand-500))',
+                                    borderLeft: '4px solid hsl(var(--brand-500))',
+                                    background: 'hsl(var(--brand-500) / 0.04)',
+                                    boxShadow: '0 0 0 3px hsl(var(--brand-500) / 0.08)',
                                   }
                                 : {
-                                    border: '1px solid #d4dde4',
+                                    border: '1px solid hsl(var(--neutral-200))',
                                     background: 'white',
                                   }
                             }
                             onMouseEnter={(e) => {
                               if (!isSelected) {
-                                (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(29,122,252,0.35)';
-                                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(29,122,252,0.02)';
+                                (e.currentTarget as HTMLButtonElement).style.borderColor = 'hsl(var(--brand-500) / 0.35)';
+                                (e.currentTarget as HTMLButtonElement).style.background = 'hsl(var(--brand-500) / 0.02)';
                               }
                             }}
                             onMouseLeave={(e) => {
                               if (!isSelected) {
-                                (e.currentTarget as HTMLButtonElement).style.borderColor = '#d4dde4';
+                                (e.currentTarget as HTMLButtonElement).style.borderColor = 'hsl(var(--neutral-200))';
                                 (e.currentTarget as HTMLButtonElement).style.background = 'white';
                               }
                             }}
                           >
                             {isSelected && (
-                              <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#1D7AFC] flex items-center justify-center">
+                              <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-brand-500 flex items-center justify-center">
                                 <Check className="h-2.5 w-2.5 text-white" strokeWidth={2.5} />
                               </span>
                             )}
                             <span
-                              className="text-[13px] font-semibold leading-[1.35] break-words"
-                              style={{ color: isSelected ? '#0b1f3a' : '#263d57' }}
+                              className={cn(
+                                'text-[13px] font-semibold leading-[1.35] break-words',
+                                isSelected ? 'text-neutral-1000' : 'text-neutral-800'
+                              )}
                             >
                               {label}
                             </span>
@@ -264,24 +262,20 @@ export function CategoryAssessment({
               {/* ── Context strip: Why this matters | Linked KPIs ── */}
               {(whyThisMatters || (question.linkedKPIs && question.linkedKPIs.length > 0)) && (
                 <div
-                  className="grid mt-4 items-start"
-                  style={{
-                    background: '#f4f6f8',
-                    borderTop: '1px solid #e2e8f0',
-                    gridTemplateColumns: '1fr 1px 1fr',
-                  }}
+                  className="grid mt-4 items-start bg-neutral-50 border-t border-neutral-200"
+                  style={{ gridTemplateColumns: '1fr 1px 1fr' }}
                 >
                   <div className="px-5 py-4">
-                    <p className="text-[13px] font-semibold text-[#172d4d] mb-1.5">Why this matters</p>
-                    <p className="text-[13px] text-[#445166] leading-relaxed">
+                    <p className="text-[13px] font-semibold text-neutral-900 mb-1.5">Why this matters</p>
+                    <p className="text-[13px] text-neutral-700 leading-relaxed">
                       {whyThisMatters || 'No context available for this question.'}
                     </p>
                   </div>
 
-                  <div className="bg-[#d4dde4] self-stretch" />
+                  <div className="bg-neutral-200 self-stretch" />
 
                   <div className="px-5 py-4">
-                    <p className="text-[12px] font-semibold text-[#172d4d] mb-1.5">Linked KPIs</p>
+                    <p className="text-[12px] font-semibold text-neutral-900 mb-1.5">Linked KPIs</p>
                     {question.linkedKPIs && question.linkedKPIs.length > 0 ? (
                       <div className="flex flex-wrap gap-1.5">
                         {question.linkedKPIs.map((kpi) => (

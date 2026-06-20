@@ -80,7 +80,7 @@ function StatsBadge({ label, value, alert }: StatsBadgeProps) {
       <span className="text-[10px] font-medium text-white/35 tracking-[0.06em]">{label}</span>
       <span className={cn(
         'text-[11px] font-bold tabular-nums',
-        alert ? 'text-[#f87171]' : 'text-white/85'
+        alert ? 'text-red-400' : 'text-white/85'
       )}>{value}</span>
     </div>
   );
@@ -108,7 +108,7 @@ function HeroCard({
   return (
     <div
       className="rounded-2xl overflow-hidden grid grid-cols-3"
-      style={{ background: '#0b1f3a' }}
+      style={{ background: 'hsl(var(--dd-midnight))' }}
     >
       {/* Col 1 — Overall score */}
       <div className="p-7 border-r border-white/[0.07]">
@@ -117,8 +117,8 @@ function HeroCard({
         </p>
         <div className="flex items-baseline gap-2">
           <span
-            className="text-[72px] font-extrabold text-white leading-none tabular-nums"
-            style={{ letterSpacing: '-0.05em', fontOpticalSizing: 'auto' } as React.CSSProperties}
+            className="text-[72px] font-extrabold text-white leading-none tabular-nums font-display"
+            style={{ letterSpacing: '-0.05em' } as React.CSSProperties}
           >
             {Math.round(overallScore)}
           </span>
@@ -129,12 +129,12 @@ function HeroCard({
             className="h-[5px] rounded-full"
             style={{
               width: `${Math.min(100, Math.round(overallScore))}%`,
-              background: 'linear-gradient(90deg, #1D7AFC 0%, #85B8FF 100%)',
+              background: 'linear-gradient(90deg, hsl(var(--brand-500)) 0%, hsl(var(--brand-300)) 100%)',
             }}
           />
         </div>
-        <div className="mt-3 inline-flex items-center gap-1.5 bg-[rgba(29,122,252,0.2)] text-[#85B8FF] rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.05em]">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#579DFF]" />
+        <div className="mt-3 inline-flex items-center gap-1.5 bg-brand-500/20 text-brand-300 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.05em]">
+          <span className="w-1.5 h-1.5 rounded-full bg-brand-400" />
           {maturityLabel}
         </div>
         <p className="mt-4 text-[11px] italic text-white/60 leading-relaxed border-t border-white/[0.07] pt-4">
@@ -183,8 +183,8 @@ function HeroCard({
         </p>
         <div className="flex items-baseline gap-3 mb-2">
           <span
-            className="text-[56px] font-extrabold text-white leading-none tabular-nums"
-            style={{ letterSpacing: '-0.04em', fontOpticalSizing: 'auto' } as React.CSSProperties}
+            className="text-[56px] font-extrabold text-white leading-none tabular-nums font-display"
+            style={{ letterSpacing: '-0.04em' } as React.CSSProperties}
           >
             {Math.round(focusDeptScore)}
           </span>
@@ -214,23 +214,23 @@ interface TimelineSlotProps {
 
 function TimelineSlot({ label, date, sub, status, badgeText }: TimelineSlotProps) {
   const dotColor = {
-    done:     'bg-[#22c55e]',
-    upcoming: 'bg-[#579DFF]',
-    overdue:  'bg-[#ef4444]',
+    done:     'bg-emerald-500',
+    upcoming: 'bg-brand-400',
+    overdue:  'bg-red-500',
   }[status];
 
   const badgeStyle = {
-    done:     'bg-[#f0fdf4] text-[#15803d]',
-    upcoming: 'bg-[#E9F2FF] text-[#1558BC]',
-    overdue:  'bg-[#fef2f2] text-[#ef4444]',
+    done:     'bg-emerald-50 text-emerald-700',
+    upcoming: 'bg-brand-100 text-brand-700',
+    overdue:  'bg-red-50 text-red-500',
   }[status];
 
   return (
-    <div className="px-5 py-4 border-r border-[#F1F2F4] last:border-r-0 relative">
+    <div className="px-5 py-4 border-r border-neutral-100 last:border-r-0 relative">
       <span className={cn('absolute top-4 right-4 w-2 h-2 rounded-full', dotColor)} />
-      <p className="text-[10px] font-semibold text-[#6B778C] mb-1">{label}</p>
-      <p className="text-[13px] font-bold text-[#172B4D] mb-0.5">{date}</p>
-      <p className="text-[10px] text-[#6B778C] mb-2">{sub}</p>
+      <p className="text-[10px] font-semibold text-neutral-500 mb-1">{label}</p>
+      <p className="text-[13px] font-bold text-neutral-900 mb-0.5">{date}</p>
+      <p className="text-[10px] text-neutral-500 mb-2">{sub}</p>
       <span className={cn('inline-block text-[9px] font-bold px-2 py-0.5 rounded-full', badgeStyle)}>
         {badgeText}
       </span>
@@ -259,7 +259,7 @@ function TimelineStrip({
     : false;
 
   return (
-    <div className="bg-white rounded-xl shadow-card border border-[#DFE1E6] grid grid-cols-5 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-card border border-neutral-200 grid grid-cols-5 overflow-hidden">
       <TimelineSlot
         label="Last Assessment"
         date={formatDisplayDate(assessment.completed_at)}
@@ -312,19 +312,19 @@ function PriorityCard({
 }) {
   const navigate = useNavigate();
   return (
-    <div className="flex items-center gap-4 px-5 py-4 bg-[#fef2f2] border border-[#fecaca] border-l-[3px] border-l-[#ef4444] rounded-xl shadow-card">
+    <div className="flex items-center gap-4 px-5 py-4 bg-red-50 border border-red-200 border-l-[3px] border-l-red-500 rounded-xl shadow-card">
       <div className="flex-1 min-w-0">
-        <p className="text-[12px] font-bold text-[#ef4444] mb-1">
+        <p className="text-[12px] font-bold text-red-500 mb-1">
           Priority Intervention Required
         </p>
-        <p className="text-[12px] text-[#253858] leading-relaxed">
+        <p className="text-[12px] text-neutral-800 leading-relaxed">
           {focusDeptName} scored {Math.round(focusDeptScore)}/100 and requires immediate
           attention. Review the open actions and assign ownership before the {quarter} deadline.
         </p>
       </div>
       <button
         onClick={() => navigate('/actions?filter=critical')}
-        className="flex-shrink-0 px-5 py-2 bg-[#ef4444] text-white rounded-lg text-[12px] font-bold hover:bg-[#dc2626] transition-colors"
+        className="flex-shrink-0 px-5 py-2 bg-red-500 text-white rounded-lg text-[12px] font-bold hover:bg-red-600 transition-colors"
       >
         Resolve Now
       </button>
@@ -339,7 +339,7 @@ function DeptColumns({ scores }: { scores: Record<string, number> }) {
   if (assessed.length === 0) return null;
   return (
     <div
-      className="bg-white rounded-xl shadow-card border border-[#DFE1E6] grid overflow-hidden"
+      className="bg-white rounded-xl shadow-card border border-neutral-200 grid overflow-hidden"
       style={{ gridTemplateColumns: `repeat(${assessed.length}, 1fr)` }}
     >
       {assessed.map((key, i) => {
@@ -351,9 +351,9 @@ function DeptColumns({ scores }: { scores: Record<string, number> }) {
         return (
           <div
             key={key}
-            className={cn('p-4', i < assessed.length - 1 && 'border-r border-[#F1F2F4]')}
+            className={cn('p-4', i < assessed.length - 1 && 'border-r border-neutral-100')}
           >
-            <p className="text-[10px] font-bold text-[#5E6C84] mb-2 leading-tight">
+            <p className="text-[10px] font-bold text-neutral-600 mb-2 leading-tight">
               {DEPT_DISPLAY_NAMES[key]}
             </p>
             <p
@@ -365,7 +365,7 @@ function DeptColumns({ scores }: { scores: Record<string, number> }) {
             <p className={cn('text-[10px] font-bold uppercase tracking-[0.05em] mb-3', maturityColour)}>
               {maturity}
             </p>
-            <p className="text-[10.5px] text-[#5E6C84] leading-relaxed border-t border-[#F1F2F4] pt-2">
+            <p className="text-[10.5px] text-neutral-600 leading-relaxed border-t border-neutral-100 pt-2">
               {finding}
             </p>
           </div>
@@ -379,7 +379,7 @@ function DeptGrid({ scores }: { scores: Record<string, number> }) {
   return (
     <>
       <div className="flex items-center justify-between">
-        <h2 className="text-[15px] font-bold text-[#172B4D]">Departmental Intelligence</h2>
+        <h2 className="text-[15px] font-bold text-neutral-900">Departmental Intelligence</h2>
         <span />
       </div>
 
@@ -402,23 +402,23 @@ function ActionsTable({
   return (
     <>
       <div className="flex items-center justify-between">
-        <h2 className="text-[15px] font-bold text-[#172B4D]">Open Actions</h2>
+        <h2 className="text-[15px] font-bold text-neutral-900">Open Actions</h2>
         <button
           onClick={onViewAll}
-          className="text-[11px] font-semibold text-[#6B778C] hover:text-[#1D7AFC] transition-colors"
+          className="text-[11px] font-semibold text-neutral-500 hover:text-brand-500 transition-colors"
         >
           View all in Action Plans →
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-card border border-[#DFE1E6] px-5 py-5">
+      <div className="bg-white rounded-xl shadow-card border border-neutral-200 px-5 py-5">
         <table className="w-full" style={{ borderCollapse: 'collapse' }}>
           <thead>
             <tr>
               {['Action', 'Department', 'Responsible', 'Due'].map(h => (
                 <th
                   key={h}
-                  className="text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-[#97A0AF] pb-3"
+                  className="text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400 pb-3"
                   style={{ paddingRight: h !== 'Due' ? '20px' : undefined }}
                 >
                   {h}
@@ -434,33 +434,33 @@ function ActionsTable({
               return (
                 <tr key={action.id}>
                   <td
-                    className="text-[12px] text-[#253858] font-medium py-[10px] border-t border-[#F1F2F4] align-top"
+                    className="text-[12px] text-neutral-800 font-medium py-[10px] border-t border-neutral-100 align-top"
                     style={{ paddingRight: '20px' }}
                   >
                     <span
                       className={cn(
                         'inline-block w-[7px] h-[7px] rounded-full mr-2 flex-shrink-0 align-middle',
-                        overdue ? 'bg-[#ef4444]' : 'bg-[#1D7AFC]'
+                        overdue ? 'bg-red-500' : 'bg-brand-500'
                       )}
                     />
                     {action.action_title}
                   </td>
                   <td
-                    className="text-[12px] text-[#5E6C84] py-[10px] border-t border-[#F1F2F4] align-top whitespace-nowrap"
+                    className="text-[12px] text-neutral-600 py-[10px] border-t border-neutral-100 align-top whitespace-nowrap"
                     style={{ paddingRight: '20px' }}
                   >
                     {deptName}
                   </td>
                   <td
-                    className="text-[12px] text-[#5E6C84] py-[10px] border-t border-[#F1F2F4] align-top whitespace-nowrap"
+                    className="text-[12px] text-neutral-600 py-[10px] border-t border-neutral-100 align-top whitespace-nowrap"
                     style={{ paddingRight: '20px' }}
                   >
                     {action.responsible_person ?? '—'}
                   </td>
                   <td
                     className={cn(
-                      'text-[11px] font-semibold py-[10px] border-t border-[#F1F2F4] align-top whitespace-nowrap',
-                      overdue ? 'text-[#ef4444]' : 'text-[#6B778C]'
+                      'text-[11px] font-semibold py-[10px] border-t border-neutral-100 align-top whitespace-nowrap',
+                      overdue ? 'text-red-500' : 'text-neutral-500'
                     )}
                   >
                     {formatDueDate(action.target_completion_date)}
@@ -522,41 +522,41 @@ function FindingsCard({ scores }: { scores: Record<string, number> }) {
 
   return (
     <>
-      <h2 className="text-[15px] font-bold text-[#172B4D]">Strategic Findings</h2>
-      <div className="bg-white rounded-xl shadow-card border border-[#DFE1E6] px-5 py-5">
+      <h2 className="text-[15px] font-bold text-neutral-900">Strategic Findings</h2>
+      <div className="bg-white rounded-xl shadow-card border border-neutral-200 px-5 py-5">
         {findings.map((f, i) => (
           <div
             key={f.id}
-            className={cn('py-4 flex items-start gap-3', i > 0 && 'border-t border-[#F1F2F4]')}
+            className={cn('py-4 flex items-start gap-3', i > 0 && 'border-t border-neutral-100')}
           >
             <div
               className={cn(
                 'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0',
-                f.severity === 'critical' ? 'bg-[#fef2f2]' : 'bg-[#E9F2FF]'
+                f.severity === 'critical' ? 'bg-red-50' : 'bg-brand-100'
               )}
             >
               {f.severity === 'critical' ? (
-                <AlertCircle size={16} strokeWidth={2} className="text-[#ef4444]" />
+                <AlertCircle size={16} strokeWidth={2} className="text-red-500" />
               ) : (
-                <Info size={16} strokeWidth={2} className="text-[#1D7AFC]" />
+                <Info size={16} strokeWidth={2} className="text-brand-500" />
               )}
             </div>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-3 mb-1">
-                <p className="text-[13px] font-bold text-[#172B4D]">{f.title}</p>
+                <p className="text-[13px] font-bold text-neutral-900">{f.title}</p>
                 <span
                   className={cn(
                     'flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full',
                     f.severity === 'critical'
-                      ? 'bg-[#fef2f2] text-[#ef4444]'
-                      : 'bg-[#E9F2FF] text-[#1558BC]'
+                      ? 'bg-red-50 text-red-500'
+                      : 'bg-brand-100 text-brand-700'
                   )}
                 >
                   {f.severity === 'critical' ? 'Critical risk' : 'Medium impact'}
                 </span>
               </div>
-              <p className="text-[11px] text-[#5E6C84] leading-relaxed">{f.description}</p>
+              <p className="text-[11px] text-neutral-600 leading-relaxed">{f.description}</p>
             </div>
           </div>
         ))}
@@ -575,13 +575,13 @@ function EmptyState({ onStart }: { onStart: () => void }) {
   ];
   return (
     <main className="w-full px-6 py-6">
-      <div className="max-w-xl mx-auto mt-8 bg-white rounded-xl shadow-card border border-[#DFE1E6] p-8 space-y-6 text-center">
-        <ClipboardList className="h-14 w-14 text-[#85B8FF] mx-auto" />
+      <div className="max-w-xl mx-auto mt-8 bg-white rounded-xl shadow-card border border-neutral-200 p-8 space-y-6 text-center">
+        <ClipboardList className="h-14 w-14 text-brand-300 mx-auto" />
         <div className="space-y-2">
-          <h1 className="text-2xl font-semibold text-[#091E42]">
+          <h1 className="text-2xl font-semibold text-neutral-1000">
             Run your first dealership diagnostic
           </h1>
-          <p className="text-sm text-[#5E6C84] leading-relaxed">
+          <p className="text-sm text-neutral-600 leading-relaxed">
             A 45-minute structured assessment across 5 departments. Get a scored
             performance profile, diagnostic signals, and a prioritised action plan.
           </p>
@@ -591,9 +591,9 @@ function EmptyState({ onStart }: { onStart: () => void }) {
         </Button>
         <div className="grid grid-cols-3 gap-4">
           {benefits.map(b => (
-            <div key={b.label} className="bg-[#F7FAFF] rounded-lg p-3 flex flex-col items-center gap-2">
-              <b.icon className="h-5 w-5 text-[#579DFF]" />
-              <span className="text-xs text-[#5E6C84]">{b.label}</span>
+            <div key={b.label} className="bg-brand-50 rounded-lg p-3 flex flex-col items-center gap-2">
+              <b.icon className="h-5 w-5 text-brand-400" />
+              <span className="text-xs text-neutral-600">{b.label}</span>
             </div>
           ))}
         </div>
@@ -772,12 +772,24 @@ export default function Dashboard() {
   };
 
   if (loading || hasAssessments === null) {
-    return <div className="min-h-screen bg-[#F7F8F9]" />;
+    return (
+      <div className="min-h-screen bg-neutral-50 p-8">
+        <div className="max-w-6xl mx-auto space-y-6">
+          <div className="skeleton h-10 w-1/3" />
+          <div className="skeleton h-[200px] rounded-2xl" />
+          <div className="grid grid-cols-3 gap-6">
+            <div className="skeleton h-32 rounded-xl" />
+            <div className="skeleton h-32 rounded-xl" />
+            <div className="skeleton h-32 rounded-xl" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!hasAssessments || !data || !derived) {
     return (
-      <div className="min-h-screen bg-[#F7F8F9]">
+      <div className="min-h-screen bg-neutral-50">
         <EmptyState onStart={() => navigate('/app/assessment')} />
       </div>
     );
@@ -792,12 +804,12 @@ export default function Dashboard() {
   } = derived;
 
   return (
-    <div className="min-h-screen bg-[#F7F8F9]">
+    <div className="min-h-screen bg-neutral-50">
 
       {/* ── Dark stats bar ── */}
       <div
         className="flex items-center h-9 px-6"
-        style={{ background: '#0b1f3a' }}
+        style={{ background: 'hsl(var(--dd-midnight))' }}
       >
         <StatsBadge label="Overall Score" value={`${Math.round(overallScore)} / 100`} />
         <StatsBadge label="Assessment date" value={formatDisplayDate(assessment.completed_at)} />
@@ -807,11 +819,6 @@ export default function Dashboard() {
           alert={gapCount > 0}
         />
         <StatsBadge label="Open actions" value={`${openCount} item${openCount !== 1 ? 's' : ''}`} />
-        <div className="ml-auto flex items-center gap-2">
-          <div className="w-[26px] h-[26px] rounded-full bg-gradient-to-br from-[#1D7AFC] to-indigo-500 flex items-center justify-center text-[10px] font-bold text-white">
-            {(user?.email?.[0] ?? 'U').toUpperCase()}
-          </div>
-        </div>
       </div>
 
       <main className="w-full px-6 py-6 space-y-4">
@@ -819,12 +826,12 @@ export default function Dashboard() {
         {/* ── Page header ── */}
         <div className="flex items-end justify-between">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B778C] mb-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-500 mb-1">
               Performance Intelligence · {quarter}
             </p>
             <h1
-              className="text-[28px] font-extrabold text-[#091E42]"
-              style={{ letterSpacing: '-0.022em', fontOpticalSizing: 'auto' } as React.CSSProperties}
+              className="text-[28px] font-extrabold text-neutral-1000 font-display"
+              style={{ letterSpacing: '-0.022em' } as React.CSSProperties}
             >
               Diagnostic Command
             </h1>
@@ -832,7 +839,7 @@ export default function Dashboard() {
           <Button
             variant="default"
             onClick={() => navigate('/app/results')}
-            className="flex items-center gap-2 bg-[#0b1f3a] hover:bg-[#122a4a] text-white text-[12px] font-semibold"
+            className="flex items-center gap-2 bg-dd-midnight hover:bg-dd-ink text-white text-[12px] font-semibold"
           >
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M8 2v8M5 7l3 3 3-3M3 13h10"/></svg>
             View Full Report
@@ -843,17 +850,17 @@ export default function Dashboard() {
         {upcomingVisit && (
           <div className={`rounded-xl border px-4 py-3 space-y-3 ${
             upcomingVisit.status === 'confirmed'
-              ? 'bg-[#16a34a]/5 border-[#16a34a]/20'
+              ? 'bg-emerald-600/5 border-emerald-600/20'
               : upcomingVisit.status === 'counter_proposed'
               ? 'bg-amber-50 border-amber-200'
-              : 'bg-[#2563eb]/5 border-[#2563eb]/20'
+              : 'bg-blue-600/5 border-blue-600/20'
           }`}>
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div className="flex items-center gap-3">
                 <CalendarIcon className={`h-4 w-4 shrink-0 ${
-                  upcomingVisit.status === 'confirmed' ? 'text-[#16a34a]'
+                  upcomingVisit.status === 'confirmed' ? 'text-emerald-600'
                   : upcomingVisit.status === 'counter_proposed' ? 'text-amber-600'
-                  : 'text-[#2563eb]'
+                  : 'text-blue-600'
                 }`} />
                 <div>
                   <p className="text-sm font-medium">
@@ -872,7 +879,7 @@ export default function Dashboard() {
               </div>
 
               {upcomingVisit.status === 'confirmed' && (
-                <Badge variant="outline" className="bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20 shrink-0">
+                <Badge variant="outline" className="bg-emerald-600/10 text-emerald-600 border-emerald-600/20 shrink-0">
                   Confirmed ✓
                 </Badge>
               )}

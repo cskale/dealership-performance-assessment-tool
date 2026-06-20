@@ -61,7 +61,7 @@ export default function Methodology() {
       <div
         className="px-12 py-14 relative overflow-hidden"
         style={{
-          backgroundColor: '#0A0F1E',
+          backgroundColor: 'hsl(var(--dd-midnight))',
           backgroundImage: `linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)`,
           backgroundSize: '40px 40px',
         }}

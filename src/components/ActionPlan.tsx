@@ -495,7 +495,7 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
           {totalCount > 0 && (
             <div className="flex items-center gap-3">
               <div className="flex flex-col gap-1 min-w-[220px]">
-                <span style={{ fontSize: 11, color: '#5c5a54' }}>
+                <span className="text-[11px] text-neutral-600">
                   {completedCount} of {totalCount} actions complete — {progressPercent}%
                 </span>
                 <Progress value={progressPercent} className="h-2" />
@@ -629,23 +629,10 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
 
       {/* Milestone Banner */}
       {showMilestoneBanner && currentMilestone && (
-        <div
-          style={{
-            background: '#e1f5ee',
-            border: '1px solid #9fe1cb',
-            borderLeft: '3px solid #1D9E75',
-            borderRadius: 8,
-            padding: '12px 16px',
-            marginBottom: 12,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <CheckCircle2 size={16} color="#1D9E75" />
-            <span style={{ fontSize: 13, color: '#0f6e56', fontWeight: 500, marginLeft: 10 }}>
+        <div className="flex items-center justify-between gap-3 bg-emerald-50 border border-emerald-200 border-l-[3px] border-l-emerald-600 rounded-lg px-4 py-3 mb-3">
+          <div className="flex items-center">
+            <CheckCircle2 size={16} className="text-emerald-600" />
+            <span className="text-[13px] text-emerald-800 font-medium ml-2.5">
               {currentMilestone.message}
             </span>
           </div>
@@ -654,16 +641,7 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
               <button
                 type="button"
                 onClick={() => window.location.assign('/app/assessment')}
-                style={{
-                  fontSize: 12,
-                  color: '#0052CC',
-                  border: '1px solid #0052CC',
-                  background: 'transparent',
-                  padding: '4px 10px',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                  fontWeight: 500,
-                }}
+                className="text-xs text-brand-700 border border-brand-700 bg-transparent px-2.5 py-1 rounded-md cursor-pointer font-medium hover:bg-brand-50 transition-colors"
               >
                 Schedule Reassessment
               </button>
@@ -672,14 +650,7 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
               type="button"
               aria-label="Dismiss milestone"
               onClick={() => setDismissedMilestone(currentMilestone.pct)}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: 4,
-                cursor: 'pointer',
-                color: '#96948e',
-                display: 'inline-flex',
-              }}
+              className="bg-transparent border-none p-1 cursor-pointer text-neutral-500 inline-flex hover:text-neutral-700 transition-colors"
             >
               <X size={14} />
             </button>

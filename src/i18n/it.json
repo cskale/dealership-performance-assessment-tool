@@ -3,12 +3,12 @@
     "home": "Home",
     "assessment": "Valutazione",
     "results": "Risultati",
-    "actions": "Piano d'azione",
+    "actions": "Piano d'Azione",
     "dashboard": "Dashboard",
     "account": "Account",
     "signIn": "Accedi",
-    "oemDashboard": "Dashboard costruttore",
-    "coachDashboard": "Dashboard coach"
+    "oemDashboard": "Dashboard OEM",
+    "coachDashboard": "Dashboard Coach"
   },
   "common": {
     "save": "Salva",
@@ -17,89 +17,89 @@
     "edit": "Modifica",
     "loading": "Caricamento...",
     "generating": "Generazione in corso...",
-    "generate": "Genera azioni",
-    "loadMore": "Carica altre azioni",
+    "generate": "Genera Azioni",
+    "loadMore": "Carica Altre Azioni",
     "export": "Esporta",
-    "downloadPdf": "Scarica report PDF",
+    "downloadPdf": "Scarica Report PDF",
     "exportExcel": "Esporta in Excel",
     "generatingPdf": "Generazione PDF..."
   },
   "assessment": {
-    "title": "Valutazione concessionaria",
-    "complete": "Valutazione completata",
-    "nextSteps": "Ecco i prossimi passi",
-    "actionsReady": "azioni consigliate pronte per la revisione",
-    "viewActionPlan": "Visualizza piano d'azione",
-    "downloadReport": "Scarica report"
+    "title": "Valutazione Concessionaria",
+    "complete": "Valutazione Completata",
+    "nextSteps": "Ecco i Prossimi Passi",
+    "actionsReady": "azioni raccomandate pronte per la revisione",
+    "viewActionPlan": "Visualizza Piano d'Azione",
+    "downloadReport": "Scarica Report"
   },
   "actions": {
-    "title": "Piano d'azione",
+    "title": "Piano d'Azione",
     "unassigned": "Non assegnato",
     "noActions": "Nessuna azione trovata",
     "rateLimitWarning": "Attendere {{seconds}} secondi prima di generare nuovamente.",
-    "hourlyLimitReached": "Limite di generazione raggiunto. Attendere prima di riprovare."
+    "hourlyLimitReached": "Limite di generazione azioni raggiunto. Attendere prima di riprovare."
   },
   "benchmark": {
-    "indicativeLabel": "Benchmark indicativo (75%) ⓘ",
-    "tooltip": "Questo benchmark rappresenta una media indicativa basata sulle osservazioni delle reti europee di distribuzione automobilistica. Non è validato statisticamente. Per benchmark specifici per marca, contattare il responsabile del programma costruttore.",
-    "footnote": "* Benchmark indicativo. Benchmark segmentati per livello di marca e tipo di mercato disponibili nella configurazione enterprise."
+    "indicativeLabel": "Benchmark Indicativo (75%) ⓘ",
+    "tooltip": "Questo benchmark rappresenta una media indicativa basata sulle osservazioni delle reti di vendita automotive europee. Non è statisticamente validato. Per benchmark specifici per marchio, contattare il responsabile del programma OEM.",
+    "footnote": "* Il benchmark è indicativo. Benchmark segmentati per fascia di marchio e tipo di mercato disponibili nella configurazione enterprise."
   },
   "oem": {
-    "title": "Panoramica della rete",
-    "totalDealers": "Totale concessionarie",
-    "avgScore": "Punteggio medio",
-    "highestScore": "Punteggio più alto",
-    "lowestScore": "Punteggio più basso",
-    "leaderboard": "Classifica concessionarie",
+    "title": "Panoramica della Rete",
+    "totalDealers": "Concessionarie Totali",
+    "avgScore": "Punteggio Medio",
+    "highestScore": "Punteggio Più Alto",
+    "lowestScore": "Punteggio Più Basso",
+    "leaderboard": "Classifica Concessionarie",
     "rank": "Posizione",
     "dealerName": "Concessionaria",
-    "latestScore": "Ultimo punteggio",
-    "previousScore": "Punteggio precedente",
-    "trend": "Andamento",
+    "latestScore": "Ultimo Punteggio",
+    "previousScore": "Punteggio Precedente",
+    "trend": "Tendenza",
     "benchmarkBand": "Fascia",
-    "selectNetwork": "Seleziona rete",
-    "noNetworks": "Nessuna appartenenza alla rete",
-    "noAssessments": "Nessuna valutazione disponibile",
+    "selectNetwork": "Seleziona Rete",
+    "noNetworks": "Nessuna appartenenza a reti trovata",
+    "noAssessments": "Ancora nessuna valutazione",
     "loadError": "Impossibile caricare i dati"
   },
   "coach": {
-    "title": "Concessionarie assegnate",
-    "sortByScore": "Per punteggio",
-    "sortByName": "Per nome",
+    "title": "Concessionarie Assegnate",
+    "sortByScore": "Per Punteggio",
+    "sortByName": "Per Nome",
     "filterAll": "Tutte",
     "filterCompleted": "Completate",
-    "filterInProgress": "In corso",
-    "scoreTrend": "Andamento del punteggio",
-    "selectDealers": "Seleziona concessionarie da confrontare",
+    "filterInProgress": "In Corso",
+    "scoreTrend": "Andamento Punteggio",
+    "selectDealers": "Selezionare le concessionarie da confrontare",
     "noAssignments": "Nessuna concessionaria assegnata",
     "noAssessments": "Nessuna valutazione trovata",
-    "latestAssessment": "Ultima valutazione",
+    "latestAssessment": "Ultima Valutazione",
     "status": "Stato"
   },
   "results": {
     "kpiMatrix": {
-      "title": "Matrice KPI per reparto",
+      "title": "Matrice KPI per Reparto",
       "noData": "Nessun dato KPI disponibile",
       "score": "Punteggio",
       "legend": "Legenda",
-      "aboveBenchmark": "Sopra il benchmark",
-      "atBenchmark": "In linea con il benchmark",
-      "belowBenchmark": "Sotto il benchmark"
+      "aboveBenchmark": "Sopra il Benchmark",
+      "atBenchmark": "In Linea con il Benchmark",
+      "belowBenchmark": "Sotto il Benchmark"
     },
     "causalChain": {
-      "title": "Analisi delle cause profonde",
-      "noChains": "Nessuna catena causale tra reparti rilevata.",
+      "title": "Analisi delle Cause Radice",
+      "noChains": "Nessuna catena causale inter-reparto rilevata.",
       "viewAll": "Visualizza tutte le catene",
       "showLess": "Mostra meno",
-      "sharedCause": "Causa profonda condivisa",
-      "rootCause": "Causa profonda"
+      "sharedCause": "Causa radice comune",
+      "rootCause": "Causa radice"
     },
     "ceiling": {
-      "title": "Gap di eccellenza — Verso il quartile superiore",
-      "noInsights": "Tutti i reparti sono ottimizzati. Nessuna opportunità immediata identificata.",
-      "viewAll": "Visualizza tutte le analisi",
+      "title": "Gap di Eccellenza — Percorso verso il Quartile Superiore",
+      "noInsights": "Tutti i reparti in fase di ottimizzazione. Nessuna opportunità immediata identificata.",
+      "viewAll": "Visualizza tutti gli approfondimenti",
       "showLess": "Mostra meno",
-      "badge": "Opportunità di ottimizzazione",
+      "badge": "Opportunità di Ottimizzazione",
       "currentScore": "Punteggio attuale"
     }
   }

@@ -7,7 +7,29 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(xargs grep *)",
-      "mcp__claude_ai_Supabase__execute_sql"
+      "mcp__claude_ai_Supabase__execute_sql",
+      "mcp__claude_ai_Vercel__get_deployment_build_logs",
+      "mcp__lovable__get_me",
+      "mcp__lovable__list_projects",
+      "Bash(node scripts/tmp-add-question-kind.mjs)",
+      "PowerShell(cd \"c:\\\\Users\\\\chank\\\\OneDrive\\\\Documents\\\\GitHub\\\\dealership-performance-assessment-tool\"; \\(Select-String -Path src/data/questionnaire.ts -Pattern 'kind: \"scored\",'\\).Count)",
+      "PowerShell(cd \"c:\\\\Users\\\\chank\\\\OneDrive\\\\Documents\\\\GitHub\\\\dealership-performance-assessment-tool\"; \\(Select-String -Path src/data/questionnaire.ts -Pattern 'kind: \"scored\"'\\).Count; \\(Select-String -Path src/data/questionnaire.ts -Pattern 'kind: \"data\"'\\).Count)",
+      "Bash(grep -v 'export\\\\|interface\\\\|min:\\\\|max:\\\\|labels\\\\|weight\\\\|type:\\\\|options\\\\|kpiKey\\\\|unit\\\\|referencePeriod\\\\|validRange\\\\|formula\\\\|benchmarkRef\\\\|subSection\\\\|kind: \"data\"\\\\|return q.kind\\\\|^+}$\\\\|^+$\\\\|^+  kind:')",
+      "Bash(python3 -c ' *)",
+      "Bash(awk '/kind: \"scored\",/{print NR\": \"prev} {prev=$0}' src/data/questionnaire.ts)",
+      "mcp__claude_ai_Supabase__get_advisors",
+      "Bash(ls \"$HOME/.claude/\" 2>/dev/null)",
+      "Read(//c/Users/chank/.claude/**)",
+      "mcp__claude_ai_Vercel__deploy_to_vercel",
+      "mcp__lovable__list_workspaces",
+      "Bash(powershell -Command \"\\(Get-Item src/contexts/LanguageContext.tsx\\).Length\")",
+      "Bash(powershell -Command \"Get-ChildItem src/i18n/ | Select-Object Name, Length | Format-Table -AutoSize\")",
+      "Bash(powershell -Command \"\\(Get-Item src/data/questionnaire.ts\\).Length\")",
+      "Bash(node -e \"['fr','es','it'].forEach\\(l => { try { const d=JSON.parse\\(require\\('fs'\\).readFileSync\\('src/i18n/_questions_'+l+'.json','utf8'\\)\\); console.log\\(l+': '+d.length+' items, valid JSON'\\); } catch\\(e\\) { console.log\\(l+': INVALID -', e.message\\); } }\\)\")",
+      "Bash(node scripts/patch_translations.cjs)",
+      "PowerShell(npx tsc --noEmit --pretty 2>&1)",
+      "PowerShell(npm run build 2>&1)",
+      "Bash(git status *)"
     ]
   }
 }

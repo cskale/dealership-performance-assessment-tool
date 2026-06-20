@@ -261,17 +261,17 @@ export default function CoachDealerPage() {
   const band = getScoreBand(overallScore);
 
   return (
-    <div className="min-h-screen flex bg-[#F4F5F7]">
+    <div className="min-h-screen flex bg-neutral-100">
       {/* Left sidebar (dark) */}
-      <aside className="w-[200px] shrink-0 bg-[#0B1426] text-slate-200 flex flex-col">
-        <div className="p-5 border-b border-slate-800">
+      <aside className="w-[200px] shrink-0 bg-dd-midnight text-neutral-300 flex flex-col">
+        <div className="p-5 border-b border-white/10">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-7 h-7 rounded bg-blue-600 flex items-center justify-center text-white text-xs font-bold">
               DD
             </div>
             <div>
               <p className="text-sm font-semibold text-white leading-tight">Dealer Diagnostic</p>
-              <p className="text-[10px] uppercase tracking-wider text-slate-500">Coach Platform</p>
+              <p className="text-[10px] uppercase tracking-wider text-neutral-500">Coach Platform</p>
             </div>
           </div>
         </div>
@@ -296,7 +296,7 @@ export default function CoachDealerPage() {
           <SideLink icon={Settings} label="Settings" onClick={() => navigate('/account')} />
         </nav>
 
-        <div className="p-3 border-t border-slate-800">
+        <div className="p-3 border-t border-white/10">
           <Button
             className="w-full bg-blue-600 hover:bg-blue-500 text-white"
             size="sm"
@@ -310,7 +310,7 @@ export default function CoachDealerPage() {
           <button
             type="button"
             onClick={() => navigate('/app/coach-dashboard')}
-            className="mt-3 flex items-center gap-1.5 text-xs text-slate-400 hover:text-white"
+            className="mt-3 flex items-center gap-1.5 text-xs text-neutral-400 hover:text-white"
           >
             <ArrowLeft className="w-3 h-3" />
             Back to network
@@ -607,7 +607,7 @@ function SideLink({
       className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-left transition ${
         active
           ? 'bg-blue-600/15 text-white border-l-2 border-blue-500'
-          : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+          : 'text-neutral-400 hover:text-white hover:bg-white/5'
       }`}
     >
       <Icon className="w-4 h-4 shrink-0" />
@@ -655,7 +655,7 @@ function PriorityBadge({ priority }: { priority: string | null }) {
       ? 'bg-red-100 text-red-700'
       : p === 'medium'
       ? 'bg-amber-100 text-amber-700'
-      : 'bg-slate-100 text-slate-600';
+      : 'bg-neutral-100 text-neutral-600';
   return (
     <span className={`text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${cls}`}>
       {p}
@@ -677,7 +677,7 @@ function FeedItemCard({ item }: { item: { kind: 'note' | 'visit' | 'assessment';
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold">Coach Note</span>
-              <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
+              <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-600">
                 NOTE
               </span>
               {n.note_type && (
@@ -698,14 +698,14 @@ function FeedItemCard({ item }: { item: { kind: 'note' | 'visit' | 'assessment';
     const v = item.data as VisitRow;
     return (
       <div className="flex gap-3">
-        <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+        <div className="w-8 h-8 rounded-full bg-neutral-100 text-neutral-600 flex items-center justify-center shrink-0">
           <Calendar className="w-4 h-4" />
         </div>
         <div className="flex-1 bg-white rounded-xl border border-border p-4">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold">Coach Visit</span>
-              <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
+              <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-600">
                 VISIT
               </span>
               <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-green-100 text-green-700">
@@ -726,14 +726,14 @@ function FeedItemCard({ item }: { item: { kind: 'note' | 'visit' | 'assessment';
   const a = item.data as AssessmentRow;
   return (
     <div className="flex gap-3">
-      <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+      <div className="w-8 h-8 rounded-full bg-neutral-100 text-neutral-600 flex items-center justify-center shrink-0">
         <ClipboardList className="w-4 h-4" />
       </div>
       <div className="flex-1 bg-white rounded-xl border border-border p-4">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold">Assessment</span>
-            <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
+            <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-600">
               {a.status?.toUpperCase() ?? 'IN PROGRESS'}
             </span>
           </div>

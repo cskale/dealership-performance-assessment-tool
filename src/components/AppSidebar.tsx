@@ -121,15 +121,15 @@ export function AppSidebar() {
           onClick={() => setCollapsed(prev => !prev)}
           className={cn(
             'absolute top-1/2 -translate-y-1/2 h-6 w-6 rounded-full z-10',
-            'bg-[hsl(var(--dd-midnight))] border border-white/20',
+            'border border-white/30',
             'flex items-center justify-center hover:bg-white/20 transition-colors shrink-0',
-            collapsed ? 'right-0 translate-x-1/2' : 'right-2'
+            collapsed ? '-right-3 bg-[hsl(var(--dd-midnight))]' : 'right-2 bg-[hsl(var(--dd-midnight))]'
           )}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed
-            ? <ChevronRight className="h-3 w-3 text-white/60" />
-            : <ChevronLeft  className="h-3 w-3 text-white/60" />}
+            ? <ChevronRight className="h-3 w-3 text-white/80" />
+            : <ChevronLeft  className="h-3 w-3 text-white/80" />}
         </button>
       </div>
 

@@ -7,8 +7,8 @@
     "dashboard": "Tableau de bord",
     "account": "Compte",
     "signIn": "Se connecter",
-    "oemDashboard": "Tableau de bord constructeur",
-    "coachDashboard": "Tableau de bord coach"
+    "oemDashboard": "Tableau de bord OEM",
+    "coachDashboard": "Tableau de bord Coach"
   },
   "common": {
     "save": "Enregistrer",
@@ -17,15 +17,15 @@
     "edit": "Modifier",
     "loading": "Chargement...",
     "generating": "Génération en cours...",
-    "generate": "Générer les actions",
+    "generate": "Générer des actions",
     "loadMore": "Charger plus d'actions",
     "export": "Exporter",
     "downloadPdf": "Télécharger le rapport PDF",
-    "exportExcel": "Exporter vers Excel",
+    "exportExcel": "Exporter en Excel",
     "generatingPdf": "Génération du PDF..."
   },
   "assessment": {
-    "title": "Évaluation concessionnaire",
+    "title": "Évaluation du concessionnaire",
     "complete": "Évaluation terminée",
     "nextSteps": "Voici les prochaines étapes",
     "actionsReady": "actions recommandées prêtes à être examinées",
@@ -34,19 +34,19 @@
   },
   "actions": {
     "title": "Plan d'action",
-    "unassigned": "Non attribué",
+    "unassigned": "Non assigné",
     "noActions": "Aucune action trouvée",
     "rateLimitWarning": "Veuillez patienter {{seconds}} secondes avant de générer à nouveau.",
-    "hourlyLimitReached": "Limite de génération atteinte. Veuillez patienter avant de réessayer."
+    "hourlyLimitReached": "Limite de génération d'actions atteinte. Veuillez patienter avant de générer à nouveau."
   },
   "benchmark": {
-    "indicativeLabel": "Référence indicative (75 %) ⓘ",
-    "tooltip": "Cette référence représente une moyenne indicative basée sur les observations des réseaux européens de distribution automobile. Elle n'est pas validée statistiquement. Pour des références spécifiques à votre marque, contactez votre responsable de programme constructeur.",
-    "footnote": "* Référence indicative. Des références segmentées par niveau de marque et type de marché sont disponibles dans la configuration entreprise."
+    "indicativeLabel": "Référentiel indicatif (75 %) ⓘ",
+    "tooltip": "Ce référentiel représente une moyenne indicative basée sur les observations des réseaux de distribution automobile en Europe. Il n'est pas statistiquement validé. Pour des référentiels spécifiques à votre marque, contactez votre responsable de programme OEM.",
+    "footnote": "* Le référentiel est indicatif. Des référentiels segmentés par niveau de marque et type de marché sont disponibles dans la configuration entreprise."
   },
   "oem": {
     "title": "Vue d'ensemble du réseau",
-    "totalDealers": "Total concessionnaires",
+    "totalDealers": "Total des concessionnaires",
     "avgScore": "Score moyen",
     "highestScore": "Score le plus élevé",
     "lowestScore": "Score le plus bas",
@@ -56,9 +56,9 @@
     "latestScore": "Dernier score",
     "previousScore": "Score précédent",
     "trend": "Tendance",
-    "benchmarkBand": "Tranche",
-    "selectNetwork": "Sélectionner un réseau",
-    "noNetworks": "Aucune adhésion à un réseau",
+    "benchmarkBand": "Bande",
+    "selectNetwork": "Sélectionner le réseau",
+    "noNetworks": "Aucune adhésion au réseau trouvée",
     "noAssessments": "Aucune évaluation pour le moment",
     "loadError": "Impossible de charger les données"
   },
@@ -69,8 +69,8 @@
     "filterAll": "Tous",
     "filterCompleted": "Terminés",
     "filterInProgress": "En cours",
-    "scoreTrend": "Évolution du score",
-    "selectDealers": "Sélectionner des concessionnaires à comparer",
+    "scoreTrend": "Tendance du score",
+    "selectDealers": "Sélectionnez des concessionnaires à comparer",
     "noAssignments": "Aucun concessionnaire assigné",
     "noAssessments": "Aucune évaluation trouvée",
     "latestAssessment": "Dernière évaluation",
@@ -82,21 +82,21 @@
       "noData": "Aucune donnée KPI disponible",
       "score": "Score",
       "legend": "Légende",
-      "aboveBenchmark": "Au-dessus de la référence",
-      "atBenchmark": "Au niveau de la référence",
-      "belowBenchmark": "En dessous de la référence"
+      "aboveBenchmark": "Au-dessus du référentiel",
+      "atBenchmark": "Au référentiel",
+      "belowBenchmark": "En dessous du référentiel"
     },
     "causalChain": {
-      "title": "Analyse des causes racines",
+      "title": "Analyse des causes profondes",
       "noChains": "Aucune chaîne causale inter-départements détectée.",
       "viewAll": "Voir toutes les chaînes",
       "showLess": "Afficher moins",
-      "sharedCause": "Cause racine commune",
-      "rootCause": "Cause racine"
+      "sharedCause": "Cause commune",
+      "rootCause": "Cause profonde"
     },
     "ceiling": {
-      "title": "Écarts d'excellence — Vers le quartile supérieur",
-      "noInsights": "Tous les départements sont optimisés. Aucune opportunité immédiate identifiée.",
+      "title": "Écarts d'excellence — Chemin vers le quartile supérieur",
+      "noInsights": "Tous les départements sont en optimisation. Aucune opportunité immédiate identifiée.",
       "viewAll": "Voir toutes les analyses",
       "showLess": "Afficher moins",
       "badge": "Opportunité d'optimisation",

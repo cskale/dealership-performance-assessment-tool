@@ -490,11 +490,13 @@ OEM admins manage their network at `/app/oem-settings` (Network Settings in side
 ### RLS Recursion (dealer_network_memberships)
 - Any RLS policy that directly joins `dealer_network_memberships` inside a policy on `dealerships` or `assessments` causes infinite recursion — the policy re-evaluates itself. Always wrap such logic in a `SECURITY DEFINER` function in the `private` schema and call that from the policy instead.
 
-### Known Non-Blocking Issues (as of 1 May 2026)
-- `action_audit_log`: client makes a direct REST call that returns 403 — inserts should happen via DB trigger only, not from client code.
-- ActionSheet PATCH: `new_value` sent as URL-encoded query param (`%22new_value%22`) instead of JSON body — body serialisation bug in the action update call.
-- `DialogContent` without `DialogTitle`: multiple dialogs missing accessible title — triggers React accessibility warnings in dev but does not break functionality.
+### Known Non-Blocking Issues (as of 19 Jun 2026)
 - `useOnboarding` RLS false negatives: RLS timing can make a valid `active_dealership_id` appear inaccessible on first load. The hook now logs a warning and preserves the stored value instead of nulling it — but the root cause (RLS propagation delay) is not fixed.
+
+### Resolved Non-Blocking Issues
+- ~~`action_audit_log` 403~~ — fixed: DB trigger handles inserts (migration `20260514000001`), SELECT policy added (migration `20260514000004`), no client-side inserts remain.
+- ~~ActionSheet PATCH body serialisation~~ — fixed: `performUpdate` uses Supabase `.update()` correctly; no raw REST calls.
+- ~~`DialogContent` without `DialogTitle`~~ — fixed: all rendered dialogs have `DialogTitle`; unused `CommandDialog` in shadcn/ui `command.tsx` is not rendered anywhere.
 
 ## Current Tracker Status (as of 15 June 2026)
 - Total items: 63 (62 from 1 May 2026 + #84 Playground KPI seeding)
@@ -502,7 +504,7 @@ OEM admins manage their network at `/app/oem-settings` (Network Settings in side
 - Pending/Partial: ~13 (21%)
 - **Completed (April–May 2026 sessions)**: #01 role architecture, #05 network tables + RLS, #31 score decomposition, #35 30/60/90 roadmap, #38 OEM dashboard + settings, #39 coach dashboard + action tracker, #41 OEM peer rank, #45 confidence variance warning, #47 dashboard empty state/onboarding, #55 coach invite flow, #56 OEM self-service activation, #57 OEM cross-org RLS + lookup functions, signal mapping refactor (question-driven architecture), 11 KPI-proxy questions added (61 total)
 - **Completed (June 2026 session)**: #84 Playground — Reverse Sales Funnel Calculator (`/app/playground`), `PlaygroundCalculatorShell` reusable shell, KPI-seeded pre-fill (`usePlaygroundPrefill` + `PLAYGROUND_KPI_MAPPINGS`), `kpi_benchmark_thresholds` schema scaffold, design-language restyle (commits `8f8f408`, `2243f40`, `671a20d`, `0ed73c7`)
-- **Remaining priorities (Claude Code)**: #58 Results page OEM "viewing as dealer" context, #36 delta scoring (needs DB design), #12 context intake questionnaire, coach assignment management UI, action_audit_log client call fix, ActionSheet PATCH body serialisation fix, DialogContent accessibility titles, remaining 11 Playground calculators
+- **Remaining priorities (Claude Code)**: #58 Results page OEM "viewing as dealer" context, #36 delta scoring (needs DB design), #12 context intake questionnaire, coach assignment management UI, remaining 11 Playground calculators
 - **Remaining priorities (Lovable)**: #42 neutral option tiles (anchoring bias), #44 scrollable single-page results, #48 score trajectory card (blocked on #36), #14 modular assessment
 
 ## Improvement Tracker File

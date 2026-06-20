@@ -62,7 +62,7 @@ export default function ProductSneakPeek() {
   const section = useScrollReveal(0.1);
 
   return (
-    <section ref={section.ref} className="py-20 px-6 lg:px-8" style={{ backgroundColor: '#F0F4F8' }}>
+    <section ref={section.ref} className="py-20 px-6 lg:px-8 bg-dd-fog">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div

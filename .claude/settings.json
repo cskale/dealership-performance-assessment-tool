@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -n \"\\\\${\" supabase/functions/send-invite/index.ts)"
+      "Bash(grep -n \"\\\\${\" supabase/functions/send-invite/index.ts)",
+      "Bash(claude plugin *)",
+      "mcp__lovable__send_message"
     ]
   }
 }

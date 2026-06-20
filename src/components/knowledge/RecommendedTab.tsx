@@ -18,7 +18,7 @@ const DEPT_ORDER = [
 ];
 
 function pillClass(score: number | undefined): string {
-  if (score === undefined) return 'bg-slate-700/40 text-slate-300 border-slate-600';
+  if (score === undefined) return 'bg-neutral-700/40 text-neutral-300 border-neutral-600';
   if (score < 50) return 'bg-red-500/20 text-red-300 border-red-500/30';
   if (score < 75) return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
   return 'bg-green-500/20 text-green-300 border-green-500/30';
@@ -195,13 +195,13 @@ export function RecommendedTab() {
   return (
     <div className="space-y-8">
       {/* Hero strip */}
-      <div className="bg-slate-900 rounded-2xl px-8 py-6 min-h-[180px] flex flex-col gap-4">
+      <div className="bg-dd-midnight rounded-2xl px-8 py-6 min-h-[180px] flex flex-col gap-4">
         <div className="flex items-start justify-between gap-6">
           <div className="flex-1 min-w-0">
             <div className="mb-3">
               <FreshnessBadge completedAt={assessment.completedAt} />
             </div>
-            <p className="text-xs text-slate-400 mb-1">
+            <p className="text-xs text-neutral-400 mb-1">
               {user?.email} · Assessment {new Date(assessment.completedAt).toLocaleDateString()}
             </p>
             <h2 className="text-2xl font-semibold text-white leading-tight">

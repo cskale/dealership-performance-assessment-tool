@@ -6,6 +6,63 @@ Types: **feat** · **fix** · **security** · **perf** · **docs** · **refactor
 
 ---
 
+## [2026-06-20] — Tracker Audit, Auth UX, Lovable Tasks
+
+### feat
+- **Forgot password link on sign-in form** — Added "Forgot password?" button below "Sign In with Email". Calls `supabase.auth.resetPasswordForEmail()` with redirect to `/auth/callback`. Toast feedback for success/error. No new dependencies — uses existing `supabase` client and `useToast`. `(commit 6135dc6)`
+
+### tracker
+- **#58 marked Done** — "Results page viewing as dealer mode for OEM" was already implemented: OEM banner shows "Viewing as OEM · Dealer Name · Tier" with back link, full Results page renders read-only. Verified via OEM profile switch and screenshot.
+- **#43 closed as redundant** — "Always-visible context panel" was built by Lovable (right-column sticky panel + mobile drawer) but tested and reverted — top hero nav + progress bar already show identical information. No additional utility.
+- **#53 partially attempted** — FR/ES/IT translations sent to Lovable but `LanguageContext.tsx` type union is `'en' | 'de'` only. Lovable did not modify the file. Structural expansion needed before content fill.
+
+### infra
+- OEM profile switch tested via Supabase SQL (disable/re-enable `trg_prevent_actor_type_self_edit` trigger for `actor_type` update)
+- Vercel auto-deploy triggered via git push for Auth.tsx change
+
+### Notes
+- No new npm packages
+- Supabase auth reset email uses default template — flagged as spam by Gmail. Fix: route auth emails through Resend SMTP (not yet done)
+
+---
+
+## [2026-06-18] — Notification Email Pipeline Fix + Edge Function Overhaul
+
+### fix
+- **Notification emails now actually send** — Stale action nudge (#71), weekly digest (#73), milestone (#74), and coach comment (#78) emails were fully coded since Sprint 11 but never delivered. Root causes: (1) `app.settings.service_role_key` cannot be set via `ALTER DATABASE` on hosted Supabase — cron functions silently skipped all email dispatch; (2) `responsible_person` stores role titles ("Service Manager") not email addresses — stale nudge email condition never matched; (3) React Email `render()` via `esm.sh` crashed silently in Deno edge runtime; (4) `notify.performance-assessment.com` domain not verified in Resend; (5) `SITE_URL` fallback pointed to old Lovable URL; (6) email links pointed to `/app/actions` (404) instead of `/app/results`.
+- **Service role key stored in Supabase Vault** — `vault.decrypted_secrets` used instead of `current_setting('app.settings.service_role_key')`. Both `process_stale_actions()` and `send_weekly_digests()` updated to read from vault. `(migration fix_cron_functions_use_vault_for_srk)`
+- **Stale action emails use owner lookup** — `process_stale_actions()` now looks up the action owner's email from `auth.users` via `user_id` instead of checking `responsible_person LIKE '%@%'`. `(migration fix_stale_action_email_lookup)`
+- **React Email replaced with inline HTML** — `notify-dispatcher` Edge Function rewritten: removed all `esm.sh` React/react-email imports. 4 email templates (stale action, weekly digest, milestone, coach comment) rebuilt as pure HTML string functions. Same branded design, zero runtime dependencies. `(notify-dispatcher v8)`
+- **Sender domain switched to `onboarding@resend.dev`** — Resend test sender works immediately; delivers to any email. Swap to branded `notifications@notify.performance-assessment.com` when domain is verified in Resend.
+- **SITE_URL hardcoded to Vercel production** — `PRODUCTION_URL = 'https://dealership-performance-assessment-t.vercel.app'` as fallback; also set as Edge Function secret. All email links now point to correct production routes.
+- **Email action links fixed** — "View Action Plan" → `/app/results` (was `/app/actions` which 404'd). "Account Settings" → `/app/account`. Coach comment → `/app/dashboard`.
+
+### infra
+- `notify-dispatcher` Edge Function — v8 deployed (inline HTML templates, diagnostic `email_error` field in response)
+- `RESEND_API_KEY` — confirmed set as Edge Function secret
+- `SITE_URL` — set as Edge Function secret (`https://dealership-performance-assessment-t.vercel.app`)
+- Service role key — stored in Supabase Vault (`vault.decrypted_secrets`, name: `service_role_key`)
+
+### db
+- `process_stale_actions()` — rewritten to read SRK from vault + email owner via `auth.users` lookup
+- `send_weekly_digests()` — rewritten to read SRK from vault
+- `trigger_stale_action_check()` — updated (manual test RPC for coaches/OEM)
+- Migrations: `fix_stale_action_email_lookup`, `fix_cron_functions_use_vault_for_srk`
+
+### verified
+- End-to-end email delivery confirmed: cron → vault key → `pg_net.http_post` → `notify-dispatcher` v8 → Resend API → Gmail inbox
+- In-app notifications: 2,575+ records confirmed working (always were)
+- Cron jobs active: stale actions daily 08:00 UTC, weekly digest Monday 07:00 UTC
+- All notification preferences respected (email_enabled, stale_action_nudge, weekly_digest, milestone_alerts)
+
+### Notes
+- No new npm packages
+- No frontend code changes
+- `notify.performance-assessment.com` domain verification in Resend pending — using `onboarding@resend.dev` until then
+- `send-invite` Edge Function still uses old Lovable URL fallback — will be fixed when domain is verified
+
+---
+
 ## [2026-06-15] — Playground: Reverse Sales Funnel Calculator + KPI Seeding
 
 ### feat

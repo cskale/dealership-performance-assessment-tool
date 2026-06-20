@@ -392,38 +392,14 @@ export default function Results() {
             const freshness = getAssessmentFreshness(resultsData.completedAt);
             if (freshness.status !== 'stale') return null;
             return (
-              <div
-                style={{
-                  background: '#fef6e4',
-                  borderLeft: '3px solid #d97706',
-                  borderRadius: 6,
-                  padding: '10px 16px',
-                  fontSize: 12,
-                  color: '#92610a',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 12,
-                  marginBottom: 16,
-                }}
-              >
+              <div className="flex items-center justify-between gap-3 bg-amber-50 border-l-[3px] border-l-amber-600 rounded-md px-4 py-2.5 text-xs text-amber-800 mb-4">
                 <span>
                   This assessment is {freshness.daysSince} days old. Market conditions and team changes may mean your diagnostic no longer reflects current reality. Consider running a refresh assessment.
                 </span>
                 <button
                   type="button"
                   onClick={() => navigate('/app/assessment')}
-                  style={{
-                    fontSize: 11,
-                    color: '#92610a',
-                    border: '1px solid #d97706',
-                    background: 'transparent',
-                    padding: '4px 10px',
-                    borderRadius: 6,
-                    cursor: 'pointer',
-                    fontWeight: 500,
-                    whiteSpace: 'nowrap',
-                  }}
+                  className="text-[11px] text-amber-800 border border-amber-600 bg-transparent px-2.5 py-1 rounded-md cursor-pointer font-medium whitespace-nowrap hover:bg-amber-100 transition-colors"
                 >
                   Reassess
                 </button>

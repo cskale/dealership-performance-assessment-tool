@@ -782,7 +782,7 @@ const PRIORITY_COLORS: Record<string, string> = {
   critical: 'bg-red-100 text-red-700 border-red-200',
   high:     'bg-orange-100 text-orange-700 border-orange-200',
   medium:   'bg-amber-100 text-amber-700 border-amber-200',
-  low:      'bg-slate-100 text-slate-600 border-slate-200',
+  low:      'bg-neutral-100 text-neutral-600 border-neutral-200',
 };
 
 // ── CoachNotesTab ──────────────────────────────────────────────────────────────

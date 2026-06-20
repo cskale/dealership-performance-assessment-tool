@@ -34,13 +34,13 @@ export function Footer() {
   const t = content[language as keyof typeof content] || content.en;
 
   return (
-    <footer className="bg-slate-900 text-white py-16 px-4">
+    <footer className="bg-dd-midnight text-white py-16 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Brand */}
           <div>
-            <h3 className="text-xl font-bold mb-4">Dealership Assessment</h3>
-            <p className="text-slate-400 text-sm leading-relaxed">
+            <h3 className="text-h4 text-white mb-4">Dealership Assessment</h3>
+            <p className="text-neutral-400 text-sm leading-relaxed">
               {t.tagline}
             </p>
           </div>
@@ -50,17 +50,17 @@ export function Footer() {
             <h4 className="font-semibold mb-4">{t.quickLinks}</h4>
             <ul className="space-y-3">
               <li>
-                <Link to="/app/assessment" className="text-slate-400 hover:text-white transition-colors text-sm">
+                <Link to="/app/assessment" className="text-neutral-400 hover:text-white transition-colors text-sm">
                   {t.startAssessment}
                 </Link>
               </li>
               <li>
-                <Link to="/resources" className="text-slate-400 hover:text-white transition-colors text-sm">
+                <Link to="/resources" className="text-neutral-400 hover:text-white transition-colors text-sm">
                   {t.resources}
                 </Link>
               </li>
               <li>
-                <Link to="/methodology" className="text-slate-400 hover:text-white transition-colors text-sm">
+                <Link to="/methodology" className="text-neutral-400 hover:text-white transition-colors text-sm">
                   {t.methodology}
                 </Link>
               </li>
@@ -72,17 +72,17 @@ export function Footer() {
             <h4 className="font-semibold mb-4">{t.support}</h4>
             <ul className="space-y-3">
               <li>
-                <Link to="/resources" className="text-slate-400 hover:text-white transition-colors text-sm">
+                <Link to="/resources" className="text-neutral-400 hover:text-white transition-colors text-sm">
                   {t.helpCenter}
                 </Link>
               </li>
               <li>
-                <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">
+                <a href="#" className="text-neutral-400 hover:text-white transition-colors text-sm">
                   {t.contactUs}
                 </a>
               </li>
               <li>
-                <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">
+                <a href="#" className="text-neutral-400 hover:text-white transition-colors text-sm">
                   {t.privacy}
                 </a>
               </li>
@@ -90,8 +90,8 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-slate-800 mt-12 pt-8">
-          <p className="text-slate-500 text-sm text-center">
+        <div className="border-t border-white/10 mt-12 pt-8">
+          <p className="text-neutral-500 text-sm text-center">
             {t.copyright}
           </p>
         </div>

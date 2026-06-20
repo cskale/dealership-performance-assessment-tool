@@ -143,6 +143,9 @@ Never add `useState` or `useEffect` after a conditional return. Hooks must be de
 | Issue | Status |
 |---|---|
 | `useOnboarding` RLS false negatives on first load — hook logs warning and preserves stored value | Accepted / low priority |
+| ~~`action_audit_log` 403 on client inserts~~ | Resolved — DB trigger + SELECT policy (migrations `20260514000001`, `20260514000004`) |
+| ~~ActionSheet PATCH body serialisation~~ | Resolved — uses Supabase `.update()` correctly |
+| ~~`DialogContent` missing `DialogTitle`~~ | Resolved — all rendered dialogs have titles |
 
 ---
 
