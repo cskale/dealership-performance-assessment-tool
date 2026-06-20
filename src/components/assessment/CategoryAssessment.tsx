@@ -161,7 +161,6 @@ export function CategoryAssessment({
             <div
               key={question.id}
               ref={(el) => { questionRefs.current[question.id] = el; }}
-              data-q-index={index}
               className="bg-white border border-[#d4dde4] rounded-xl overflow-hidden mb-8 opacity-0 animate-fade-in"
               style={{
                 animationDelay: `${index * 45}ms`,
