@@ -2231,7 +2231,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
             setLanguageState(profileLang);
             localStorage.setItem('app_language', profileLang);
             localStorage.setItem('language', profileLang);
-            i18n.changeLanguage(profileLang);
+            if (i18n.isInitialized) i18n.changeLanguage(profileLang);
           }
         }
       } catch (err) {
@@ -2269,7 +2269,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     setLanguageState(lang);
     localStorage.setItem('app_language', lang);
     localStorage.setItem('language', lang);
-    i18n.changeLanguage(lang);
+    if (i18n.isInitialized) i18n.changeLanguage(lang);
 
     // Save to user profile if logged in
     if (userId) {
