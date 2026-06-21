@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { MessageSquare, Save, ChevronRight, StickyNote, Check, ExternalLink } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Question, Section, isScoredQuestion, isDataQuestion } from "@/data/questionnaire";
 import { useAssessmentNotes } from "@/hooks/useAssessmentNotes";
 import { useToast } from "@/hooks/use-toast";
