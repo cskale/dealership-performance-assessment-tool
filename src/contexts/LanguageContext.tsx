@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import i18n from 'i18next';
 
 export type Language = 'en' | 'de' | 'fr' | 'es' | 'it';
 
@@ -2231,7 +2230,6 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
             setLanguageState(profileLang);
             localStorage.setItem('app_language', profileLang);
             localStorage.setItem('language', profileLang);
-            if (i18n.isInitialized) i18n.changeLanguage(profileLang);
           }
         }
       } catch (err) {
@@ -2269,7 +2267,6 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     setLanguageState(lang);
     localStorage.setItem('app_language', lang);
     localStorage.setItem('language', lang);
-    if (i18n.isInitialized) i18n.changeLanguage(lang);
 
     // Save to user profile if logged in
     if (userId) {
