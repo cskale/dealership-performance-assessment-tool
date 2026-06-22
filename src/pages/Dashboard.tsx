@@ -117,7 +117,7 @@ function HeroCard({
         </p>
         <div className="flex items-baseline gap-2">
           <span
-            className="text-[72px] font-extrabold text-white leading-none tabular-nums font-display"
+            className="text-[72px] font-extrabold text-white leading-none tabular-nums font-sans"
             style={{ letterSpacing: '-0.05em' } as React.CSSProperties}
           >
             {Math.round(overallScore)}
@@ -183,7 +183,7 @@ function HeroCard({
         </p>
         <div className="flex items-baseline gap-3 mb-2">
           <span
-            className="text-[56px] font-extrabold text-white leading-none tabular-nums font-display"
+            className="text-[56px] font-extrabold text-white leading-none tabular-nums font-sans"
             style={{ letterSpacing: '-0.04em' } as React.CSSProperties}
           >
             {Math.round(focusDeptScore)}

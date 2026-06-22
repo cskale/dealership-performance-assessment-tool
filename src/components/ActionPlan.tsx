@@ -11,7 +11,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  Plus, Loader2, Pencil,
+  Plus, Loader2, Pencil, ChevronDown,
   AlertTriangle, Target, Eye, Search, Filter, LayoutGrid, List as ListIcon,
   CheckCircle2, X, StickyNote
 } from 'lucide-react';
@@ -542,7 +542,7 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
         </div>
 
         <div className="flex items-center gap-2 ml-auto flex-shrink-0">
-          <div className="inline-flex h-9 items-center rounded-md bg-card border p-0.5">
+          <div className="inline-flex h-9 items-center rounded-lg bg-card border p-0.5">
             {([
               { key: 'list', label: 'List', Icon: ListIcon },
               { key: 'kanban', label: 'Kanban', Icon: LayoutGrid },
@@ -552,7 +552,7 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
                 key={key}
                 onClick={() => setViewMode(key)}
                 className={cn(
-                  "inline-flex items-center gap-1.5 px-2.5 h-8 rounded text-xs transition-colors",
+                  "inline-flex items-center gap-1.5 px-2.5 h-8 rounded-[6px] text-xs transition-colors",
                   viewMode === key
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
@@ -577,10 +577,13 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
                 <Filter className="h-3.5 w-3.5" /> Filter
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-56 p-3 space-y-3" align="end">
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Priority</label>
-              <div className="flex flex-wrap gap-1">
+            <PopoverContent className="w-56 p-2 space-y-1" align="end">
+            <details className="group">
+              <summary className="flex items-center justify-between cursor-pointer list-none px-2 py-1.5 rounded hover:bg-muted transition-colors">
+                <span className="text-xs font-medium text-foreground">Priority</span>
+                <ChevronDown className="h-3 w-3 text-muted-foreground transition-transform group-open:rotate-180" />
+              </summary>
+              <div className="flex flex-wrap gap-1 px-2 py-1.5">
                 {['all', 'critical', 'high', 'medium', 'low'].map(p => (
                   <button key={p} onClick={() => setFilterPriority(p)}
                     className={cn("px-2 py-1 rounded text-xs border transition-colors",
@@ -590,10 +593,13 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
                   </button>
                 ))}
               </div>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Department</label>
-              <div className="flex flex-wrap gap-1">
+            </details>
+            <details className="group">
+              <summary className="flex items-center justify-between cursor-pointer list-none px-2 py-1.5 rounded hover:bg-muted transition-colors">
+                <span className="text-xs font-medium text-foreground">Department</span>
+                <ChevronDown className="h-3 w-3 text-muted-foreground transition-transform group-open:rotate-180" />
+              </summary>
+              <div className="flex flex-wrap gap-1 px-2 py-1.5">
                 <button onClick={() => setFilterDepartment('all')}
                   className={cn("px-2 py-1 rounded text-xs border transition-colors",
                     filterDepartment === 'all' ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"
@@ -605,10 +611,13 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
                     )}>{d}</button>
                 ))}
               </div>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Sort</label>
-              <div className="flex flex-wrap gap-1">
+            </details>
+            <details className="group">
+              <summary className="flex items-center justify-between cursor-pointer list-none px-2 py-1.5 rounded hover:bg-muted transition-colors">
+                <span className="text-xs font-medium text-foreground">Sort</span>
+                <ChevronDown className="h-3 w-3 text-muted-foreground transition-transform group-open:rotate-180" />
+              </summary>
+              <div className="flex flex-wrap gap-1 px-2 py-1.5">
                 {[
                   { key: 'priority', label: 'Priority' },
                   { key: 'date_asc', label: 'Due Date ↑' },
@@ -621,7 +630,7 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
                     )}>{s.label}</button>
                 ))}
               </div>
-            </div>
+            </details>
             </PopoverContent>
           </Popover>
         </div>

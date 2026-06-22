@@ -10,19 +10,27 @@ export interface AssessmentNote {
   updated_at?: string;
 }
 
-export function useAssessmentNotes() {
+export function useAssessmentNotes(assessmentId?: string) {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Load all notes for the current user
+  // Load notes — scoped to assessmentId when provided, otherwise unlinked notes
   const loadNotes = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('assessment_notes')
         .select('question_id, notes')
         .order('updated_at', { ascending: false });
+
+      if (assessmentId) {
+        query = query.eq('assessment_id', assessmentId);
+      } else {
+        query = query.is('assessment_id', null);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -30,7 +38,7 @@ export function useAssessmentNotes() {
       data?.forEach(note => {
         notesMap[note.question_id] = note.notes;
       });
-      
+
       setNotes(notesMap);
     } catch (error) {
       console.error('Error loading notes:', error);
@@ -123,7 +131,7 @@ export function useAssessmentNotes() {
 
   useEffect(() => {
     loadNotes();
-  }, []);
+  }, [assessmentId]);
 
   return {
     notes,

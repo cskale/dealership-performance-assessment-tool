@@ -4,6 +4,23 @@ Quick-reference log of incremental enhancements, UI fixes, and small quality-of-
 
 ---
 
+## 2026-06-22
+
+| # | Enhancement | Details | Commit |
+|---|-------------|---------|--------|
+| 1 | Sidebar expand button restyle | Moved collapse/expand toggle from absolute overlay to between header and nav. Full white background with dark icon — clear, visible click target. | pending |
+| 2 | Fix dashboard score fonts | Dashboard hero scores (overall "63" and focus dept "59") were using `font-display` (Instrument Serif) instead of Inter. Changed to `font-sans` to match design system. | pending |
+| 3 | Clean radial score ring | Removed 3 grey tick-mark rectangles at 46/70/85 positions on the SVG score ring in Results summary cards. Ring is now clean and professional. | pending |
+| 4 | Fix score breakdown math display | When only 3/5 departments assessed, legend showed raw contributions summing to 41.1 while overall was 63. Now normalizes weights so contributions sum correctly to overall score (e.g. NVS 38%→25.1pts + UVS 31%→18.2pts + FIN 31%→19.7pts = 63). | pending |
+| 5 | Remove duplicate Performance Radar from Summary tab | Radar chart on Summary tab was identical to the one on Maturity Level tab. Removed from Summary — single source on Maturity tab. | pending |
+| 6 | Move Performance Data to KPI Analysis tab | Moved `PerformanceDataPanel` (user-entered KPI values) from Summary tab into KPI Analysis tab. Replaced generic `IndustrialKPIDashboard` which showed static benchmark info without user-specific data. KPI tab now shows actual dealer performance data. | pending |
+| 7 | Remove Score Decomposition from Maturity tab | Removed collapsible score decomposition table (dept × weight × contribution) from Maturity tab. Redundant with stacked bar on Summary tab. Cleaned up unused `scoreDecompositionData` and `weightedSum` memos. | pending |
+| 8 | Scope field notes to assessment | `useAssessmentNotes` now accepts optional `assessmentId` — filters notes to that assessment only. On assessment completion, all unlinked notes (assessment_id IS NULL) are stamped with the new assessment ID. Prevents old notes bleeding into new assessment results. | pending |
+| 9 | Fix List/Kanban/Roadmap button radius | Container changed to `rounded-lg`, inner buttons to `rounded-[6px]`. Visually matched corners — no more mismatched radius between toggle buttons and their container. | pending |
+| 10 | Collapsible filter sections in Action Plan | Filter popover now shows Priority/Department/Sort as collapsed `<details>` headers. Click to expand and see options. Cleaner initial view vs. all options visible at once. | pending |
+
+---
+
 ## 2026-06-20
 
 | # | Enhancement | Details | Commit |

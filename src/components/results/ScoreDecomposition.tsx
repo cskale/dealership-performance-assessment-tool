@@ -43,8 +43,8 @@ export function ScoreDecomposition({ scores, overallScore }: ScoreDecompositionP
   const ptsLabel = language === 'de' ? 'Pkt' : 'pts';
 
   // Exclude modules with no score (gated out by business model).
-  // Redistribute display widths proportionally among included modules so the
-  // bar fills correctly — this is display-only; actual scoring weights are unchanged.
+  // Normalize weights so included modules sum to 100% — matches how
+  // calculateWeightedScore normalizes when totalWeight < 1.
   const includedDepts = ORDER.filter(dept => (scores[dept] ?? 0) > 0);
   const totalIncludedWeight = includedDepts.reduce((sum, dept) => sum + WEIGHTS[dept], 0) || 1;
 
@@ -64,10 +64,9 @@ export function ScoreDecomposition({ scores, overallScore }: ScoreDecompositionP
           <div className="relative h-7 w-full rounded-[6px] bg-muted overflow-hidden flex">
             {includedDepts.map((dept, idx) => {
               const score = scores[dept]!;
-              const weight = WEIGHTS[dept];
-              const contribution = score * weight;
-              // Normalize width so included modules fill the full bar proportionally
-              const displayWidthPct = (contribution / totalIncludedWeight) * 100;
+              const normalizedWeight = WEIGHTS[dept] / totalIncludedWeight;
+              const contribution = score * normalizedWeight;
+              const displayWidthPct = (contribution / overallScore) * 100;
               return (
                 <Tooltip key={dept}>
                   <TooltipTrigger asChild>
@@ -83,7 +82,7 @@ export function ScoreDecomposition({ scores, overallScore }: ScoreDecompositionP
                   <TooltipContent>
                     <div className="text-xs space-y-0.5">
                       <p className="font-semibold">{getDepartmentName(dept, language)}</p>
-                      <p>{scoreLabel}: {score.toFixed(0)} · {weightLabel}: {(weight * 100).toFixed(0)}%</p>
+                      <p>{scoreLabel}: {score.toFixed(0)} · {weightLabel}: {(normalizedWeight * 100).toFixed(0)}%</p>
                       <p>{contributionLabel}: {contribution.toFixed(1)} {ptsLabel}</p>
                     </div>
                   </TooltipContent>
@@ -96,8 +95,8 @@ export function ScoreDecomposition({ scores, overallScore }: ScoreDecompositionP
         <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3 text-[12px]">
           {includedDepts.map((dept) => {
             const score = scores[dept]!;
-            const weight = WEIGHTS[dept];
-            const contribution = score * weight;
+            const normalizedWeight = WEIGHTS[dept] / totalIncludedWeight;
+            const contribution = score * normalizedWeight;
             return (
               <div key={dept} className="flex items-center gap-1.5">
                 <span
@@ -108,7 +107,7 @@ export function ScoreDecomposition({ scores, overallScore }: ScoreDecompositionP
                   {getDepartmentName(dept, language)}
                 </span>
                 <span className="text-muted-foreground">
-                  {score.toFixed(0)} ×{(weight * 100).toFixed(0)}% = {contribution.toFixed(1)} {ptsLabel}
+                  {score.toFixed(0)} ×{(normalizedWeight * 100).toFixed(0)}% = {contribution.toFixed(1)} {ptsLabel}
                 </span>
               </div>
             );

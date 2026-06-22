@@ -118,20 +118,22 @@ export function AppSidebar() {
           )}
         </Link>
         {/* Collapse toggle — pokes out from right edge when collapsed */}
+      </div>
+      {/* Collapse toggle — sits between header and nav */}
+      <div className="flex justify-end px-2 py-1">
         <button
           type="button"
           onClick={() => setCollapsed(prev => !prev)}
           className={cn(
-            'absolute top-1/2 -translate-y-1/2 h-6 w-6 rounded-full z-10',
-            'border border-white/30',
-            'flex items-center justify-center hover:bg-white/20 transition-colors shrink-0',
-            collapsed ? '-right-3 bg-[hsl(var(--dd-midnight))]' : 'right-2 bg-[hsl(var(--dd-midnight))]'
+            'h-6 w-6 rounded-full',
+            'border border-white/20 bg-white',
+            'flex items-center justify-center hover:bg-white/90 transition-colors shrink-0'
           )}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed
-            ? <ChevronRight className="h-3 w-3 text-white/80" />
-            : <ChevronLeft  className="h-3 w-3 text-white/80" />}
+            ? <ChevronRight className="h-3 w-3 text-[hsl(var(--dd-midnight))]" />
+            : <ChevronLeft  className="h-3 w-3 text-[hsl(var(--dd-midnight))]" />}
         </button>
       </div>
 

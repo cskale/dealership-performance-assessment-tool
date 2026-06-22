@@ -276,6 +276,13 @@ export const useAssessmentData = () => {
         if (import.meta.env.DEV) {
           console.log('[Assessment] Completed assessment saved with DB ID:', result.id);
         }
+
+        // Stamp unlinked notes with this assessment's ID so they're scoped to it
+        await supabase
+          .from('assessment_notes')
+          .update({ assessment_id: result.id } as any)
+          .eq('user_id', user.id)
+          .is('assessment_id', null);
       } else {
         // For in-progress, use upsert
         const { data, error: upsertError } = await supabase

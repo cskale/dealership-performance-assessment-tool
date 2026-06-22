@@ -9,8 +9,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { ExecutiveSummary } from "@/components/ExecutiveSummary";
 import { CeilingInsightsPanel } from "@/components/results/CeilingInsightsPanel";
-import { RadarBenchmarkChart } from "@/components/results/RadarBenchmarkChart";
-import { IndustrialKPIDashboard } from "@/components/IndustrialKPIDashboard";
 import { MaturityScoring } from "@/components/MaturityScoring";
 import { ActionPlan } from "@/components/ActionPlan";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -58,7 +56,7 @@ export default function Results() {
   const { user } = useAuth();
   const { currentOrganization, userMemberships } = useMultiTenant();
   const { actorType } = useActiveRole();
-  const { notes } = useAssessmentNotes();
+  const { notes } = useAssessmentNotes(resultsData?.assessmentId);
   const { data: kpiValues = [] } = useKpiValues(resultsData?.assessmentId);
   const [oemDealerContext, setOemDealerContext] = useState<{
     name: string;
@@ -456,20 +454,6 @@ export default function Results() {
                         strokeDashoffset={scoreOffset}
                         style={{ transition: 'stroke-dashoffset 0.3s ease-out' }}
                       />
-                      {[46, 70, 85].map(pos => {
-                        const angle = (pos / 100) * 2 * Math.PI - Math.PI / 2;
-                        const tx = ringSize / 2 + radius * Math.cos(angle);
-                        const ty = ringSize / 2 + radius * Math.sin(angle);
-                        return (
-                          <rect
-                            key={pos}
-                            x={tx - 1} y={ty - 3}
-                            width={2} height={6}
-                            fill="hsl(var(--neutral-300))"
-                            transform={`rotate(${(pos / 100) * 360 - 90}, ${tx}, ${ty})`}
-                          />
-                        );
-                      })}
                       {animatedScore === overallScore && overallScore > 0 && (
                         <circle
                           cx={ringSize / 2 + radius * Math.cos((overallScore / 100) * 2 * Math.PI - Math.PI / 2)}
@@ -556,12 +540,6 @@ export default function Results() {
                 }}
               />
             </ErrorBoundary>
-            <ErrorBoundary fallbackTitle={language === 'de' ? 'Performance-Radar nicht verfügbar' : 'Performance Radar unavailable'}>
-              <RadarBenchmarkChart departmentScores={resultsData.scores as Record<string, number>} />
-            </ErrorBoundary>
-            <ErrorBoundary fallbackTitle={language === 'de' ? 'Leistungsdaten nicht verfügbar' : 'Performance data unavailable'}>
-              <PerformanceDataPanel kpiValues={kpiValues} />
-            </ErrorBoundary>
             {ceilingInsights.length > 0 && (
               <ErrorBoundary fallbackTitle={language === 'de' ? 'Deckenanalyse nicht verfügbar' : 'Ceiling analysis unavailable'}>
                 <CeilingInsightsPanel insights={ceilingInsights} />
@@ -599,13 +577,8 @@ export default function Results() {
           </TabsContent>
 
           <TabsContent value="kpi" className="space-y-6 animate-fade-in">
-            <ErrorBoundary fallbackTitle={language === 'de' ? 'KPI-Dashboard nicht verfügbar' : 'KPI Dashboard unavailable'}>
-              <IndustrialKPIDashboard
-                scores={resultsData.scores}
-                onNavigateToEncyclopedia={(kpiKey) => {
-                  navigate(kpiKey ? `/app/knowledge/kpi/${kpiKey}` : '/app/knowledge?tab=kpi');
-                }}
-              />
+            <ErrorBoundary fallbackTitle={language === 'de' ? 'Leistungsdaten nicht verfügbar' : 'Performance data unavailable'}>
+              <PerformanceDataPanel kpiValues={kpiValues} />
             </ErrorBoundary>
           </TabsContent>
 
