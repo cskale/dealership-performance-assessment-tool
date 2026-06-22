@@ -169,11 +169,11 @@ export function PerformanceDataPanel({ kpiValues }: PerformanceDataPanelProps) {
       <CardContent className="p-0">
         {moduleData.map(({ sectionId, total, provided, skipped }) => (
           <div key={sectionId}>
-            <div className="flex items-center justify-between px-5 py-2.5 bg-primary text-primary-foreground">
-              <span className="text-xs font-semibold uppercase tracking-wider">
+            <div className="flex items-center justify-between px-5 py-2.5 bg-slate-100">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-700">
                 {getDepartmentName(sectionId, language)}
               </span>
-              <span className="text-xs text-primary-foreground/70 font-medium tabular-nums">
+              <span className="text-xs text-slate-500 font-medium tabular-nums">
                 {provided.length}/{total} {t('assessment.provided')}
               </span>
             </div>
