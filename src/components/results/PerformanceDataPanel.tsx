@@ -1,11 +1,12 @@
 import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   ChevronDown, BarChart3, DollarSign, Clock, Package, TrendingUp,
-  Percent, Wrench, Users, Calculator, Gauge, Info,
+  Percent, Wrench, Users, Calculator, Gauge, Info, FlaskConical,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getDepartmentName } from "@/lib/departmentNames";
@@ -106,8 +107,14 @@ function formatValue(value: number, language: string): string {
   });
 }
 
+function getKpiDisplayName(question: DataQuestion, lang: 'en' | 'de'): string {
+  const shortName = KPI_SHORT_NAMES[question.kpiKey];
+  return shortName?.[lang] ?? shortName?.en ?? (question.translations?.[lang]?.text ?? question.text);
+}
+
 export function PerformanceDataPanel({ kpiValues }: PerformanceDataPanelProps) {
   const { t, language } = useLanguage();
+  const navigate = useNavigate();
 
   const moduleData = useMemo(() => {
     const questionLookup = new Map<string, { sectionId: string; question: DataQuestion }>();
@@ -145,19 +152,28 @@ export function PerformanceDataPanel({ kpiValues }: PerformanceDataPanelProps) {
   return (
     <Card className="shadow-lg shadow-card rounded-xl overflow-hidden">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
-          <BarChart3 className="h-5 w-5 text-primary" />
-          {t('results.performanceData.title')}
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
+            <BarChart3 className="h-5 w-5 text-primary" />
+            {t('results.performanceData.title')}
+          </CardTitle>
+          <button
+            onClick={() => navigate('/app/playground')}
+            className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+          >
+            <FlaskConical className="h-3.5 w-3.5" />
+            {language === 'de' ? 'Playground öffnen' : 'Open Playground'}
+          </button>
+        </div>
       </CardHeader>
       <CardContent className="p-0">
         {moduleData.map(({ sectionId, total, provided, skipped }) => (
           <div key={sectionId}>
-            <div className="flex items-center justify-between px-5 py-2.5 bg-slate-900 text-white">
+            <div className="flex items-center justify-between px-5 py-2.5 bg-primary text-primary-foreground">
               <span className="text-xs font-semibold uppercase tracking-wider">
                 {getDepartmentName(sectionId, language)}
               </span>
-              <span className="text-xs text-slate-400 font-medium tabular-nums">
+              <span className="text-xs text-primary-foreground/70 font-medium tabular-nums">
                 {provided.length}/{total} {t('assessment.provided')}
               </span>
             </div>
@@ -166,8 +182,7 @@ export function PerformanceDataPanel({ kpiValues }: PerformanceDataPanelProps) {
               {provided.map(({ row, question }) => {
                 const kpiKey = question.kpiKey;
                 const benchmark = KPI_BENCHMARKS[kpiKey];
-                const shortName = KPI_SHORT_NAMES[kpiKey];
-                const displayName = shortName?.[lang] ?? shortName?.en ?? (question.translations?.[lang]?.text ?? question.text);
+                const displayName = getKpiDisplayName(question, lang);
                 const Icon = KPI_ICONS[kpiKey] ?? BarChart3;
                 const unitLabel = getUnitLabel(question);
                 const value = row.value as number;
@@ -178,7 +193,7 @@ export function PerformanceDataPanel({ kpiValues }: PerformanceDataPanelProps) {
                     key={row.id}
                     className="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50/60 transition-colors"
                   >
-                    <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-slate-500">
+                    <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary">
                       <Icon className="h-4 w-4" />
                     </div>
 
@@ -187,27 +202,34 @@ export function PerformanceDataPanel({ kpiValues }: PerformanceDataPanelProps) {
                         <span className="text-sm font-medium text-foreground truncate">
                           {displayName}
                         </span>
-                        {formulaText && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Info className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0 cursor-help" />
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-xs text-xs">
-                              <p className="font-medium mb-1">{language === 'de' ? 'Berechnung' : 'Formula'}</p>
-                              <p>{formulaText}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        )}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0 cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-xs text-xs space-y-2 p-3">
+                            {formulaText && (
+                              <div>
+                                <p className="font-semibold text-foreground mb-0.5">
+                                  {language === 'de' ? 'Berechnung' : 'Formula'}
+                                </p>
+                                <p className="text-muted-foreground">{formulaText}</p>
+                              </div>
+                            )}
+                            {benchmark && (
+                              <div>
+                                <p className="font-semibold text-foreground mb-0.5">
+                                  {language === 'de' ? 'Benchmark-Korridor' : 'Benchmark Corridor'}
+                                </p>
+                                <p className="text-muted-foreground">{benchmark.label}</p>
+                              </div>
+                            )}
+                          </TooltipContent>
+                        </Tooltip>
                       </div>
-                      {benchmark && (
-                        <span className="text-[11px] text-muted-foreground">
-                          {language === 'de' ? 'Korridor' : 'Benchmark'}: {benchmark.label}
-                        </span>
-                      )}
                     </div>
 
                     <div className="text-right shrink-0">
-                      <span className="text-base font-bold text-foreground tabular-nums">
+                      <span className="text-base font-bold text-primary tabular-nums">
                         {formatValue(value, language)}{unitLabel ? ` ${unitLabel}` : ''}
                       </span>
                       <div>
@@ -227,12 +249,57 @@ export function PerformanceDataPanel({ kpiValues }: PerformanceDataPanelProps) {
                   <ChevronDown className="h-3.5 w-3.5 transition-transform group-data-[state=open]:rotate-180" />
                   {t('results.performanceData.notProvided')} ({skipped.length})
                 </CollapsibleTrigger>
-                <CollapsibleContent className="px-5 pb-3 space-y-1.5">
+                <CollapsibleContent className="divide-y divide-slate-50">
                   {skipped.map(({ row, question }) => {
-                    const label = question.translations?.[lang]?.text ?? question.text;
+                    const kpiKey = question.kpiKey;
+                    const displayName = getKpiDisplayName(question, lang);
+                    const Icon = KPI_ICONS[kpiKey] ?? BarChart3;
+                    const benchmark = KPI_BENCHMARKS[kpiKey];
+                    const formulaText = question.formula?.expression;
+
                     return (
-                      <div key={row.id} className="text-xs text-muted-foreground pl-1">
-                        {label}
+                      <div
+                        key={row.id}
+                        className="flex items-center gap-4 px-5 py-3 opacity-50"
+                      >
+                        <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-slate-400">
+                          <Icon className="h-4 w-4" />
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-medium text-muted-foreground truncate">
+                              {displayName}
+                            </span>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0 cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs text-xs space-y-2 p-3">
+                                {formulaText && (
+                                  <div>
+                                    <p className="font-semibold text-foreground mb-0.5">
+                                      {language === 'de' ? 'Berechnung' : 'Formula'}
+                                    </p>
+                                    <p className="text-muted-foreground">{formulaText}</p>
+                                  </div>
+                                )}
+                                {benchmark && (
+                                  <div>
+                                    <p className="font-semibold text-foreground mb-0.5">
+                                      {language === 'de' ? 'Benchmark-Korridor' : 'Benchmark Corridor'}
+                                    </p>
+                                    <p className="text-muted-foreground">{benchmark.label}</p>
+                                  </div>
+                                )}
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </div>
+
+                        <span className="text-sm text-muted-foreground italic">
+                          {language === 'de' ? 'Nicht erfasst' : 'Not provided'}
+                        </span>
                       </div>
                     );
                   })}
