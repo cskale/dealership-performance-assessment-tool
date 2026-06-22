@@ -542,7 +542,7 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
         </div>
 
         <div className="flex items-center gap-2 ml-auto flex-shrink-0">
-          <div className="inline-flex h-9 items-center rounded-lg bg-card border p-0.5">
+          <div className="inline-flex h-9 items-center rounded-xl bg-card border p-0.5">
             {([
               { key: 'list', label: 'List', Icon: ListIcon },
               { key: 'kanban', label: 'Kanban', Icon: LayoutGrid },
@@ -552,7 +552,7 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
                 key={key}
                 onClick={() => setViewMode(key)}
                 className={cn(
-                  "inline-flex items-center gap-1.5 px-2.5 h-8 rounded-[6px] text-xs transition-colors",
+                  "inline-flex items-center gap-1.5 px-2.5 h-8 rounded-lg text-xs transition-colors",
                   viewMode === key
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"

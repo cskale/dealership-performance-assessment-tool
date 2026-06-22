@@ -16,7 +16,7 @@ Quick-reference log of incremental enhancements, UI fixes, and small quality-of-
 | 6 | Move Performance Data to KPI Analysis tab | Moved `PerformanceDataPanel` (user-entered KPI values) from Summary tab into KPI Analysis tab. Replaced generic `IndustrialKPIDashboard` which showed static benchmark info without user-specific data. KPI tab now shows actual dealer performance data. | pending |
 | 7 | Remove Score Decomposition from Maturity tab | Removed collapsible score decomposition table (dept × weight × contribution) from Maturity tab. Redundant with stacked bar on Summary tab. Cleaned up unused `scoreDecompositionData` and `weightedSum` memos. | pending |
 | 8 | Scope field notes to assessment | `useAssessmentNotes` now accepts optional `assessmentId` — filters notes to that assessment only. On assessment completion, all unlinked notes (assessment_id IS NULL) are stamped with the new assessment ID. Prevents old notes bleeding into new assessment results. | pending |
-| 9 | Fix List/Kanban/Roadmap button radius | Container changed to `rounded-lg`, inner buttons to `rounded-[6px]`. Visually matched corners — no more mismatched radius between toggle buttons and their container. | pending |
+| 9 | Fix List/Kanban/Roadmap button radius | Container `rounded-xl` (12px), inner buttons `rounded-lg` (8px) with 2px padding gap. Corners now visually flush. | pending |
 | 10 | Collapsible filter sections in Action Plan | Filter popover now shows Priority/Department/Sort as collapsed `<details>` headers. Click to expand and see options. Cleaner initial view vs. all options visible at once. | pending |
 
 ---
