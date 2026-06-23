@@ -4,12 +4,25 @@ Quick-reference log of incremental enhancements, UI fixes, and small quality-of-
 
 ---
 
+## 2026-06-23
+
+| # | Enhancement | Details | Commit |
+|---|-------------|---------|--------|
+| 1 | Marketing ROI Engine calculator | New Playground calculator: 5 fixed channels (Google Ads, Social, OEM Co-op, Direct Mail, Events), per-channel ROAS/CPL/CPS, break-even insight callout. KPI prefill from assessment data. | `415ea61` |
+| 2 | Absorption Rate Modeler calculator | New Playground calculator: Service GP + Parts GP vs Fixed Overhead. Color-coded gauge (green/amber/red), ±20% what-if sliders with real-time adjusted values. | `415ea61` |
+| 3 | Remove non-functional shell chrome | Removed Save Model button (stub toast), Recalculate button (no-op), Documentation button (linked to unrelated KPI page), v4.2 version tag (meaningless), "Default Scenario" text (no scenario system). Applies to all Playground calculators. | `efd4069` |
+| 4 | Technician Utilization Calculator | New Playground calculator: utilization gauge (green ≥85%, amber ≥70%, red <70%), idle hours, revenue at current vs full utilization, revenue opportunity lost. KPI prefill for effective labour rate. | pending |
+| 5 | Vehicle Stock Turn Calculator | New Playground calculator: days in stock (color-coded target <45 days), annual stock turn, holding cost analysis with floorplan tooltip, per-unit holding cost, inventory reduction savings insight. | pending |
+
+---
+
 ## 2026-06-22
 
 | # | Enhancement | Details | Commit |
 |---|-------------|---------|--------|
 | 1 | Ponytail audit — dead code cleanup | Deleted 27 unused files: 10 dead components/pages (IndustrialKPIDashboard, DealerActions, DealershipInfoForm, DealerContextForm, SmartAssistant, LanguageSelector, RoleSelector, UsefulResources, ResourceCard, AppHeader) + 17 unused shadcn/ui components (accordion, aspect-ratio, breadcrumb, carousel, checkbox, context-menu, drawer, form, hover-card, input-otp, menubar, navigation-menu, pagination, radio-group, resizable, signal-card, toggle-group). | pending |
 | 2 | Ponytail audit — unused npm deps | Uninstalled 13 packages: embla-carousel-react, react-resizable-panels, input-otp, vaul, and 9 Radix UI packages (@radix-ui/react-accordion, aspect-ratio, checkbox, context-menu, hover-card, menubar, navigation-menu, radio-group, toggle-group). Build verified clean. | pending |
+| 11 | KPI Analysis tab visual enhancement | Short KPI names (EN+DE), per-KPI icons, benchmark corridors + formula in tooltip, Playground link in header, light grey department headers, skipped KPIs same row format at 50% opacity, values in primary blue. | `1226959` |
 | 3 | Sidebar expand button restyle | Moved collapse/expand toggle from absolute overlay to between header and nav. Full white background with dark icon — clear, visible click target. | `e790864` |
 | 2 | Fix dashboard score fonts | Dashboard hero scores (overall "63" and focus dept "59") were using `font-display` (Instrument Serif) instead of Inter. Changed to `font-sans` to match design system. | `e790864` |
 | 3 | Clean radial score ring | Removed 3 grey tick-mark rectangles at 46/70/85 positions on the SVG score ring in Results summary cards. Ring is now clean and professional. | `e790864` |

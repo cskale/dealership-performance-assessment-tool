@@ -26,6 +26,8 @@ import Playground from "./pages/Playground";
 import ReverseSalesFunnelPage from "./pages/ReverseSalesFunnelPage";
 import MarketingRoiPage from "./pages/MarketingRoiPage";
 import AbsorptionRateModelerPage from "./pages/AbsorptionRateModelerPage";
+import TechUtilizationPage from "./pages/TechUtilizationPage";
+import VehicleStockTurnPage from "./pages/VehicleStockTurnPage";
 import { AuthProvider } from "@/hooks/useAuth";
 import { MultiTenantProvider } from "@/hooks/useMultiTenant";
 import { RoleProvider } from "@/contexts/RoleContext";
@@ -118,6 +120,8 @@ const App = () => (
                             <Route path="playground/reverse-sales-funnel" element={<ReverseSalesFunnelPage />} />
                             <Route path="playground/marketing-roi" element={<MarketingRoiPage />} />
                             <Route path="playground/absorption-rate" element={<AbsorptionRateModelerPage />} />
+                            <Route path="playground/tech-utilization" element={<TechUtilizationPage />} />
+                            <Route path="playground/vehicle-stock-turn" element={<VehicleStockTurnPage />} />
                           </Routes>
                         </AuthenticatedLayout>
                       </ProtectedRoute>

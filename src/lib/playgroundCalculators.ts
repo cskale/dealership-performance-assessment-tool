@@ -170,3 +170,79 @@ export function calculateAbsorptionRate(inputs: AbsorptionRateInputs): Absorptio
     monthlySurplusDeficit, serviceGpShare, partsGpShare,
   };
 }
+
+// --- Technician Utilization Calculator ---
+
+export interface TechUtilizationInputs {
+  numberOfTechnicians: number;
+  availableHoursPerTechPerDay: number;
+  workingDaysPerMonth: number;
+  actualBilledHoursPerMonth: number;
+  effectiveLabourRate: number;
+}
+
+export interface TechUtilizationOutputs {
+  totalAvailableHours: number;
+  utilizationPct: number | null;
+  idleHours: number;
+  revenueAtCurrentUtil: number;
+  revenueAtFullUtil: number;
+  revenueLost: number;
+}
+
+export function calculateTechUtilization(inputs: TechUtilizationInputs): TechUtilizationOutputs {
+  const {
+    numberOfTechnicians, availableHoursPerTechPerDay,
+    workingDaysPerMonth, actualBilledHoursPerMonth, effectiveLabourRate,
+  } = inputs;
+
+  const totalAvailableHours = numberOfTechnicians * availableHoursPerTechPerDay * workingDaysPerMonth;
+  const utilizationPct = totalAvailableHours > 0
+    ? (actualBilledHoursPerMonth / totalAvailableHours) * 100 : null;
+  const idleHours = Math.max(0, totalAvailableHours - actualBilledHoursPerMonth);
+  const revenueAtCurrentUtil = actualBilledHoursPerMonth * effectiveLabourRate;
+  const revenueAtFullUtil = totalAvailableHours * effectiveLabourRate;
+  const revenueLost = Math.max(0, revenueAtFullUtil - revenueAtCurrentUtil);
+
+  return {
+    totalAvailableHours, utilizationPct, idleHours,
+    revenueAtCurrentUtil, revenueAtFullUtil, revenueLost,
+  };
+}
+
+// --- Vehicle Stock Turn Calculator ---
+
+export interface VehicleStockTurnInputs {
+  averageInventoryCount: number;
+  vehiclesSoldPerMonth: number;
+  avgVehicleCost: number;
+  holdingCostPctPerMonth: number;
+}
+
+export interface VehicleStockTurnOutputs {
+  annualStockTurn: number | null;
+  avgDaysInStock: number | null;
+  monthlyHoldingCost: number;
+  holdingCostPerUnit: number | null;
+  inventoryValueAtCost: number;
+}
+
+export function calculateVehicleStockTurn(inputs: VehicleStockTurnInputs): VehicleStockTurnOutputs {
+  const { averageInventoryCount, vehiclesSoldPerMonth, avgVehicleCost, holdingCostPctPerMonth } = inputs;
+
+  const annualSales = vehiclesSoldPerMonth * 12;
+  const annualStockTurn = averageInventoryCount > 0
+    ? annualSales / averageInventoryCount : null;
+  const avgDaysInStock = vehiclesSoldPerMonth > 0
+    ? (averageInventoryCount / vehiclesSoldPerMonth) * 30 : null;
+
+  const inventoryValueAtCost = averageInventoryCount * avgVehicleCost;
+  const monthlyHoldingCost = inventoryValueAtCost * (holdingCostPctPerMonth / 100);
+  const holdingCostPerUnit = vehiclesSoldPerMonth > 0
+    ? monthlyHoldingCost / vehiclesSoldPerMonth : null;
+
+  return {
+    annualStockTurn, avgDaysInStock, monthlyHoldingCost,
+    holdingCostPerUnit, inventoryValueAtCost,
+  };
+}

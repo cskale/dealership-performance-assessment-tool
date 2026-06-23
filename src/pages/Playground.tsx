@@ -102,18 +102,20 @@ const CATEGORIES: CalculatorCategory[] = [
     description: 'Stress-test capacity, inventory, and workshop economics.',
     items: [
       {
-        id: 'service-capacity',
-        name: 'Service Capacity Planner',
-        description: 'Match technician hours and bays to projected RO demand and absorption targets.',
+        id: 'tech-utilization',
+        name: 'Technician Utilization Calculator',
+        description: 'Calculate technician utilization to measure workshop capacity and identify revenue from idle hours.',
         icon: Wrench,
-        live: false,
+        href: '/app/playground/tech-utilization',
+        live: true,
       },
       {
-        id: 'inventory-turnover',
-        name: 'Inventory Turnover Simulator',
-        description: 'Project days supply, ageing risk, and holding cost across stock-mix scenarios.',
+        id: 'vehicle-stock-turn',
+        name: 'Vehicle Stock Turn Calculator',
+        description: 'Analyse inventory velocity, days in stock, and holding cost to optimize vehicle stock levels.',
         icon: Package,
-        live: false,
+        href: '/app/playground/vehicle-stock-turn',
+        live: true,
       },
       {
         id: 'absorption-rate',

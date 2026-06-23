@@ -3,6 +3,8 @@ import {
   calculateReverseSalesFunnel,
   calculateMarketingRoi,
   calculateAbsorptionRate,
+  calculateTechUtilization,
+  calculateVehicleStockTurn,
 } from '@/lib/playgroundCalculators';
 
 describe('calculateReverseSalesFunnel', () => {
@@ -158,5 +160,90 @@ describe('calculateAbsorptionRate', () => {
     expect(result.serviceGpShare).toBeNull();
     expect(result.partsGpShare).toBeNull();
     expect(result.adjustedAbsorptionRate).toBeCloseTo(0, 1);
+  });
+});
+
+describe('calculateTechUtilization', () => {
+  it('computes utilization, idle hours, and revenue metrics', () => {
+    const result = calculateTechUtilization({
+      numberOfTechnicians: 5,
+      availableHoursPerTechPerDay: 8,
+      workingDaysPerMonth: 22,
+      actualBilledHoursPerMonth: 660,
+      effectiveLabourRate: 95,
+    });
+    expect(result.totalAvailableHours).toBe(880);
+    expect(result.utilizationPct).toBeCloseTo(75, 0);
+    expect(result.idleHours).toBe(220);
+    expect(result.revenueAtCurrentUtil).toBe(62700);
+    expect(result.revenueAtFullUtil).toBe(83600);
+    expect(result.revenueLost).toBe(20900);
+  });
+
+  it('returns null utilization when no available hours', () => {
+    const result = calculateTechUtilization({
+      numberOfTechnicians: 0,
+      availableHoursPerTechPerDay: 8,
+      workingDaysPerMonth: 22,
+      actualBilledHoursPerMonth: 0,
+      effectiveLabourRate: 95,
+    });
+    expect(result.totalAvailableHours).toBe(0);
+    expect(result.utilizationPct).toBeNull();
+    expect(result.idleHours).toBe(0);
+  });
+
+  it('caps idle hours at zero when over-billed', () => {
+    const result = calculateTechUtilization({
+      numberOfTechnicians: 2,
+      availableHoursPerTechPerDay: 8,
+      workingDaysPerMonth: 22,
+      actualBilledHoursPerMonth: 400,
+      effectiveLabourRate: 90,
+    });
+    expect(result.totalAvailableHours).toBe(352);
+    expect(result.utilizationPct).toBeCloseTo(113.64, 1);
+    expect(result.idleHours).toBe(0);
+    expect(result.revenueLost).toBe(0);
+  });
+});
+
+describe('calculateVehicleStockTurn', () => {
+  it('computes stock turn, days in stock, and holding costs', () => {
+    const result = calculateVehicleStockTurn({
+      averageInventoryCount: 60,
+      vehiclesSoldPerMonth: 20,
+      avgVehicleCost: 25000,
+      holdingCostPctPerMonth: 1.5,
+    });
+    expect(result.annualStockTurn).toBeCloseTo(4, 0);
+    expect(result.avgDaysInStock).toBeCloseTo(90, 0);
+    expect(result.inventoryValueAtCost).toBe(1500000);
+    expect(result.monthlyHoldingCost).toBe(22500);
+    expect(result.holdingCostPerUnit).toBeCloseTo(1125, 0);
+  });
+
+  it('returns null when inventory is zero', () => {
+    const result = calculateVehicleStockTurn({
+      averageInventoryCount: 0,
+      vehiclesSoldPerMonth: 20,
+      avgVehicleCost: 25000,
+      holdingCostPctPerMonth: 1.5,
+    });
+    expect(result.annualStockTurn).toBeNull();
+    expect(result.avgDaysInStock).toBeCloseTo(0, 0);
+    expect(result.monthlyHoldingCost).toBe(0);
+  });
+
+  it('returns null days/holding when no sales', () => {
+    const result = calculateVehicleStockTurn({
+      averageInventoryCount: 60,
+      vehiclesSoldPerMonth: 0,
+      avgVehicleCost: 25000,
+      holdingCostPctPerMonth: 1.5,
+    });
+    expect(result.annualStockTurn).toBeCloseTo(0, 0);
+    expect(result.avgDaysInStock).toBeNull();
+    expect(result.holdingCostPerUnit).toBeNull();
   });
 });

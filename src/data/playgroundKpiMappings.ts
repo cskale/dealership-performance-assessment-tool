@@ -13,4 +13,8 @@ export const PLAYGROUND_KPI_MAPPINGS: Record<string, Record<string, string>> = {
     avgGrossProfitPerUnit: 'nvs_gross_profit_per_unit',
   },
   'absorption-rate': {},
+  'tech-utilization': {
+    effectiveLabourRate: 'svc_effective_labour_rate',
+  },
+  'vehicle-stock-turn': {},
 };
