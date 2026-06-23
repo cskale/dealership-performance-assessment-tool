@@ -9,4 +9,8 @@ export const PLAYGROUND_KPI_MAPPINGS: Record<string, Record<string, string>> = {
   'reverse-sales-funnel': {
     avgGrossProfitPerUnit: 'nvs_gross_profit_per_unit',
   },
+  'marketing-roi': {
+    avgGrossProfitPerUnit: 'nvs_gross_profit_per_unit',
+  },
+  'absorption-rate': {},
 };

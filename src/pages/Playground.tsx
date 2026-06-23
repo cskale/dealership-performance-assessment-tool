@@ -78,7 +78,8 @@ const CATEGORIES: CalculatorCategory[] = [
         name: 'Marketing ROI Engine',
         description: 'Compute channel-level ROAS and break-even spend at your current funnel rates.',
         icon: Megaphone,
-        live: false,
+        href: '/app/playground/marketing-roi',
+        live: true,
       },
       {
         id: 'cac-payback',
@@ -119,7 +120,8 @@ const CATEGORIES: CalculatorCategory[] = [
         name: 'Absorption Rate Modeler',
         description: 'Model how service and parts gross profit cover fixed dealership overhead.',
         icon: ShieldCheck,
-        live: false,
+        href: '/app/playground/absorption-rate',
+        live: true,
       },
       {
         id: 'appointment-density',

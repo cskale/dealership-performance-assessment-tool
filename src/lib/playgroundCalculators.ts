@@ -59,3 +59,114 @@ export function calculateReverseSalesFunnel(
     projectedGrossProfit: targetUnitSales * avgGrossProfitPerUnit,
   };
 }
+
+// --- Marketing ROI Engine ---
+
+export interface MarketingChannel {
+  name: string;
+  monthlySpend: number;
+  leadsGenerated: number;
+}
+
+export interface MarketingRoiInputs {
+  avgGrossProfitPerUnit: number;
+  overallCloseRate: number;
+  channels: MarketingChannel[];
+}
+
+export interface MarketingChannelResult {
+  name: string;
+  costPerLead: number | null;
+  costPerSale: number | null;
+  roas: number | null;
+  spendShare: number;
+}
+
+export interface MarketingRoiOutputs {
+  channelResults: MarketingChannelResult[];
+  totalSpend: number;
+  totalLeads: number;
+  blendedCPL: number | null;
+  blendedCPS: number | null;
+  overallROAS: number | null;
+  breakEvenCPL: number | null;
+}
+
+export function calculateMarketingRoi(inputs: MarketingRoiInputs): MarketingRoiOutputs {
+  const { avgGrossProfitPerUnit, overallCloseRate, channels } = inputs;
+  const closeRateFrac = overallCloseRate / 100;
+
+  const totalSpend = channels.reduce((s, c) => s + c.monthlySpend, 0);
+  const totalLeads = channels.reduce((s, c) => s + c.leadsGenerated, 0);
+
+  const channelResults: MarketingChannelResult[] = channels.map((ch) => {
+    const cpl = ch.leadsGenerated > 0 ? ch.monthlySpend / ch.leadsGenerated : null;
+    const salesFromChannel = ch.leadsGenerated * closeRateFrac;
+    const cps = salesFromChannel > 0 ? ch.monthlySpend / salesFromChannel : null;
+    const revenue = salesFromChannel * avgGrossProfitPerUnit;
+    const roas = ch.monthlySpend > 0 && salesFromChannel > 0 ? revenue / ch.monthlySpend : null;
+    const spendShare = totalSpend > 0 ? (ch.monthlySpend / totalSpend) * 100 : 0;
+    return { name: ch.name, costPerLead: cpl, costPerSale: cps, roas, spendShare };
+  });
+
+  const blendedCPL = totalLeads > 0 ? totalSpend / totalLeads : null;
+  const totalSales = totalLeads * closeRateFrac;
+  const blendedCPS = totalSales > 0 ? totalSpend / totalSales : null;
+  const totalRevenue = totalSales * avgGrossProfitPerUnit;
+  const overallROAS = totalSpend > 0 && totalSales > 0 ? totalRevenue / totalSpend : null;
+  const breakEvenCPL = avgGrossProfitPerUnit * closeRateFrac;
+
+  return { channelResults, totalSpend, totalLeads, blendedCPL, blendedCPS, overallROAS, breakEvenCPL };
+}
+
+// --- Absorption Rate Modeler ---
+
+export interface AbsorptionRateInputs {
+  serviceGrossProfit: number;
+  partsGrossProfit: number;
+  totalFixedOverhead: number;
+  serviceAdjustmentPct: number;
+  partsAdjustmentPct: number;
+  overheadAdjustmentPct: number;
+}
+
+export interface AbsorptionRateOutputs {
+  baselineAbsorptionRate: number | null;
+  adjustedAbsorptionRate: number | null;
+  adjustedServiceGP: number;
+  adjustedPartsGP: number;
+  adjustedOverhead: number;
+  monthlySurplusDeficit: number;
+  serviceGpShare: number | null;
+  partsGpShare: number | null;
+}
+
+export function calculateAbsorptionRate(inputs: AbsorptionRateInputs): AbsorptionRateOutputs {
+  const {
+    serviceGrossProfit, partsGrossProfit, totalFixedOverhead,
+    serviceAdjustmentPct, partsAdjustmentPct, overheadAdjustmentPct,
+  } = inputs;
+
+  const adjustedServiceGP = serviceGrossProfit * (1 + serviceAdjustmentPct / 100);
+  const adjustedPartsGP = partsGrossProfit * (1 + partsAdjustmentPct / 100);
+  const adjustedOverhead = totalFixedOverhead * (1 + overheadAdjustmentPct / 100);
+
+  const baselineGP = serviceGrossProfit + partsGrossProfit;
+  const adjustedGP = adjustedServiceGP + adjustedPartsGP;
+
+  const baselineAbsorptionRate = totalFixedOverhead > 0
+    ? (baselineGP / totalFixedOverhead) * 100 : null;
+  const adjustedAbsorptionRate = adjustedOverhead > 0
+    ? (adjustedGP / adjustedOverhead) * 100 : null;
+
+  const monthlySurplusDeficit = adjustedGP - adjustedOverhead;
+
+  const serviceGpShare = adjustedGP > 0 ? (adjustedServiceGP / adjustedGP) * 100 : null;
+  const partsGpShare = adjustedGP > 0 ? (adjustedPartsGP / adjustedGP) * 100 : null;
+
+  return {
+    baselineAbsorptionRate, adjustedAbsorptionRate,
+    adjustedServiceGP, adjustedPartsGP, adjustedOverhead,
+    monthlySurplusDeficit, serviceGpShare, partsGpShare,
+  };
+}
