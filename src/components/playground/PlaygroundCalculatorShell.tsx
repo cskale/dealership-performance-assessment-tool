@@ -1,8 +1,6 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, FileText, LucideIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { toast } from '@/hooks/use-toast';
+import { ChevronLeft, ChevronRight, LucideIcon } from 'lucide-react';
 
 interface KpiStat {
   label: string;
@@ -15,11 +13,7 @@ interface PlaygroundCalculatorShellProps {
   icon: LucideIcon;
   category: string;
   title: string;
-  versionTag?: string;
-  scenario?: string;
-  documentationKpiKey?: string | null;
   description: ReactNode;
-  onRecalculate?: () => void;
   kpiStrip: KpiStat[];
   leftCard: ReactNode;
   rightCard: ReactNode;
@@ -31,11 +25,7 @@ export function PlaygroundCalculatorShell({
   icon: Icon,
   category,
   title,
-  versionTag = 'v4.2',
-  scenario = 'Default Scenario',
-  documentationKpiKey,
   description,
-  onRecalculate,
   kpiStrip,
   leftCard,
   rightCard,
@@ -55,50 +45,15 @@ export function PlaygroundCalculatorShell({
 
       {/* Header */}
       <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card mb-6 px-5 py-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3 min-w-0">
-            <div className="rounded-md bg-[#1D7AFC]/10 text-[#1D7AFC] p-2 mt-0.5 shrink-0">
-              <Icon className="h-4 w-4" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
-                {category}
-              </p>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-[15px] font-bold text-[#172B4D]">{title}</h1>
-                <span className="text-[10px] text-muted-foreground border border-[#DFE1E6] rounded px-1.5 py-0.5">
-                  {versionTag}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Scenario: <span className="text-foreground">{scenario}</span>
-              </p>
-            </div>
+        <div className="flex items-start gap-3 min-w-0">
+          <div className="rounded-md bg-[#1D7AFC]/10 text-[#1D7AFC] p-2 mt-0.5 shrink-0">
+            <Icon className="h-4 w-4" />
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {documentationKpiKey && (
-              <Button asChild variant="ghost" size="sm">
-                <Link to={`/app/knowledge/kpi/${documentationKpiKey}`}>
-                  <FileText className="h-3.5 w-3.5 mr-1.5" />
-                  Documentation
-                </Link>
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                toast({
-                  title: 'Scenario saving coming soon',
-                  description: 'Persistent scenarios will be available in a future release.',
-                })
-              }
-            >
-              Save Model
-            </Button>
-            <Button size="sm" onClick={onRecalculate}>
-              Recalculate
-            </Button>
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+              {category}
+            </p>
+            <h1 className="text-[15px] font-bold text-[#172B4D]">{title}</h1>
           </div>
         </div>
         {description && (

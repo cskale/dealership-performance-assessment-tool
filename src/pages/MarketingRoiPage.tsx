@@ -12,7 +12,6 @@ import { usePlaygroundPrefill, formatPlaygroundPeriod } from '@/hooks/usePlaygro
 import { useActiveRole } from '@/hooks/useActiveRole';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatEuro } from '@/utils/euroFormatter';
-import { PLAYGROUND_KPI_MAPPINGS } from '@/data/playgroundKpiMappings';
 import { PlaygroundCalculatorShell } from '@/components/playground/PlaygroundCalculatorShell';
 
 const CALCULATOR_ID = 'marketing-roi';
@@ -89,9 +88,6 @@ export default function MarketingRoiPage() {
       prev.map((ch, i) => (i === index ? { ...ch, [field]: num } : ch)),
     );
   };
-
-  const documentationKpiKey =
-    PLAYGROUND_KPI_MAPPINGS[CALCULATOR_ID]?.avgGrossProfitPerUnit ?? null;
 
   const prefillChipText = prefillValues['avgGrossProfitPerUnit']
     ? `Seeded from ${formatPlaygroundPeriod(
@@ -265,7 +261,6 @@ export default function MarketingRoiPage() {
       icon={Megaphone}
       category="Marketing Intelligence"
       title="Marketing ROI Engine"
-      documentationKpiKey={documentationKpiKey}
       description="Compute channel-level ROAS and break-even spend at your current funnel rates."
       kpiStrip={[
         {

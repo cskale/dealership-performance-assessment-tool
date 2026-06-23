@@ -12,7 +12,6 @@ import { usePlaygroundPrefill, formatPlaygroundPeriod } from '@/hooks/usePlaygro
 import { useActiveRole } from '@/hooks/useActiveRole';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatEuro } from '@/utils/euroFormatter';
-import { PLAYGROUND_KPI_MAPPINGS } from '@/data/playgroundKpiMappings';
 import { PlaygroundCalculatorShell } from '@/components/playground/PlaygroundCalculatorShell';
 
 const CALCULATOR_ID = 'reverse-sales-funnel';
@@ -102,8 +101,6 @@ export default function ReverseSalesFunnelPage() {
   };
 
   const chipTemplate = t('playground.prefillChip');
-  const documentationKpiKey =
-    PLAYGROUND_KPI_MAPPINGS[CALCULATOR_ID]?.avgGrossProfitPerUnit ?? null;
 
   const leadEfficiency =
     outputs.requiredLeads && outputs.requiredLeads > 0
@@ -267,7 +264,6 @@ export default function ReverseSalesFunnelPage() {
       icon={TrendingUp}
       category="Sales Optimization"
       title="Reverse Sales Funnel"
-      documentationKpiKey={documentationKpiKey}
       description="Work backward from a unit-sales target to the required funnel volume at each stage, based on your current conversion rates."
       kpiStrip={[
         {
