@@ -30,6 +30,7 @@ import {
   endOfCurrentQuarter,
   relativeDays,
 } from '@/lib/dashboardUtils';
+import { sendVisitNotification, notifyOemVisitConfirmed } from '@/lib/notifications';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -617,6 +618,9 @@ export default function Dashboard() {
     status: 'proposed' | 'confirmed' | 'counter_proposed' | 'cancelled';
     id: string;
     dealer_proposed_date: string | null;
+    coach_user_id: string;
+    dealership_id: string;
+    dealership_name: string;
   } | null>(null);
   const [counterMode, setCounterMode] = useState(false);
   const [counterDate, setCounterDate] = useState<Date | undefined>(undefined);
@@ -686,15 +690,29 @@ export default function Dashboard() {
         .eq('user_id', user.id)
         .single();
       if (!profile?.active_dealership_id) return;
-      const { data: visitData } = await supabase
-        .from('coach_visits')
-        .select('id, visit_date, status, dealer_proposed_date')
-        .eq('dealership_id', profile.active_dealership_id)
-        .in('status', ['proposed', 'confirmed', 'counter_proposed'])
-        .order('visit_date', { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      setUpcomingVisit(visitData ? { ...visitData, status: visitData.status as 'confirmed' | 'proposed', dealer_proposed_date: visitData.dealer_proposed_date ?? null } : null);
+      const [{ data: visitData }, { data: dealershipRow }] = await Promise.all([
+        supabase
+          .from('coach_visits')
+          .select('id, visit_date, status, dealer_proposed_date, coach_user_id')
+          .eq('dealership_id', profile.active_dealership_id)
+          .in('status', ['proposed', 'confirmed', 'counter_proposed'])
+          .order('visit_date', { ascending: true })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('dealerships')
+          .select('name')
+          .eq('id', profile.active_dealership_id)
+          .single(),
+      ]);
+      setUpcomingVisit(visitData ? {
+        ...visitData,
+        status: visitData.status as 'confirmed' | 'proposed',
+        dealer_proposed_date: visitData.dealer_proposed_date ?? null,
+        coach_user_id: visitData.coach_user_id,
+        dealership_id: profile.active_dealership_id,
+        dealership_name: dealershipRow?.name ?? 'Dealership',
+      } : null);
     };
     fetchVisit();
   }, [user?.id, actorType]);
@@ -730,7 +748,23 @@ export default function Dashboard() {
       .from('coach_visits')
       .update({ status: 'confirmed' })
       .eq('id', upcomingVisit.id);
-    if (!error) setUpcomingVisit(prev => prev ? { ...prev, status: 'confirmed' } : null);
+    if (!error) {
+      setUpcomingVisit(prev => prev ? { ...prev, status: 'confirmed' } : null);
+      sendVisitNotification({
+        event: 'confirmed',
+        recipientUserId: upcomingVisit.coach_user_id,
+        dealershipId: upcomingVisit.dealership_id,
+        visitId: upcomingVisit.id,
+        visitDate: upcomingVisit.visit_date,
+        dealershipName: upcomingVisit.dealership_name,
+      });
+      notifyOemVisitConfirmed({
+        dealershipId: upcomingVisit.dealership_id,
+        visitId: upcomingVisit.id,
+        visitDate: upcomingVisit.visit_date,
+        dealershipName: upcomingVisit.dealership_name,
+      });
+    }
   };
 
   const handleDeclineVisit = async () => {
@@ -741,7 +775,17 @@ export default function Dashboard() {
         .from('coach_visits')
         .update({ status: 'cancelled', declined_by: 'dealer' })
         .eq('id', upcomingVisit.id);
-      if (!error) setUpcomingVisit(null);
+      if (!error) {
+        sendVisitNotification({
+          event: 'declined',
+          recipientUserId: upcomingVisit.coach_user_id,
+          dealershipId: upcomingVisit.dealership_id,
+          visitId: upcomingVisit.id,
+          visitDate: upcomingVisit.visit_date,
+          dealershipName: upcomingVisit.dealership_name,
+        });
+        setUpcomingVisit(null);
+      }
     } finally {
       setNegotiating(false);
     }
@@ -751,16 +795,25 @@ export default function Dashboard() {
     if (!upcomingVisit || !counterDate) return;
     setNegotiating(true);
     try {
+      const proposedDate = format(counterDate, 'yyyy-MM-dd');
       const { error } = await supabase
         .from('coach_visits')
         .update({
           status: 'counter_proposed',
-          dealer_proposed_date: format(counterDate, 'yyyy-MM-dd'),
+          dealer_proposed_date: proposedDate,
         })
         .eq('id', upcomingVisit.id);
       if (!error) {
+        sendVisitNotification({
+          event: 'counter_proposed',
+          recipientUserId: upcomingVisit.coach_user_id,
+          dealershipId: upcomingVisit.dealership_id,
+          visitId: upcomingVisit.id,
+          visitDate: proposedDate,
+          dealershipName: upcomingVisit.dealership_name,
+        });
         setUpcomingVisit(prev => prev
-          ? { ...prev, status: 'counter_proposed', dealer_proposed_date: format(counterDate!, 'yyyy-MM-dd') }
+          ? { ...prev, status: 'counter_proposed', dealer_proposed_date: proposedDate }
           : null
         );
         setCounterMode(false);
