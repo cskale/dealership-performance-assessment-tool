@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeText } from '@/lib/sanitize';
 import { useToast } from '@/hooks/use-toast';
 
 export interface AssessmentNote {
@@ -63,7 +64,7 @@ export function useAssessmentNotes(assessmentId?: string) {
           .upsert({
             user_id: user.id,
             question_id: questionId,
-            notes: noteText.trim()
+            notes: sanitizeText(noteText.trim())
           }, {
             onConflict: 'user_id, question_id'
           });

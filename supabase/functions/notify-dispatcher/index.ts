@@ -48,6 +48,31 @@ serve(async (req) => {
   }
 
   try {
+    // Auth gate: only service_role callers (cron jobs, other Edge Functions) may invoke this dispatcher.
+    const authHeader = req.headers.get('Authorization') ?? ''
+    if (!authHeader.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    try {
+      const parts = authHeader.replace('Bearer ', '').split('.')
+      if (parts.length !== 3) throw new Error('malformed jwt')
+      const jwtPayload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
+      if (jwtPayload.role !== 'service_role') {
+        return new Response(
+          JSON.stringify({ error: 'Forbidden: service_role required' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -69,6 +94,19 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Missing required fields: user_id, organization_id, type, channel, title, body' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Rate limit: max 50 notifications per user per hour (safety valve against runaway crons)
+    const { count: recentCount } = await supabaseAdmin
+      .from('notifications')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user_id)
+      .gte('sent_at', new Date(Date.now() - 3600000).toISOString())
+    if (recentCount !== null && recentCount >= 50) {
+      return new Response(
+        JSON.stringify({ error: 'Rate limit exceeded for this user', skipped: true }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 

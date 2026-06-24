@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeText } from '@/lib/sanitize';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { Button } from '@/components/ui/button';
 import { ChipInput } from '@/components/ui/ChipInput';
@@ -141,7 +142,7 @@ export function OemNetworkSettings() {
     if (network) {
       await supabase
         .from('oem_networks')
-        .update({ name: formName, oem_brand: formBrand, country_scope: countryArray })
+        .update({ name: sanitizeText(formName), oem_brand: sanitizeText(formBrand), country_scope: countryArray.map(c => sanitizeText(c)) })
         .eq('id', network.id);
       setNetwork(prev =>
         prev ? { ...prev, name: formName, oem_brand: formBrand, country_scope: countryArray } : prev,
@@ -150,9 +151,9 @@ export function OemNetworkSettings() {
       const { data } = await supabase
         .from('oem_networks')
         .insert({
-          name: formName,
-          oem_brand: formBrand,
-          country_scope: countryArray,
+          name: sanitizeText(formName),
+          oem_brand: sanitizeText(formBrand),
+          country_scope: countryArray.map(c => sanitizeText(c)),
           owner_org_id: currentOrganization.id,
           status: 'active',
         })

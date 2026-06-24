@@ -8,6 +8,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeText } from '@/lib/sanitize';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 import { CalendarIcon, ClipboardList } from 'lucide-react';
@@ -124,7 +125,7 @@ export function VisitLogSheet({ open, onOpenChange, visit, dealershipId, dealerN
         const { data: created, error: actionError } = await supabase
           .from('improvement_actions')
           .insert({
-            action_title: newActionTitle.trim(),
+            action_title: sanitizeText(newActionTitle.trim()),
             action_description: '',
             assessment_id: latestAssessment.id,
             organization_id: latestAssessment.organization_id,
@@ -151,7 +152,7 @@ export function VisitLogSheet({ open, onOpenChange, visit, dealershipId, dealerN
         .update({
           visit_type: visitType,
           modules_reviewed: modulesReviewed,
-          summary: summary.trim() || null,
+          summary: sanitizeText(summary.trim()) || null,
           next_visit_date: nextVisitDate ? format(nextVisitDate, 'yyyy-MM-dd') : null,
           agreed_action_ids: allAgreedIds,
           updated_at: new Date().toISOString(),

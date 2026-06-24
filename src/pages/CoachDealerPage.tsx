@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeText } from '@/lib/sanitize';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import {
@@ -201,7 +202,7 @@ export default function CoachDealerPage() {
       .insert({
         coach_user_id: user.id,
         dealership_id: dealershipId,
-        note_text: noteText.trim(),
+        note_text: sanitizeText(noteText.trim()),
         note_type: noteType,
       })
       .select('id, note_text, note_type, created_at, coach_user_id')

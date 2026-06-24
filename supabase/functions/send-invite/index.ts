@@ -107,6 +107,19 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Insufficient permissions' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
+    // Rate limit: max 20 invites per user per hour
+    const { count: recentInviteCount } = await supabaseAdmin
+      .from('dealership_invites')
+      .select('id', { count: 'exact', head: true })
+      .eq('invited_by', user.id)
+      .gte('created_at', new Date(Date.now() - 3600000).toISOString())
+    if (recentInviteCount !== null && recentInviteCount >= 20) {
+      return new Response(
+        JSON.stringify({ error: 'Rate limit exceeded. Maximum 20 invitations per hour.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     // OEM invites additionally require the org to own an active oem_network
     if (inviteType === 'oem') {
       const { data: oemNetwork } = await supabaseAdmin

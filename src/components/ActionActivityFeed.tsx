@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeText } from '@/lib/sanitize';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -175,7 +176,7 @@ export function ActionActivityFeed({ actionId }: ActionActivityFeedProps) {
         action_id: actionId,
         user_id: user.id,
         author_email: user.email ?? '',
-        comment_text: comment.trim(),
+        comment_text: sanitizeText(comment.trim()),
       });
       if (error) throw error;
       setComment('');

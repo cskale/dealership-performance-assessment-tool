@@ -19,11 +19,13 @@ import { type AssignedDealer } from '@/pages/CoachDashboard';
 import { type CoachVisit } from '@/lib/coachVisitUtils';
 import { VISIT_MODULES } from '@/lib/coachVisitUtils';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeText } from '@/lib/sanitize';
 import { useAuth } from '@/hooks/useAuth';
 import { VisitLogSheet } from '@/components/coach/VisitLogSheet';
 import { generateVisitReport, type VisitReportData } from '@/lib/pdfReportGenerator';
 import { STATIC_BENCHMARKS, sectionToModuleCode } from '@/lib/benchmarkUtils';
 import { getDepartmentName } from '@/lib/departmentNames';
+import { sendVisitNotification, notifyOemVisitConfirmed } from '@/lib/notifications';
 
 // ── Local types ────────────────────────────────────────────────────────────────
 
@@ -163,17 +165,26 @@ function VisitsTab({
     ['cancelled', 'completed'].includes(v.status as string)
   );
 
+  const getDealerOwner = async (): Promise<string | null> => {
+    const { data } = await supabase
+      .from('dealerships')
+      .select('user_id')
+      .eq('id', dealer.dealershipId)
+      .single();
+    return data?.user_id ?? null;
+  };
+
   const handlePropose = async () => {
     if (!proposeDate || !user?.id) return;
     setProposeSaving(true);
     try {
-      const { error } = await supabase.from('coach_visits').insert({
+      const { data: inserted, error } = await supabase.from('coach_visits').insert({
         coach_user_id: user.id,
         dealership_id: dealer.dealershipId,
         visit_date: format(proposeDate, 'yyyy-MM-dd'),
-        visit_notes: proposeNotes.trim() || null,
+        visit_notes: sanitizeText(proposeNotes.trim()) || null,
         status: 'proposed',
-      });
+      }).select('id').single();
       if (error) {
         if (error.code === '23505') {
           toast.error('Cancel the existing proposed visit before scheduling a new one.');
@@ -187,6 +198,18 @@ function VisitsTab({
       setProposeNotes('');
       setShowProposeForm(false);
       onVisitSaved();
+
+      const dealerUserId = await getDealerOwner();
+      if (dealerUserId && inserted) {
+        sendVisitNotification({
+          event: 'proposed',
+          recipientUserId: dealerUserId,
+          dealershipId: dealer.dealershipId,
+          visitId: inserted.id,
+          visitDate: format(proposeDate, 'yyyy-MM-dd'),
+          dealershipName: dealer.dealerName,
+        });
+      }
     } catch {
       toast.error('Failed to propose visit');
     } finally {
@@ -224,6 +247,24 @@ function VisitsTab({
       if (!error) {
         toast.success("Visit confirmed on dealer's date");
         onVisitSaved();
+
+        const dealerUserId = await getDealerOwner();
+        if (dealerUserId) {
+          sendVisitNotification({
+            event: 'confirmed',
+            recipientUserId: dealerUserId,
+            dealershipId: dealer.dealershipId,
+            visitId,
+            visitDate: dealerDate,
+            dealershipName: dealer.dealerName,
+          });
+        }
+        notifyOemVisitConfirmed({
+          dealershipId: dealer.dealershipId,
+          visitId,
+          visitDate: dealerDate,
+          dealershipName: dealer.dealerName,
+        });
       } else {
         toast.error('Failed to confirm visit');
       }
@@ -238,11 +279,12 @@ function VisitsTab({
     if (!coachCounterDate) return;
     setResponding(true);
     try {
+      const newDate = format(coachCounterDate, 'yyyy-MM-dd');
       const { error } = await supabase
         .from('coach_visits')
         .update({
           status: 'proposed',
-          visit_date: format(coachCounterDate, 'yyyy-MM-dd'),
+          visit_date: newDate,
           dealer_proposed_date: null,
         })
         .eq('id', visitId);
@@ -251,6 +293,18 @@ function VisitsTab({
         setCoachResponseMode(false);
         setCoachCounterDate(undefined);
         onVisitSaved();
+
+        const dealerUserId = await getDealerOwner();
+        if (dealerUserId) {
+          sendVisitNotification({
+            event: 'proposed',
+            recipientUserId: dealerUserId,
+            dealershipId: dealer.dealershipId,
+            visitId,
+            visitDate: newDate,
+            dealershipName: dealer.dealerName,
+          });
+        }
       } else {
         toast.error('Failed to propose new date');
       }
@@ -677,7 +731,7 @@ function ActivityTab({
     const { error } = await supabase.from('coach_notes').insert({
       coach_user_id: user.id,
       dealership_id: dealer.dealershipId,
-      note_text: noteText.trim(),
+      note_text: sanitizeText(noteText.trim()),
       note_type: noteType || null,
     });
     setSubmitting(false);
@@ -816,7 +870,7 @@ function CoachNotesTab({
     const { error } = await supabase.from('coach_notes').insert({
       coach_user_id: user.id,
       dealership_id: dealer.dealershipId,
-      note_text: noteText.trim(),
+      note_text: sanitizeText(noteText.trim()),
       note_type: noteType || null,
     });
     setSubmitting(false);

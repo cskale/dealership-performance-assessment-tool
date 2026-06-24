@@ -16,6 +16,7 @@ import {
   CheckCircle2, X, StickyNote
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeText } from '@/lib/sanitize';
 import { useAuth } from '@/hooks/useAuth';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { toast } from 'sonner';
@@ -304,10 +305,10 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
           organization_id: currentOrganization?.id || null,
           department: formData.department || 'General',
           priority: formData.priority || 'medium',
-          action_title: formData.action_title || '',
-          action_description: formData.action_description || '',
+          action_title: sanitizeText(formData.action_title) || '',
+          action_description: sanitizeText(formData.action_description) || '',
           status: formData.status || 'Open',
-          responsible_person: formData.responsible_person || null,
+          responsible_person: sanitizeText(formData.responsible_person) || null,
           target_completion_date: formData.target_completion_date || null,
           support_required_from: formData.support_required_from || [],
           kpis_linked_to: formData.kpis_linked_to || [],
@@ -352,12 +353,12 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
 
   const performUpdate = async (formData: Partial<ActionRecord>, original: ActionRecord | null) => {
     const { error } = await supabase.from('improvement_actions').update({
-      action_title: formData.action_title,
-      action_description: formData.action_description,
+      action_title: sanitizeText(formData.action_title),
+      action_description: sanitizeText(formData.action_description),
       department: formData.department,
       priority: formData.priority,
       status: formData.status,
-      responsible_person: formData.responsible_person || null,
+      responsible_person: sanitizeText(formData.responsible_person) || null,
       target_completion_date: formData.target_completion_date || null,
       support_required_from: formData.support_required_from || [],
       kpis_linked_to: formData.kpis_linked_to || [],

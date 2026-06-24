@@ -15,6 +15,7 @@ import { useSessionManager } from '@/hooks/useSessionManager';
 import { useGDPR } from '@/hooks/useGDPR';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeText } from '@/lib/sanitize';
 import type { Tables } from '@/integrations/supabase/types';
 import { useToast } from '@/hooks/use-toast';
 import { OrganizationSettings } from '@/components/OrganizationSettings';
@@ -154,10 +155,10 @@ const Account = () => {
       const { error } = await supabase
         .from('profiles')
         .update({ 
-          display_name: validation.data.display_name,
-          job_title: validation.data.job_title,
-          department: validation.data.department,
-          bio: validation.data.bio,
+          display_name: sanitizeText(validation.data.display_name),
+          job_title: sanitizeText(validation.data.job_title),
+          department: sanitizeText(validation.data.department),
+          bio: sanitizeText(validation.data.bio),
           timezone: validation.data.timezone,
         })
         .eq('user_id', user.id);
@@ -178,7 +179,7 @@ const Account = () => {
     try {
       const { error } = await supabase
         .from('organizations')
-        .update({ name: orgName.trim() })
+        .update({ name: sanitizeText(orgName.trim()) })
         .eq('id', currentOrganization.id);
       if (error) throw error;
       toast({ title: "Organization updated", description: "Organization name has been saved" });

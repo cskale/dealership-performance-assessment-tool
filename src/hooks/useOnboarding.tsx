@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeText } from '@/lib/sanitize';
 import { useAuth } from './useAuth';
 
 export type OnboardingStatus = 
@@ -282,7 +283,7 @@ export function useOnboarding(): UseOnboardingReturn {
 
       const { data: org, error: orgError } = await supabase
         .from('organizations')
-        .insert({ name, slug })
+        .insert({ name: sanitizeText(name), slug })
         .select('id')
         .single();
 
@@ -340,10 +341,10 @@ export function useOnboarding(): UseOnboardingReturn {
       const { data: dealership, error: dealershipError } = await supabase
         .from('dealerships')
         .insert({
-          name: data.name,
-          brand: data.brand,
-          country: data.country,
-          location: data.location,
+          name: sanitizeText(data.name),
+          brand: sanitizeText(data.brand),
+          country: sanitizeText(data.country),
+          location: sanitizeText(data.location),
           organization_id: profile.active_organization_id,
           user_id: user.id,
         })
