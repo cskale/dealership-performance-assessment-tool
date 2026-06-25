@@ -19,7 +19,7 @@ export default function Methodology() {
   const detailLabelClass = "text-[11px] font-semibold uppercase tracking-wider text-[hsl(var(--dd-ghost))] mb-1.5";
   const detailContentClass = "text-[13px] text-[hsl(var(--dd-ink))] leading-[1.55]";
   const sectionLabelClass = "text-sm font-bold tracking-[0.15em] uppercase text-brand-500";
-  const sectionTitleClass = "text-[20px] font-semibold text-[hsl(var(--dd-ink))] leading-tight mt-1";
+  const sectionTitleClass = "font-sans font-black text-[20px] text-[hsl(var(--dd-ink))] leading-tight tracking-tight mt-1";
   const bodyClass = "text-[13px] text-[hsl(var(--dd-muted))] leading-[1.75]";
 
 
