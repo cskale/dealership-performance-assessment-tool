@@ -90,6 +90,7 @@ export default {
 				},
 				// Brand blue scale for direct usage
 				brand: {
+					DEFAULT: 'hsl(var(--brand-500))',
 					'50': 'hsl(var(--brand-050))',
 					'100': 'hsl(var(--brand-100))',
 					'200': 'hsl(var(--brand-200))',
@@ -127,6 +128,10 @@ export default {
 				'dd-ghost': 'hsl(var(--dd-ghost))',
 				'dd-ink': 'hsl(var(--dd-ink))',
 				'dd-midnight': 'hsl(var(--dd-midnight))',
+				// Landing-page aliases (Dealer Compass parity)
+				midnight: 'hsl(var(--dd-midnight))',
+				fog: 'hsl(var(--dd-fog))',
+				danger: 'hsl(var(--destructive))',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

@@ -404,7 +404,13 @@
   }
 }
 
-/* ── Landing page scroll-reveal & float animation ── */
+/* ── Landing page (Dealer Compass parity) ── */
+:root {
+  --color-brand: hsl(var(--brand-500));
+  --color-success: hsl(152 65% 42%);
+  --color-warning: hsl(38 92% 50%);
+  --color-danger: hsl(0 75% 55%);
+}
 .reveal {
   opacity: 0;
   transform: translateY(24px);
@@ -421,4 +427,8 @@
 .animate-float {
   animation: float 4s ease-in-out infinite;
 }
+@keyframes drawLine {
+  to { transform: scaleX(1); }
+}
+html { scroll-behavior: smooth; }
 
