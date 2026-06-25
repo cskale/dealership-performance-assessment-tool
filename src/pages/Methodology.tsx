@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect } from "react";
+import { Reveal } from "@/components/landing/Reveal";
 
 export default function Methodology() {
   const navigate = useNavigate();
@@ -13,13 +14,14 @@ export default function Methodology() {
     document.title = 'Methodology — Dealer Diagnostic';
   }, []);
 
-  const cardClass = "bg-white border border-[hsl(var(--dd-rule))] rounded-2xl overflow-hidden shadow-md";
+  const cardClass = "bg-white border border-[hsl(var(--dd-rule))] rounded-2xl overflow-hidden shadow-md transition-shadow duration-300 hover:shadow-elevated";
   const detailCardClass = "bg-[hsl(var(--dd-fog))] border border-[hsl(var(--dd-rule))] rounded-xl p-4";
   const detailLabelClass = "text-[11px] font-semibold uppercase tracking-wider text-[hsl(var(--dd-ghost))] mb-1.5";
   const detailContentClass = "text-[13px] text-[hsl(var(--dd-ink))] leading-[1.55]";
-  const sectionLabelClass = "text-[10px] font-semibold uppercase tracking-widest text-[hsl(var(--dd-accent))]";
-  const sectionTitleClass = "text-[20px] font-semibold text-[hsl(var(--dd-ink))] leading-tight";
+  const sectionLabelClass = "text-sm font-bold tracking-[0.15em] uppercase text-brand-500";
+  const sectionTitleClass = "text-[20px] font-semibold text-[hsl(var(--dd-ink))] leading-tight mt-1";
   const bodyClass = "text-[13px] text-[hsl(var(--dd-muted))] leading-[1.75]";
+
 
   const modules = [
     { badge: 'module-nvs' as const, label: 'NVS', scope: 'New Vehicle Sales — lead management, closing ratio, F&I, CSI', weight: 25, bar: 100 },
@@ -68,35 +70,31 @@ export default function Methodology() {
       >
         <div className="max-w-[960px] mx-auto relative">
           {/* Eyebrow */}
-          <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[hsl(221,82%,65%)] mb-3">
-            <span className="inline-block w-5 h-px bg-[hsl(var(--dd-accent))] mr-2 align-middle" />
+          <div className="text-sm font-bold tracking-[0.15em] uppercase text-brand-500 mb-4">
+            <span className="inline-block w-5 h-px bg-brand-500 mr-2 align-middle" />
             Methodology
           </div>
 
           {/* Title */}
-          <h1 className="font-black text-[36px] text-white leading-[1.15] tracking-tight mb-4 max-w-[560px]">
+          <h1 className="font-display text-[44px] lg:text-[56px] text-white leading-[1.05] tracking-tight mb-5 max-w-[640px]">
             How the assessment works
           </h1>
 
           {/* Intro */}
-          <p className="text-[14px] text-white/55 max-w-[580px] leading-relaxed mb-8">
+          <p className="text-[15px] text-white/60 max-w-[620px] leading-relaxed mb-10">
             The Dealer Diagnostic tool uses a deterministic, evidence-based assessment engine. The same answers always produce the same signals, the same recommendations, and the same benchmarks — making every output auditable, explainable, and defensible in OEM programme contexts.
           </p>
 
           {/* Stats row */}
-          <div className="flex gap-8 flex-wrap">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {stats.map((stat, i) => (
-              <div key={i} className="flex items-center gap-8">
-                <div>
-                  <div className="text-[24px] font-semibold text-white">{stat.value}</div>
-                  <div className="text-[11px] text-white/35 tracking-wide">{stat.label}</div>
-                </div>
-                {i < stats.length - 1 && (
-                  <div className="w-px h-8 bg-white/10" />
-                )}
+              <div key={i} className="rounded-xl bg-white/[0.04] border border-white/10 px-4 py-3 backdrop-blur-sm">
+                <div className="text-[22px] font-semibold text-white leading-none">{stat.value}</div>
+                <div className="text-[11px] text-white/50 tracking-wide mt-1.5">{stat.label}</div>
               </div>
             ))}
           </div>
+
         </div>
       </div>
 
@@ -104,10 +102,10 @@ export default function Methodology() {
       <div className="px-8 py-10 grid gap-8">
 
         {/* ── SECTION 01 — Structure ── */}
-        <div className={cardClass}>
+        <Reveal><div className={cardClass}>
           <div className="p-8">
             <div className="grid grid-cols-[auto_1fr] items-center mb-6">
-              <span className="text-[48px] font-black text-[hsl(var(--dd-rule))] leading-none mr-6 select-none">01</span>
+              <span className="text-[48px] font-black text-brand-500/30 leading-none mr-6 select-none">01</span>
               <div>
                 <div className={sectionLabelClass}>Structure</div>
                 <h2 className={sectionTitleClass}>Assessment architecture & module weighting</h2>
@@ -158,13 +156,13 @@ export default function Methodology() {
               </div>
             </div>
           </div>
-        </div>
+        </div></Reveal>
 
         {/* ── SECTION 02 — Intelligence ── */}
-        <div className={cardClass}>
+        <Reveal><div className={cardClass}>
           <div className="p-8">
             <div className="grid grid-cols-[auto_1fr] items-center mb-6">
-              <span className="text-[48px] font-black text-[hsl(var(--dd-rule))] leading-none mr-6 select-none">02</span>
+              <span className="text-[48px] font-black text-brand-500/30 leading-none mr-6 select-none">02</span>
               <div>
                 <div className={sectionLabelClass}>Intelligence</div>
                 <h2 className={sectionTitleClass}>Deterministic signal engine & root-cause diagnostics</h2>
@@ -215,13 +213,13 @@ export default function Methodology() {
               </div>
             </div>
           </div>
-        </div>
+        </div></Reveal>
 
         {/* ── SECTION 03 — Templates (NEW) ── */}
-        <div className={cardClass}>
+        <Reveal><div className={cardClass}>
           <div className="p-8">
             <div className="grid grid-cols-[auto_1fr] items-center mb-6">
-              <span className="text-[48px] font-black text-[hsl(var(--dd-rule))] leading-none mr-6 select-none">03</span>
+              <span className="text-[48px] font-black text-brand-500/30 leading-none mr-6 select-none">03</span>
               <div>
                 <div className={sectionLabelClass}>Templates</div>
                 <h2 className={sectionTitleClass}>Three-tier template selection & score-band gating</h2>
@@ -290,13 +288,13 @@ export default function Methodology() {
               </div>
             </div>
           </div>
-        </div>
+        </div></Reveal>
 
         {/* ── SECTION 04 — Benchmarks (renumbered from 03) ── */}
-        <div className={cardClass}>
+        <Reveal><div className={cardClass}>
           <div className="p-8">
             <div className="grid grid-cols-[auto_1fr] items-center mb-6">
-              <span className="text-[48px] font-black text-[hsl(var(--dd-rule))] leading-none mr-6 select-none">04</span>
+              <span className="text-[48px] font-black text-brand-500/30 leading-none mr-6 select-none">04</span>
               <div>
                 <div className={sectionLabelClass}>Benchmarks</div>
                 <h2 className={sectionTitleClass}>Benchmark framework & peer segmentation</h2>
@@ -343,17 +341,29 @@ export default function Methodology() {
               </div>
             </div>
           </div>
-        </div>
+        </div></Reveal>
 
         {/* ── CTA FOOTER ── */}
-        <div className="text-center py-8">
-          <p className="text-[18px] font-semibold text-[hsl(var(--dd-ink))] mb-4">
-            Ready to assess your dealership?
-          </p>
-          <Link to="/app/assessment">
-            <Button>Start Assessment →</Button>
-          </Link>
-        </div>
+        <Reveal>
+          <div
+            className="relative overflow-hidden rounded-3xl bg-dd-midnight text-white text-center px-8 py-14 mt-4"
+            style={{
+              backgroundImage: `radial-gradient(circle at 50% 0%, hsl(var(--brand-500) / 0.18), transparent 60%), linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)`,
+              backgroundSize: 'auto, 40px 40px, 40px 40px',
+            }}
+          >
+            <div className="text-sm font-bold tracking-[0.15em] uppercase text-brand-400 mb-3">Get Started</div>
+            <h3 className="font-display text-3xl lg:text-4xl tracking-tight mb-6">
+              Ready to assess your dealership?
+            </h3>
+            <Link to="/app/assessment">
+              <Button className="rounded-full bg-brand-500 hover:bg-brand-600 text-white h-12 px-7 text-[15px]">
+                Start Assessment <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </Reveal>
+
 
       </div>
     </div>
