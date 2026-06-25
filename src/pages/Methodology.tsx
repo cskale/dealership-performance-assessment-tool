@@ -35,7 +35,7 @@ export default function Methodology() {
   const eyebrow = "inline-flex items-center gap-2 text-sm font-bold tracking-[0.15em] uppercase text-brand";
   const sectionH = "mt-3 font-sans font-black text-3xl tracking-tight text-foreground";
   const bigNum = "absolute -top-6 -left-2 text-8xl font-black text-foreground/5 leading-none select-none pointer-events-none";
-  const innerCard = "rounded-xl ring-1 ring-border bg-white p-6 transition-shadow hover:shadow-elevated";
+  const innerCard = "rounded-xl ring-1 ring-border bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:ring-brand-500/40 hover:shadow-[0_0_30px_-10px_rgba(29,122,252,0.3)]";
   const innerLabel = "text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground mb-2";
   const innerBody = "text-[13px] text-muted-foreground leading-[1.7]";
 
@@ -208,7 +208,7 @@ export default function Methodology() {
               {rootCauses.map((rc) => (
                 <span
                   key={rc}
-                  className="px-4 py-1.5 rounded-full text-[13px] font-semibold bg-brand-500/10 text-brand-500 border border-brand-500/20"
+                  className="px-4 py-1.5 rounded-full text-[13px] font-semibold bg-brand-500/10 text-brand-500 border border-brand-500/20 transition-all duration-300 hover:-translate-y-1 hover:border-brand-500/60 hover:shadow-[0_0_30px_-10px_rgba(29,122,252,0.4)]"
                 >
                   {rc}
                 </span>
