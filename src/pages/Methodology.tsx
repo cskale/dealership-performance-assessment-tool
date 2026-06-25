@@ -344,14 +344,26 @@ export default function Methodology() {
         </div>
 
         {/* ── CTA FOOTER ── */}
-        <div className="text-center py-8">
-          <p className="text-[18px] font-semibold text-[hsl(var(--dd-ink))] mb-4">
-            Ready to assess your dealership?
-          </p>
-          <Link to="/app/assessment">
-            <Button>Start Assessment →</Button>
-          </Link>
-        </div>
+        <Reveal>
+          <div
+            className="relative overflow-hidden rounded-3xl bg-dd-midnight text-white text-center px-8 py-14 mt-4"
+            style={{
+              backgroundImage: `radial-gradient(circle at 50% 0%, hsl(var(--brand-500) / 0.18), transparent 60%), linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)`,
+              backgroundSize: 'auto, 40px 40px, 40px 40px',
+            }}
+          >
+            <div className="text-sm font-bold tracking-[0.15em] uppercase text-brand-400 mb-3">Get Started</div>
+            <h3 className="font-display text-3xl lg:text-4xl tracking-tight mb-6">
+              Ready to assess your dealership?
+            </h3>
+            <Link to="/app/assessment">
+              <Button className="rounded-full bg-brand-500 hover:bg-brand-600 text-white h-12 px-7 text-[15px]">
+                Start Assessment <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </Reveal>
+
 
       </div>
     </div>
