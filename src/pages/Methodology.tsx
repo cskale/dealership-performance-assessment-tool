@@ -70,35 +70,31 @@ export default function Methodology() {
       >
         <div className="max-w-[960px] mx-auto relative">
           {/* Eyebrow */}
-          <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[hsl(221,82%,65%)] mb-3">
-            <span className="inline-block w-5 h-px bg-[hsl(var(--dd-accent))] mr-2 align-middle" />
+          <div className="text-sm font-bold tracking-[0.15em] uppercase text-brand-500 mb-4">
+            <span className="inline-block w-5 h-px bg-brand-500 mr-2 align-middle" />
             Methodology
           </div>
 
           {/* Title */}
-          <h1 className="font-black text-[36px] text-white leading-[1.15] tracking-tight mb-4 max-w-[560px]">
+          <h1 className="font-display text-[44px] lg:text-[56px] text-white leading-[1.05] tracking-tight mb-5 max-w-[640px]">
             How the assessment works
           </h1>
 
           {/* Intro */}
-          <p className="text-[14px] text-white/55 max-w-[580px] leading-relaxed mb-8">
+          <p className="text-[15px] text-white/60 max-w-[620px] leading-relaxed mb-10">
             The Dealer Diagnostic tool uses a deterministic, evidence-based assessment engine. The same answers always produce the same signals, the same recommendations, and the same benchmarks — making every output auditable, explainable, and defensible in OEM programme contexts.
           </p>
 
           {/* Stats row */}
-          <div className="flex gap-8 flex-wrap">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {stats.map((stat, i) => (
-              <div key={i} className="flex items-center gap-8">
-                <div>
-                  <div className="text-[24px] font-semibold text-white">{stat.value}</div>
-                  <div className="text-[11px] text-white/35 tracking-wide">{stat.label}</div>
-                </div>
-                {i < stats.length - 1 && (
-                  <div className="w-px h-8 bg-white/10" />
-                )}
+              <div key={i} className="rounded-xl bg-white/[0.04] border border-white/10 px-4 py-3 backdrop-blur-sm">
+                <div className="text-[22px] font-semibold text-white leading-none">{stat.value}</div>
+                <div className="text-[11px] text-white/50 tracking-wide mt-1.5">{stat.label}</div>
               </div>
             ))}
           </div>
+
         </div>
       </div>
 
