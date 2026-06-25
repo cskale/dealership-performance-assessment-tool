@@ -208,7 +208,7 @@ export default function Methodology() {
               {rootCauses.map((rc) => (
                 <span
                   key={rc}
-                  className="px-4 py-1.5 rounded-full text-[13px] font-semibold bg-brand-500/10 text-brand-500 border border-brand-500/20"
+                  className="px-4 py-1.5 rounded-full text-[13px] font-semibold bg-brand-500/10 text-brand-500 border border-brand-500/20 transition-all duration-300 hover:-translate-y-1 hover:border-brand-500/60 hover:shadow-[0_0_30px_-10px_rgba(29,122,252,0.4)]"
                 >
                   {rc}
                 </span>
