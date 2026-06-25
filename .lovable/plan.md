@@ -1,116 +1,68 @@
-## Plan: KPI Deep Dive consistency + final design-system cleanup
+# Port "Dealer Compass" landing page into this project
 
-> **DESIGN.md is now v4.0 (8 May 2026).** Before implementing any visual changes, read DESIGN.md in full. Sections §17–§34 are new and contain specifications that affect every visual task below: OpenType typography (§17), surface hierarchy (§18), gradient permissions (§19), score ring instrument spec (§22), motion choreography (§23), number formatting (§25), skeleton states (§26), focus rings (§31), and micro-copy rules (§33).
+Yes — possible. Caveat: the source project uses TanStack Start + Tailwind v4 (`@theme inline`), and this project uses React Router + Vite + Tailwind v3. The **visual output and content will be 1:1**, but the underlying tokens/routing must be adapted (a literal file copy won't compile).
 
-I will start with the KPI deep dive pages, then do a focused cleanup pass for typography, badges, spacing, and colour-token compliance. I will keep this as UI/styling work only and avoid assessment/scoring/data logic.
+## Scope
 
-### Scope
+Replace the current landing experience with Dealer Compass's:
+- Full-bleed dark hero with its own top nav ("Dealer Diagnostic" wordmark, links, Request Demo pill)
+- Floating dashboard mock with score bars
+- "The Engine" 3-step section with animated connector line
+- "Platform Capabilities" dark grid
+- "See It In Action" ScrollShowcase (sticky scroll with 7 mock panels)
+- Reveal/Counter scroll animations + float animation
+- The page's own footer / CTA section as built in Dealer Compass
 
-Files likely to be edited:
-- `src/components/kpi-encyclopedia/KPIStudio.tsx`
-- `src/components/kpi-encyclopedia/KPIExplorer.tsx`
-- `src/components/kpi-encyclopedia/KPIBenchmarkStudio.tsx`
-- `src/components/kpi-encyclopedia/ImprovementPlaybook.tsx`
-- `src/components/kpi-encyclopedia/RootCauseIntelligenceBoard.tsx`
-- `src/components/kpi-encyclopedia/KPIRootCauseTiles.tsx`
-- `src/components/kpi-encyclopedia/KpiRelationshipMap.tsx`
-- `src/components/kpi-encyclopedia/KPIBenchmarkBar.tsx`, if still used in the KPI flow
+The existing `HomeHeader` and `Footer` will **not** be used on this page (Dealer Compass landing has its own nav/footer baked in, which is part of the 1:1 look). They remain available for other public routes.
 
-I will not touch core engine files, Supabase queries, routing, packages, or data definitions.
+## Files to change
 
----
+1. **`src/pages/Index.tsx`** — rewrite to mirror `src/routes/index.tsx` from Dealer Compass.
+   - Keep our auth redirect at the top:
+     ```tsx
+     const { user, loading } = useAuth();
+     if (!loading && user) return <Navigate to="/app/dashboard" replace />;
+     ```
+   - Strip TanStack `createFileRoute` / `head()` meta. Move meta tags to `react-helmet-async` if already in project, otherwise into a `useEffect` setting `document.title` (matching how other pages here do SEO).
+   - Replace `<a href="/methodology">` with React Router `<Link>`.
 
-## 1. Standardise the KPI deep-dive layout
+2. **`src/components/landing/Reveal.tsx`** — replace with Dealer Compass version (exports `Reveal` and `Counter`). IntersectionObserver-based, no library deps.
 
-### Benchmark Position
-I will make the benchmark section consistent for every KPI:
-- Keep the same four-zone benchmark corridor structure across all KPI records.
-- Ensure every KPI shows the same detail level below Benchmark Position:
-  - Reference corridor / benchmark value
-  - Direction: lower-is-better or higher-is-better
-  - Four performance-zone labels
-  - Consistent label typography using `text-caption` / `text-label`, not raw ad-hoc text sizes.
-- Remove one-off special-case metric cards for `leadResponseTime` so it does not have a richer layout than other KPIs.
-- Preserve the existing benchmark parsing and display logic; no KPI data changes.
+3. **`src/components/landing/ScrollShowcase.tsx`** — replace with Dealer Compass version (sticky scroll, 7 `ShowcasePanel` mocks: Diagnostic Command, Action Plan, KPI Encyclopedia, etc.).
 
-### Metric summary row
-I will standardise the three metric tiles so all KPIs show:
-- Reference benchmark
-- Measurement unit
-- Performance direction
+4. **`src/index.css`** — add the Dealer Compass design tokens as Tailwind v3 CSS variables and utilities:
+   - `--brand: #1D7AFC`, `--midnight`, `--fog`, `--success`, `--warning`, `--danger` (HSL where needed for opacity utilities)
+   - `.reveal` / `.reveal-in` utility classes
+   - `@keyframes float` + `.animate-float`
+   - `@keyframes drawLine` for the connector line
+   - Smooth scroll on `html`
 
-This removes the current visual inconsistency where one KPI has unique benchmark details and others look thinner.
+5. **`tailwind.config.ts`** — extend `theme.colors` with `brand`, `midnight`, `fog`, `success`, `warning`, `danger` mapped to the new CSS vars so utilities like `bg-brand`, `text-midnight`, `bg-fog`, `bg-success/10` compile under Tailwind v3.
 
----
+6. **`src/components/landing/ProductSneakPeek.tsx`** — leave as the empty stub it already is (or delete; not imported by the new page).
 
-## 2. Fix Improvement Actions badge typography
+## Adaptations required (why it's not a literal copy)
 
-I will update Improvement Actions tags/badges to match `DESIGN.md`:
-- `rounded-md`
-- `px-2.5 py-1`
-- `text-label` or `text-caption` depending on density
-- Inter/system font through the existing design system
-- No oversized raw `text-sm`/`text-xs` badge styling
-- No off-system font classes unless already part of the Tailwind design tokens
+| Source (Dealer Compass) | This project |
+|---|---|
+| TanStack `createFileRoute` + `head()` | React Router page + manual `document.title` / Helmet |
+| Tailwind v4 `@theme inline { --color-brand: var(--brand) }` | Tailwind v3 `tailwind.config.ts` `extend.colors.brand` referencing CSS var |
+| `bg-brand/10`, `text-success` etc. work via v4 auto-generated palette | Same classes work in v3 only after adding them to `tailwind.config.ts` |
+| `font-sans: Inter` via `@theme` | Add Inter via existing font setup or `<link>` in `index.html` if not present |
+| `<a href="/methodology">` | `<Link to="/methodology">` |
 
-I will keep the existing tag logic: Quick win / Structural / Capability.
+Logic, copy text, layout, colours, spacing, animations, and the 7 ScrollShowcase panels will be reproduced verbatim from the source.
 
----
+## Out of scope
 
-## 3. Replace ad-hoc typography with DESIGN.md type utilities
+- Backend, auth, routing, or any `/app/*` page changes
+- Translation of landing content (keeps English, matching source)
+- Replacing the global `HomeHeader`/`Footer` for other public routes (`/methodology`, `/auth`, etc.)
 
-I will audit KPI encyclopedia components and replace inconsistent raw sizes where appropriate:
-- Section labels: `text-caption uppercase tracking-wider`
-- Section/card headings: `text-h5` or `text-body-md font-medium`
-- Descriptions: `text-body-md` or `text-body-sm`
-- Metric values: `text-metric-lg tabular-nums`
-- Metadata tags: `text-caption`
+## Verification
 
-This mainly targets the visible KPI detail modal and related KPI cards/playbook sections.
+- `npm run build` clean
+- `npx vitest run` clean (no existing tests touch `Index.tsx` or landing components)
+- Visual check of `/` in preview at 1408px and mobile widths
 
----
-
-## 4. Remove off-system visual patterns in KPI components
-
-I will clean up visible inconsistencies such as:
-- `rounded-full` on benchmark bars or badges where `rounded-md`/`rounded-xl` is specified.
-- Raw arbitrary tiny text like `text-[9px]` / `text-[10px]` where `text-caption` is suitable.
-- Department-coloured surfaces in card UI where department colour should not be used outside charts/data visualisations.
-- Hardcoded semantic Tailwind colours in KPI bars, replacing them with existing HSL/token-based classes where practical.
-- Oversized or mismatched tag styling.
-
-I will not remove chart/data-viz colour logic where it is explicitly allowed by `DESIGN.md`.
-
----
-
-## 5. Final design-system cleanup pass
-
-After the KPI deep-dive fixes, I will run a targeted audit across KPI-related UI for:
-- Hardcoded hex colours
-- Raw red/amber/green/blue utility backgrounds outside approved score/status usage
-- Inconsistent badge classes
-- `shadow-lg` / `shadow-xl`
-- Purple gradients
-- Serif font usage
-- Department abbreviations in display UI
-- Non-standard spacing or ad-hoc arbitrary text sizes
-
-Any cleanup will stay within the KPI encyclopedia/deep-dive surface unless a clearly related shared component is causing the inconsistency.
-
----
-
-## Acceptance checks
-
-After implementation, I will verify:
-- No new npm packages installed.
-- No Supabase queries, RPC calls, routes, or data-fetching logic changed.
-- No core engine files modified.
-- KPI pages have consistent Benchmark Position detail depth.
-- Improvement Actions badges use design-system typography and sizing.
-- Design tokens/classes from `DESIGN.md` are used instead of new colours/fonts/patterns.
-- TypeScript check passes with zero errors.
-- Score thresholds use canonical bands (≥85/≥70/≥46/<46) — not ≥80/≥60 (DESIGN.md §2.3).
-- All numeric values carry `.numeric` class or `tabular-nums` (DESIGN.md §17.2, §25).
-- No inline `style={{}}` on UI surfaces — all appearance via design token classes (§15).
-- Focus rings present on all interactive elements (§31).
-- No vague error messages — all follow `[what failed] · [what to do]` format (§33).
+Approve and I'll implement.
