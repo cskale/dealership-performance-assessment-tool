@@ -60,7 +60,7 @@ function Nav() {
         <a href="#engine" className="hover:text-white transition">How it works</a>
         <a href="#capabilities" className="hover:text-white transition">Platform</a>
         <a href="#inside" className="hover:text-white transition">Inside</a>
-        <a href="#cta" className="hover:text-white transition">Methodology</a>
+        <Link to="/methodology" className="hover:text-white transition">Methodology</Link>
       </div>
       <Link
         to="/auth"
