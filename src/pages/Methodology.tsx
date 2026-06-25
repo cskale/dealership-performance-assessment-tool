@@ -41,8 +41,8 @@ export default function Methodology() {
 
   const stats = [
     { value: '5', label: 'Assessment modules' },
-    { value: '50', label: 'Diagnostic questions' },
-    { value: '3', label: 'Maturity bands' },
+    { value: '100+', label: 'Diagnostic questions' },
+    { value: '4', label: 'Maturity bands' },
     { value: '18', label: 'Audit fields per action' },
     { value: '5', label: 'Root-cause dimensions' },
   ];
@@ -76,7 +76,7 @@ export default function Methodology() {
           </div>
 
           {/* Title */}
-          <h1 className="font-display text-[44px] lg:text-[56px] text-white leading-[1.05] tracking-tight mb-5 max-w-[640px]">
+          <h1 className="font-sans font-black text-[44px] lg:text-[56px] text-white leading-[1.05] tracking-tight mb-5 max-w-[640px]">
             How the assessment works
           </h1>
 
@@ -269,23 +269,31 @@ export default function Methodology() {
               ))}
             </div>
 
-            {/* Score band cards */}
-            <div className="grid grid-cols-3 gap-3 mt-5">
-              <div className="bg-[hsl(var(--dd-red-light))] border border-[#fca5a5] rounded-xl p-4">
-                <div className="text-[13px] font-semibold text-[hsl(0,60%,35%)] mb-1">Foundational</div>
-                <div className="text-[11px] font-mono text-[hsl(0,40%,35%)] mb-2">Section score ≤ 45</div>
-                <div className="text-[12px] text-[hsl(0,40%,35%)] leading-relaxed">Basic process establishment and gap-closure actions</div>
-              </div>
-              <div className="bg-[hsl(var(--dd-amber-light))] border border-[#fcd34d] rounded-xl p-4">
-                <div className="text-[13px] font-semibold text-[hsl(38,70%,28%)] mb-1">Developing</div>
-                <div className="text-[11px] font-mono text-[hsl(38,50%,30%)] mb-2">Section score 46–69</div>
-                <div className="text-[12px] text-[hsl(38,50%,30%)] leading-relaxed">Process optimisation and KPI ownership actions</div>
-              </div>
-              <div className="bg-[hsl(var(--dd-green-light))] border border-[#6ee7b7] rounded-xl p-4">
-                <div className="text-[13px] font-semibold text-[hsl(160,60%,22%)] mb-1">Optimising</div>
-                <div className="text-[11px] font-mono text-[hsl(160,40%,30%)] mb-2">Section score ≥ 70</div>
-                <div className="text-[12px] text-[hsl(160,40%,30%)] leading-relaxed">Ceiling-gap and competitive-advantage actions</div>
-              </div>
+            {/* Score bands — clean table */}
+            <div className="mt-6 rounded-xl ring-1 ring-border bg-white overflow-hidden">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-[hsl(var(--dd-rule))]">
+                    <th className="text-left text-[10px] font-bold uppercase tracking-[0.15em] text-brand-500 px-4 py-2.5">Band</th>
+                    <th className="text-left text-[10px] font-bold uppercase tracking-[0.15em] text-brand-500 px-4 py-2.5">Section score</th>
+                    <th className="text-left text-[10px] font-bold uppercase tracking-[0.15em] text-brand-500 px-4 py-2.5">Action focus</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { band: 'Foundational', score: '≤ 45', focus: 'Basic process establishment and gap-closure actions' },
+                    { band: 'Developing', score: '46–69', focus: 'Process optimisation and KPI ownership actions' },
+                    { band: 'Performing', score: '70–84', focus: 'Standardisation and consistency actions' },
+                    { band: 'Advanced', score: '≥ 85', focus: 'Ceiling-gap and competitive-advantage actions' },
+                  ].map((b) => (
+                    <tr key={b.band} className="border-b border-[hsl(var(--dd-fog))] last:border-0">
+                      <td className="px-4 py-3 text-[13px] font-semibold text-[hsl(var(--dd-ink))]">{b.band}</td>
+                      <td className="px-4 py-3 text-[12px] font-mono text-[hsl(var(--dd-muted))]">{b.score}</td>
+                      <td className="px-4 py-3 text-[12px] text-[hsl(var(--dd-muted))]">{b.focus}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div></Reveal>
@@ -325,20 +333,30 @@ export default function Methodology() {
               </div>
             </div>
 
-            {/* Confidence tier row */}
-            <div className="flex gap-3 mt-5">
-              <div className="flex-1 bg-[hsl(var(--dd-green-light))] border border-[#6ee7b7] rounded-xl p-4">
-                <div className="text-[11px] font-semibold text-[hsl(160,60%,22%)] mb-1">High confidence</div>
-                <div className="text-[12px] text-[hsl(160,40%,30%)] leading-relaxed">σ &lt; 0.8. Consistent assessment. No review required.</div>
-              </div>
-              <div className="flex-1 bg-[hsl(var(--dd-amber-light))] border border-[#fcd34d] rounded-xl p-4">
-                <div className="text-[11px] font-semibold text-[hsl(38,70%,28%)] mb-1">Medium confidence</div>
-                <div className="text-[12px] text-[hsl(38,50%,30%)] leading-relaxed">σ 0.8–1.4. Coach review recommended before action commitment.</div>
-              </div>
-              <div className="flex-1 bg-[hsl(var(--dd-red-light))] border border-[#fca5a5] rounded-xl p-4">
-                <div className="text-[11px] font-semibold text-[hsl(0,60%,35%)] mb-1">Low confidence</div>
-                <div className="text-[12px] text-[hsl(0,40%,35%)] leading-relaxed">σ &gt; 1.4. Results should not be shared externally without coach validation.</div>
-              </div>
+            {/* Confidence tiers — clean table */}
+            <div className="mt-5 rounded-xl ring-1 ring-border bg-white overflow-hidden">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-[hsl(var(--dd-rule))]">
+                    <th className="text-left text-[10px] font-bold uppercase tracking-[0.15em] text-brand-500 px-4 py-2.5">Confidence</th>
+                    <th className="text-left text-[10px] font-bold uppercase tracking-[0.15em] text-brand-500 px-4 py-2.5">Std deviation</th>
+                    <th className="text-left text-[10px] font-bold uppercase tracking-[0.15em] text-brand-500 px-4 py-2.5">Guidance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { tier: 'High', sigma: 'σ < 0.8', note: 'Consistent assessment. No review required.' },
+                    { tier: 'Medium', sigma: 'σ 0.8–1.4', note: 'Coach review recommended before action commitment.' },
+                    { tier: 'Low', sigma: 'σ > 1.4', note: 'Results should not be shared externally without coach validation.' },
+                  ].map((c) => (
+                    <tr key={c.tier} className="border-b border-[hsl(var(--dd-fog))] last:border-0">
+                      <td className="px-4 py-3 text-[13px] font-semibold text-[hsl(var(--dd-ink))]">{c.tier}</td>
+                      <td className="px-4 py-3 text-[12px] font-mono text-[hsl(var(--dd-muted))]">{c.sigma}</td>
+                      <td className="px-4 py-3 text-[12px] text-[hsl(var(--dd-muted))]">{c.note}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div></Reveal>
@@ -353,7 +371,7 @@ export default function Methodology() {
             }}
           >
             <div className="text-sm font-bold tracking-[0.15em] uppercase text-brand-400 mb-3">Get Started</div>
-            <h3 className="font-display text-3xl lg:text-4xl tracking-tight mb-6">
+            <h3 className="font-sans font-black text-3xl lg:text-4xl tracking-tight mb-6">
               Ready to assess your dealership?
             </h3>
             <Link to="/app/assessment">

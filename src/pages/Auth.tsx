@@ -83,8 +83,10 @@ const Auth = () => {
             <span className="inline-block w-5 h-px bg-brand-500 mr-2 align-middle" />
             Enterprise Diagnostic Platform
           </div>
-          <h1 className="font-display text-4xl lg:text-6xl leading-[1.05] tracking-tight mb-4 lg:mb-6">
-            Diagnose. Prioritise. Improve.
+          <h1 className="font-sans font-black text-5xl lg:text-6xl leading-[1.02] tracking-tight mb-4 lg:mb-6">
+            <span className="block text-white/95">Diagnose.</span>
+            <span className="block text-white/95">Prioritise.</span>
+            <span className="block text-brand-500">Improve.</span>
           </h1>
           <p className="text-white/60 text-sm lg:text-base leading-relaxed max-w-sm">
             Sign in to access your dealership assessment platform.
