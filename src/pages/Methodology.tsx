@@ -102,7 +102,7 @@ export default function Methodology() {
       <div className="px-8 py-10 grid gap-8">
 
         {/* ── SECTION 01 — Structure ── */}
-        <div className={cardClass}>
+        <Reveal><div className={cardClass}>
           <div className="p-8">
             <div className="grid grid-cols-[auto_1fr] items-center mb-6">
               <span className="text-[48px] font-black text-brand-500/30 leading-none mr-6 select-none">01</span>
@@ -156,10 +156,10 @@ export default function Methodology() {
               </div>
             </div>
           </div>
-        </div>
+        </div></Reveal>
 
         {/* ── SECTION 02 — Intelligence ── */}
-        <div className={cardClass}>
+        <Reveal><div className={cardClass}>
           <div className="p-8">
             <div className="grid grid-cols-[auto_1fr] items-center mb-6">
               <span className="text-[48px] font-black text-brand-500/30 leading-none mr-6 select-none">02</span>
@@ -213,10 +213,10 @@ export default function Methodology() {
               </div>
             </div>
           </div>
-        </div>
+        </div></Reveal>
 
         {/* ── SECTION 03 — Templates (NEW) ── */}
-        <div className={cardClass}>
+        <Reveal><div className={cardClass}>
           <div className="p-8">
             <div className="grid grid-cols-[auto_1fr] items-center mb-6">
               <span className="text-[48px] font-black text-brand-500/30 leading-none mr-6 select-none">03</span>
@@ -288,10 +288,10 @@ export default function Methodology() {
               </div>
             </div>
           </div>
-        </div>
+        </div></Reveal>
 
         {/* ── SECTION 04 — Benchmarks (renumbered from 03) ── */}
-        <div className={cardClass}>
+        <Reveal><div className={cardClass}>
           <div className="p-8">
             <div className="grid grid-cols-[auto_1fr] items-center mb-6">
               <span className="text-[48px] font-black text-brand-500/30 leading-none mr-6 select-none">04</span>
@@ -341,7 +341,7 @@ export default function Methodology() {
               </div>
             </div>
           </div>
-        </div>
+        </div></Reveal>
 
         {/* ── CTA FOOTER ── */}
         <Reveal>
