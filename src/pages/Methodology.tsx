@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect } from "react";
+import { Reveal } from "@/components/landing/Reveal";
 
 export default function Methodology() {
   const navigate = useNavigate();
@@ -13,13 +14,14 @@ export default function Methodology() {
     document.title = 'Methodology — Dealer Diagnostic';
   }, []);
 
-  const cardClass = "bg-white border border-[hsl(var(--dd-rule))] rounded-2xl overflow-hidden shadow-md";
+  const cardClass = "bg-white border border-[hsl(var(--dd-rule))] rounded-2xl overflow-hidden shadow-md transition-shadow duration-300 hover:shadow-elevated";
   const detailCardClass = "bg-[hsl(var(--dd-fog))] border border-[hsl(var(--dd-rule))] rounded-xl p-4";
   const detailLabelClass = "text-[11px] font-semibold uppercase tracking-wider text-[hsl(var(--dd-ghost))] mb-1.5";
   const detailContentClass = "text-[13px] text-[hsl(var(--dd-ink))] leading-[1.55]";
-  const sectionLabelClass = "text-[10px] font-semibold uppercase tracking-widest text-[hsl(var(--dd-accent))]";
-  const sectionTitleClass = "text-[20px] font-semibold text-[hsl(var(--dd-ink))] leading-tight";
+  const sectionLabelClass = "text-sm font-bold tracking-[0.15em] uppercase text-brand-500";
+  const sectionTitleClass = "text-[20px] font-semibold text-[hsl(var(--dd-ink))] leading-tight mt-1";
   const bodyClass = "text-[13px] text-[hsl(var(--dd-muted))] leading-[1.75]";
+
 
   const modules = [
     { badge: 'module-nvs' as const, label: 'NVS', scope: 'New Vehicle Sales — lead management, closing ratio, F&I, CSI', weight: 25, bar: 100 },
