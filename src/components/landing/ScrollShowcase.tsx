@@ -11,7 +11,7 @@ export type ShowcasePanel = {
 function PanelCard({ chromeTitle, children }: { chromeTitle: string; children: ReactNode }) {
   return (
     <div className="w-full max-w-[600px] rounded-xl bg-white shadow-[0_30px_80px_-30px_rgba(15,23,42,0.45)] ring-1 ring-black/5 overflow-hidden">
-      <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border bg-dd-fog/70">
+      <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border bg-fog/70">
         <div className="flex items-center gap-1.5">
           <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
           <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
@@ -29,7 +29,7 @@ function PanelCard({ chromeTitle, children }: { chromeTitle: string; children: R
 function PanelText({ label, description }: { label: string; description: string }) {
   return (
     <div className="max-w-md">
-      <div className="text-sm font-bold tracking-[0.15em] uppercase text-brand-500">{label}</div>
+      <div className="text-sm font-bold tracking-[0.15em] uppercase text-brand">{label}</div>
       <h3 className="mt-3 text-3xl sm:text-4xl font-black tracking-tight text-foreground leading-tight">
         {description}
       </h3>
@@ -103,7 +103,7 @@ export function ScrollShowcase({ panels }: { panels: ShowcasePanel[] }) {
     return (
       <div className="px-6 pt-20 pb-16">
         <div className="max-w-2xl mx-auto text-center mb-12">
-          <span className="text-sm font-bold tracking-[0.15em] uppercase text-brand-500">See It In Action</span>
+          <span className="text-sm font-bold tracking-[0.15em] uppercase text-brand">See It In Action</span>
           <h2 className="mt-4 text-3xl font-black tracking-tight">
             The interfaces your team will live in.
           </h2>
@@ -128,7 +128,7 @@ export function ScrollShowcase({ panels }: { panels: ShowcasePanel[] }) {
     >
       <div className="sticky top-0 h-screen flex flex-col overflow-hidden pt-[60px] pb-10">
         <header className="max-w-3xl mx-auto px-6 text-center mb-8">
-          <span className="text-sm font-bold tracking-[0.15em] uppercase text-brand-500">See It In Action</span>
+          <span className="text-sm font-bold tracking-[0.15em] uppercase text-brand">See It In Action</span>
           <h2 className="mt-3 text-3xl sm:text-4xl font-black tracking-tight text-foreground">
             The interfaces your team will live in.
           </h2>
@@ -159,7 +159,10 @@ export function ScrollShowcase({ panels }: { panels: ShowcasePanel[] }) {
                       <PanelText label={p.label} description={p.description} />
                     </div>
                     <div className="col-span-7 flex justify-end">
-                      <div ref={(el) => { panelWrapRefs.current[i] = el; }} style={{ willChange: "transform" }}>
+                      <div
+                        ref={(el) => { panelWrapRefs.current[i] = el; }}
+                        style={{ willChange: "transform" }}
+                      >
                         <PanelCard chromeTitle={p.chromeTitle}>{p.node}</PanelCard>
                       </div>
                     </div>
@@ -167,7 +170,10 @@ export function ScrollShowcase({ panels }: { panels: ShowcasePanel[] }) {
                 ) : (
                   <>
                     <div className="col-span-7 flex justify-start">
-                      <div ref={(el) => { panelWrapRefs.current[i] = el; }} style={{ willChange: "transform" }}>
+                      <div
+                        ref={(el) => { panelWrapRefs.current[i] = el; }}
+                        style={{ willChange: "transform" }}
+                      >
                         <PanelCard chromeTitle={p.chromeTitle}>{p.node}</PanelCard>
                       </div>
                     </div>
@@ -192,7 +198,7 @@ export function ScrollShowcase({ panels }: { panels: ShowcasePanel[] }) {
                 onClick={() => scrollToPanel(i)}
                 className="h-2 w-2 rounded-full transition-all duration-300"
                 style={{
-                  background: isActive ? "hsl(var(--brand-500))" : "rgba(15,23,42,0.18)",
+                  background: isActive ? "var(--color-brand)" : "rgba(15,23,42,0.18)",
                   transform: isActive ? "scale(1.8)" : "scale(1)",
                 }}
               />
@@ -233,7 +239,7 @@ function MobilePanel({ panel }: { panel: ShowcasePanel }) {
       }}
     >
       <div className="text-center max-w-xl">
-        <div className="text-sm font-bold tracking-[0.15em] uppercase text-brand-500">{panel.label}</div>
+        <div className="text-sm font-bold tracking-[0.15em] uppercase text-brand">{panel.label}</div>
         <h3 className="mt-2 text-xl font-black tracking-tight text-foreground">{panel.description}</h3>
       </div>
       <PanelCard chromeTitle={panel.chromeTitle}>{panel.node}</PanelCard>
