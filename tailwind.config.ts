@@ -127,10 +127,6 @@ export default {
 				'dd-ghost': 'hsl(var(--dd-ghost))',
 				'dd-ink': 'hsl(var(--dd-ink))',
 				'dd-midnight': 'hsl(var(--dd-midnight))',
-					// Landing-page shorthand aliases
-					midnight: 'hsl(var(--dd-midnight))',
-					fog: 'hsl(var(--dd-fog))',
-					danger: 'hsl(var(--destructive))',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
