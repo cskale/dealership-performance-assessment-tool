@@ -105,7 +105,7 @@ export default function Methodology() {
         <div className={cardClass}>
           <div className="p-8">
             <div className="grid grid-cols-[auto_1fr] items-center mb-6">
-              <span className="text-[48px] font-black text-[hsl(var(--dd-rule))] leading-none mr-6 select-none">01</span>
+              <span className="text-[48px] font-black text-brand-500/30 leading-none mr-6 select-none">01</span>
               <div>
                 <div className={sectionLabelClass}>Structure</div>
                 <h2 className={sectionTitleClass}>Assessment architecture & module weighting</h2>
@@ -162,7 +162,7 @@ export default function Methodology() {
         <div className={cardClass}>
           <div className="p-8">
             <div className="grid grid-cols-[auto_1fr] items-center mb-6">
-              <span className="text-[48px] font-black text-[hsl(var(--dd-rule))] leading-none mr-6 select-none">02</span>
+              <span className="text-[48px] font-black text-brand-500/30 leading-none mr-6 select-none">02</span>
               <div>
                 <div className={sectionLabelClass}>Intelligence</div>
                 <h2 className={sectionTitleClass}>Deterministic signal engine & root-cause diagnostics</h2>
@@ -219,7 +219,7 @@ export default function Methodology() {
         <div className={cardClass}>
           <div className="p-8">
             <div className="grid grid-cols-[auto_1fr] items-center mb-6">
-              <span className="text-[48px] font-black text-[hsl(var(--dd-rule))] leading-none mr-6 select-none">03</span>
+              <span className="text-[48px] font-black text-brand-500/30 leading-none mr-6 select-none">03</span>
               <div>
                 <div className={sectionLabelClass}>Templates</div>
                 <h2 className={sectionTitleClass}>Three-tier template selection & score-band gating</h2>
@@ -294,7 +294,7 @@ export default function Methodology() {
         <div className={cardClass}>
           <div className="p-8">
             <div className="grid grid-cols-[auto_1fr] items-center mb-6">
-              <span className="text-[48px] font-black text-[hsl(var(--dd-rule))] leading-none mr-6 select-none">04</span>
+              <span className="text-[48px] font-black text-brand-500/30 leading-none mr-6 select-none">04</span>
               <div>
                 <div className={sectionLabelClass}>Benchmarks</div>
                 <h2 className={sectionTitleClass}>Benchmark framework & peer segmentation</h2>
