@@ -90,6 +90,7 @@ export default {
 				},
 				// Brand blue scale for direct usage
 				brand: {
+					DEFAULT: 'hsl(var(--brand-500))',
 					'50': 'hsl(var(--brand-050))',
 					'100': 'hsl(var(--brand-100))',
 					'200': 'hsl(var(--brand-200))',
@@ -128,7 +129,6 @@ export default {
 				'dd-ink': 'hsl(var(--dd-ink))',
 				'dd-midnight': 'hsl(var(--dd-midnight))',
 				// Landing-page aliases (Dealer Compass parity)
-				'brand-DEFAULT': 'hsl(var(--brand-500))',
 				midnight: 'hsl(var(--dd-midnight))',
 				fog: 'hsl(var(--dd-fog))',
 				danger: 'hsl(var(--destructive))',
