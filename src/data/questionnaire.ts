@@ -98,12 +98,15 @@ export const questionnaire: Questionnaire = {
           description: "Bewerten Sie Ihre Neuwagenverkaufsprozesse, Leistungskennzahlen und Kundenzufriedenheit"
         },
         fr: {
+          title: "Performance des ventes de véhicules neufs",
           description: "Évaluez vos processus de vente de véhicules neufs, vos indicateurs de performance et la satisfaction client"
         },
         es: {
+          title: "Rendimiento de ventas de vehículos nuevos",
           description: "Evalúe sus procesos de venta de vehículos nuevos, métricas de rendimiento y satisfacción del cliente"
         },
         it: {
+          title: "Performance delle vendite di veicoli nuovi",
           description: "Valuti i processi di vendita dei veicoli nuovi, le metriche di performance e la soddisfazione dei clienti"
         }
       },
@@ -965,12 +968,15 @@ export const questionnaire: Questionnaire = {
           description: "Beurteilen Sie Ihre Gebrauchtwagenoperationen, Preisstrategien und Marktpositionierung"
         },
         fr: {
+          title: "Performance des ventes de véhicules d'occasion",
           description: "Évaluez vos opérations de véhicules d'occasion, vos stratégies tarifaires et votre positionnement sur le marché"
         },
         es: {
+          title: "Rendimiento de ventas de vehículos de ocasión",
           description: "Evalúe sus operaciones de vehículos de ocasión, estrategias de precios y posicionamiento en el mercado"
         },
         it: {
+          title: "Performance delle vendite di veicoli usati",
           description: "Valuti le operazioni di vendita di veicoli usati, le strategie di prezzo e il posizionamento di mercato"
         }
       },
@@ -1801,12 +1807,15 @@ export const questionnaire: Questionnaire = {
           description: "Bewerten Sie die Effizienz Ihrer Serviceabteilung, Kundenzufriedenheit und Rentabilität"
         },
         fr: {
+          title: "Performance de l'après-vente",
           description: "Évaluez l'efficacité de votre service après-vente, la satisfaction client et la rentabilité"
         },
         es: {
+          title: "Rendimiento de posventa",
           description: "Evalúe la eficiencia de su departamento de servicio, la satisfacción del cliente y la rentabilidad"
         },
         it: {
+          title: "Performance del post-vendita",
           description: "Valuti l'efficienza del reparto assistenza, la soddisfazione dei clienti e la redditività"
         }
       },
@@ -2643,12 +2652,15 @@ export const questionnaire: Questionnaire = {
           description: "Analysieren Sie die Effizienz Ihrer Teileabteilung, Lagerverwaltung und Rentabilität"
         },
         fr: {
+          title: "Performance des pièces et des stocks",
           description: "Analysez l'efficacité de votre département pièces de rechange, la gestion des stocks et la rentabilité"
         },
         es: {
+          title: "Rendimiento de recambios e inventario",
           description: "Analice la eficiencia de su departamento de recambios, la gestión de inventario y la rentabilidad"
         },
         it: {
+          title: "Performance ricambi e magazzino",
           description: "Analizzi l'efficienza del reparto ricambi, la gestione del magazzino e la redditività"
         }
       },
@@ -3280,12 +3292,15 @@ export const questionnaire: Questionnaire = {
           description: "Bewerten Sie die allgemeine finanzielle Gesundheit, betriebliche Effizienz und Unternehmensführung"
         },
         fr: {
+          title: "Opérations financières et performance globale",
           description: "Évaluez la santé financière globale, l'efficacité opérationnelle et la gestion de l'entreprise"
         },
         es: {
+          title: "Operaciones financieras y rendimiento global",
           description: "Evalúe la salud financiera general, la eficiencia operativa y la gestión empresarial"
         },
         it: {
+          title: "Operazioni finanziarie e performance complessiva",
           description: "Valuti la salute finanziaria complessiva, l'efficienza operativa e la gestione aziendale"
         }
       },
