@@ -114,7 +114,12 @@ export function InviteCoach() {
       });
 
       if (error || !data?.success) {
-        toast.error(data?.error || 'Failed to send coach invite');
+        let message = data?.error || 'Failed to send coach invite';
+        if (error && 'context' in error && error.context instanceof Response) {
+          const body = await error.context.json().catch(() => null);
+          if (body?.error) message = body.error;
+        }
+        toast.error(message);
         return;
       }
 

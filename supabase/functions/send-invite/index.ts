@@ -196,8 +196,9 @@ serve(async (req) => {
                                    `You're invited to join ${dealershipName}`;
 
         const roleLabel = inviteRole.charAt(0).toUpperCase() + inviteRole.slice(1)
-        const resendRes = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ from: 'Dealership Assessment <invites@notify.performance-assessment.com>', to: [normalizedEmail], subject, html: buildInviteEmailHtml(dealershipName, inviterName, inviteUrl, roleLabel, inviteType) }) })
+        const resendRes = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ from: 'Dealership Assessment <onboarding@resend.dev>', to: [normalizedEmail], subject, html: buildInviteEmailHtml(dealershipName, inviterName, inviteUrl, roleLabel, inviteType) }) })
         if (resendRes.ok) emailSent = true
+        else console.error('Resend error:', await resendRes.text())
       } catch (e) { console.error('Email error:', e) }
     }
 

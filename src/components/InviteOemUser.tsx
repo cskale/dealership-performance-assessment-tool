@@ -73,7 +73,12 @@ export function InviteOemUser() {
         },
       });
       if (error || !data?.success) {
-        toast.error(data?.error || 'Failed to send OEM invite');
+        let message = data?.error || 'Failed to send OEM invite';
+        if (error && 'context' in error && error.context instanceof Response) {
+          const body = await error.context.json().catch(() => null);
+          if (body?.error) message = body.error;
+        }
+        toast.error(message);
         return;
       }
       setInviteUrl(data.invite_url);

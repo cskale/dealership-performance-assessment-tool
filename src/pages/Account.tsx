@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSessionManager } from '@/hooks/useSessionManager';
 import { useGDPR } from '@/hooks/useGDPR';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
+import { useActiveRole } from '@/hooks/useActiveRole';
 import { supabase } from '@/integrations/supabase/client';
 import { sanitizeText } from '@/lib/sanitize';
 import type { Tables } from '@/integrations/supabase/types';
@@ -58,6 +59,7 @@ const Account = () => {
   const { sessions, loading: sessionsLoading, fetchSessions, revokeSession } = useSessionManager();
   const { exportUserData, deleteAccount, updateConsent, loading: gdprLoading } = useGDPR();
   const { organizations, currentOrganization, switchOrganization, userMemberships } = useMultiTenant();
+  const { actorType } = useActiveRole();
   const { toast } = useToast();
   const { language, setLanguage } = useLanguage();
   const navigate = useNavigate();
@@ -511,7 +513,7 @@ const Account = () => {
                 </div>
                 <InviteTeamMembers />
                 <InviteCoach />
-                <InviteOemUser />
+                {actorType === 'oem' && <InviteOemUser />}
               </div>
             )}
           </TabsContent>
