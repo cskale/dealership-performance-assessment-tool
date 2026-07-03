@@ -6,10 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Copy, Globe, Loader2, Send, XCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Globe, Loader2, Send } from 'lucide-react';
+import {
+  TeamSubHeader,
+  PendingInviteRow,
+  InviteLinkBlock,
+} from '@/components/team/TeamPrimitives';
 
 interface PendingOemInvite {
   id: string;
