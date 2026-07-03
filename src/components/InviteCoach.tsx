@@ -7,10 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Copy, Loader2, Send, UserCheck, XCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Loader2, Send, UserCheck } from 'lucide-react';
+import {
+  TeamSubHeader,
+  PendingInviteRow,
+  InviteLinkBlock,
+} from '@/components/team/TeamPrimitives';
 
 interface Dealership {
   id: string;
@@ -199,66 +202,31 @@ export function InviteCoach() {
             />
           </div>
 
-          <Button type="submit" disabled={submitDisabled}>
+          <Button type="submit" disabled={submitDisabled} className="w-full sm:w-auto">
             {isSubmitting
               ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending…</>
-              : <><Send className="mr-2 h-4 w-4" /> Send Coach Invitation</>}
+              : <><Send className="mr-2 h-4 w-4" /> Send coach invitation</>}
           </Button>
         </form>
 
-        {inviteUrl && (
-          <div className="bg-muted rounded-lg p-3 flex items-center gap-2">
-            <Input value={inviteUrl} readOnly className="text-xs bg-background" />
-            <Button size="sm" variant="outline" onClick={() => copyToClipboard(inviteUrl)}>
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
+        {inviteUrl && <InviteLinkBlock url={inviteUrl} onCopy={() => copyToClipboard(inviteUrl)} />}
 
         {!loadingInvites && pendingInvites.length > 0 && (
-          <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-muted-foreground">Pending coach invites</h4>
-            {pendingInvites.map(invite => {
-              const isExpired = new Date(invite.expires_at) <= new Date();
-              return (
-                <div
+          <div className="space-y-3 pt-2 border-t border-[hsl(var(--dd-rule))]">
+            <TeamSubHeader title="Pending coach invites" count={pendingInvites.length} />
+            <div className="space-y-2">
+              {pendingInvites.map(invite => (
+                <PendingInviteRow
                   key={invite.id}
-                  className={cn(
-                    'flex items-center justify-between border rounded-lg p-3',
-                    isExpired && 'opacity-50'
-                  )}
-                >
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">{invite.invited_email}</p>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="text-xs">Coach</Badge>
-                      {isExpired
-                        ? <Badge variant="destructive" className="text-xs">Expired</Badge>
-                        : <span className="text-xs text-muted-foreground">
-                            Expires {new Date(invite.expires_at).toLocaleDateString()}
-                          </span>}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => copyToClipboard(`${window.location.origin}/invite/${invite.token}`)}
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-destructive"
-                      onClick={() => handleRevoke(invite.id)}
-                    >
-                      <XCircle className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
+                  email={invite.invited_email}
+                  expiresAt={invite.expires_at}
+                  roleLabel="Coach"
+                  avatarVariant="coach"
+                  onCopy={() => copyToClipboard(`${window.location.origin}/invite/${invite.token}`)}
+                  onRevoke={() => handleRevoke(invite.id)}
+                />
+              ))}
+            </div>
           </div>
         )}
       </CardContent>

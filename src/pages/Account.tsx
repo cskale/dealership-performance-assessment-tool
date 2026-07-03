@@ -497,13 +497,25 @@ const Account = () => {
           {/* ── TEAM ── */}
           <TabsContent value="team">
             {canManageTeam && (
-              <div className="space-y-6">
+              <div className="space-y-5">
+                <div className="flex items-start gap-3 pb-1">
+                  <div className="h-10 w-10 rounded-xl bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] flex items-center justify-center shrink-0">
+                    <Users className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold tracking-tight">Team management</h2>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      Invite colleagues, coaches, and OEM programme managers. Manage pending invites and revoke access at any time.
+                    </p>
+                  </div>
+                </div>
                 <InviteTeamMembers />
                 <InviteCoach />
                 <InviteOemUser />
               </div>
             )}
           </TabsContent>
+
 
           {/* ── ACTIVITY ── */}
           <TabsContent value="activity">
