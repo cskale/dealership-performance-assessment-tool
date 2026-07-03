@@ -7,10 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Copy, Loader2, Send, UserCheck, XCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Loader2, Send, UserCheck } from 'lucide-react';
+import {
+  TeamSubHeader,
+  PendingInviteRow,
+  InviteLinkBlock,
+} from '@/components/team/TeamPrimitives';
 
 interface Dealership {
   id: string;
