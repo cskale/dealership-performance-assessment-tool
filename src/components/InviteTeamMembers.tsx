@@ -247,9 +247,9 @@ export function InviteTeamMembers() {
       <CardContent className="space-y-6">
         {/* Invite Form */}
         <form onSubmit={handleSendInvite} className="space-y-4">
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1 space-y-2">
-              <Label htmlFor="invite-email">Email Address</Label>
+              <Label htmlFor="invite-email">Email address</Label>
               <Input
                 id="invite-email"
                 type="email"
@@ -260,7 +260,7 @@ export function InviteTeamMembers() {
                 required
               />
             </div>
-            <div className="w-36 space-y-2">
+            <div className="w-full sm:w-40 space-y-2">
               <Label>Role</Label>
               <Select value={role} onValueChange={setRole} disabled={isSubmitting}>
                 <SelectTrigger>
@@ -274,79 +274,54 @@ export function InviteTeamMembers() {
               </Select>
             </div>
           </div>
-          <Button type="submit" disabled={isSubmitting || !email.trim()}>
+          <Button type="submit" disabled={isSubmitting || !email.trim()} className="w-full sm:w-auto">
             {isSubmitting ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending…</>
             ) : (
-              <><Send className="mr-2 h-4 w-4" /> Send Invitation Email</>
+              <><Send className="mr-2 h-4 w-4" /> Send invitation</>
             )}
           </Button>
         </form>
 
-        {/* Copy Invite URL */}
-        {inviteUrl && (
-          <div className="bg-muted rounded-lg p-3 flex items-center gap-2">
-            <Input value={inviteUrl} readOnly className="text-xs bg-background" />
-            <Button size="sm" variant="outline" onClick={() => copyToClipboard(inviteUrl)}>
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
+        {inviteUrl && <InviteLinkBlock url={inviteUrl} onCopy={() => copyToClipboard(inviteUrl)} />}
 
-        {/* Pending Invites */}
         {!loadingInvites && pendingInvites.length > 0 && (
-          <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-muted-foreground">Pending Invites</h4>
-            {pendingInvites.map((invite) => {
-              const isExpired = new Date(invite.expires_at) <= new Date();
-              return (
-                <div key={invite.id} className={cn("flex items-center justify-between border rounded-lg p-3", isExpired && "opacity-50")}>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">{invite.invited_email}</p>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="text-xs">{invite.membership_role}</Badge>
-                      {isExpired ? (
-                        <Badge variant="destructive" className="text-xs">Expired</Badge>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">
-                          Expires {new Date(invite.expires_at).toLocaleDateString()}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button size="sm" variant="ghost" onClick={() => copyToClipboard(`${window.location.origin}/invite/${invite.token}`)}>
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => handleResend(invite)}>
-                      <RefreshCw className="h-3 w-3" />
-                    </Button>
-                    <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleRevoke(invite.id)}>
-                      <XCircle className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="space-y-3 pt-2 border-t border-[hsl(var(--dd-rule))]">
+            <TeamSubHeader title="Pending invites" count={pendingInvites.length} />
+            <div className="space-y-2">
+              {pendingInvites.map((invite) => (
+                <PendingInviteRow
+                  key={invite.id}
+                  email={invite.invited_email}
+                  expiresAt={invite.expires_at}
+                  roleLabel={invite.membership_role}
+                  avatarVariant="accent"
+                  onCopy={() => copyToClipboard(`${window.location.origin}/invite/${invite.token}`)}
+                  onResend={() => handleResend(invite)}
+                  onRevoke={() => handleRevoke(invite.id)}
+                />
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Current Members */}
         {orgMembers.length > 0 && (
-          <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-muted-foreground">Current members</h4>
-            {orgMembers.map((member) => (
-              <div key={member.id} className="flex items-center gap-3 py-2.5 border-b border-[hsl(var(--dd-rule))] last:border-0">
-                <div className="w-8 h-8 rounded-full bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] flex items-center justify-center text-xs font-medium">
-                  {member.initials}
-                </div>
-                <div className="flex-1 text-sm">{member.displayName}</div>
-                <span className="bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] text-[11px] px-2 py-0.5 rounded-full">{member.role}</span>
-              </div>
-            ))}
+          <div className="space-y-2 pt-2 border-t border-[hsl(var(--dd-rule))]">
+            <TeamSubHeader title="Current members" count={orgMembers.length} />
+            <div>
+              {orgMembers.map((member) => (
+                <MemberRow
+                  key={member.id}
+                  name={member.displayName}
+                  initials={member.initials}
+                  roleLabel={member.role}
+                />
+              ))}
+            </div>
           </div>
         )}
       </CardContent>
     </Card>
   );
 }
+
