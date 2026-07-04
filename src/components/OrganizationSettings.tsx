@@ -456,19 +456,17 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
               </div>
             </SettingsSection>
 
-            {/* Market Positioning (read-only) */}
+            {/* Market Positioning (read-only, auto-derived) */}
             <SettingsSection icon={Star} title="Market Positioning" description="Automatically determined by your brand portfolio">
-              <div className="p-3 rounded-lg border border-border bg-muted/30">
-                <div className="flex items-center gap-3">
-                  <span className="text-base font-semibold text-foreground">
-                    {settings.positioning ? TIER_LABELS[settings.positioning] : 'Not determined'}
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
+                <span className="text-sm font-medium text-foreground">
+                  {settings.positioning ? TIER_LABELS[settings.positioning] : 'Not determined'}
+                </span>
+                {settings.positioning && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">
+                    Auto-detected
                   </span>
-                  {settings.positioning && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">
-                      Auto-detected
-                    </span>
-                  )}
-                </div>
+                )}
               </div>
             </SettingsSection>
           </CardContent>
