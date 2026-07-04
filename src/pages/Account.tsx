@@ -403,7 +403,7 @@ const Account = () => {
                   </button>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-serif text-[24px] leading-tight text-foreground truncate" style={{ fontFamily: 'var(--font-serif, "Instrument Serif", serif)' }}>
+                  <div className="text-[22px] font-semibold leading-tight text-foreground truncate">
                     {displayName || user.email}
                   </div>
                   <div className="text-sm text-muted-foreground mt-0.5 truncate">
@@ -426,19 +426,8 @@ const Account = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Single-line meta strip (replaces 4 stat cards) */}
-              <div className="mt-4 pt-4 border-t border-[hsl(var(--dd-rule))] flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground">
-                <span><span className="font-mono text-foreground tabular-nums" style={{ fontFamily: 'var(--font-mono, "DM Mono", monospace)' }}>{completedAssessments.length}</span> assessments</span>
-                {latestCompleted?.overall_score != null && (
-                  <span>Latest <span className="font-mono text-foreground tabular-nums" style={{ fontFamily: 'var(--font-mono, "DM Mono", monospace)' }}>{Math.round(latestCompleted.overall_score)}/100</span></span>
-                )}
-                {latestCompleted?.completed_at && (
-                  <span>Last on <span className="text-foreground">{format(new Date(latestCompleted.completed_at), 'MMM d, yyyy')}</span></span>
-                )}
-                <span><span className="font-mono text-foreground tabular-nums" style={{ fontFamily: 'var(--font-mono, "DM Mono", monospace)' }}>{organizations.length}</span> {organizations.length === 1 ? 'organization' : 'organizations'}</span>
-              </div>
             </div>
+
 
             {/* ── PROFILE ── */}
             <TabsContent value="profile" className="mt-0 space-y-6">
