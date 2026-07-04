@@ -12,6 +12,7 @@ import { sanitizeFormData } from '@/lib/sanitize';
 import { organizationSettingsSchema } from '@/lib/validationSchemas';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BrandChip } from '@/components/BrandChip';
+import { MultiSelect } from '@/components/ui/multi-select';
 
 interface OrgSettings {
   brand_mode: string | null;
@@ -432,10 +433,11 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <ChipSelector
+                    <MultiSelect
                       options={BRAND_OPTIONS.map(b => ({ value: b, label: b }))}
                       selected={settings.oem_brands || []}
-                      onChange={v => toggleArrayItem('oem_brands', v)}
+                      onChange={next => setSettings(p => ({ ...p, oem_brands: next }))}
+                      placeholder="Select brands"
                       disabled={disabled}
                     />
                   )}
@@ -454,19 +456,17 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
               </div>
             </SettingsSection>
 
-            {/* Market Positioning (read-only) */}
+            {/* Market Positioning (read-only, auto-derived) */}
             <SettingsSection icon={Star} title="Market Positioning" description="Automatically determined by your brand portfolio">
-              <div className="p-3 rounded-lg border border-border bg-muted/30">
-                <div className="flex items-center gap-3">
-                  <span className="text-base font-semibold text-foreground">
-                    {settings.positioning ? TIER_LABELS[settings.positioning] : 'Not determined'}
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
+                <span className="text-sm font-medium text-foreground">
+                  {settings.positioning ? TIER_LABELS[settings.positioning] : 'Not determined'}
+                </span>
+                {settings.positioning && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">
+                    Auto-detected
                   </span>
-                  {settings.positioning && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">
-                      Auto-detected
-                    </span>
-                  )}
-                </div>
+                )}
               </div>
             </SettingsSection>
           </CardContent>
@@ -533,20 +533,26 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
 
                 <div className="space-y-2">
                   <Label className="text-xs font-medium">Product Segments</Label>
-                  <ChipSelector
+                  <MultiSelect
                     options={SEGMENT_OPTIONS}
                     selected={settings.product_segments || []}
-                    onChange={v => toggleArrayItem('product_segments', v)}
+                    onChange={next => {
+                      // Passenger is mandatory — always keep it
+                      const withMandatory = next.includes('passenger') ? next : ['passenger', ...next];
+                      setSettings(p => ({ ...p, product_segments: withMandatory }));
+                    }}
+                    placeholder="Select segments"
                     disabled={disabled}
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-xs font-medium">Operational Focus</Label>
-                  <ChipSelector
+                  <MultiSelect
                     options={FOCUS_OPTIONS}
                     selected={settings.operational_focus || []}
-                    onChange={v => toggleArrayItem('operational_focus', v)}
+                    onChange={next => setSettings(p => ({ ...p, operational_focus: next }))}
+                    placeholder="Select focus areas"
                     disabled={disabled}
                   />
                 </div>

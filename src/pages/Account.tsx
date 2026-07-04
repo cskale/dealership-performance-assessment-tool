@@ -349,15 +349,15 @@ const Account = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--dd-fog))]">
-      <div className="border-b border-[hsl(var(--dd-rule))] bg-white px-6 py-4">
+    <div className="min-h-screen bg-background">
+      <div className="border-b border-[hsl(var(--dd-rule))] bg-background px-6 py-4">
         <h1 className="text-lg font-semibold text-foreground">Account Settings</h1>
       </div>
 
       <div className="mx-auto max-w-[1200px] px-6 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical" className="flex gap-8 items-start">
-          {/* Left rail */}
-          <aside className="w-[240px] shrink-0 lg:w-[240px] max-lg:w-[64px] sticky top-6 self-start">
+          {/* Left rail — distinct fog background + border for clear separation from white content */}
+          <aside className="w-[240px] shrink-0 lg:w-[240px] max-lg:w-[64px] sticky top-6 self-start rounded-xl border border-[hsl(var(--dd-rule))] bg-[hsl(var(--dd-fog))] p-2">
             <TabsList className="flex flex-col h-auto bg-transparent p-0 gap-0.5 w-full items-stretch">
               {NAV_ITEMS.map(item => {
                 const Icon = item.icon;
@@ -367,10 +367,10 @@ const Account = () => {
                     key={item.value}
                     value={item.value}
                     className={`relative justify-start gap-3 h-10 px-3 rounded-md text-sm font-medium transition-colors
-                      data-[state=active]:bg-[hsl(var(--dd-accent-light))]/60
+                      data-[state=active]:bg-background
                       data-[state=active]:text-[hsl(var(--dd-accent))]
-                      data-[state=active]:shadow-none
-                      hover:bg-[hsl(var(--dd-fog))]
+                      data-[state=active]:shadow-sm
+                      hover:bg-background/60
                       max-lg:justify-center max-lg:px-0`}
                   >
                     {isActive && (
@@ -403,7 +403,7 @@ const Account = () => {
                   </button>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-serif text-[24px] leading-tight text-foreground truncate" style={{ fontFamily: 'var(--font-serif, "Instrument Serif", serif)' }}>
+                  <div className="text-[22px] font-semibold leading-tight text-foreground truncate">
                     {displayName || user.email}
                   </div>
                   <div className="text-sm text-muted-foreground mt-0.5 truncate">
@@ -426,19 +426,8 @@ const Account = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Single-line meta strip (replaces 4 stat cards) */}
-              <div className="mt-4 pt-4 border-t border-[hsl(var(--dd-rule))] flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground">
-                <span><span className="font-mono text-foreground tabular-nums" style={{ fontFamily: 'var(--font-mono, "DM Mono", monospace)' }}>{completedAssessments.length}</span> assessments</span>
-                {latestCompleted?.overall_score != null && (
-                  <span>Latest <span className="font-mono text-foreground tabular-nums" style={{ fontFamily: 'var(--font-mono, "DM Mono", monospace)' }}>{Math.round(latestCompleted.overall_score)}/100</span></span>
-                )}
-                {latestCompleted?.completed_at && (
-                  <span>Last on <span className="text-foreground">{format(new Date(latestCompleted.completed_at), 'MMM d, yyyy')}</span></span>
-                )}
-                <span><span className="font-mono text-foreground tabular-nums" style={{ fontFamily: 'var(--font-mono, "DM Mono", monospace)' }}>{organizations.length}</span> {organizations.length === 1 ? 'organization' : 'organizations'}</span>
-              </div>
             </div>
+
 
             {/* ── PROFILE ── */}
             <TabsContent value="profile" className="mt-0 space-y-6">
