@@ -27,7 +27,7 @@ import { OemModeToggle } from '@/components/OemModeToggle';
 import {
   User, Shield, Download, Trash2, Monitor, Smartphone, Globe,
   Mail, CheckCircle, Building2, Users, Activity, Link2, Key,
-  ChevronRight, Pencil, Save, X, Bell, Camera, ShieldAlert, AlertTriangle
+  ChevronRight, Pencil, Save, X, Bell, Camera, ShieldAlert, AlertTriangle, Eye, EyeOff
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { profileSchema } from '@/lib/validationSchemas';
@@ -52,6 +52,29 @@ const ROLES_MATRIX = [
   { permission: 'Delete records',             owner: true,  admin: true,  member: false, viewer: false },
   { permission: 'Delete organization',        owner: true,  admin: false, member: false, viewer: false },
 ];
+
+// Hoisted to module scope — defining these inside Account() gave them a new
+// identity every render, which made React remount their children (including
+// the password inputs) on every keystroke.
+const Section = ({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) => (
+  <section className="border-b border-[hsl(var(--dd-rule))] pb-6 last:border-0 last:pb-0">
+    <div className="mb-4">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{title}</div>
+      {description && <div className="text-xs text-muted-foreground/80 mt-1">{description}</div>}
+    </div>
+    {children}
+  </section>
+);
+
+const Row = ({ label, description, children }: { label: string; description?: React.ReactNode; children: React.ReactNode }) => (
+  <div className="flex items-center justify-between gap-6 py-3">
+    <div className="min-w-0">
+      <div className="text-sm font-medium text-foreground">{label}</div>
+      {description && <div className="text-xs text-muted-foreground mt-0.5">{description}</div>}
+    </div>
+    <div className="shrink-0">{children}</div>
+  </div>
+);
 
 const Account = () => {
   useEffect(() => { document.title = 'Account Settings — Dealer Diagnostic'; }, []);
@@ -96,6 +119,9 @@ const Account = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const currentMembership = userMemberships.find(
     m => m.organization_id === currentOrganization?.id
@@ -327,26 +353,6 @@ const Account = () => {
     { value: 'notifications', label: 'Notifications',  icon: Bell },
     { value: 'integrations',  label: 'Integrations',   icon: Link2 },
   ];
-
-  const Section = ({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) => (
-    <section className="border-b border-[hsl(var(--dd-rule))] pb-6 last:border-0 last:pb-0">
-      <div className="mb-4">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{title}</div>
-        {description && <div className="text-xs text-muted-foreground/80 mt-1">{description}</div>}
-      </div>
-      {children}
-    </section>
-  );
-
-  const Row = ({ label, description, children }: { label: string; description?: React.ReactNode; children: React.ReactNode }) => (
-    <div className="flex items-center justify-between gap-6 py-3">
-      <div className="min-w-0">
-        <div className="text-sm font-medium text-foreground">{label}</div>
-        {description && <div className="text-xs text-muted-foreground mt-0.5">{description}</div>}
-      </div>
-      <div className="shrink-0">{children}</div>
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -606,11 +612,21 @@ const Account = () => {
                   <div className="mt-3 p-4 bg-[hsl(var(--dd-fog))] rounded-lg space-y-3 border border-[hsl(var(--dd-rule))]">
                     <div>
                       <Label className="text-sm">Current password</Label>
-                      <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} placeholder="Enter current password" className="mt-1" />
+                      <div className="relative mt-1">
+                        <Input type={showCurrentPassword ? 'text' : 'password'} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} placeholder="Enter current password" className="pr-9" />
+                        <button type="button" onClick={() => setShowCurrentPassword(v => !v)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label={showCurrentPassword ? 'Hide password' : 'Show password'}>
+                          {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
                     </div>
                     <div>
                       <Label className="text-sm">New password</Label>
-                      <Input type="password" value={newPassword} onChange={e => { setNewPassword(e.target.value); setPasswordStrength(calculatePasswordStrength(e.target.value)); }} placeholder="Min. 8 characters" className="mt-1" />
+                      <div className="relative mt-1">
+                        <Input type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={e => { setNewPassword(e.target.value); setPasswordStrength(calculatePasswordStrength(e.target.value)); }} placeholder="Min. 8 characters" className="pr-9" />
+                        <button type="button" onClick={() => setShowNewPassword(v => !v)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label={showNewPassword ? 'Hide password' : 'Show password'}>
+                          {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
                       <div className="h-1 rounded bg-[hsl(var(--dd-rule))] mt-1.5 overflow-hidden">
                         <div className="h-full rounded transition-all duration-300" style={{
                           width: `${(passwordStrength / 5) * 100}%`,
@@ -623,7 +639,12 @@ const Account = () => {
                     </div>
                     <div>
                       <Label className="text-sm">Confirm new password</Label>
-                      <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Repeat new password" className="mt-1" />
+                      <div className="relative mt-1">
+                        <Input type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Repeat new password" className="pr-9" />
+                        <button type="button" onClick={() => setShowConfirmPassword(v => !v)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}>
+                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <Button onClick={handlePasswordUpdate}>Update password</Button>
