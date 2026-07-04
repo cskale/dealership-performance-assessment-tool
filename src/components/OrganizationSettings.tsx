@@ -12,6 +12,7 @@ import { sanitizeFormData } from '@/lib/sanitize';
 import { organizationSettingsSchema } from '@/lib/validationSchemas';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BrandChip } from '@/components/BrandChip';
+import { MultiSelect } from '@/components/ui/multi-select';
 
 interface OrgSettings {
   brand_mode: string | null;
