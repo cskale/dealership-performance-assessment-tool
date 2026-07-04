@@ -27,7 +27,7 @@ import { OemModeToggle } from '@/components/OemModeToggle';
 import {
   User, Shield, Download, Trash2, Monitor, Smartphone, Globe,
   Mail, CheckCircle, Building2, Users, Activity, Link2, Key,
-  ChevronRight, Pencil, Save, X, Bell
+  ChevronRight, Pencil, Save, X, Bell, Camera, ShieldAlert, AlertTriangle
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { profileSchema } from '@/lib/validationSchemas';
