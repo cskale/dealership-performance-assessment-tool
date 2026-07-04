@@ -317,261 +317,304 @@ const Account = () => {
   const latestCompleted = completedAssessments[0];
   const canManageTeam = currentMembership && ['owner', 'admin'].includes(currentMembership.role);
 
+  const NAV_ITEMS = [
+    { value: 'profile',       label: 'Profile',        icon: User },
+    { value: 'organization',  label: 'Organization',   icon: Building2 },
+    ...(canManageTeam    ? [{ value: 'team',     label: 'Team',        icon: Users }]    : []),
+    ...(hasActivityData  ? [{ value: 'activity', label: 'Activity',    icon: Activity }] : []),
+    { value: 'security',      label: 'Security',       icon: Shield },
+    { value: 'privacy',       label: 'Privacy',        icon: Globe },
+    { value: 'notifications', label: 'Notifications',  icon: Bell },
+    { value: 'integrations',  label: 'Integrations',   icon: Link2 },
+  ];
+
+  const Section = ({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) => (
+    <section className="border-b border-[hsl(var(--dd-rule))] pb-6 last:border-0 last:pb-0">
+      <div className="mb-4">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{title}</div>
+        {description && <div className="text-xs text-muted-foreground/80 mt-1">{description}</div>}
+      </div>
+      {children}
+    </section>
+  );
+
+  const Row = ({ label, description, children }: { label: string; description?: string; children: React.ReactNode }) => (
+    <div className="flex items-center justify-between gap-6 py-3">
+      <div className="min-w-0">
+        <div className="text-sm font-medium text-foreground">{label}</div>
+        {description && <div className="text-xs text-muted-foreground mt-0.5">{description}</div>}
+      </div>
+      <div className="shrink-0">{children}</div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-[hsl(var(--dd-fog))]">
-      {/* Page header */}
-      <div className="bg-white border-b border-[hsl(var(--dd-rule))] px-6 py-4">
+      <div className="border-b border-[hsl(var(--dd-rule))] bg-white px-6 py-4">
         <h1 className="text-lg font-semibold text-foreground">Account Settings</h1>
       </div>
 
-      <div className="px-6 py-6">
-        {/* Hero card */}
-        <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-6 mb-5">
-          <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-full bg-[hsl(var(--dd-accent))] text-white flex items-center justify-center text-2xl font-medium shrink-0">
-              {getInitials(displayName || user.email || '')}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-xl font-semibold text-foreground">{displayName || user.email}</div>
-              <div className="text-sm text-muted-foreground mt-0.5">
-                {(currentMembership?.role || 'member').charAt(0).toUpperCase() + (currentMembership?.role || 'member').slice(1)} · {user.email}
-              </div>
-              <div className="flex gap-1.5 mt-2 flex-wrap">
-                <span className="bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] text-xs px-2.5 py-0.5 rounded-full font-medium">
-                  {(currentMembership?.role || 'member').charAt(0).toUpperCase() + (currentMembership?.role || 'member').slice(1)}
-                </span>
-                {user.email_confirmed_at && (
-                  <span className="bg-[hsl(var(--dd-green-light))] text-[hsl(var(--dd-green))] text-xs px-2.5 py-0.5 rounded-full font-medium">
-                    ✓ Verified
-                  </span>
-                )}
-                {currentOrganization && (
-                  <span className="bg-[hsl(var(--dd-fog))] text-[hsl(var(--dd-muted))] text-xs px-2.5 py-0.5 rounded-full font-medium border border-[hsl(var(--dd-rule))]">
-                    {currentOrganization.name}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="mx-auto max-w-[1200px] px-6 py-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical" className="flex gap-8 items-start">
+          {/* Left rail */}
+          <aside className="w-[240px] shrink-0 lg:w-[240px] max-lg:w-[64px] sticky top-6 self-start">
+            <TabsList className="flex flex-col h-auto bg-transparent p-0 gap-0.5 w-full items-stretch">
+              {NAV_ITEMS.map(item => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.value;
+                return (
+                  <TabsTrigger
+                    key={item.value}
+                    value={item.value}
+                    className={`relative justify-start gap-3 h-10 px-3 rounded-md text-sm font-medium transition-colors
+                      data-[state=active]:bg-[hsl(var(--dd-accent-light))]/60
+                      data-[state=active]:text-[hsl(var(--dd-accent))]
+                      data-[state=active]:shadow-none
+                      hover:bg-[hsl(var(--dd-fog))]
+                      max-lg:justify-center max-lg:px-0`}
+                  >
+                    {isActive && (
+                      <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r bg-[hsl(var(--dd-accent))]" />
+                    )}
+                    <Icon className="h-[18px] w-[18px] shrink-0" />
+                    <span className="max-lg:hidden">{item.label}</span>
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+          </aside>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-4 gap-3 mb-5">
-          {[
-            { label: 'Assessments', value: String(completedAssessments.length) },
-            { label: 'Latest score', value: latestCompleted?.overall_score != null ? Math.round(latestCompleted.overall_score) + '/100' : '—' },
-            { label: 'Last assessment', value: latestCompleted?.completed_at ? format(new Date(latestCompleted.completed_at), 'MMM d, yyyy') : '—' },
-            { label: 'Organizations', value: String(organizations.length) },
-          ].map(card => (
-            <div key={card.label} className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-3 text-center">
-              <div className="text-2xl font-semibold text-foreground">{card.value}</div>
-              <div className="text-[11px] text-muted-foreground mt-0.5">{card.label}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Horizontal Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="h-10 bg-white border border-[hsl(var(--dd-rule))] w-full justify-evenly gap-0 rounded-xl mb-5 px-1">
-            <TabsTrigger value="profile" className="gap-1.5 text-xs"><User className="h-3.5 w-3.5" />Edit Profile</TabsTrigger>
-            <TabsTrigger value="organization" className="gap-1.5 text-xs"><Building2 className="h-3.5 w-3.5" />Organization</TabsTrigger>
-            {canManageTeam && <TabsTrigger value="team" className="gap-1.5 text-xs"><Users className="h-3.5 w-3.5" />Team</TabsTrigger>}
-            {hasActivityData && <TabsTrigger value="activity" className="gap-1.5 text-xs"><Activity className="h-3.5 w-3.5" />Activity</TabsTrigger>}
-            <TabsTrigger value="security" className="gap-1.5 text-xs"><Shield className="h-3.5 w-3.5" />Password & Security</TabsTrigger>
-            <TabsTrigger value="privacy" className="gap-1.5 text-xs"><Globe className="h-3.5 w-3.5" />Privacy</TabsTrigger>
-            <TabsTrigger value="notifications" className="gap-1.5 text-xs"><Bell className="h-3.5 w-3.5" />Notifications</TabsTrigger>
-            <TabsTrigger value="integrations" className="gap-1.5 text-xs"><Link2 className="h-3.5 w-3.5" />Integrations</TabsTrigger>
-          </TabsList>
-
-          {/* ── EDIT PROFILE ── */}
-          <TabsContent value="profile">
-            {/* Personal information card */}
-            <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-5 mb-3">
-              <div className="flex justify-between items-center mb-4">
-                <div className="text-base font-semibold text-foreground">Personal information</div>
-                {!isEditingPersonal ? (
-                  <Button variant="outline" size="sm" onClick={() => setIsEditingPersonal(true)} className="text-xs">
-                    <Pencil className="h-3 w-3 mr-1" /> Edit
-                  </Button>
-                ) : (
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={() => { updateProfile(); setIsEditingPersonal(false); }} disabled={saving} className="text-xs">
-                      <Save className="h-3 w-3 mr-1" /> {saving ? 'Saving...' : 'Save'}
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => { fetchProfile(); setIsEditingPersonal(false); }} className="text-xs">
-                      <X className="h-3 w-3 mr-1" /> Cancel
-                    </Button>
+          {/* Content pane */}
+          <div className="flex-1 min-w-0 max-w-[720px]">
+            {/* Compact identity header */}
+            <div className="mb-6">
+              <div className="flex items-center gap-4">
+                <div className="relative group shrink-0">
+                  <div className="w-14 h-14 rounded-full bg-[hsl(var(--dd-accent))] text-white flex items-center justify-center text-lg font-semibold">
+                    {getInitials(displayName || user.email || '')}
                   </div>
-                )}
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { label: 'DISPLAY NAME', value: displayName, onChange: setDisplayName, readOnly: false },
-                  { label: 'EMAIL ADDRESS', value: user.email || '', onChange: () => {}, readOnly: true },
-                  { label: 'JOB TITLE', value: jobTitle, onChange: setJobTitle, readOnly: false },
-                  { label: 'DEPARTMENT', value: department, onChange: setDepartment, readOnly: false },
-                ].map(field => (
-                  <div key={field.label}>
-                    <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{field.label}</div>
-                    {isEditingPersonal && !field.readOnly ? (
-                      <Input value={field.value} onChange={e => field.onChange(e.target.value)} className="text-sm mt-1" />
-                    ) : (
-                      <div className="text-sm font-normal text-foreground mt-1">{field.value || '—'}</div>
+                  <button
+                    type="button"
+                    onClick={() => toast({ title: 'Photo upload', description: 'Avatar upload coming soon' })}
+                    className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                    aria-label="Change photo"
+                  >
+                    <Camera className="h-4 w-4 text-white" />
+                  </button>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-serif text-[24px] leading-tight text-foreground truncate" style={{ fontFamily: 'var(--font-serif, "Instrument Serif", serif)' }}>
+                    {displayName || user.email}
+                  </div>
+                  <div className="text-sm text-muted-foreground mt-0.5 truncate">
+                    {(currentMembership?.role || 'member').charAt(0).toUpperCase() + (currentMembership?.role || 'member').slice(1)} · {user.email}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    <span className="inline-flex items-center bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] text-[11px] px-2 py-0.5 rounded-full font-medium">
+                      {(currentMembership?.role || 'member').charAt(0).toUpperCase() + (currentMembership?.role || 'member').slice(1)}
+                    </span>
+                    {user.email_confirmed_at && (
+                      <span className="inline-flex items-center gap-1 bg-[hsl(var(--dd-green-light))] text-[hsl(var(--dd-green))] text-[11px] px-2 py-0.5 rounded-full font-medium">
+                        <CheckCircle className="h-3 w-3" /> Verified
+                      </span>
+                    )}
+                    {currentOrganization && (
+                      <span className="inline-flex items-center bg-[hsl(var(--dd-fog))] text-muted-foreground text-[11px] px-2 py-0.5 rounded-full font-medium border border-[hsl(var(--dd-rule))]">
+                        {currentOrganization.name}
+                      </span>
                     )}
                   </div>
-                ))}
-                <div className="col-span-2">
-                  <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">BIO</div>
-                  {isEditingPersonal ? (
-                    <Textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} className="text-sm mt-1" />
-                  ) : (
-                    <div className="text-sm font-normal text-foreground mt-1">{bio || '—'}</div>
-                  )}
                 </div>
               </div>
-            </div>
 
-            {/* Preferences card */}
-            <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-5">
-              <div className="flex justify-between items-center mb-4">
-                <div className="text-base font-semibold text-foreground">Preferences</div>
-                {!isEditingPreferences ? (
-                  <Button variant="outline" size="sm" onClick={() => setIsEditingPreferences(true)} className="text-xs">
-                    <Pencil className="h-3 w-3 mr-1" /> Edit
-                  </Button>
-                ) : (
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={() => { updateProfile(); setIsEditingPreferences(false); toast({ title: 'Preferences saved' }); }} className="text-xs">
-                      <Save className="h-3 w-3 mr-1" /> Save
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => setIsEditingPreferences(false)} className="text-xs">
-                      <X className="h-3 w-3 mr-1" /> Cancel
-                    </Button>
-                  </div>
+              {/* Single-line meta strip (replaces 4 stat cards) */}
+              <div className="mt-4 pt-4 border-t border-[hsl(var(--dd-rule))] flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground">
+                <span><span className="font-mono text-foreground tabular-nums" style={{ fontFamily: 'var(--font-mono, "DM Mono", monospace)' }}>{completedAssessments.length}</span> assessments</span>
+                {latestCompleted?.overall_score != null && (
+                  <span>Latest <span className="font-mono text-foreground tabular-nums" style={{ fontFamily: 'var(--font-mono, "DM Mono", monospace)' }}>{Math.round(latestCompleted.overall_score)}/100</span></span>
                 )}
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">LANGUAGE</div>
-                  <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
-                    <SelectTrigger className="text-sm mt-1 w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="de">Deutsch</SelectItem>
-                      <SelectItem value="fr">Français</SelectItem>
-                      <SelectItem value="es">Español</SelectItem>
-                      <SelectItem value="it">Italiano</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">TIMEZONE</div>
-                  {isEditingPreferences ? (
-                    <Input value={timezone} onChange={e => setTimezone(e.target.value)} className="text-sm mt-1" />
-                  ) : (
-                    <div className="text-sm text-foreground mt-1">{timezone || 'UTC'}</div>
-                  )}
-                </div>
-                <div>
-                  <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">ACCOUNT CREATED</div>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    {user.created_at ? format(new Date(user.created_at), 'PPP') : '—'}
-                  </div>
-                </div>
+                {latestCompleted?.completed_at && (
+                  <span>Last on <span className="text-foreground">{format(new Date(latestCompleted.completed_at), 'MMM d, yyyy')}</span></span>
+                )}
+                <span><span className="font-mono text-foreground tabular-nums" style={{ fontFamily: 'var(--font-mono, "DM Mono", monospace)' }}>{organizations.length}</span> {organizations.length === 1 ? 'organization' : 'organizations'}</span>
               </div>
             </div>
-          </TabsContent>
 
-          {/* ── ORGANIZATION ── */}
-          <TabsContent value="organization">
-            <div className="space-y-6">
-              {currentOrganization && (
-                <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-5">
-                  <OrganizationSettings organizationId={currentOrganization.id} isAdmin={isOrgAdmin} />
+            {/* ── PROFILE ── */}
+            <TabsContent value="profile" className="mt-0 space-y-6">
+              <Section title="Personal information">
+                <div className="flex justify-end mb-3 -mt-2">
+                  {!isEditingPersonal ? (
+                    <Button variant="outline" size="sm" onClick={() => setIsEditingPersonal(true)} className="text-xs">
+                      <Pencil className="h-3 w-3 mr-1" /> Edit
+                    </Button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => { updateProfile(); setIsEditingPersonal(false); }} disabled={saving} className="text-xs">
+                        <Save className="h-3 w-3 mr-1" /> {saving ? 'Saving...' : 'Save'}
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => { fetchProfile(); setIsEditingPersonal(false); }} className="text-xs">
+                        <X className="h-3 w-3 mr-1" /> Cancel
+                      </Button>
+                    </div>
+                  )}
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { label: 'Display name', value: displayName, onChange: setDisplayName, readOnly: false },
+                    { label: 'Email address', value: user.email || '', onChange: () => {}, readOnly: true },
+                    { label: 'Job title', value: jobTitle, onChange: setJobTitle, readOnly: false },
+                    { label: 'Department', value: department, onChange: setDepartment, readOnly: false },
+                  ].map(field => (
+                    <div key={field.label}>
+                      <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">{field.label}</div>
+                      {isEditingPersonal && !field.readOnly ? (
+                        <Input value={field.value} onChange={e => field.onChange(e.target.value)} className="text-sm mt-1.5" />
+                      ) : (
+                        <div className="text-[15px] text-foreground mt-1.5">{field.value || '—'}</div>
+                      )}
+                    </div>
+                  ))}
+                  <div className="col-span-2">
+                    <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">Bio</div>
+                    {isEditingPersonal ? (
+                      <Textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} className="text-sm mt-1.5" />
+                    ) : (
+                      <div className="text-[15px] text-foreground mt-1.5">{bio || '—'}</div>
+                    )}
+                  </div>
+                </div>
+              </Section>
+
+              <Section title="Preferences">
+                <div className="flex justify-end mb-3 -mt-2">
+                  {!isEditingPreferences ? (
+                    <Button variant="outline" size="sm" onClick={() => setIsEditingPreferences(true)} className="text-xs">
+                      <Pencil className="h-3 w-3 mr-1" /> Edit
+                    </Button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => { updateProfile(); setIsEditingPreferences(false); toast({ title: 'Preferences saved' }); }} className="text-xs">
+                        <Save className="h-3 w-3 mr-1" /> Save
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setIsEditingPreferences(false)} className="text-xs">
+                        <X className="h-3 w-3 mr-1" /> Cancel
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">Language</div>
+                    <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
+                      <SelectTrigger className="text-sm mt-1.5 w-full"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="de">Deutsch</SelectItem>
+                        <SelectItem value="fr">Français</SelectItem>
+                        <SelectItem value="es">Español</SelectItem>
+                        <SelectItem value="it">Italiano</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">Timezone</div>
+                    {isEditingPreferences ? (
+                      <Input value={timezone} onChange={e => setTimezone(e.target.value)} className="text-sm mt-1.5" />
+                    ) : (
+                      <div className="text-[15px] text-foreground mt-1.5">{timezone || 'UTC'}</div>
+                    )}
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">Account created</div>
+                    <div className="text-[15px] text-muted-foreground mt-1.5">
+                      {user.created_at ? format(new Date(user.created_at), 'PPP') : '—'}
+                    </div>
+                  </div>
+                </div>
+              </Section>
+            </TabsContent>
+
+            {/* ── ORGANIZATION ── */}
+            <TabsContent value="organization" className="mt-0 space-y-6">
+              {currentOrganization && (
+                <OrganizationSettings organizationId={currentOrganization.id} isAdmin={isOrgAdmin} />
               )}
               <OemModeToggle />
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          {/* ── TEAM ── */}
-          <TabsContent value="team">
-            {canManageTeam && (
-              <div className="space-y-5">
-                <div className="flex items-start gap-3 pb-1">
-                  <div className="h-10 w-10 rounded-xl bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] flex items-center justify-center shrink-0">
-                    <Users className="h-5 w-5" />
+            {/* ── TEAM ── */}
+            <TabsContent value="team" className="mt-0">
+              {canManageTeam && (
+                <div className="space-y-5">
+                  <div className="flex items-start gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] flex items-center justify-center shrink-0">
+                      <Users className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold tracking-tight">Team management</h2>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        Invite colleagues, coaches, and OEM programme managers. Manage pending invites and revoke access at any time.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-lg font-semibold tracking-tight">Team management</h2>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      Invite colleagues, coaches, and OEM programme managers. Manage pending invites and revoke access at any time.
-                    </p>
-                  </div>
+                  <InviteTeamMembers />
+                  <InviteCoach />
+                  {actorType === 'oem' && <InviteOemUser />}
                 </div>
-                <InviteTeamMembers />
-                <InviteCoach />
-                {actorType === 'oem' && <InviteOemUser />}
-              </div>
-            )}
-          </TabsContent>
+              )}
+            </TabsContent>
 
-
-          {/* ── ACTIVITY ── */}
-          <TabsContent value="activity">
-            {hasActivityData && (
-              <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-5">
-                <div className="text-sm font-medium mb-1">Completed assessments ({completedAssessments.length})</div>
-                <div className="text-xs text-muted-foreground mb-4">Click any assessment to view its results</div>
-                {assessmentsLoading ? (
-                  <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>
-                ) : (
-                  <div className="space-y-2">
-                    {completedAssessments.map(assessment => (
-                      <div key={assessment.id} onClick={() => navigate(`/app/results/${assessment.id}`)}
-                        className="flex items-center gap-3 p-3.5 rounded-lg border border-[hsl(var(--dd-rule))] cursor-pointer hover:border-[hsl(var(--dd-accent-mid))] transition-colors">
-                        <div className="w-9 h-9 rounded-full bg-[hsl(var(--dd-green-light))] flex items-center justify-center">
-                          <CheckCircle className="h-5 w-5 text-[hsl(var(--dd-green))]" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-sm font-medium">Completed Assessment</div>
-                          <div className="text-xs text-muted-foreground">{format(new Date(assessment.completed_at || assessment.created_at), 'PPP')}</div>
-                        </div>
-                        {assessment.overall_score != null && (
-                          <div className="text-right">
-                            <div className="text-lg font-bold text-[hsl(var(--dd-accent))]">{Math.round(assessment.overall_score)}%</div>
-                            <div className="text-[11px] text-muted-foreground">Score</div>
+            {/* ── ACTIVITY ── */}
+            <TabsContent value="activity" className="mt-0">
+              {hasActivityData && (
+                <Section title={`Completed assessments (${completedAssessments.length})`} description="Click any assessment to view its results">
+                  {assessmentsLoading ? (
+                    <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>
+                  ) : (
+                    <div className="space-y-2">
+                      {completedAssessments.map(assessment => (
+                        <div key={assessment.id} onClick={() => navigate(`/app/results/${assessment.id}`)}
+                          className="flex items-center gap-3 p-3.5 rounded-lg border border-[hsl(var(--dd-rule))] cursor-pointer hover:border-[hsl(var(--dd-accent-mid))] transition-colors bg-white">
+                          <div className="w-9 h-9 rounded-full bg-[hsl(var(--dd-green-light))] flex items-center justify-center">
+                            <CheckCircle className="h-5 w-5 text-[hsl(var(--dd-green))]" />
                           </div>
-                        )}
-                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </TabsContent>
+                          <div className="flex-1">
+                            <div className="text-sm font-medium">Completed Assessment</div>
+                            <div className="text-xs text-muted-foreground">{format(new Date(assessment.completed_at || assessment.created_at), 'PPP')}</div>
+                          </div>
+                          {assessment.overall_score != null && (
+                            <div className="text-right">
+                              <div className="text-lg font-bold text-[hsl(var(--dd-accent))]">{Math.round(assessment.overall_score)}%</div>
+                              <div className="text-[11px] text-muted-foreground">Score</div>
+                            </div>
+                          )}
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Section>
+              )}
+            </TabsContent>
 
-          {/* ── PASSWORD & SECURITY ── */}
-          <TabsContent value="security">
-            <div className="space-y-3">
-              {/* Password card */}
-              <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-5">
-                <div className="text-sm font-medium mb-1">Password</div>
-                <div className="text-xs text-muted-foreground mb-4">Manage your account password</div>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="text-sm font-medium">Current password</div>
-                    <div className="text-xs text-muted-foreground">Last changed: account creation date</div>
-                  </div>
+            {/* ── SECURITY ── */}
+            <TabsContent value="security" className="mt-0 space-y-6">
+              <Section title="Password" description="Manage your account password">
+                <Row
+                  label="Account password"
+                  description={
+                    <span className="inline-flex items-center gap-1 mt-0.5 text-[11px] font-medium text-[hsl(var(--dd-amber))] bg-[hsl(var(--dd-amber-light,var(--dd-fog)))] px-1.5 py-0.5 rounded">
+                      <AlertTriangle className="h-3 w-3" /> Never changed
+                    </span> as any
+                  }
+                >
                   <Button variant="outline" size="sm" onClick={() => setIsChangingPassword(!isChangingPassword)}>
                     Change password
                   </Button>
-                </div>
+                </Row>
                 {isChangingPassword && (
-                  <div className="mt-4 p-4 bg-[hsl(var(--dd-fog))] rounded-lg space-y-3">
+                  <div className="mt-3 p-4 bg-[hsl(var(--dd-fog))] rounded-lg space-y-3 border border-[hsl(var(--dd-rule))]">
                     <div>
                       <Label className="text-sm">Current password</Label>
                       <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} placeholder="Enter current password" className="mt-1" />
@@ -599,47 +642,40 @@ const Account = () => {
                     </div>
                   </div>
                 )}
-                <div className="border-t border-[hsl(var(--dd-rule))] mt-4 pt-4 flex justify-between items-center">
-                  <div>
-                    <div className="text-sm font-medium">Forgot your password?</div>
-                    <div className="text-xs text-muted-foreground">Send a reset link to {user.email}</div>
+                <div className="border-t border-[hsl(var(--dd-rule))] mt-2">
+                  <Row label="Forgot your password?" description={`Send a reset link to ${user.email}`}>
+                    <Button variant="outline" size="sm" onClick={async () => {
+                      await supabase.auth.resetPasswordForEmail(user.email!, { redirectTo: window.location.origin + '/auth/callback' });
+                      toast({ title: 'Reset link sent', description: `Check ${user.email}` });
+                    }}>
+                      Send reset link
+                    </Button>
+                  </Row>
+                </div>
+              </Section>
+
+              <Section title="Two-factor authentication">
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-[hsl(var(--dd-amber-light,var(--dd-fog)))] border-l-4 border-[hsl(var(--dd-amber))]">
+                  <ShieldAlert className="h-5 w-5 text-[hsl(var(--dd-amber))] shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-foreground">Two-factor authentication is not set up</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">Add an authenticator app (Google Authenticator, Authy) to protect your account.</div>
                   </div>
-                  <Button variant="outline" size="sm" onClick={async () => {
-                    await supabase.auth.resetPasswordForEmail(user.email!, { redirectTo: window.location.origin + '/auth/callback' });
-                    toast({ title: 'Reset link sent', description: `Check ${user.email}` });
-                  }}>
-                    Send reset link
+                  <Button size="sm" onClick={() => toast({ title: 'MFA setup', description: 'Configure via your authenticator app' })}>
+                    Set up
                   </Button>
                 </div>
-              </div>
+              </Section>
 
-              {/* 2FA card */}
-              <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-5">
-                <div className="text-sm font-medium mb-4">Two-factor authentication</div>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="text-sm">Authenticator app (TOTP)</div>
-                    <div className="text-xs text-muted-foreground">Use Google Authenticator, Authy, or similar</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="bg-[hsl(var(--dd-fog))] text-muted-foreground text-xs px-2.5 py-0.5 rounded-full">Not configured</span>
-                    <Button variant="outline" size="sm" onClick={() => toast({ title: 'MFA setup', description: 'Configure via your authenticator app' })}>Set up</Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Active sessions */}
-              <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-5">
-                <div className="text-sm font-medium mb-1">Active sessions</div>
-                <div className="text-xs text-muted-foreground mb-4">Devices currently signed in to your account</div>
+              <Section title="Active sessions" description="Devices currently signed in to your account">
                 {sessionsLoading ? (
                   <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>
                 ) : sessions.length === 0 ? (
                   <p className="text-sm text-muted-foreground">No active sessions found</p>
                 ) : (
-                  <div className="space-y-2">
+                  <div>
                     {sessions.map((session: any) => (
-                      <div key={session.id} className="flex items-center gap-3 py-2.5 border-b border-[hsl(var(--dd-rule))]">
+                      <div key={session.id} className="flex items-center gap-3 py-3 border-b border-[hsl(var(--dd-rule))] last:border-0">
                         <div className="w-9 h-9 rounded-lg bg-[hsl(var(--dd-fog))] flex items-center justify-center shrink-0">
                           {getDeviceIcon(session.device_info?.device_type)}
                         </div>
@@ -652,61 +688,41 @@ const Account = () => {
                         </Button>
                       </div>
                     ))}
-                    <div className="pt-2">
+                    <div className="pt-3">
                       <Button variant="outline" size="sm" className="text-xs text-destructive border-destructive/30" onClick={async () => { await supabase.auth.signOut({ scope: 'others' }); toast({ title: 'All other sessions revoked' }); fetchSessions(); }}>
                         Revoke all other sessions
                       </Button>
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
-          </TabsContent>
+              </Section>
+            </TabsContent>
 
-          {/* ── PRIVACY ── */}
-          <TabsContent value="privacy">
-            <div className="space-y-3">
-              <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-5">
-                <div className="text-sm font-medium mb-1">Privacy preferences</div>
-                <div className="text-xs text-muted-foreground mb-4">Control how your data is used</div>
-                <div className="flex justify-between items-center py-3 border-b border-[hsl(var(--dd-rule))]">
-                  <div>
-                    <div className="text-sm font-medium">Analytics tracking</div>
-                    <div className="text-xs text-muted-foreground">Help us improve by sharing anonymous usage data</div>
-                  </div>
-                  <Switch checked={analyticsConsent} onCheckedChange={async (v) => { setAnalyticsConsent(v); const success = await updateConsent('analytics', v); if (!success) setAnalyticsConsent(!v); }} />
+            {/* ── PRIVACY ── */}
+            <TabsContent value="privacy" className="mt-0 space-y-6">
+              <Section title="Privacy preferences" description="Control how your data is used">
+                <div className="divide-y divide-[hsl(var(--dd-rule))]">
+                  <Row label="Analytics tracking" description="Help us improve by sharing anonymous usage data">
+                    <Switch checked={analyticsConsent} onCheckedChange={async (v) => { setAnalyticsConsent(v); const success = await updateConsent('analytics', v); if (!success) setAnalyticsConsent(!v); }} />
+                  </Row>
+                  <Row label="Marketing communications" description="Receive updates about new features">
+                    <Switch checked={marketingConsent} onCheckedChange={async (v) => { setMarketingConsent(v); const success = await updateConsent('marketing', v); if (!success) setMarketingConsent(!v); }} />
+                  </Row>
                 </div>
-                <div className="flex justify-between items-center py-3">
-                  <div>
-                    <div className="text-sm font-medium">Marketing communications</div>
-                    <div className="text-xs text-muted-foreground">Receive updates about new features</div>
-                  </div>
-                  <Switch checked={marketingConsent} onCheckedChange={async (v) => { setMarketingConsent(v); const success = await updateConsent('marketing', v); if (!success) setMarketingConsent(!v); }} />
-                </div>
-              </div>
+              </Section>
 
-              <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-5">
-                <div className="text-sm font-medium mb-4">Data management</div>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="text-sm">Export your data</div>
-                    <div className="text-xs text-muted-foreground">Download a copy of all your data</div>
-                  </div>
+              <Section title="Data management">
+                <Row label="Export your data" description="Download a copy of all your data">
                   <Button variant="outline" size="sm" onClick={handleExportData} disabled={gdprLoading}>
                     <Download className="h-4 w-4 mr-1" /> Export data
                   </Button>
-                </div>
-              </div>
+                </Row>
+              </Section>
 
-              {/* Danger zone — Delete account lives ONLY here */}
-              <div className="bg-white border border-destructive/20 rounded-xl p-5">
-                <div className="text-sm font-medium text-destructive mb-1">Danger zone</div>
-                <div className="text-xs text-muted-foreground mb-4">Irreversible actions — proceed with care</div>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="text-sm font-medium">Delete account</div>
-                    <div className="text-xs text-muted-foreground">Permanently remove your account and all data</div>
-                  </div>
+              <div className="rounded-xl border border-destructive/20 bg-destructive/[0.02] p-5">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-destructive mb-1">Danger zone</div>
+                <div className="text-xs text-muted-foreground mb-3">Irreversible actions — proceed with care</div>
+                <Row label="Delete account" description="Permanently remove your account and all data">
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="outline" size="sm" className="text-destructive border-destructive/30">Delete account</Button>
@@ -722,37 +738,26 @@ const Account = () => {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
-                </div>
+                </Row>
               </div>
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          {/* ── NOTIFICATIONS ── */}
-          <TabsContent value="notifications">
-            <div className="space-y-3">
-              <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-5">
-                <div className="text-sm font-medium mb-1">Notification preferences</div>
-                <div className="text-xs text-muted-foreground mb-4">Choose which notifications you receive</div>
+            {/* ── NOTIFICATIONS ── */}
+            <TabsContent value="notifications" className="mt-0">
+              <Section title="Notification preferences" description="Choose which notifications you receive">
                 {notifPrefsLoading ? (
                   <div className="flex items-center justify-center py-6">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary" />
                   </div>
                 ) : (
-                  <>
+                  <div className="divide-y divide-[hsl(var(--dd-rule))]">
                     {([
                       { key: 'email_enabled'      as const, label: 'Email notifications',  desc: 'Receive notifications by email' },
-                      { key: 'weekly_digest'       as const, label: 'Weekly action digest', desc: 'Monday morning summary of open and overdue actions' },
-                      { key: 'stale_action_nudge'  as const, label: 'Stale action nudges',  desc: 'Get reminded when actions have had no update for 7+ days' },
-                      { key: 'milestone_alerts'    as const, label: 'Milestone alerts',      desc: 'Notifications when action completion milestones are reached' },
-                    ]).map(({ key, label, desc }, idx, arr) => (
-                      <div
-                        key={key}
-                        className={`flex justify-between items-center py-3 ${idx < arr.length - 1 ? 'border-b border-[hsl(var(--dd-rule))]' : ''}`}
-                      >
-                        <div>
-                          <div className="text-sm font-medium">{label}</div>
-                          <div className="text-xs text-muted-foreground">{desc}</div>
-                        </div>
+                      { key: 'weekly_digest'      as const, label: 'Weekly action digest', desc: 'Monday morning summary of open and overdue actions' },
+                      { key: 'stale_action_nudge' as const, label: 'Stale action nudges',  desc: 'Get reminded when actions have had no update for 7+ days' },
+                      { key: 'milestone_alerts'   as const, label: 'Milestone alerts',     desc: 'Notifications when action completion milestones are reached' },
+                    ]).map(({ key, label, desc }) => (
+                      <Row key={key} label={label} description={desc}>
                         <Switch
                           checked={notifPrefs[key]}
                           onCheckedChange={async (value) => {
@@ -760,66 +765,59 @@ const Account = () => {
                             setNotifPrefs(p => ({ ...p, [key]: value }));
                             const { error } = await supabase
                               .from('notification_preferences')
-                              .upsert(
-                                { user_id: user.id, [key]: value },
-                                { onConflict: 'user_id' }
-                              );
+                              .upsert({ user_id: user.id, [key]: value }, { onConflict: 'user_id' });
                             if (error) {
                               setNotifPrefs(p => ({ ...p, [key]: prev }));
                               toast({ title: 'Could not save preference', variant: 'destructive' });
                             }
                           }}
                         />
-                      </div>
+                      </Row>
                     ))}
-                  </>
-                )}
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* ── INTEGRATIONS ── */}
-          <TabsContent value="integrations">
-            <div className="space-y-3">
-              <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-5">
-                <div className="text-sm font-medium mb-1">Connected platforms</div>
-                <div className="text-xs text-muted-foreground mb-4">Manage your connected accounts and services</div>
-                {[
-                  { name: 'Google Account', desc: 'Connect your Google account', icon: Mail, bg: 'bg-[hsl(var(--dd-red-light))]', iconColor: 'text-[hsl(var(--dd-red))]' },
-                  { name: 'Microsoft 365', desc: 'Connect your Microsoft account', icon: Building2, bg: 'bg-[hsl(var(--dd-accent-light))]', iconColor: 'text-[hsl(var(--dd-accent))]' },
-                ].map(p => (
-                  <div key={p.name} className="flex justify-between items-center py-3 border-b border-[hsl(var(--dd-rule))] last:border-0">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full ${p.bg} flex items-center justify-center`}>
-                        <p.icon className={`w-5 h-5 ${p.iconColor}`} />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium">{p.name}</div>
-                        <div className="text-xs text-muted-foreground">{p.desc}</div>
-                      </div>
-                    </div>
-                    <Badge variant="outline" className="text-muted-foreground">Coming soon</Badge>
                   </div>
-                ))}
+                )}
+              </Section>
+            </TabsContent>
+
+            {/* ── INTEGRATIONS ── */}
+            <TabsContent value="integrations" className="mt-0 space-y-6">
+              <Section title="Connected platforms" description="Manage your connected accounts and services">
+                <div className="divide-y divide-[hsl(var(--dd-rule))]">
+                  {[
+                    { name: 'Google Account', desc: 'Connect your Google account', icon: Mail, bg: 'bg-[hsl(var(--dd-red-light))]', iconColor: 'text-[hsl(var(--dd-red))]' },
+                    { name: 'Microsoft 365', desc: 'Connect your Microsoft account', icon: Building2, bg: 'bg-[hsl(var(--dd-accent-light))]', iconColor: 'text-[hsl(var(--dd-accent))]' },
+                  ].map(p => (
+                    <div key={p.name} className="flex justify-between items-center py-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full ${p.bg} flex items-center justify-center`}>
+                          <p.icon className={`w-5 h-5 ${p.iconColor}`} />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium">{p.name}</div>
+                          <div className="text-xs text-muted-foreground">{p.desc}</div>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-muted-foreground">Coming soon</Badge>
+                    </div>
+                  ))}
+                </div>
                 <p className="text-xs text-muted-foreground mt-3">
                   Integrations are available in enterprise configuration. Contact your administrator to enable.
                 </p>
-              </div>
+              </Section>
 
-              <div className="bg-white border border-[hsl(var(--dd-rule))] rounded-xl p-5">
-                <div className="text-sm font-medium mb-1">API access</div>
-                <div className="text-xs text-muted-foreground mb-4">Manage API tokens for external integrations</div>
+              <Section title="API access" description="Manage API tokens for external integrations">
                 <div className="text-center py-6">
                   <Key className="h-10 w-10 mx-auto mb-2 text-muted-foreground opacity-20" />
                   <p className="text-sm text-muted-foreground">No API tokens configured</p>
                   <Badge variant="outline" className="text-muted-foreground mt-2">Coming soon</Badge>
-                  <Button variant="outline" className="mt-3" disabled>
-                    Generate API token
-                  </Button>
+                  <div className="mt-3">
+                    <Button variant="outline" disabled>Generate API token</Button>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </TabsContent>
+              </Section>
+            </TabsContent>
+          </div>
         </Tabs>
       </div>
     </div>
