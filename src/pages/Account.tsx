@@ -338,7 +338,7 @@ const Account = () => {
     </section>
   );
 
-  const Row = ({ label, description, children }: { label: string; description?: string; children: React.ReactNode }) => (
+  const Row = ({ label, description, children }: { label: string; description?: React.ReactNode; children: React.ReactNode }) => (
     <div className="flex items-center justify-between gap-6 py-3">
       <div className="min-w-0">
         <div className="text-sm font-medium text-foreground">{label}</div>
