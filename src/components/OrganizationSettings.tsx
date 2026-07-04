@@ -7,10 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Save, Upload, X, Building2, ShoppingCart, Globe, Star, Palette, HelpCircle, Pencil, Loader2, CheckCircle, MapPin, Languages, Briefcase, Network } from 'lucide-react';
+import { Save, Upload, X, Building2, ShoppingCart, Globe, Star, Palette, HelpCircle, Pencil, Loader2, CheckCircle, MapPin, Languages, Briefcase, Network, Info } from 'lucide-react';
 import { sanitizeFormData } from '@/lib/sanitize';
 import { organizationSettingsSchema } from '@/lib/validationSchemas';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { BrandChip } from '@/components/BrandChip';
 
 interface OrgSettings {
   brand_mode: string | null;
