@@ -533,20 +533,26 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
 
                 <div className="space-y-2">
                   <Label className="text-xs font-medium">Product Segments</Label>
-                  <ChipSelector
+                  <MultiSelect
                     options={SEGMENT_OPTIONS}
                     selected={settings.product_segments || []}
-                    onChange={v => toggleArrayItem('product_segments', v)}
+                    onChange={next => {
+                      // Passenger is mandatory — always keep it
+                      const withMandatory = next.includes('passenger') ? next : ['passenger', ...next];
+                      setSettings(p => ({ ...p, product_segments: withMandatory }));
+                    }}
+                    placeholder="Select segments"
                     disabled={disabled}
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-xs font-medium">Operational Focus</Label>
-                  <ChipSelector
+                  <MultiSelect
                     options={FOCUS_OPTIONS}
                     selected={settings.operational_focus || []}
-                    onChange={v => toggleArrayItem('operational_focus', v)}
+                    onChange={next => setSettings(p => ({ ...p, operational_focus: next }))}
+                    placeholder="Select focus areas"
                     disabled={disabled}
                   />
                 </div>
