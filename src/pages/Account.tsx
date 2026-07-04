@@ -349,15 +349,15 @@ const Account = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--dd-fog))]">
-      <div className="border-b border-[hsl(var(--dd-rule))] bg-white px-6 py-4">
+    <div className="min-h-screen bg-background">
+      <div className="border-b border-[hsl(var(--dd-rule))] bg-background px-6 py-4">
         <h1 className="text-lg font-semibold text-foreground">Account Settings</h1>
       </div>
 
       <div className="mx-auto max-w-[1200px] px-6 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical" className="flex gap-8 items-start">
-          {/* Left rail */}
-          <aside className="w-[240px] shrink-0 lg:w-[240px] max-lg:w-[64px] sticky top-6 self-start">
+          {/* Left rail — distinct fog background + border for clear separation from white content */}
+          <aside className="w-[240px] shrink-0 lg:w-[240px] max-lg:w-[64px] sticky top-6 self-start rounded-xl border border-[hsl(var(--dd-rule))] bg-[hsl(var(--dd-fog))] p-2">
             <TabsList className="flex flex-col h-auto bg-transparent p-0 gap-0.5 w-full items-stretch">
               {NAV_ITEMS.map(item => {
                 const Icon = item.icon;
@@ -367,10 +367,10 @@ const Account = () => {
                     key={item.value}
                     value={item.value}
                     className={`relative justify-start gap-3 h-10 px-3 rounded-md text-sm font-medium transition-colors
-                      data-[state=active]:bg-[hsl(var(--dd-accent-light))]/60
+                      data-[state=active]:bg-background
                       data-[state=active]:text-[hsl(var(--dd-accent))]
-                      data-[state=active]:shadow-none
-                      hover:bg-[hsl(var(--dd-fog))]
+                      data-[state=active]:shadow-sm
+                      hover:bg-background/60
                       max-lg:justify-center max-lg:px-0`}
                   >
                     {isActive && (
