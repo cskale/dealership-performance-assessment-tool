@@ -433,10 +433,11 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <ChipSelector
+                    <MultiSelect
                       options={BRAND_OPTIONS.map(b => ({ value: b, label: b }))}
                       selected={settings.oem_brands || []}
-                      onChange={v => toggleArrayItem('oem_brands', v)}
+                      onChange={next => setSettings(p => ({ ...p, oem_brands: next }))}
+                      placeholder="Select brands"
                       disabled={disabled}
                     />
                   )}
