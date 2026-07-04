@@ -606,7 +606,7 @@ const Account = () => {
                   description={
                     <span className="inline-flex items-center gap-1 mt-0.5 text-[11px] font-medium text-[hsl(var(--dd-amber))] bg-[hsl(var(--dd-amber-light,var(--dd-fog)))] px-1.5 py-0.5 rounded">
                       <AlertTriangle className="h-3 w-3" /> Never changed
-                    </span> as any
+                    </span>
                   }
                 >
                   <Button variant="outline" size="sm" onClick={() => setIsChangingPassword(!isChangingPassword)}>
