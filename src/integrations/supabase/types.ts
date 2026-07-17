@@ -1126,6 +1126,7 @@ export type Database = {
           expected_impact: string | null
           id: string
           impact_score: number | null
+          is_quick_win: boolean
           kpis_linked_to: string[] | null
           last_status_updated_at: string | null
           likely_consequences: Json | null
@@ -1133,6 +1134,7 @@ export type Database = {
           linked_kpis: Json | null
           organization_id: string
           priority: string
+          rank: number | null
           recommendation: string | null
           responsible_person: string | null
           source_question_id: string | null
@@ -1161,6 +1163,7 @@ export type Database = {
           expected_impact?: string | null
           id?: string
           impact_score?: number | null
+          is_quick_win?: boolean
           kpis_linked_to?: string[] | null
           last_status_updated_at?: string | null
           likely_consequences?: Json | null
@@ -1168,6 +1171,7 @@ export type Database = {
           linked_kpis?: Json | null
           organization_id: string
           priority: string
+          rank?: number | null
           recommendation?: string | null
           responsible_person?: string | null
           source_question_id?: string | null
@@ -1196,6 +1200,7 @@ export type Database = {
           expected_impact?: string | null
           id?: string
           impact_score?: number | null
+          is_quick_win?: boolean
           kpis_linked_to?: string[] | null
           last_status_updated_at?: string | null
           likely_consequences?: Json | null
@@ -1203,6 +1208,7 @@ export type Database = {
           linked_kpis?: Json | null
           organization_id?: string
           priority?: string
+          rank?: number | null
           recommendation?: string | null
           responsible_person?: string | null
           source_question_id?: string | null
