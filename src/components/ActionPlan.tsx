@@ -22,7 +22,8 @@ import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { toast } from 'sonner';
 import { questionnaire } from '@/data/questionnaire';
 import { getScoredQuestions } from '@/lib/scoringEngine';
-import { generateActionsFromAssessment, formatActionsForDatabaseInsert } from '@/lib/signalEngine';
+import { generateActionsFromAssessment, formatActionsForDatabaseInsert, SignalEngineConfig } from '@/lib/signalEngine';
+import { loadBenchmarks, type KpiBenchmark } from '@/lib/kpiBenchmarks';
 import { cleanActionTitle, priorityDisplay, resetPatternUsage } from '@/lib/actionRationaleMap';
 import { cleanDescription } from '@/lib/cleanDescription';
 import { buildQuestionSectionMap, DEPT_LABEL_TO_SECTION_ID } from '@/lib/coachVisitUtils';
@@ -259,14 +260,37 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
           await supabase.from('improvement_actions').delete().in('id', existingAuto.map(a => a.id));
         }
       }
-      const { data: assessment } = await supabase.from('assessments').select('answers').eq('id', targetAssessmentId).single();
+      const { data: assessment } = await supabase.from('assessments').select('answers, overall_score').eq('id', targetAssessmentId).single();
       if (!assessment) { toast.error('Failed to load assessment data'); setGenerating(false); return; }
       const questionWeights: Record<string, number> = {};
       for (const section of questionnaire.sections) {
         for (const question of getScoredQuestions(section.questions)) questionWeights[question.id] = question.weight;
       }
       const bm = (currentOrganization as any)?.business_model as string | undefined;
-      const { actions: generatedActions } = generateActionsFromAssessment(assessment.answers as Record<string, number>, questionWeights, undefined, undefined, bm);
+
+      let kpiValues: Record<string, number> = {};
+      let benchmarks: Record<string, KpiBenchmark> = {};
+      try {
+        const { data: kpiRows, error: kpiError } = await supabase.from('assessment_kpi_values')
+          .select('kpi_key, value').eq('assessment_id', targetAssessmentId).eq('skipped', false);
+        if (kpiError) console.error('[ActionPlan] KPI values fetch error:', kpiError);
+        kpiValues = Object.fromEntries((kpiRows ?? []).filter(r => r.value != null).map(r => [r.kpi_key, r.value as number]));
+        if (Object.keys(kpiValues).length) benchmarks = await loadBenchmarks();
+      } catch (kpiFetchErr) {
+        console.error('[ActionPlan] KPI values fetch failed:', kpiFetchErr);
+        kpiValues = {};
+        benchmarks = {};
+      }
+
+      const config: SignalEngineConfig = {
+        enableAutoActions: true,
+        weakScoreThreshold: 3,
+        criticalScoreThreshold: 2,
+        overallScore: assessment.overall_score ?? undefined,
+      };
+      const { actions: generatedActions } = generateActionsFromAssessment(
+        assessment.answers as Record<string, number>, questionWeights, config, undefined, bm, undefined, kpiValues, benchmarks
+      );
       if (generatedActions.length === 0) { toast.success('No critical improvement areas found.'); setGenerating(false); return; }
       const actionsWithOrg = formatActionsForDatabaseInsert(generatedActions, user.id, targetAssessmentId!, currentOrganization?.id || '');
 

@@ -171,11 +171,14 @@ export function useAutoActionGeneration() {
       let kpiValues: Record<string, number> = {};
       let benchmarks: Record<string, KpiBenchmark> = {};
       try {
-        const { data: kpiRows } = await supabase
+        const { data: kpiRows, error: kpiError } = await supabase
           .from('assessment_kpi_values')
           .select('kpi_key, value')
           .eq('assessment_id', assessmentId)
           .eq('skipped', false);
+        if (kpiError) {
+          console.error('[AutoActions] KPI values fetch error, proceeding without them:', kpiError);
+        }
         kpiValues = Object.fromEntries(
           (kpiRows ?? [])
             .filter((r) => r.value != null)
