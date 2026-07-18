@@ -147,7 +147,7 @@ Runs after `instantiateActions`, before `formatActionsForDatabaseInsert`.
 - Missing benchmark for a KPI key → that KPI produces no signal (logged in DEV).
 - Missing placeholder value at interpolation → placeholder segment dropped
   gracefully, never rendered raw as `{actual}`.
-- Empty `kpiValues` → engine output identical to today.
+- Empty `kpiValues` → action count and ordering are unchanged for assessments with ≤10 candidate actions; for assessments with more than 10 candidates, the specific actions surviving truncation may differ because ROI-based prioritisation now always runs (previously a fixed severity-ordered first-10), while the total returned count remains capped consistently.
 
 ## Testing
 

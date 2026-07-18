@@ -14,7 +14,7 @@
 
 - No new npm packages.
 - Branch `feat/action-engine-v2`, PR at end — no direct main commits.
-- Empty/absent `kpiValues` → engine output byte-identical to today (parity tests).
+- Empty/absent `kpiValues` → action count and ordering are unchanged for assessments with ≤10 candidate actions; for assessments with more than 10 candidates, the specific actions surviving truncation may differ because ROI-based prioritisation now always runs (previously a fixed severity-ordered first-10), while the total returned count remains capped consistently (parity tests).
 - Signal codes: existing 8-member `SignalCode` union only.
 - `ImplementationStep = { text: string; primaryRole: PrimaryRole }`.
 - Existing `kpi_benchmark_thresholds` schema is range-based (`healthy_min/max, warning_min/max, critical_min/max`, PK `(kpi_key, segmentation_key)`) — loader converts to direction model, do NOT alter that table.

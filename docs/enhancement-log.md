@@ -4,6 +4,14 @@ Quick-reference log of incremental enhancements, UI fixes, and small quality-of-
 
 ---
 
+## 2026-07-18
+
+| # | Enhancement | Details | Commit |
+|---|-------------|---------|--------|
+| 1 | Action Plan Engine v2 | KPI values now drive quantitative signals (`kpiSignalEngine.ts` + `kpiBenchmarks.ts`) merged into the qualitative signal engine; 22 KPI-specific action templates interpolate the dealer's actual numbers; new `actionPrioritiser.ts` ranks actions by ROI, floats dependency prerequisites, dynamically caps count by overall score, tags quick wins; `rank`/`is_quick_win` persisted and shown in Action Plan UI. | branch `feat/action-engine-v2` |
+
+---
+
 ## 2026-06-23
 
 | # | Enhancement | Details | Commit |
