@@ -12,6 +12,14 @@ Quick-reference log of incremental enhancements, UI fixes, and small quality-of-
 
 ---
 
+## 2026-06-24
+
+| # | Enhancement | Details | Commit |
+|---|-------------|---------|--------|
+| 1 | Visit date in-app notifications | Coach propose/re-propose → notify dealer. Dealer counter-propose/decline → notify coach. Dealer/coach confirm → notify other party + OEM (in-app via NotificationBell). Uses existing notify-dispatcher pipeline. | pending |
+
+---
+
 ## 2026-06-23
 
 | # | Enhancement | Details | Commit |
