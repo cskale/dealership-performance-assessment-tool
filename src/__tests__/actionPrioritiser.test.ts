@@ -200,6 +200,69 @@ describe('prioritiseActions', () => {
     expect(result1).toEqual(result2);
   });
 
+  it('tie-breaks equal roiScore by priority order (critical > high > medium > low)', () => {
+    // Identical impact/effort/urgency -> identical roiScore for both actions.
+    // templateIds are chosen so that alphabetical (templateId) comparison
+    // would rank 'A_MEDIUM' ahead of 'Z_CRITICAL' if priority tie-break were
+    // not applied — proving the priority order (not templateId) decides.
+    ciMap.A_MEDIUM = { impact_score: 3, effort_score: 3, urgency_score: 3 };
+    ciMap.Z_CRITICAL = { impact_score: 3, effort_score: 3, urgency_score: 3 };
+
+    const actions = [
+      makeAction({ templateId: 'A_MEDIUM', priority: 'medium' }),
+      makeAction({ templateId: 'Z_CRITICAL', priority: 'critical' }),
+    ];
+
+    const result = prioritiseActions(actions, [], 60);
+
+    expect(result[0].roiScore).toBe(result[1].roiScore);
+    expect(result[0].templateId).toBe('Z_CRITICAL');
+    expect(result[1].templateId).toBe('A_MEDIUM');
+  });
+
+  describe('roiScore formula', () => {
+    it('pins the exact roiScore for a KPI-linked action (gapBonus > 0)', () => {
+      // gapBonus = min(2, gapPercent / 50) = min(2, 50/50) = 1
+      // roiScore = (impact_score + gapBonus) * urgency_score / max(effort_score, 1)
+      //          = (4 + 1) * 5 / 2 = 12.5
+      ciMap.GAP_LINKED = { impact_score: 4, effort_score: 2, urgency_score: 5 };
+
+      const kpiSignals: KpiSignal[] = [
+        {
+          kpiKey: 'nvs_gross_profit_per_unit',
+          signalCode: 'KPI_NOT_REVIEWED',
+          moduleKey: 'new-vehicle-sales',
+          severity: 'HIGH',
+          actualValue: 100,
+          targetValue: 200,
+          gapPercent: 50,
+          unit: '£',
+        },
+      ];
+
+      const actions = [
+        makeAction({ templateId: 'GAP_LINKED', linkedKPIs: ['nvs_gross_profit_per_unit'] }),
+      ];
+
+      const result = prioritiseActions(actions, kpiSignals, 60);
+
+      expect(result[0].roiScore).toBe(12.5);
+    });
+
+    it('pins the exact roiScore for an action with no linked KPI (gapBonus = 0)', () => {
+      // gapBonus = 0 (no linkedKPIs)
+      // roiScore = (impact_score + 0) * urgency_score / max(effort_score, 1)
+      //          = (3 + 0) * 2 / 3 = 2
+      ciMap.NO_GAP = { impact_score: 3, effort_score: 3, urgency_score: 2 };
+
+      const actions = [makeAction({ templateId: 'NO_GAP' })];
+
+      const result = prioritiseActions(actions, [], 60);
+
+      expect(result[0].roiScore).toBe(2);
+    });
+  });
+
   it('assigns 1-based rank in final output order', () => {
     ciMap.R1 = { impact_score: 3, effort_score: 3, urgency_score: 3 };
     ciMap.R2 = { impact_score: 3, effort_score: 3, urgency_score: 3 };
