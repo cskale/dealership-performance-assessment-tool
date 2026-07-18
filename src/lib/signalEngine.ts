@@ -24,6 +24,10 @@ import {
 import { generateContextIntelligence } from '@/lib/contextIntelligence';
 import { KPI_DEFINITIONS } from '@/lib/kpiDefinitions';
 import { evaluateCrossValidations, type CrossValidationFinding } from '@/data/crossValidationRules';
+import { generateKpiSignals, type KpiSignal } from '@/lib/kpiSignalEngine';
+import type { KpiBenchmark } from '@/lib/kpiBenchmarks';
+import { KPI_ACTION_TEMPLATES, interpolateKpiTemplate } from '@/data/actionTemplatesKpi';
+import { prioritiseActions, type PrioritisedAction } from '@/lib/actionPrioritiser';
 
 export interface SignalEngineConfig {
   enableAutoActions: boolean;
@@ -31,12 +35,16 @@ export interface SignalEngineConfig {
   criticalScoreThreshold: number; // Score at or below this is critical (default: 2)
   sectionScores?: Record<string, number>;
   businessModel?: string;
+  /** Overall assessment score (0–100) — drives the prioritiser's dynamic action cap. */
+  overallScore?: number;
 }
 
 export interface GeneratedSignal extends Signal {
   sourceQuestionScores: Record<string, number>;
   /** KPI keys linked to the triggering questions */
   linkedKPIs?: string[];
+  /** Quantitative KPI signal merged into this signal (Action Engine v2). */
+  kpiGap?: KpiSignal;
 }
 
 export interface InstantiatedAction {
@@ -57,8 +65,10 @@ export interface InstantiatedAction {
 
 export interface AssessmentResult {
   signals: GeneratedSignal[];
-  actions: InstantiatedAction[];
+  actions: PrioritisedAction[];
   crossValidationAlerts: CrossValidationFinding[];
+  /** Quantitative KPI signals generated this pass (empty when no KPI values supplied). */
+  kpiSignals: KpiSignal[];
 }
 
 const DEFAULT_CONFIG: SignalEngineConfig = {
@@ -393,6 +403,111 @@ export function generateSignals(
   return signals;
 }
 
+/** Escalate a severity exactly one step (always). HIGH is the ceiling. */
+function escalateOneStep(severity: Severity): Severity {
+  if (severity === 'LOW') return 'MEDIUM';
+  if (severity === 'MEDIUM') return 'HIGH';
+  return 'HIGH';
+}
+
+/**
+ * Format a raw KPI value + unit for display in a merged-signal rationale.
+ * Mirrors the EUR/%/other formatting used by interpolateKpiTemplate.
+ */
+function formatKpiValue(value: number, unit: string): string {
+  if (!Number.isFinite(value)) return '';
+  const rounded = Math.round(value * 10) / 10;
+  const numText = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+  if (unit === 'EUR') return `€${Math.round(value).toLocaleString('en-US')}`;
+  if (unit === '%') return `${numText}%`;
+  return `${numText} ${unit}`;
+}
+
+/** Department prefixes stripped when humanizing a KPI key for a fallback label. */
+const KPI_KEY_PREFIXES = ['nvs_', 'uvs_', 'svc_', 'prt_', 'pts_', 'fin_'];
+
+/** Humanize a snake_case kpiKey into a rough title-cased label (fallback only). */
+function humanizeKpiKey(kpiKey: string): string {
+  let rest = kpiKey;
+  for (const prefix of KPI_KEY_PREFIXES) {
+    if (rest.startsWith(prefix)) {
+      rest = rest.slice(prefix.length);
+      break;
+    }
+  }
+  return rest
+    .split('_')
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+}
+
+/**
+ * Merge quantitative KPI signals into the qualitative signal set.
+ *
+ * - A KpiSignal matches an existing GeneratedSignal when moduleKey AND signalCode
+ *   both match. On match: escalate the existing signal severity one step, attach
+ *   `kpiGap` (keeping the higher-gap KPI signal if several match), and append the
+ *   kpiKey to `linkedKPIs` (deduped). Original signal objects are never mutated —
+ *   matched signals are replaced by new objects (immutable style).
+ * - An unmatched KpiSignal becomes a new standalone GeneratedSignal.
+ *
+ * Returns a new array; the input arrays are not mutated.
+ */
+export function mergeKpiSignals(
+  signals: GeneratedSignal[],
+  kpiSignals: KpiSignal[]
+): GeneratedSignal[] {
+  // Work on shallow copies so we never mutate caller-held signal objects.
+  const merged: GeneratedSignal[] = signals.map((s) => ({ ...s }));
+
+  for (const kpiSignal of kpiSignals) {
+    const matchIdx = merged.findIndex(
+      (s) => s.moduleKey === kpiSignal.moduleKey && s.signalCode === kpiSignal.signalCode
+    );
+
+    if (matchIdx !== -1) {
+      const existing = merged[matchIdx];
+
+      // Keep the higher-gap kpiGap if one is already attached from an earlier match.
+      const nextGap =
+        existing.kpiGap && existing.kpiGap.gapPercent >= kpiSignal.gapPercent
+          ? existing.kpiGap
+          : kpiSignal;
+
+      const linkedKPIs = existing.linkedKPIs ? [...existing.linkedKPIs] : [];
+      if (!linkedKPIs.includes(kpiSignal.kpiKey)) linkedKPIs.push(kpiSignal.kpiKey);
+
+      merged[matchIdx] = {
+        ...existing,
+        severity: escalateOneStep(existing.severity),
+        kpiGap: nextGap,
+        linkedKPIs,
+      };
+      continue;
+    }
+
+    // Unmatched → standalone signal.
+    const label = humanizeKpiKey(kpiSignal.kpiKey);
+    const actualText = formatKpiValue(kpiSignal.actualValue, kpiSignal.unit);
+    const targetText = formatKpiValue(kpiSignal.targetValue, kpiSignal.unit);
+    const rationale = `${label}: ${actualText} vs benchmark ${targetText} (${kpiSignal.gapPercent}% gap)`;
+
+    merged.push({
+      signalCode: kpiSignal.signalCode,
+      severity: kpiSignal.severity,
+      moduleKey: kpiSignal.moduleKey,
+      triggeringQuestionIds: [],
+      rationale,
+      sourceQuestionScores: {},
+      kpiGap: kpiSignal,
+      linkedKPIs: [kpiSignal.kpiKey],
+    });
+  }
+
+  return merged;
+}
+
 /**
  * Find the best matching template for a signal, preferring KPI-specific over generic.
  * departmentScore, if provided, overrides sectionScores for band selection on this signal.
@@ -562,6 +677,35 @@ export function instantiateActions(
     if (actions.length >= maxActions) break;
     if (signal.signalCode === 'NONE') continue;
 
+    // ── KPI-specific template lookup (Action Engine v2, highest priority) ──
+    // For a signal carrying a quantitative KPI gap, prefer the hand-written,
+    // interpolated KPI template before the tiered/generic chain. This is a
+    // best-effort preference: if no KPI template exists for the kpiKey, or its
+    // templateId is already used, fall through to the existing logic unchanged.
+    if (signal.kpiGap) {
+      const kpiTemplate = KPI_ACTION_TEMPLATES[signal.kpiGap.kpiKey];
+      if (kpiTemplate && !usedTemplateIds.has(kpiTemplate.templateId)) {
+        const interpolated = interpolateKpiTemplate(kpiTemplate, signal.kpiGap);
+        usedTemplateIds.add(interpolated.templateId);
+        actions.push({
+          templateId: interpolated.templateId,
+          signalCode: signal.signalCode,
+          title: interpolated.title,
+          description: interpolated.description,
+          department: MODULE_TO_DEPARTMENT[signal.moduleKey] || signal.moduleKey,
+          priority: severityToPriority(signal.severity),
+          defaultOwnerRole: interpolated.defaultOwnerRole,
+          defaultTimeframeDays: interpolated.defaultTimeframeDays,
+          implementationSteps: interpolated.implementationSteps,
+          triggeringQuestionIds: signal.triggeringQuestionIds,
+          rationale: signal.rationale,
+          linkedKPIs: signal.linkedKPIs,
+        });
+        continue; // KPI template handled — skip tiered/generic for this signal
+      }
+    }
+    // ── End KPI-specific lookup ──
+
     // ── Tiered template lookup (takes priority over generic ACTION_TEMPLATES) ──
     const tieredCode = resolveTieredCode(signal.moduleKey, signal.signalCode);
     if (tieredCode !== null) {
@@ -639,13 +783,29 @@ export function generateActionsFromAssessment(
   // departmentScore: optional override for single-module context; if provided,
   // applies the same band to all signals — pass undefined for multi-module assessments
   // (per-module scores from config.sectionScores are used instead)
-  departmentScore?: number
+  departmentScore?: number,
+  // Action Engine v2 — quantitative KPI inputs. When both are supplied and
+  // kpiValues is non-empty, KPI signals are generated and merged into the
+  // qualitative signals; otherwise behaviour is identical to before (parity).
+  kpiValues?: Record<string, number>,
+  benchmarks?: Record<string, KpiBenchmark>
 ): AssessmentResult {
   const effectiveConfig = businessModel ? { ...config, businessModel } : config;
-  const signals = generateSignals(answers, questionWeights, effectiveConfig, questionLinkedKPIs);
-  const actions = instantiateActions(signals, 10, effectiveConfig, departmentScore);
+
+  let signals = generateSignals(answers, questionWeights, effectiveConfig, questionLinkedKPIs);
+
+  let kpiSignals: KpiSignal[] = [];
+  if (kpiValues && benchmarks && Object.keys(kpiValues).length > 0) {
+    kpiSignals = generateKpiSignals(kpiValues, benchmarks);
+    signals = mergeKpiSignals(signals, kpiSignals);
+  }
+
+  // Cap at 15 here; the prioritiser applies the real, score-based cap afterwards.
+  const actions = instantiateActions(signals, 15, effectiveConfig, departmentScore);
+  const prioritised = prioritiseActions(actions, kpiSignals, config.overallScore ?? 50);
+
   const crossValidationAlerts = evaluateCrossValidations(answers);
-  return { signals, actions, crossValidationAlerts };
+  return { signals, actions: prioritised, crossValidationAlerts, kpiSignals };
 }
 
 /**
