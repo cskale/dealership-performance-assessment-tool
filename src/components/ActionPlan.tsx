@@ -61,6 +61,8 @@ export interface ActionRecord {
   expected_impact?: string | null;
   estimated_effort?: string | null;
   source_visit_id?: string | null;
+  rank?: number | null;
+  is_quick_win?: boolean | null;
 }
 
 function computeTriageScore(action: ActionRecord): number | null {
@@ -154,7 +156,7 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
     if (!user) return;
     setLoading(true);
     try {
-      let query = supabase.from('improvement_actions').select('*').order('created_at', { ascending: false });
+      let query = supabase.from('improvement_actions').select('*').order('rank', { ascending: true, nullsFirst: false }).order('created_at', { ascending: false });
       if (currentOrganization?.id) {
         query = query.eq('organization_id', currentOrganization.id);
       } else {
@@ -708,6 +710,11 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
                         <span className="text-xs px-2 py-0.5 rounded-full border border-[hsl(var(--neutral-200))] bg-[hsl(var(--neutral-050))] text-[hsl(var(--neutral-600))]">
                           {action.status}
                         </span>
+                        {action.is_quick_win && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            Quick win
+                          </Badge>
+                        )}
                         {action.source_visit_id && (
                           <Badge variant="outline" className="text-[10px] text-violet-700 border-violet-200 bg-violet-50">
                             From coaching visit
@@ -802,6 +809,11 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
                         <span className={cn("text-[11px] px-2 py-0.5 rounded-full border", getPriorityPillClass(action.priority))}>
                           {priorityConfig.label}
                         </span>
+                        {action.is_quick_win && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            Quick win
+                          </Badge>
+                        )}
                         {action.source_visit_id && (
                           <Badge variant="outline" className="text-[10px] text-violet-700 border-violet-200 bg-violet-50">
                             From coaching visit
