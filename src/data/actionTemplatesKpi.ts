@@ -28,7 +28,7 @@ export interface KpiActionTemplate {
  * Formats a raw KPI value + unit for display.
  * EUR -> '€2,500', % -> '71.3%', else -> '2.0 hours'.
  */
-function formatValue(value: number, unit: string): string {
+export function formatValue(value: number, unit: string): string {
   if (!Number.isFinite(value)) return '';
 
   const rounded = Math.round(value * 10) / 10;

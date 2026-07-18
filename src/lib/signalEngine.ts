@@ -26,7 +26,7 @@ import { KPI_DEFINITIONS } from '@/lib/kpiDefinitions';
 import { evaluateCrossValidations, type CrossValidationFinding } from '@/data/crossValidationRules';
 import { generateKpiSignals, type KpiSignal } from '@/lib/kpiSignalEngine';
 import type { KpiBenchmark } from '@/lib/kpiBenchmarks';
-import { KPI_ACTION_TEMPLATES, interpolateKpiTemplate } from '@/data/actionTemplatesKpi';
+import { KPI_ACTION_TEMPLATES, interpolateKpiTemplate, formatValue } from '@/data/actionTemplatesKpi';
 import { prioritiseActions, type PrioritisedAction } from '@/lib/actionPrioritiser';
 
 export interface SignalEngineConfig {
@@ -410,19 +410,6 @@ function escalateOneStep(severity: Severity): Severity {
   return 'HIGH';
 }
 
-/**
- * Format a raw KPI value + unit for display in a merged-signal rationale.
- * Mirrors the EUR/%/other formatting used by interpolateKpiTemplate.
- */
-function formatKpiValue(value: number, unit: string): string {
-  if (!Number.isFinite(value)) return '';
-  const rounded = Math.round(value * 10) / 10;
-  const numText = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
-  if (unit === 'EUR') return `€${Math.round(value).toLocaleString('en-US')}`;
-  if (unit === '%') return `${numText}%`;
-  return `${numText} ${unit}`;
-}
-
 /** Department prefixes stripped when humanizing a KPI key for a fallback label. */
 const KPI_KEY_PREFIXES = ['nvs_', 'uvs_', 'svc_', 'prt_', 'pts_', 'fin_'];
 
@@ -489,8 +476,8 @@ export function mergeKpiSignals(
 
     // Unmatched → standalone signal.
     const label = humanizeKpiKey(kpiSignal.kpiKey);
-    const actualText = formatKpiValue(kpiSignal.actualValue, kpiSignal.unit);
-    const targetText = formatKpiValue(kpiSignal.targetValue, kpiSignal.unit);
+    const actualText = formatValue(kpiSignal.actualValue, kpiSignal.unit);
+    const targetText = formatValue(kpiSignal.targetValue, kpiSignal.unit);
     const rationale = `${label}: ${actualText} vs benchmark ${targetText} (${kpiSignal.gapPercent}% gap)`;
 
     merged.push({
