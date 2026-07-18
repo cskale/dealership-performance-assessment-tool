@@ -21,6 +21,7 @@ import {
   formatActionsForDatabaseInsert,
   SignalEngineConfig
 } from '@/lib/signalEngine';
+import { loadBenchmarks, type KpiBenchmark } from '@/lib/kpiBenchmarks';
 
 // Feature flag - can be disabled via environment variable
 const ENABLE_AUTO_ACTIONS = import.meta.env.VITE_ENABLE_AUTO_ACTIONS !== 'false';
@@ -164,16 +165,54 @@ export function useAutoActionGeneration() {
       // Get question weights
       const questionWeights = getQuestionWeights();
 
+      // Fetch quantitative KPI values for this assessment (Action Engine v2).
+      // A fetch failure must never block action generation — fall back to
+      // qualitative-only ({} / {}) if anything goes wrong.
+      let kpiValues: Record<string, number> = {};
+      let benchmarks: Record<string, KpiBenchmark> = {};
+      try {
+        const { data: kpiRows } = await supabase
+          .from('assessment_kpi_values')
+          .select('kpi_key, value')
+          .eq('assessment_id', assessmentId)
+          .eq('skipped', false);
+        kpiValues = Object.fromEntries(
+          (kpiRows ?? [])
+            .filter((r) => r.value != null)
+            .map((r) => [r.kpi_key, r.value as number])
+        );
+        benchmarks = Object.keys(kpiValues).length ? await loadBenchmarks() : {};
+      } catch (err) {
+        console.error('[AutoActions] KPI values fetch failed, proceeding without them:', err);
+        kpiValues = {};
+        benchmarks = {};
+      }
+
       // Configuration — sectionScores enables the ceiling pass for high-scoring dealers
+      const scoreValues = sectionScores ? Object.values(sectionScores) : [];
+      const overallScore = scoreValues.length
+        ? scoreValues.reduce((sum, v) => sum + v, 0) / scoreValues.length
+        : undefined;
+
       const config: SignalEngineConfig = {
         enableAutoActions: true,
         weakScoreThreshold: 3,
         criticalScoreThreshold: 2,
         sectionScores: sectionScores ?? {},
+        overallScore,
       };
 
       // Generate actions using deterministic signal engine
-      const { actions } = generateActionsFromAssessment(answers, questionWeights, config, undefined, businessModel);
+      const { actions } = generateActionsFromAssessment(
+        answers,
+        questionWeights,
+        config,
+        undefined,
+        businessModel,
+        undefined,
+        kpiValues,
+        benchmarks
+      );
 
       if (actions.length === 0) {
         if (import.meta.env.DEV) {

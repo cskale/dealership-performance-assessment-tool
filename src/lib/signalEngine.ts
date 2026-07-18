@@ -812,7 +812,7 @@ export function generateActionsFromAssessment(
  * Format actions for database insertion
  */
 export function formatActionsForDatabaseInsert(
-  actions: InstantiatedAction[],
+  actions: PrioritisedAction[],
   userId: string,
   assessmentId: string,
   organizationId: string
@@ -855,6 +855,8 @@ export function formatActionsForDatabaseInsert(
       impact_score: ci.impact_score,
       effort_score: ci.effort_score,
       urgency_score: ci.urgency_score,
+      rank: action.rank,
+      is_quick_win: action.isQuickWin,
     };
   });
 }
