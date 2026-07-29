@@ -342,10 +342,12 @@ const Account = () => {
   const hasActivityData = completedAssessments.length > 0;
   const latestCompleted = completedAssessments[0];
   const canManageTeam = currentMembership && ['owner', 'admin'].includes(currentMembership.role);
+  const roleLabel = actorType === 'coach' ? 'Coach' : actorType === 'oem' ? 'OEM Admin' : (currentMembership?.role || 'member');
+  const roleLabelDisplay = roleLabel.charAt(0).toUpperCase() + roleLabel.slice(1);
 
   const NAV_ITEMS = [
     { value: 'profile',       label: 'Profile',        icon: User },
-    { value: 'organization',  label: 'Organization',   icon: Building2 },
+    ...(actorType !== 'coach' ? [{ value: 'organization', label: 'Organization', icon: Building2 }] : []),
     ...(canManageTeam    ? [{ value: 'team',     label: 'Team',        icon: Users }]    : []),
     ...(hasActivityData  ? [{ value: 'activity', label: 'Activity',    icon: Activity }] : []),
     { value: 'security',      label: 'Security',       icon: Shield },
@@ -413,11 +415,11 @@ const Account = () => {
                     {displayName || user.email}
                   </div>
                   <div className="text-sm text-muted-foreground mt-0.5 truncate">
-                    {(currentMembership?.role || 'member').charAt(0).toUpperCase() + (currentMembership?.role || 'member').slice(1)} · {user.email}
+                    {roleLabelDisplay} · {user.email}
                   </div>
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     <span className="inline-flex items-center bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] text-[11px] px-2 py-0.5 rounded-full font-medium">
-                      {(currentMembership?.role || 'member').charAt(0).toUpperCase() + (currentMembership?.role || 'member').slice(1)}
+                      {roleLabelDisplay}
                     </span>
                     {user.email_confirmed_at && (
                       <span className="inline-flex items-center gap-1 bg-[hsl(var(--dd-green-light))] text-[hsl(var(--dd-green))] text-[11px] px-2 py-0.5 rounded-full font-medium">
