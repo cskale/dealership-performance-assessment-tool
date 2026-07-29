@@ -4,6 +4,19 @@ Quick-reference log of incremental enhancements, UI fixes, and small quality-of-
 
 ---
 
+## 2026-07-29 — Performance + UX Audit
+
+| # | Enhancement | Details | Commit |
+|---|-------------|---------|--------|
+| 1 | Route-level lazy loading | Converted all page imports in `App.tsx` (except Index/NotFound) to `React.lazy()` + `Suspense`. Entry bundle dropped from ~1.99MB to ~803KB — vendor-pdf, vendor-excel, kpi-definitions, scoring-engine, and Results now load on-demand per route instead of on every page load. | `f434952` |
+| 2 | Coach profile role badge + dead Organization tab | Coaches have no org membership, so the Account header fell back to showing "Member" and the Organization tab rendered blank. Role label now derives from `actorType` first; Organization nav item hidden for coaches. | `e3f6b45` |
+| 3 | Debounced search filtering | Added `useDebouncedValue` hook, wired into 4 text-search filters (ActionPlan, KpiEncyclopediaTab, KPIExplorer, Coach Dashboard KPI panel) so filtering doesn't re-run every keystroke. Coach Dashboard's KPI panel was also re-deriving `Object.entries()` over the full KPI dataset on every render — now memoized. | `a25c825` |
+| 4 | Dead "Export Report" button | Coach Dashboard button silently logged to console with no user feedback. Now disabled with a native tooltip until the feature ships. | `a25c825` |
+| 5 | CLAUDE.md doc correction | Corrected a stale "still unwired" note — `evaluateCrossValidations`/`generateCeilingInsights` are already live in `Results.tsx`. | `a25c825` |
+| 6 | TanStack Query migration | Dashboard, CoachDashboard, OemDashboard, Results, CoachActions, CoachDealerPage, and Account all rolled their own `useEffect` + Supabase fetch with zero caching — every page re-fetched from scratch on every mount, even navigating away and back with no server-side change. Migrated all 7 to `useQuery`, keyed per page and per dependent param (assessmentId/networkId/dealershipId). Mutations now update the cache via `setQueryData` or a scoped `refetch()`. OemDashboard's networks → dealer scores → next-visits chain is now three dependent queries instead of three useEffects keyed off each other's state. | `ba4b875` |
+
+---
+
 ## 2026-07-18
 
 | # | Enhancement | Details | Commit |
