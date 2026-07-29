@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -35,6 +36,96 @@ import { FreshnessBadge } from "@/components/ui/FreshnessBadge";
 import { getAssessmentFreshness } from "@/lib/assessmentFreshness";
 import { useAssessmentNotes } from "@/hooks/useAssessmentNotes";
 
+interface ResultsData {
+  assessmentId: string;
+  answers: Record<string, number>;
+  scores: Record<string, number>;
+  completedAt: string;
+  dealershipId: string | null;
+}
+
+interface ResultsQueryResult {
+  data: ResultsData | null;
+  notFound: boolean;
+}
+
+async function fetchResultsData(userId: string | undefined, routeAssessmentId: string | undefined): Promise<ResultsQueryResult> {
+  await new Promise(resolve => setTimeout(resolve, 300));
+
+  if (userId) {
+    try {
+      let query = supabase
+        .from('assessments')
+        .select('id, answers, scores, overall_score, completed_at, status, dealership_id')
+        .eq('status', 'completed');
+
+      if (routeAssessmentId) {
+        query = query.eq('id', routeAssessmentId);
+      } else {
+        query = query
+          .eq('user_id', userId)
+          .order('completed_at', { ascending: false })
+          .limit(1);
+      }
+
+      const { data: dbAssessment, error } = await query.single();
+
+      if (error && routeAssessmentId) {
+        return { data: null, notFound: true };
+      }
+
+      if (dbAssessment && dbAssessment.answers && Object.keys(dbAssessment.answers as object).length > 0) {
+        return {
+          data: {
+            assessmentId: dbAssessment.id,
+            answers: dbAssessment.answers as Record<string, number>,
+            scores: dbAssessment.scores as Record<string, number>,
+            completedAt: dbAssessment.completed_at || new Date().toISOString(),
+            dealershipId: (dbAssessment as any).dealership_id ?? null,
+          },
+          notFound: false,
+        };
+      }
+    } catch (err) {
+      console.warn('DB assessment load failed, falling back to localStorage:', err);
+    }
+  }
+
+  if (!routeAssessmentId) {
+    const completedResults = localStorage.getItem('completed_assessment_results');
+    if (completedResults) {
+      const data = JSON.parse(completedResults);
+      if (data._expiresAt && Date.now() > data._expiresAt) {
+        localStorage.removeItem('completed_assessment_results');
+      } else {
+        if (!data.assessmentId) {
+          data.assessmentId = crypto.randomUUID();
+          localStorage.setItem('completed_assessment_results', JSON.stringify(data));
+        }
+        return { data, notFound: false };
+      }
+    }
+  }
+
+  return { data: null, notFound: false };
+}
+
+async function fetchPdfActions(assessmentId: string, organizationId: string | undefined): Promise<PDFExportData['actions']> {
+  try {
+    let query = supabase
+      .from('improvement_actions')
+      .select('action_title, action_description, priority, status, responsible_person, target_completion_date, department')
+      .eq('assessment_id', assessmentId);
+    if (organizationId) {
+      query = query.eq('organization_id', organizationId);
+    }
+    const { data } = await query;
+    return (data as any) || [];
+  } catch {
+    return [];
+  }
+}
+
 export default function Results() {
   useEffect(() => { document.title = 'Results — Dealer Diagnostic'; }, []);
   const { assessmentId: routeAssessmentId } = useParams<{ assessmentId: string }>();
@@ -42,12 +133,8 @@ export default function Results() {
     const params = new URLSearchParams(window.location.search);
     return params.get('tab') || "executive";
   });
-  const [resultsData, setResultsData] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
   const [animatedScore, setAnimatedScore] = useState(0);
   const [showExportModal, setShowExportModal] = useState(false);
-  const [pdfActions, setPdfActions] = useState<PDFExportData['actions']>([]);
   const [benchmarks, setBenchmarks] = useState<Record<string, ModuleBenchmark>>(STATIC_BENCHMARKS);
   
   const { toast } = useToast();
@@ -64,84 +151,25 @@ export default function Results() {
   } | null>(null);
 
   // Load completed assessment results
+  const { data: resultsQuery, isLoading } = useQuery({
+    queryKey: ['results-data', user?.id, routeAssessmentId],
+    queryFn: () => fetchResultsData(user?.id, routeAssessmentId),
+  });
+
+  const resultsData = resultsQuery?.data ?? null;
+  const loadError = resultsQuery?.notFound
+    ? (language === 'de'
+        ? 'Diese Bewertung wurde nicht gefunden oder Sie haben keinen Zugriff darauf.'
+        : 'This assessment was not found or you do not have access to it.')
+    : null;
+
   useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      setLoadError(null);
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      let loaded = false;
-      
-      if (user) {
-        try {
-          let query = supabase
-            .from('assessments')
-            .select('id, answers, scores, overall_score, completed_at, status, dealership_id')
-            .eq('status', 'completed');
-
-          if (routeAssessmentId) {
-            query = query.eq('id', routeAssessmentId);
-          } else {
-            query = query
-              .eq('user_id', user.id)
-              .order('completed_at', { ascending: false })
-              .limit(1);
-          }
-
-          const { data: dbAssessment, error } = await query.single();
-          
-          if (error && routeAssessmentId) {
-            setLoadError(
-              language === 'de' 
-                ? 'Diese Bewertung wurde nicht gefunden oder Sie haben keinen Zugriff darauf.' 
-                : 'This assessment was not found or you do not have access to it.'
-            );
-            setIsLoading(false);
-            return;
-          }
-          
-          if (dbAssessment && dbAssessment.answers && Object.keys(dbAssessment.answers as object).length > 0) {
-            setResultsData({
-              assessmentId: dbAssessment.id,
-              answers: dbAssessment.answers,
-              scores: dbAssessment.scores,
-              completedAt: dbAssessment.completed_at || new Date().toISOString(),
-              dealershipId: (dbAssessment as any).dealership_id ?? null,
-            });
-            loaded = true;
-          }
-        } catch (err) {
-          console.warn('DB assessment load failed, falling back to localStorage:', err);
-        }
-      }
-
-      if (!loaded && !routeAssessmentId) {
-        const completedResults = localStorage.getItem('completed_assessment_results');
-        if (completedResults) {
-          const data = JSON.parse(completedResults);
-          if (data._expiresAt && Date.now() > data._expiresAt) {
-            localStorage.removeItem('completed_assessment_results');
-            // do not set resultsData from this stale cache — fall through to DB load
-          } else {
-            if (!data.assessmentId) {
-              data.assessmentId = crypto.randomUUID();
-              localStorage.setItem('completed_assessment_results', JSON.stringify(data));
-            }
-            setResultsData(data);
-            loaded = true;
-          }
-        }
-      }
-
-      if (!loaded && !loadError) {
-        toast({ title: t('results.noResults'), description: t('results.completeFirst'), variant: "destructive" });
-        navigate('/app/assessment');
-      }
-      
-      setIsLoading(false);
-    };
-    loadData();
-  }, [navigate, toast, t, user, routeAssessmentId]);
+    if (!resultsQuery || isLoading) return;
+    if (!resultsQuery.notFound && !resultsQuery.data) {
+      toast({ title: t('results.noResults'), description: t('results.completeFirst'), variant: "destructive" });
+      navigate('/app/assessment');
+    }
+  }, [resultsQuery, isLoading, navigate, toast, t]);
 
   useEffect(() => {
     const org = currentOrganization as any;
@@ -191,23 +219,11 @@ export default function Results() {
     navigate('/app/assessment');
   };
 
-  useEffect(() => {
-    const loadActions = async () => {
-      if (!user || !resultsData?.assessmentId) return;
-      try {
-        let query = supabase
-          .from('improvement_actions')
-          .select('action_title, action_description, priority, status, responsible_person, target_completion_date, department')
-          .eq('assessment_id', resultsData.assessmentId);
-        if (currentOrganization?.id) {
-          query = query.eq('organization_id', currentOrganization.id);
-        }
-        const { data } = await query;
-        setPdfActions((data as any) || []);
-      } catch {}
-    };
-    loadActions();
-  }, [user, resultsData?.assessmentId, currentOrganization?.id]);
+  const { data: pdfActions = [] } = useQuery({
+    queryKey: ['pdf-actions', resultsData?.assessmentId, currentOrganization?.id],
+    queryFn: () => fetchPdfActions(resultsData!.assessmentId, currentOrganization?.id),
+    enabled: !!user && !!resultsData?.assessmentId,
+  });
 
   useEffect(() => {
     if (actorType !== 'oem' || !(resultsData as any)?.dealershipId) return;

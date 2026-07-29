@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useActiveRole } from '@/hooks/useActiveRole';
 import { useAuth } from '@/hooks/useAuth';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
@@ -236,243 +237,243 @@ function ResourcePlaybookPanel() {
   );
 }
 
+interface CoachDashboardData {
+  dealers: AssignedDealer[];
+  allAssessments: AssessmentRecord[];
+  allActions: ActionItem[];
+  activeVisitsByDealer: Map<string, string>;
+  lastCompletedVisit: { date: string; dealerName: string } | null;
+}
+
+const EMPTY_COACH_DASHBOARD_DATA: CoachDashboardData = {
+  dealers: [], allAssessments: [], allActions: [],
+  activeVisitsByDealer: new Map(), lastCompletedVisit: null,
+};
+
+async function fetchCoachDashboardData(coachUserId: string): Promise<CoachDashboardData> {
+  const { data: assignments, error: assignErr } = await supabase
+    .from('coach_dealership_assignments')
+    .select('dealership_id')
+    .eq('coach_user_id', coachUserId)
+    .eq('is_active', true);
+
+  if (assignErr || !assignments?.length) {
+    return EMPTY_COACH_DASHBOARD_DATA;
+  }
+
+  const dealershipIds = assignments.map(a => a.dealership_id);
+
+  const [dealershipsRes, assessmentsRes] = await Promise.all([
+    supabase.from('dealerships').select('id, name, location, brand').in('id', dealershipIds),
+    supabase
+      .from('assessments')
+      .select('id, overall_score, created_at, dealership_id, status')
+      .in('dealership_id', dealershipIds)
+      .order('created_at', { ascending: false }),
+  ]);
+
+  const dealerships = dealershipsRes.data ?? [];
+  const assessments = assessmentsRes.data ?? [];
+
+  // Fetch OEM network memberships for these dealerships
+  const { data: networkMemberships } = await supabase
+    .from('dealer_network_memberships')
+    .select('dealership_id, oem_networks(id, name, oem_brand)')
+    .in('dealership_id', dealershipIds)
+    .eq('is_active', true);
+
+  const dealerNetworkMap = new Map<string, { id: string; name: string; brand: string }[]>();
+  (networkMemberships ?? []).forEach((m: any) => {
+    const net = m.oem_networks;
+    if (!net) return;
+    const existing = dealerNetworkMap.get(m.dealership_id) ?? [];
+    dealerNetworkMap.set(m.dealership_id, [
+      ...existing,
+      { id: net.id, name: net.name, brand: net.oem_brand ?? '' },
+    ]);
+  });
+
+  const allAssessments: AssessmentRecord[] = assessments.map(a => ({
+    id: a.id,
+    dealership_id: a.dealership_id,
+    overall_score: a.overall_score ? Number(a.overall_score) : null,
+    created_at: a.created_at,
+    status: a.status,
+  }));
+
+  const today = new Date();
+
+  // Scope actions to latest completed assessment per dealer only
+  const latestCompletedByDealer = new Map<string, string>();
+  const tempByDealer = new Map<string, typeof assessments>();
+  assessments.forEach(a => {
+    const list = tempByDealer.get(a.dealership_id) ?? [];
+    list.push(a);
+    tempByDealer.set(a.dealership_id, list);
+  });
+  tempByDealer.forEach((records, dealerId) => {
+    const completed = records.filter(r => r.status === 'completed');
+    if (completed[0]) latestCompletedByDealer.set(dealerId, completed[0].id);
+  });
+  const latestAssessmentIds = Array.from(latestCompletedByDealer.values());
+
+  let actionData: Array<{
+    id: string; action_title: string; priority: string; status: string;
+    last_status_updated_at: string | null; target_completion_date: string | null;
+    assessment_id: string;
+  }> = [];
+
+  if (latestAssessmentIds.length) {
+    const { data } = await supabase
+      .from('improvement_actions')
+      .select('id, action_title, priority, status, last_status_updated_at, target_completion_date, assessment_id')
+      .in('assessment_id', latestAssessmentIds)
+      .in('status', ['Open', 'In Progress'])
+      .order('target_completion_date', { ascending: true, nullsFirst: false });
+    actionData = data ?? [];
+  }
+
+  // Build assessment → dealer lookup
+  const assessmentToDealer = new Map<string, { id: string; name: string }>();
+  assessments.forEach(a => {
+    const dealer = dealerships.find(d => d.id === a.dealership_id);
+    if (dealer) assessmentToDealer.set(a.id, { id: dealer.id, name: dealer.name });
+  });
+
+  // Compute per-dealer counts while building ActionItem list
+  const openByDealer = new Map<string, number>();
+  const overdueByDealer = new Map<string, number>();
+  const now = Date.now();
+
+  const allActions: ActionItem[] = actionData.map(ia => {
+    const dealer = assessmentToDealer.get(ia.assessment_id);
+    const dealerId = dealer?.id ?? '';
+    const dealerName = dealer?.name ?? 'Unknown';
+
+    openByDealer.set(dealerId, (openByDealer.get(dealerId) ?? 0) + 1);
+    if (ia.target_completion_date && new Date(ia.target_completion_date) < today) {
+      overdueByDealer.set(dealerId, (overdueByDealer.get(dealerId) ?? 0) + 1);
+    }
+
+    const lastMs = ia.last_status_updated_at
+      ? new Date(ia.last_status_updated_at).getTime()
+      : now - 8 * 86400000;
+    const daysStale = Math.max(1, Math.floor((now - lastMs) / 86400000));
+
+    return {
+      id: ia.id,
+      action_title: ia.action_title,
+      priority: ia.priority,
+      status: ia.status,
+      last_status_updated_at: ia.last_status_updated_at,
+      target_completion_date: ia.target_completion_date,
+      dealerName,
+      dealershipId: dealerId,
+      assessmentId: ia.assessment_id,
+      daysStale,
+    };
+  });
+
+  // Build dealer list with top-2 assessments per dealer
+  const dealerAssessments = new Map<string, AssessmentRecord[]>();
+  assessments.forEach(a => {
+    const list = dealerAssessments.get(a.dealership_id) ?? [];
+    list.push({
+      id: a.id,
+      dealership_id: a.dealership_id,
+      overall_score: a.overall_score ? Number(a.overall_score) : null,
+      created_at: a.created_at,
+      status: a.status,
+    });
+    dealerAssessments.set(a.dealership_id, list);
+  });
+
+  const dealers: AssignedDealer[] = dealerships.map(d => {
+    const records = dealerAssessments.get(d.id) ?? [];
+    // Use only completed assessments for score display and results link
+    const completed = records.filter(r => r.status === 'completed');
+    const latest = completed[0];
+    const previous = completed[1];
+    return {
+      dealershipId: d.id,
+      dealerName: d.name,
+      location: d.location,
+      brand: d.brand,
+      latestScore: latest?.overall_score ?? null,
+      previousScore: previous?.overall_score ?? null,
+      latestDate: latest?.created_at ?? null,
+      latestStatus: latest?.status ?? null,
+      latestAssessmentId: latest?.id ?? null,
+      openCount: openByDealer.get(d.id) ?? 0,
+      overdueCount: overdueByDealer.get(d.id) ?? 0,
+      networks: dealerNetworkMap.get(d.id) ?? [],
+    };
+  });
+
+  // Fetch active visits for dealer cards
+  const { data: visitData } = await supabase
+    .from('coach_visits')
+    .select('dealership_id, visit_date, status')
+    .eq('coach_user_id', coachUserId)
+    .in('dealership_id', dealershipIds)
+    .in('status', ['proposed', 'confirmed'])
+    .order('visit_date', { ascending: true });
+  const activeVisitsByDealer = new Map<string, string>();
+  (visitData ?? []).forEach((v: any) => {
+    activeVisitsByDealer.set(v.dealership_id, `${format(new Date(v.visit_date), 'dd MMM')} · ${v.status}`);
+  });
+
+  // Fetch most recent completed visit for timeline strip
+  const { data: completedVisits } = await supabase
+    .from('coach_visits')
+    .select('dealership_id, visit_date')
+    .eq('coach_user_id', coachUserId)
+    .in('dealership_id', dealershipIds)
+    .eq('status', 'completed')
+    .order('visit_date', { ascending: false })
+    .limit(1);
+
+  let lastCompletedVisit: { date: string; dealerName: string } | null = null;
+  if (completedVisits?.length) {
+    const cv = completedVisits[0] as { dealership_id: string; visit_date: string };
+    const dealerName = dealerships.find(d => d.id === cv.dealership_id)?.name ?? 'Unknown';
+    lastCompletedVisit = { date: cv.visit_date, dealerName };
+  }
+
+  return { dealers, allAssessments, allActions, activeVisitsByDealer, lastCompletedVisit };
+}
+
 export default function CoachDashboard() {
   const { actorType, loading: roleLoading } = useActiveRole();
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
 
-  const [dealers, setDealers] = useState<AssignedDealer[]>([]);
-  const [allAssessments, setAllAssessments] = useState<AssessmentRecord[]>([]);
-  const [allActions, setAllActions] = useState<ActionItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [dashboardView, setDashboardView] = useState<'dashboard' | 'resources'>('dashboard');
   const [sortBy, setSortBy] = useState<'score' | 'name' | 'overdue'>('score');
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'in_progress'>('all');
   const [activeTab, setActiveTab] = useState<'overdue' | 'stale' | 'all'>('overdue');
   const [actionDealerFilter, setActionDealerFilter] = useState<string>('all');
-  const [activeVisitsByDealer, setActiveVisitsByDealer] = useState<Map<string, string>>(new Map());
   const [activeNetworkId, setActiveNetworkId] = useState<string>('all');
-  const [lastCompletedVisit, setLastCompletedVisit] = useState<{ date: string; dealerName: string } | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelDealer, setPanelDealer] = useState<AssignedDealer | null>(null);
   const [panelInitialTab, setPanelInitialTab] = useState<'activity' | 'visits' | 'notes'>('activity');
+
+  const { data: dashboardData, isLoading: loading, refetch: refetchDashboard } = useQuery({
+    queryKey: ['coach-dashboard', user?.id],
+    queryFn: () => fetchCoachDashboardData(user!.id),
+    enabled: !!user?.id,
+  });
+
+  const {
+    dealers, allAssessments, allActions, activeVisitsByDealer, lastCompletedVisit,
+  } = dashboardData ?? EMPTY_COACH_DASHBOARD_DATA;
 
   const networkTabs = useMemo(() => {
     const seen = new Map<string, { id: string; name: string; brand: string }>();
     dealers.forEach(d => d.networks.forEach(n => seen.set(n.id, n)));
     return Array.from(seen.values());
   }, [dealers]);
-
-  useEffect(() => {
-    if (!user?.id) return;
-    const fetchAssignments = async () => {
-      setLoading(true);
-
-      const { data: assignments, error: assignErr } = await supabase
-        .from('coach_dealership_assignments')
-        .select('dealership_id')
-        .eq('coach_user_id', user!.id)
-        .eq('is_active', true);
-
-      if (assignErr || !assignments?.length) {
-        setDealers([]);
-        setLoading(false);
-        return;
-      }
-
-      const dealershipIds = assignments.map(a => a.dealership_id);
-
-      const [dealershipsRes, assessmentsRes] = await Promise.all([
-        supabase.from('dealerships').select('id, name, location, brand').in('id', dealershipIds),
-        supabase
-          .from('assessments')
-          .select('id, overall_score, created_at, dealership_id, status')
-          .in('dealership_id', dealershipIds)
-          .order('created_at', { ascending: false }),
-      ]);
-
-      const dealerships = dealershipsRes.data ?? [];
-      const assessments = assessmentsRes.data ?? [];
-
-      // Fetch OEM network memberships for these dealerships
-      const { data: networkMemberships } = await supabase
-        .from('dealer_network_memberships')
-        .select('dealership_id, oem_networks(id, name, oem_brand)')
-        .in('dealership_id', dealershipIds)
-        .eq('is_active', true);
-
-      const dealerNetworkMap = new Map<string, { id: string; name: string; brand: string }[]>();
-      (networkMemberships ?? []).forEach((m: any) => {
-        const net = m.oem_networks;
-        if (!net) return;
-        const existing = dealerNetworkMap.get(m.dealership_id) ?? [];
-        dealerNetworkMap.set(m.dealership_id, [
-          ...existing,
-          { id: net.id, name: net.name, brand: net.oem_brand ?? '' },
-        ]);
-      });
-
-      setAllAssessments(
-        assessments.map(a => ({
-          id: a.id,
-          dealership_id: a.dealership_id,
-          overall_score: a.overall_score ? Number(a.overall_score) : null,
-          created_at: a.created_at,
-          status: a.status,
-        }))
-      );
-
-      const assessmentIds = assessments.map(a => a.id);
-      const today = new Date();
-
-      // Scope actions to latest completed assessment per dealer only
-      const latestCompletedByDealer = new Map<string, string>();
-      const tempByDealer = new Map<string, typeof assessments>();
-      assessments.forEach(a => {
-        const list = tempByDealer.get(a.dealership_id) ?? [];
-        list.push(a);
-        tempByDealer.set(a.dealership_id, list);
-      });
-      tempByDealer.forEach((records, dealerId) => {
-        const completed = records.filter(r => r.status === 'completed');
-        if (completed[0]) latestCompletedByDealer.set(dealerId, completed[0].id);
-      });
-      const latestAssessmentIds = Array.from(latestCompletedByDealer.values());
-
-      let actionData: Array<{
-        id: string; action_title: string; priority: string; status: string;
-        last_status_updated_at: string | null; target_completion_date: string | null;
-        assessment_id: string;
-      }> = [];
-
-      if (latestAssessmentIds.length) {
-        const { data } = await supabase
-          .from('improvement_actions')
-          .select('id, action_title, priority, status, last_status_updated_at, target_completion_date, assessment_id')
-          .in('assessment_id', latestAssessmentIds)
-          .in('status', ['Open', 'In Progress'])
-          .order('target_completion_date', { ascending: true, nullsFirst: false });
-        actionData = data ?? [];
-      }
-
-      // Build assessment → dealer lookup
-      const assessmentToDealer = new Map<string, { id: string; name: string }>();
-      assessments.forEach(a => {
-        const dealer = dealerships.find(d => d.id === a.dealership_id);
-        if (dealer) assessmentToDealer.set(a.id, { id: dealer.id, name: dealer.name });
-      });
-
-      // Compute per-dealer counts while building ActionItem list
-      const openByDealer = new Map<string, number>();
-      const overdueByDealer = new Map<string, number>();
-      const now = Date.now();
-
-      const builtActions: ActionItem[] = actionData.map(ia => {
-        const dealer = assessmentToDealer.get(ia.assessment_id);
-        const dealerId = dealer?.id ?? '';
-        const dealerName = dealer?.name ?? 'Unknown';
-
-        openByDealer.set(dealerId, (openByDealer.get(dealerId) ?? 0) + 1);
-        if (ia.target_completion_date && new Date(ia.target_completion_date) < today) {
-          overdueByDealer.set(dealerId, (overdueByDealer.get(dealerId) ?? 0) + 1);
-        }
-
-        const lastMs = ia.last_status_updated_at
-          ? new Date(ia.last_status_updated_at).getTime()
-          : now - 8 * 86400000;
-        const daysStale = Math.max(1, Math.floor((now - lastMs) / 86400000));
-
-        return {
-          id: ia.id,
-          action_title: ia.action_title,
-          priority: ia.priority,
-          status: ia.status,
-          last_status_updated_at: ia.last_status_updated_at,
-          target_completion_date: ia.target_completion_date,
-          dealerName,
-          dealershipId: dealerId,
-          assessmentId: ia.assessment_id,
-          daysStale,
-        };
-      });
-
-      setAllActions(builtActions);
-
-      // Build dealer list with top-2 assessments per dealer
-      const dealerAssessments = new Map<string, AssessmentRecord[]>();
-      assessments.forEach(a => {
-        const list = dealerAssessments.get(a.dealership_id) ?? [];
-        list.push({
-          id: a.id,
-          dealership_id: a.dealership_id,
-          overall_score: a.overall_score ? Number(a.overall_score) : null,
-          created_at: a.created_at,
-          status: a.status,
-        });
-        dealerAssessments.set(a.dealership_id, list);
-      });
-
-      const dealerList: AssignedDealer[] = dealerships.map(d => {
-        const records = dealerAssessments.get(d.id) ?? [];
-        // Use only completed assessments for score display and results link
-        const completed = records.filter(r => r.status === 'completed');
-        const latest = completed[0];
-        const previous = completed[1];
-        return {
-          dealershipId: d.id,
-          dealerName: d.name,
-          location: d.location,
-          brand: d.brand,
-          latestScore: latest?.overall_score ?? null,
-          previousScore: previous?.overall_score ?? null,
-          latestDate: latest?.created_at ?? null,
-          latestStatus: latest?.status ?? null,
-          latestAssessmentId: latest?.id ?? null,
-          openCount: openByDealer.get(d.id) ?? 0,
-          overdueCount: overdueByDealer.get(d.id) ?? 0,
-          networks: dealerNetworkMap.get(d.id) ?? [],
-        };
-      });
-
-      setDealers(dealerList);
-
-      // Fetch active visits for dealer cards
-      const { data: visitData } = await supabase
-        .from('coach_visits')
-        .select('dealership_id, visit_date, status')
-        .eq('coach_user_id', user!.id)
-        .in('dealership_id', dealershipIds)
-        .in('status', ['proposed', 'confirmed'])
-        .order('visit_date', { ascending: true });
-      const visitMap = new Map<string, string>();
-      (visitData ?? []).forEach((v: any) => {
-        visitMap.set(v.dealership_id, `${format(new Date(v.visit_date), 'dd MMM')} · ${v.status}`);
-      });
-      setActiveVisitsByDealer(visitMap);
-
-      // Fetch most recent completed visit for timeline strip
-      const { data: completedVisits } = await supabase
-        .from('coach_visits')
-        .select('dealership_id, visit_date')
-        .eq('coach_user_id', user!.id)
-        .in('dealership_id', dealershipIds)
-        .eq('status', 'completed')
-        .order('visit_date', { ascending: false })
-        .limit(1);
-
-      if (completedVisits?.length) {
-        const cv = completedVisits[0] as { dealership_id: string; visit_date: string };
-        const dealerName = dealerships.find(d => d.id === cv.dealership_id)?.name ?? 'Unknown';
-        setLastCompletedVisit({ date: cv.visit_date, dealerName });
-      } else {
-        setLastCompletedVisit(null);
-      }
-
-      setLoading(false);
-    };
-    fetchAssignments();
-  }, [user?.id]);
 
   const filteredDealers = useMemo(() => {
     let result = [...dealers];
@@ -990,22 +991,7 @@ export default function CoachDashboard() {
           latestScore={panelDealer.latestScore}
           latestDate={panelDealer.latestDate}
           initialTab={panelInitialTab}
-          onVisitSaved={async () => {
-            if (!user?.id) return;
-            const dealershipIds = dealers.map(d => d.dealershipId);
-            const { data } = await supabase
-              .from('coach_visits')
-              .select('dealership_id, visit_date, status')
-              .eq('coach_user_id', user.id)
-              .in('dealership_id', dealershipIds)
-              .in('status', ['proposed', 'confirmed'])
-              .order('visit_date', { ascending: true });
-            const map = new Map<string, string>();
-            (data ?? []).forEach((v: any) => {
-              map.set(v.dealership_id, `${format(new Date(v.visit_date), 'dd MMM')} · ${v.status}`);
-            });
-            setActiveVisitsByDealer(map);
-          }}
+          onVisitSaved={() => { refetchDashboard(); }}
           onNoteAdded={() => { /* no-op — notes badge removed from cards */ }}
         />
       )}

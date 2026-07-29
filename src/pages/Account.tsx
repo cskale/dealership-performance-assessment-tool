@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,6 +54,27 @@ const ROLES_MATRIX = [
   { permission: 'Delete organization',        owner: true,  admin: false, member: false, viewer: false },
 ];
 
+async function fetchProfileRow(userId: string): Promise<Tables<'profiles'> | null> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
+  if (error && error.code !== 'PGRST116') throw error;
+  return data;
+}
+
+async function fetchAccountAssessments(userId: string): Promise<AssessmentRecord[]> {
+  const { data, error } = await supabase
+    .from('assessments')
+    .select('id, overall_score, status, completed_at, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(20);
+  if (error) throw error;
+  return data || [];
+}
+
 // Hoisted to module scope — defining these inside Account() gave them a new
 // identity every render, which made React remount their children (including
 // the password inputs) on every keystroke.
@@ -87,8 +109,7 @@ const Account = () => {
   const { language, setLanguage } = useLanguage();
   const navigate = useNavigate();
   
-  const [profile, setProfile] = useState<Tables<'profiles'> | null>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [jobTitle, setJobTitle] = useState('');
@@ -109,8 +130,6 @@ const Account = () => {
   const [orgEditing, setOrgEditing] = useState(false);
   const [orgName, setOrgName] = useState('');
   const [orgSaving, setOrgSaving] = useState(false);
-  const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
-  const [assessmentsLoading, setAssessmentsLoading] = useState(true);
 
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
   const [isEditingPreferences, setIsEditingPreferences] = useState(false);
@@ -129,46 +148,19 @@ const Account = () => {
   const isOrgAdmin = currentMembership?.role === 'owner' || currentMembership?.role === 'admin';
   const currentRole = currentMembership?.role || 'viewer';
 
-  const fetchProfile = async () => {
-    if (!user) return;
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-      if (error && error.code !== 'PGRST116') throw error;
-      setProfile(data);
-      setDisplayName(data?.display_name || '');
-      setJobTitle(data?.job_title || '');
-      setDepartment(data?.department || '');
-      setBio(data?.bio || '');
-      setTimezone(data?.timezone || 'UTC');
-    } catch (error: Error | unknown) {
-      console.error('Error fetching profile:', error);
-      toast({ title: "Error", description: "Failed to load profile data", variant: "destructive" });
-    } finally {
-      setProfileLoading(false);
-    }
-  };
+  const {
+    data: profile, isLoading: profileLoading, error: profileError,
+  } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: () => fetchProfileRow(user!.id),
+    enabled: !!user,
+  });
 
-  const fetchAssessments = async () => {
-    if (!user) return;
-    try {
-      const { data, error } = await supabase
-        .from('assessments')
-        .select('id, overall_score, status, completed_at, created_at')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(20);
-      if (error) throw error;
-      setAssessments(data || []);
-    } catch (error) {
-      console.error('Error fetching assessments:', error);
-    } finally {
-      setAssessmentsLoading(false);
-    }
-  };
+  const { data: assessments = [], isLoading: assessmentsLoading } = useQuery({
+    queryKey: ['account-assessments', user?.id],
+    queryFn: () => fetchAccountAssessments(user!.id),
+    enabled: !!user,
+  });
 
   const updateProfile = async () => {
     if (!user) return;
@@ -191,7 +183,9 @@ const Account = () => {
         })
         .eq('user_id', user.id);
       if (error) throw error;
-      setProfile((prev: any) => ({ ...prev, display_name: displayName.trim(), job_title: jobTitle.trim(), department: department.trim(), bio: bio.trim(), timezone }));
+      queryClient.setQueryData(['profile', user.id], (prev: Tables<'profiles'> | null | undefined) =>
+        prev ? { ...prev, display_name: displayName.trim(), job_title: jobTitle.trim(), department: department.trim(), bio: bio.trim(), timezone } : prev
+      );
       toast({ title: "Profile updated", description: "Your profile has been saved successfully" });
     } catch (error: any) {
       console.error('Error updating profile:', error);
@@ -287,17 +281,20 @@ const Account = () => {
   };
 
   useEffect(() => {
-    if (user) {
-      fetchProfile();
-      fetchAssessments();
+    if (profileError) {
+      console.error('Error fetching profile:', profileError);
+      toast({ title: "Error", description: "Failed to load profile data", variant: "destructive" });
     }
-  }, [user]);
+  }, [profileError, toast]);
 
   useEffect(() => {
-    if (profile) {
-      setAnalyticsConsent(profile.consent_analytics || false);
-      setMarketingConsent(profile.consent_marketing || false);
-    }
+    setDisplayName(profile?.display_name || '');
+    setJobTitle(profile?.job_title || '');
+    setDepartment(profile?.department || '');
+    setBio(profile?.bio || '');
+    setTimezone(profile?.timezone || 'UTC');
+    setAnalyticsConsent(profile?.consent_analytics || false);
+    setMarketingConsent(profile?.consent_marketing || false);
   }, [profile]);
 
   useEffect(() => {
@@ -450,7 +447,13 @@ const Account = () => {
                       <Button size="sm" onClick={() => { updateProfile(); setIsEditingPersonal(false); }} disabled={saving} className="text-xs">
                         <Save className="h-3 w-3 mr-1" /> {saving ? 'Saving...' : 'Save'}
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => { fetchProfile(); setIsEditingPersonal(false); }} className="text-xs">
+                      <Button variant="ghost" size="sm" onClick={() => {
+                        setDisplayName(profile?.display_name || '');
+                        setJobTitle(profile?.job_title || '');
+                        setDepartment(profile?.department || '');
+                        setBio(profile?.bio || '');
+                        setIsEditingPersonal(false);
+                      }} className="text-xs">
                         <X className="h-3 w-3 mr-1" /> Cancel
                       </Button>
                     </div>

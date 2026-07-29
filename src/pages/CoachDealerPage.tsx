@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { sanitizeText } from '@/lib/sanitize';
 import { useAuth } from '@/hooks/useAuth';
@@ -98,6 +99,40 @@ function getQuarterLabel(d: Date = new Date()): string {
   return `Q${q} ${d.getFullYear()}`;
 }
 
+interface CoachDealerPageData {
+  dealer: DealerInfo | null;
+  notes: NoteRow[];
+  visits: VisitRow[];
+  assessments: AssessmentRow[];
+  actions: ActionRow[];
+}
+
+async function fetchCoachDealerPageData(dealershipId: string): Promise<CoachDealerPageData> {
+  const [dRes, nRes, vRes, aRes, actRes] = await Promise.all([
+    supabase.from('dealerships').select('id, name, location, brand').eq('id', dealershipId).maybeSingle(),
+    supabase.from('coach_notes').select('id, note_text, note_type, created_at, coach_user_id').eq('dealership_id', dealershipId).order('created_at', { ascending: false }),
+    supabase.from('coach_visits').select('id, visit_date, status, visit_notes, created_at').eq('dealership_id', dealershipId).order('visit_date', { ascending: false }),
+    supabase.from('assessments').select('id, overall_score, scores, completed_at, created_at, status').eq('dealership_id', dealershipId).order('created_at', { ascending: false }),
+    supabase
+      .from('improvement_actions')
+      .select('id, action_title, department, priority, status, assessment_id, assessments!inner(dealership_id)')
+      .eq('assessments.dealership_id', dealershipId)
+      .neq('status', 'Completed'),
+  ]);
+
+  return {
+    dealer: (dRes.data as DealerInfo) ?? null,
+    notes: (nRes.data as NoteRow[]) ?? [],
+    visits: (vRes.data as VisitRow[]) ?? [],
+    assessments: ((aRes.data as unknown) as AssessmentRow[]) ?? [],
+    actions: ((actRes.data as unknown) as ActionRow[]) ?? [],
+  };
+}
+
+const EMPTY_COACH_DEALER_PAGE_DATA: CoachDealerPageData = {
+  dealer: null, notes: [], visits: [], assessments: [], actions: [],
+};
+
 export default function CoachDealerPage() {
   const { dealershipId } = useParams<{ dealershipId: string }>();
   const navigate = useNavigate();
@@ -113,12 +148,7 @@ export default function CoachDealerPage() {
       : 'all';
 
   const [tab, setTab] = useState<ActivityTab>(initialTab);
-  const [dealer, setDealer] = useState<DealerInfo | null>(null);
-  const [notes, setNotes] = useState<NoteRow[]>([]);
-  const [visits, setVisits] = useState<VisitRow[]>([]);
-  const [assessments, setAssessments] = useState<AssessmentRow[]>([]);
-  const [actions, setActions] = useState<ActionRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   // Composer state
   const [noteText, setNoteText] = useState('');
@@ -132,35 +162,14 @@ export default function CoachDealerPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
-  useEffect(() => {
-    if (!dealershipId) return;
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      const [dRes, nRes, vRes, aRes, actRes] = await Promise.all([
-        supabase.from('dealerships').select('id, name, location, brand').eq('id', dealershipId).maybeSingle(),
-        supabase.from('coach_notes').select('id, note_text, note_type, created_at, coach_user_id').eq('dealership_id', dealershipId).order('created_at', { ascending: false }),
-        supabase.from('coach_visits').select('id, visit_date, status, visit_notes, created_at').eq('dealership_id', dealershipId).order('visit_date', { ascending: false }),
-        supabase.from('assessments').select('id, overall_score, scores, completed_at, created_at, status').eq('dealership_id', dealershipId).order('created_at', { ascending: false }),
-        supabase
-          .from('improvement_actions')
-          .select('id, action_title, department, priority, status, assessment_id, assessments!inner(dealership_id)')
-          .eq('assessments.dealership_id', dealershipId)
-          .neq('status', 'Completed'),
-      ]);
-      if (cancelled) return;
-      setDealer((dRes.data as DealerInfo) ?? null);
-      setNotes((nRes.data as NoteRow[]) ?? []);
-      setVisits((vRes.data as VisitRow[]) ?? []);
-      setAssessments(((aRes.data as unknown) as AssessmentRow[]) ?? []);
-      setActions(((actRes.data as unknown) as ActionRow[]) ?? []);
-      setLoading(false);
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [dealershipId]);
+  const dealerPageQueryKey = ['coach-dealer-page', dealershipId] as const;
+  const { data: pageData, isLoading: loading } = useQuery({
+    queryKey: dealerPageQueryKey,
+    queryFn: () => fetchCoachDealerPageData(dealershipId!),
+    enabled: !!dealershipId,
+  });
+
+  const { dealer, notes, visits, assessments, actions } = pageData ?? EMPTY_COACH_DEALER_PAGE_DATA;
 
   const latestCompleted = useMemo(
     () => assessments.find((a) => a.status === 'completed' || a.completed_at),
@@ -212,7 +221,9 @@ export default function CoachDealerPage() {
       toast.error('Failed to save note');
       return;
     }
-    setNotes((prev) => [data as NoteRow, ...prev]);
+    queryClient.setQueryData(dealerPageQueryKey, (prev: CoachDealerPageData | undefined) =>
+      prev ? { ...prev, notes: [data as NoteRow, ...prev.notes] } : prev
+    );
     setNoteText('');
     toast.success('Note saved');
   };
@@ -223,7 +234,9 @@ export default function CoachDealerPage() {
       toast.error('Failed to cancel');
       return;
     }
-    setVisits((prev) => prev.map((v) => (v.id === id ? { ...v, status: 'cancelled' } : v)));
+    queryClient.setQueryData(dealerPageQueryKey, (prev: CoachDealerPageData | undefined) =>
+      prev ? { ...prev, visits: prev.visits.map((v) => (v.id === id ? { ...v, status: 'cancelled' } : v)) } : prev
+    );
     toast.success('Visit cancelled');
   };
 
@@ -233,7 +246,9 @@ export default function CoachDealerPage() {
       toast.error('Failed to complete');
       return;
     }
-    setVisits((prev) => prev.map((v) => (v.id === id ? { ...v, status: 'completed' } : v)));
+    queryClient.setQueryData(dealerPageQueryKey, (prev: CoachDealerPageData | undefined) =>
+      prev ? { ...prev, visits: prev.visits.map((v) => (v.id === id ? { ...v, status: 'completed' } : v)) } : prev
+    );
     toast.success('Visit marked complete');
   };
 

@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Navigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useActiveRole } from '@/hooks/useActiveRole';
@@ -54,14 +55,72 @@ const STATUS_STYLES: Record<string, string> = {
   'Completed':   'bg-emerald-50 text-emerald-700 border-emerald-200 whitespace-nowrap',
 };
 
+async function fetchCoachActions(userId: string): Promise<Action[]> {
+  const { data: assignments } = await supabase
+    .from('coach_dealership_assignments')
+    .select('dealership_id')
+    .eq('coach_user_id', userId)
+    .eq('is_active', true);
+
+  if (!assignments?.length) return [];
+
+  const dealershipIds = assignments.map(a => a.dealership_id);
+
+  const { data: assessments } = await supabase
+    .from('assessments')
+    .select('id, dealership_id, organization_id, dealerships!inner(name, location)')
+    .in('dealership_id', dealershipIds)
+    .eq('status', 'completed')
+    .order('completed_at', { ascending: false });
+
+  if (!assessments?.length) return [];
+
+  // Latest completed assessment per dealer
+  const latestByDealer = new Map<string, { id: string; orgId: string | null }>();
+  (assessments as any[]).forEach(a => {
+    if (!latestByDealer.has(a.dealership_id)) {
+      latestByDealer.set(a.dealership_id, { id: a.id, orgId: a.organization_id });
+    }
+  });
+
+  const latestAssessmentIds = Array.from(latestByDealer.values()).map(v => v.id);
+
+  const { data, error } = await supabase
+    .from('improvement_actions')
+    .select(`
+      id,
+      action_title,
+      action_description,
+      status,
+      priority,
+      department,
+      responsible_person,
+      target_completion_date,
+      support_required_from,
+      kpis_linked_to,
+      impact_score,
+      effort_score,
+      urgency_score,
+      assessment_id,
+      created_at,
+      assessments!inner (
+        dealership_id,
+        organization_id,
+        dealerships!inner (name, location)
+      )
+    `)
+    .in('assessment_id', latestAssessmentIds)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+
+  return (data || []) as unknown as Action[];
+}
+
 export default function CoachActions() {
   const { user } = useAuth();
   const { actorType, loading: roleLoading } = useActiveRole();
   const { toast } = useToast();
-  const [actions, setActions] = useState<Action[]>([]);
-  const [filteredActions, setFilteredActions] = useState<Action[]>([]);
-  const [dealerStats, setDealerStats] = useState<DealerStats[]>([]);
-  const [loading, setLoading] = useState(true);
   const [filterDealer, setFilterDealer] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
@@ -69,107 +128,35 @@ export default function CoachActions() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [selectedAction, setSelectedAction] = useState<ActionRecord | null>(null);
 
-  const fetchActions = useCallback(async () => {
-    if (!user) return;
+  const { data: actions = [], isLoading: loading, error: actionsError, refetch: refetchActions } = useQuery({
+    queryKey: ['coach-actions', user?.id],
+    queryFn: () => fetchCoachActions(user!.id),
+    enabled: !!user,
+  });
 
-    try {
-      const { data: assignments } = await supabase
-        .from('coach_dealership_assignments')
-        .select('dealership_id')
-        .eq('coach_user_id', user.id)
-        .eq('is_active', true);
-
-      if (!assignments?.length) {
-        setActions([]);
-        setDealerStats([]);
-        return;
-      }
-
-      const dealershipIds = assignments.map(a => a.dealership_id);
-
-      const { data: assessments } = await supabase
-        .from('assessments')
-        .select('id, dealership_id, organization_id, dealerships!inner(name, location)')
-        .in('dealership_id', dealershipIds)
-        .eq('status', 'completed')
-        .order('completed_at', { ascending: false });
-
-      if (!assessments?.length) {
-        setActions([]);
-        setDealerStats([]);
-        return;
-      }
-
-      // Latest completed assessment per dealer
-      const latestByDealer = new Map<string, { id: string; orgId: string | null }>();
-      (assessments as any[]).forEach(a => {
-        if (!latestByDealer.has(a.dealership_id)) {
-          latestByDealer.set(a.dealership_id, { id: a.id, orgId: a.organization_id });
-        }
-      });
-
-      const latestAssessmentIds = Array.from(latestByDealer.values()).map(v => v.id);
-
-      const { data, error } = await supabase
-        .from('improvement_actions')
-        .select(`
-          id,
-          action_title,
-          action_description,
-          status,
-          priority,
-          department,
-          responsible_person,
-          target_completion_date,
-          support_required_from,
-          kpis_linked_to,
-          impact_score,
-          effort_score,
-          urgency_score,
-          assessment_id,
-          created_at,
-          assessments!inner (
-            dealership_id,
-            organization_id,
-            dealerships!inner (name, location)
-          )
-        `)
-        .in('assessment_id', latestAssessmentIds)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      const typedData = (data || []) as unknown as Action[];
-      setActions(typedData);
-
-      // Open count = anything not Completed
-      const statsMap = new Map<string, DealerStats>();
-      typedData.forEach(a => {
-        const dealerId = a.assessments.dealership_id;
-        const dealerName = a.assessments.dealerships.name;
-        if (!statsMap.has(dealerId)) {
-          statsMap.set(dealerId, { dealerId, dealerName, openCount: 0 });
-        }
-        if (a.status !== 'Completed') {
-          statsMap.get(dealerId)!.openCount++;
-        }
-      });
-      setDealerStats(Array.from(statsMap.values()));
-    } catch (err) {
-      console.error('Error fetching actions:', err);
+  useEffect(() => {
+    if (actionsError) {
+      console.error('Error fetching actions:', actionsError);
       toast({ title: 'Error', description: 'Failed to load actions', variant: 'destructive' });
-    } finally {
-      setLoading(false);
     }
-  }, [user, toast]);
+  }, [actionsError, toast]);
 
-  // Initial fetch
-  useEffect(() => {
-    if (user) fetchActions();
-  }, [user, fetchActions]);
+  const dealerStats = useMemo(() => {
+    const statsMap = new Map<string, DealerStats>();
+    actions.forEach(a => {
+      const dealerId = a.assessments.dealership_id;
+      const dealerName = a.assessments.dealerships.name;
+      if (!statsMap.has(dealerId)) {
+        statsMap.set(dealerId, { dealerId, dealerName, openCount: 0 });
+      }
+      if (a.status !== 'Completed') {
+        statsMap.get(dealerId)!.openCount++;
+      }
+    });
+    return Array.from(statsMap.values());
+  }, [actions]);
 
-  // Apply filters
-  useEffect(() => {
+  const filteredActions = useMemo(() => {
     let filtered = [...actions];
     if (filterDealer !== 'all') {
       filtered = filtered.filter(a => a.assessments.dealership_id === filterDealer);
@@ -177,7 +164,7 @@ export default function CoachActions() {
     if (filterStatus !== 'all') {
       filtered = filtered.filter(a => a.status === filterStatus);
     }
-    setFilteredActions(filtered);
+    return filtered;
   }, [actions, filterDealer, filterStatus]);
 
   // Real-time subscription — re-fetch when any improvement_action changes
@@ -188,11 +175,11 @@ export default function CoachActions() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'improvement_actions' },
-        () => { fetchActions(); }
+        () => { refetchActions(); }
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user, fetchActions]);
+  }, [user, refetchActions]);
 
   const handleRowClick = (action: Action) => {
     const record: ActionRecord = {
@@ -240,7 +227,7 @@ export default function CoachActions() {
       toast({ title: 'Action updated' });
       setSheetOpen(false);
       // Immediate re-fetch so coach sees their own change without waiting for real-time
-      await fetchActions();
+      await refetchActions();
     } else {
       toast({ title: 'Error', description: 'Failed to save action', variant: 'destructive' });
     }

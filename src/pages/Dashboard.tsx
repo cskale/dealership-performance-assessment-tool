@@ -1,6 +1,7 @@
 // src/pages/Dashboard.tsx
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useActiveRole } from '@/hooks/useActiveRole';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -65,6 +66,86 @@ interface DashboardData {
   assessment: AssessmentRow;
   actions: ActionRow[];
   coach: CoachRow | null;
+}
+
+interface UpcomingVisit {
+  visit_date: string;
+  status: 'proposed' | 'confirmed' | 'counter_proposed' | 'cancelled';
+  id: string;
+  dealer_proposed_date: string | null;
+  coach_user_id: string;
+  dealership_id: string;
+  dealership_name: string;
+}
+
+async function fetchDashboardData(userId: string, dealerId: string | null): Promise<DashboardData | null> {
+  const { data: assessments } = await supabase
+    .from('assessments')
+    .select('id, completed_at, overall_score, scores, answers')
+    .eq('user_id', userId)
+    .eq('status', 'completed')
+    .order('completed_at', { ascending: false })
+    .limit(1);
+
+  if (!assessments || assessments.length === 0) return null;
+
+  const assessment = assessments[0] as AssessmentRow;
+
+  const { data: actions } = await supabase
+    .from('improvement_actions')
+    .select('id, action_title, action_description, department, responsible_person, target_completion_date, priority, status')
+    .eq('assessment_id', assessment.id)
+    .neq('status', 'Completed')
+    .order('target_completion_date', { ascending: true });
+
+  let coach: CoachRow | null = null;
+  if (dealerId) {
+    const { data: coachRows } = await supabase
+      .from('coach_dealership_assignments')
+      .select('coach_user_id, assigned_at, valid_from, valid_to, is_active')
+      .eq('dealership_id', dealerId)
+      .eq('is_active', true)
+      .limit(1);
+    coach = (coachRows?.[0] as CoachRow) ?? null;
+  }
+
+  return { assessment, actions: (actions ?? []) as ActionRow[], coach };
+}
+
+async function fetchUpcomingVisit(userId: string): Promise<UpcomingVisit | null> {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('active_dealership_id')
+    .eq('user_id', userId)
+    .single();
+  if (!profile?.active_dealership_id) return null;
+
+  const [{ data: visitData }, { data: dealershipRow }] = await Promise.all([
+    supabase
+      .from('coach_visits')
+      .select('id, visit_date, status, dealer_proposed_date, coach_user_id')
+      .eq('dealership_id', profile.active_dealership_id)
+      .in('status', ['proposed', 'confirmed', 'counter_proposed'])
+      .order('visit_date', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('dealerships')
+      .select('name')
+      .eq('id', profile.active_dealership_id)
+      .single(),
+  ]);
+
+  if (!visitData) return null;
+
+  return {
+    ...visitData,
+    status: visitData.status as UpcomingVisit['status'],
+    dealer_proposed_date: visitData.dealer_proposed_date ?? null,
+    coach_user_id: visitData.coach_user_id,
+    dealership_id: profile.active_dealership_id,
+    dealership_name: dealershipRow?.name ?? 'Dealership',
+  };
 }
 
 // ─── Stats Bar ────────────────────────────────────────────────────────────────
@@ -609,113 +690,26 @@ export default function Dashboard() {
   const { actorType, dealerId } = useActiveRole();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const [hasAssessments, setHasAssessments] = useState<boolean | null>(null);
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [upcomingVisit, setUpcomingVisit] = useState<{
-    visit_date: string;
-    status: 'proposed' | 'confirmed' | 'counter_proposed' | 'cancelled';
-    id: string;
-    dealer_proposed_date: string | null;
-    coach_user_id: string;
-    dealership_id: string;
-    dealership_name: string;
-  } | null>(null);
   const [counterMode, setCounterMode] = useState(false);
   const [counterDate, setCounterDate] = useState<Date | undefined>(undefined);
   const [negotiating, setNegotiating] = useState(false);
 
-  useEffect(() => {
-    if (!user) { setLoading(false); return; }
-    let cancelled = false;
+  const dashboardQueryKey = ['dashboard-data', user?.id, dealerId] as const;
+  const { data, isLoading: loading } = useQuery({
+    queryKey: dashboardQueryKey,
+    queryFn: () => fetchDashboardData(user!.id, dealerId ?? null),
+    enabled: !!user,
+  });
+  const hasAssessments = loading ? null : !!data;
 
-    (async () => {
-      const { data: assessments } = await supabase
-        .from('assessments')
-        .select('id, completed_at, overall_score, scores, answers')
-        .eq('user_id', user.id)
-        .eq('status', 'completed')
-        .order('completed_at', { ascending: false })
-        .limit(1);
-
-      if (cancelled) return;
-
-      if (!assessments || assessments.length === 0) {
-        setHasAssessments(false);
-        setLoading(false);
-        return;
-      }
-
-      const assessment = assessments[0] as AssessmentRow;
-      setHasAssessments(true);
-
-      const { data: actions } = await supabase
-        .from('improvement_actions')
-        .select('id, action_title, action_description, department, responsible_person, target_completion_date, priority, status')
-        .eq('assessment_id', assessment.id)
-        .neq('status', 'Completed')
-        .order('target_completion_date', { ascending: true });
-
-      let coach: CoachRow | null = null;
-      if (dealerId) {
-        const { data: coachRows } = await supabase
-          .from('coach_dealership_assignments')
-          .select('coach_user_id, assigned_at, valid_from, valid_to, is_active')
-          .eq('dealership_id', dealerId)
-          .eq('is_active', true)
-          .limit(1);
-        coach = (coachRows?.[0] as CoachRow) ?? null;
-      }
-
-      if (cancelled) return;
-
-      setData({
-        assessment,
-        actions: (actions ?? []) as ActionRow[],
-        coach,
-      });
-      setLoading(false);
-    })();
-
-    return () => { cancelled = true; };
-  }, [user, dealerId]);
-
-  useEffect(() => {
-    if (!user?.id || actorType !== 'dealer') return;
-    const fetchVisit = async () => {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('active_dealership_id')
-        .eq('user_id', user.id)
-        .single();
-      if (!profile?.active_dealership_id) return;
-      const [{ data: visitData }, { data: dealershipRow }] = await Promise.all([
-        supabase
-          .from('coach_visits')
-          .select('id, visit_date, status, dealer_proposed_date, coach_user_id')
-          .eq('dealership_id', profile.active_dealership_id)
-          .in('status', ['proposed', 'confirmed', 'counter_proposed'])
-          .order('visit_date', { ascending: true })
-          .limit(1)
-          .maybeSingle(),
-        supabase
-          .from('dealerships')
-          .select('name')
-          .eq('id', profile.active_dealership_id)
-          .single(),
-      ]);
-      setUpcomingVisit(visitData ? {
-        ...visitData,
-        status: visitData.status as 'confirmed' | 'proposed',
-        dealer_proposed_date: visitData.dealer_proposed_date ?? null,
-        coach_user_id: visitData.coach_user_id,
-        dealership_id: profile.active_dealership_id,
-        dealership_name: dealershipRow?.name ?? 'Dealership',
-      } : null);
-    };
-    fetchVisit();
-  }, [user?.id, actorType]);
+  const visitQueryKey = ['upcoming-visit', user?.id] as const;
+  const { data: upcomingVisit } = useQuery({
+    queryKey: visitQueryKey,
+    queryFn: () => fetchUpcomingVisit(user!.id),
+    enabled: !!user?.id && actorType === 'dealer',
+  });
 
   const derived = useMemo(() => {
     if (!data) return null;
@@ -749,7 +743,7 @@ export default function Dashboard() {
       .update({ status: 'confirmed' })
       .eq('id', upcomingVisit.id);
     if (!error) {
-      setUpcomingVisit(prev => prev ? { ...prev, status: 'confirmed' } : null);
+      queryClient.setQueryData(visitQueryKey, (prev: UpcomingVisit | null | undefined) => prev ? { ...prev, status: 'confirmed' as const } : null);
       sendVisitNotification({
         event: 'confirmed',
         recipientUserId: upcomingVisit.coach_user_id,
@@ -784,7 +778,7 @@ export default function Dashboard() {
           visitDate: upcomingVisit.visit_date,
           dealershipName: upcomingVisit.dealership_name,
         });
-        setUpcomingVisit(null);
+        queryClient.setQueryData(visitQueryKey, null);
       }
     } finally {
       setNegotiating(false);
@@ -812,8 +806,8 @@ export default function Dashboard() {
           visitDate: proposedDate,
           dealershipName: upcomingVisit.dealership_name,
         });
-        setUpcomingVisit(prev => prev
-          ? { ...prev, status: 'counter_proposed', dealer_proposed_date: proposedDate }
+        queryClient.setQueryData(visitQueryKey, (prev: UpcomingVisit | null | undefined) => prev
+          ? { ...prev, status: 'counter_proposed' as const, dealer_proposed_date: proposedDate }
           : null
         );
         setCounterMode(false);

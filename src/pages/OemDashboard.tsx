@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useActiveRole } from '@/hooks/useActiveRole';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -203,156 +204,155 @@ function OemDealerCard({
   );
 }
 
+async function fetchOemNetworks(orgId: string): Promise<OemNetwork[]> {
+  const { data, error } = await supabase
+    .from('oem_networks')
+    .select('*')
+    .eq('owner_org_id', orgId)
+    .eq('status', 'active');
+  if (error) throw error;
+  return data || [];
+}
+
+async function fetchOemDealerScores(networkId: string): Promise<DealerScore[]> {
+  const { data: memberships, error: memErr } = await supabase
+    .from('dealer_network_memberships')
+    .select('dealership_id, programme_tier')
+    .eq('network_id', networkId)
+    .eq('is_active', true);
+
+  if (memErr || !memberships?.length) return [];
+
+  const tierByDealer = new Map<string, string | null>();
+  for (const m of memberships) {
+    if (m.dealership_id) tierByDealer.set(m.dealership_id, m.programme_tier ?? null);
+  }
+
+  const dealershipIds = memberships.map(m => m.dealership_id).filter((id): id is string => id != null);
+  if (dealershipIds.length === 0) return [];
+
+  const { data: dealerships } = await supabase
+    .from('dealerships')
+    .select('id, name, location')
+    .in('id', dealershipIds);
+
+  const { data: assessments } = await supabase
+    .from('assessments')
+    .select('id, overall_score, scores, created_at, dealership_id')
+    .in('dealership_id', dealershipIds)
+    .eq('status', 'completed')
+    .order('created_at', { ascending: false });
+
+  const assessmentIdToDealer = new Map<string, string>();
+  for (const a of (assessments as Array<{ id: string; dealership_id: string }> | null) ?? []) {
+    assessmentIdToDealer.set(a.id, a.dealership_id);
+  }
+  const assessmentIds = Array.from(assessmentIdToDealer.keys());
+
+  const { data: openActionsRaw } = assessmentIds.length
+    ? await supabase
+        .from('improvement_actions')
+        .select('assessment_id')
+        .in('assessment_id', assessmentIds)
+        .neq('status', 'Completed')
+    : { data: [] as Array<{ assessment_id: string }> };
+
+  const openCountByDealer = new Map<string, number>();
+  for (const a of (openActionsRaw as Array<{ assessment_id: string }> | null) ?? []) {
+    const dealerId = assessmentIdToDealer.get(a.assessment_id);
+    if (dealerId) {
+      openCountByDealer.set(dealerId, (openCountByDealer.get(dealerId) ?? 0) + 1);
+    }
+  }
+
+  const dealerMap = new Map<string, DealerScore>();
+  for (const d of dealerships || []) {
+    dealerMap.set(d.id, {
+      dealershipId: d.id,
+      dealerName: d.name,
+      location: d.location,
+      programmeTier: tierByDealer.get(d.id) ?? null,
+      latestScore: null,
+      previousScore: null,
+      latestAssessmentId: null,
+      deptScores: parseDeptScores(null),
+      latestAssessmentDate: null,
+      signalCodes: [],
+      openActionCount: openCountByDealer.get(d.id) ?? 0,
+    });
+  }
+
+  const countMap = new Map<string, number>();
+  for (const a of assessments || []) {
+    const count = countMap.get(a.dealership_id) ?? 0;
+    if (count >= 2) continue;
+    const dealer = dealerMap.get(a.dealership_id);
+    if (!dealer) continue;
+    if (count === 0) {
+      dealer.latestScore = a.overall_score ? Number(a.overall_score) : null;
+      dealer.latestAssessmentId = a.id;
+      dealer.deptScores = parseDeptScores(a.scores);
+      dealer.latestAssessmentDate = a.created_at ?? null;
+      dealer.signalCodes = (a.scores as any)?.signals ?? [];
+    } else {
+      dealer.previousScore = a.overall_score ? Number(a.overall_score) : null;
+    }
+    countMap.set(a.dealership_id, count + 1);
+  }
+
+  return Array.from(dealerMap.values());
+}
+
+async function fetchDealerNextVisits(dealershipIds: string[]): Promise<Record<string, { visit_date: string; status: string }>> {
+  if (!dealershipIds.length) return {};
+  const { data } = await supabase
+    .from('coach_visits')
+    .select('dealership_id, visit_date, status')
+    .in('dealership_id', dealershipIds)
+    .in('status', ['proposed', 'confirmed'])
+    .order('visit_date', { ascending: true });
+
+  const visitMap: Record<string, { visit_date: string; status: string }> = {};
+  for (const row of (data ?? [])) {
+    if (!visitMap[row.dealership_id]) {
+      visitMap[row.dealership_id] = { visit_date: row.visit_date, status: row.status };
+    }
+  }
+  return visitMap;
+}
+
 export default function OemDashboard() {
   const { actorType, loading: roleLoading } = useActiveRole();
   const { currentOrganization } = useMultiTenant();
   const { t } = useLanguage();
   const navigate = useNavigate();
 
-  const [networks, setNetworks] = useState<OemNetwork[]>([]);
   const [selectedNetworkId, setSelectedNetworkId] = useState<string | null>(null);
-  const [dealerScores, setDealerScores] = useState<DealerScore[]>([]);
-  const [loadingNetworks, setLoadingNetworks] = useState(true);
-  const [loadingDealers, setLoadingDealers] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [tierFilter, setTierFilter] = useState<string>('all');
   const [selectedDealer, setSelectedDealer] = useState<DealerScore | null>(null);
-  const [dealerNextVisits, setDealerNextVisits] = useState<Record<string, { visit_date: string; status: string } | null>>({});
 
-  useEffect(() => {
-    if (!currentOrganization?.id) return;
-    const fetchNetworks = async () => {
-      setLoadingNetworks(true);
-      const { data, error: err } = await supabase
-        .from('oem_networks')
-        .select('*')
-        .eq('owner_org_id', currentOrganization.id)
-        .eq('status', 'active');
-      if (err) { setError(t('oem.loadError')); setLoadingNetworks(false); return; }
-      setNetworks(data || []);
-      if (data && data.length > 0) setSelectedNetworkId(data[0].id);
-      setLoadingNetworks(false);
-    };
-    fetchNetworks();
-  }, [currentOrganization?.id, t]);
+  const { data: networks = [], isLoading: loadingNetworks, error: networksError } = useQuery({
+    queryKey: ['oem-networks', currentOrganization?.id],
+    queryFn: () => fetchOemNetworks(currentOrganization!.id),
+    enabled: !!currentOrganization?.id,
+  });
+  const error = networksError ? t('oem.loadError') : null;
 
-  useEffect(() => {
-    if (!selectedNetworkId) return;
-    const fetchDealerScores = async () => {
-      setLoadingDealers(true);
-      setError(null);
+  const effectiveNetworkId = selectedNetworkId ?? networks[0]?.id ?? null;
 
-      const { data: memberships, error: memErr } = await supabase
-        .from('dealer_network_memberships')
-        .select('dealership_id, programme_tier')
-        .eq('network_id', selectedNetworkId)
-        .eq('is_active', true);
+  const { data: dealerScores = [], isLoading: loadingDealers } = useQuery({
+    queryKey: ['oem-dealer-scores', effectiveNetworkId],
+    queryFn: () => fetchOemDealerScores(effectiveNetworkId!),
+    enabled: !!effectiveNetworkId,
+  });
 
-      if (memErr || !memberships?.length) { setDealerScores([]); setLoadingDealers(false); return; }
+  const dealershipIds = useMemo(() => dealerScores.map(d => d.dealershipId), [dealerScores]);
 
-      const tierByDealer = new Map<string, string | null>();
-      for (const m of memberships) {
-        if (m.dealership_id) tierByDealer.set(m.dealership_id, m.programme_tier ?? null);
-      }
-
-      const dealershipIds = memberships.map(m => m.dealership_id).filter((id): id is string => id != null);
-      if (dealershipIds.length === 0) { setDealerScores([]); setLoadingDealers(false); return; }
-
-      const { data: dealerships } = await supabase
-        .from('dealerships')
-        .select('id, name, location')
-        .in('id', dealershipIds);
-
-      const { data: assessments } = await supabase
-        .from('assessments')
-        .select('id, overall_score, scores, created_at, dealership_id')
-        .in('dealership_id', dealershipIds)
-        .eq('status', 'completed')
-        .order('created_at', { ascending: false });
-
-      const assessmentIdToDealer = new Map<string, string>();
-      for (const a of (assessments as Array<{ id: string; dealership_id: string }> | null) ?? []) {
-        assessmentIdToDealer.set(a.id, a.dealership_id);
-      }
-      const assessmentIds = Array.from(assessmentIdToDealer.keys());
-
-      const { data: openActionsRaw } = assessmentIds.length
-        ? await supabase
-            .from('improvement_actions')
-            .select('assessment_id')
-            .in('assessment_id', assessmentIds)
-            .neq('status', 'Completed')
-        : { data: [] as Array<{ assessment_id: string }> };
-
-      const openCountByDealer = new Map<string, number>();
-      for (const a of (openActionsRaw as Array<{ assessment_id: string }> | null) ?? []) {
-        const dealerId = assessmentIdToDealer.get(a.assessment_id);
-        if (dealerId) {
-          openCountByDealer.set(dealerId, (openCountByDealer.get(dealerId) ?? 0) + 1);
-        }
-      }
-
-
-      const dealerMap = new Map<string, DealerScore>();
-      for (const d of dealerships || []) {
-        dealerMap.set(d.id, {
-          dealershipId: d.id,
-          dealerName: d.name,
-          location: d.location,
-          programmeTier: tierByDealer.get(d.id) ?? null,
-          latestScore: null,
-          previousScore: null,
-          latestAssessmentId: null,
-          deptScores: parseDeptScores(null),
-          latestAssessmentDate: null,
-          signalCodes: [],
-          openActionCount: openCountByDealer.get(d.id) ?? 0,
-        });
-      }
-
-      const countMap = new Map<string, number>();
-      for (const a of assessments || []) {
-        const count = countMap.get(a.dealership_id) ?? 0;
-        if (count >= 2) continue;
-        const dealer = dealerMap.get(a.dealership_id);
-        if (!dealer) continue;
-        if (count === 0) {
-          dealer.latestScore = a.overall_score ? Number(a.overall_score) : null;
-          dealer.latestAssessmentId = a.id;
-          dealer.deptScores = parseDeptScores(a.scores);
-          dealer.latestAssessmentDate = a.created_at ?? null;
-          dealer.signalCodes = (a.scores as any)?.signals ?? [];
-        } else {
-          dealer.previousScore = a.overall_score ? Number(a.overall_score) : null;
-        }
-        countMap.set(a.dealership_id, count + 1);
-      }
-
-      const loadedDealers = Array.from(dealerMap.values());
-      setDealerScores(loadedDealers);
-      fetchDealerNextVisits(loadedDealers.map(d => d.dealershipId));
-      setLoadingDealers(false);
-    };
-    fetchDealerScores();
-  }, [selectedNetworkId]);
-
-  const fetchDealerNextVisits = async (dealershipIds: string[]) => {
-    if (!dealershipIds.length) return;
-    const { data } = await supabase
-      .from('coach_visits')
-      .select('dealership_id, visit_date, status')
-      .in('dealership_id', dealershipIds)
-      .in('status', ['proposed', 'confirmed'])
-      .order('visit_date', { ascending: true });
-
-    const visitMap: Record<string, { visit_date: string; status: string }> = {};
-    for (const row of (data ?? [])) {
-      if (!visitMap[row.dealership_id]) {
-        visitMap[row.dealership_id] = { visit_date: row.visit_date, status: row.status };
-      }
-    }
-    setDealerNextVisits(visitMap);
-  };
+  const { data: dealerNextVisits = {} } = useQuery({
+    queryKey: ['oem-dealer-visits', dealershipIds],
+    queryFn: () => fetchDealerNextVisits(dealershipIds),
+    enabled: dealershipIds.length > 0,
+  });
 
   const sortedDealers = useMemo(() =>
     [...dealerScores].sort((a, b) => (b.latestScore ?? 0) - (a.latestScore ?? 0)),
