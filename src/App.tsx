@@ -3,31 +3,33 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
-import Assessment from "./pages/Assessment";
-import Results from "./pages/Results";
-import Auth from "./pages/Auth";
-import AuthCallback from "./pages/AuthCallback";
-import Account from "./pages/Account";
-import Actions from "./pages/Actions";
-import KnowledgeHub from "./pages/KnowledgeHub";
-import KpiDetailPage from "./pages/KpiDetailPage";
-import Methodology from "./pages/Methodology";
-import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
-import AcceptInvite from "./pages/AcceptInvite";
-import OemDashboard from "./pages/OemDashboard";
-import OemSettings from "./pages/OemSettings";
-import CoachDashboard from "./pages/CoachDashboard";
-import CoachActions from "./pages/CoachActions";
-import CoachDealerPage from "./pages/CoachDealerPage";
-import Playground from "./pages/Playground";
-import ReverseSalesFunnelPage from "./pages/ReverseSalesFunnelPage";
-import MarketingRoiPage from "./pages/MarketingRoiPage";
-import AbsorptionRateModelerPage from "./pages/AbsorptionRateModelerPage";
-import TechUtilizationPage from "./pages/TechUtilizationPage";
-import VehicleStockTurnPage from "./pages/VehicleStockTurnPage";
+
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Assessment = lazy(() => import("./pages/Assessment"));
+const Results = lazy(() => import("./pages/Results"));
+const Auth = lazy(() => import("./pages/Auth"));
+const AuthCallback = lazy(() => import("./pages/AuthCallback"));
+const Account = lazy(() => import("./pages/Account"));
+const Actions = lazy(() => import("./pages/Actions"));
+const KnowledgeHub = lazy(() => import("./pages/KnowledgeHub"));
+const KpiDetailPage = lazy(() => import("./pages/KpiDetailPage"));
+const Methodology = lazy(() => import("./pages/Methodology"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
+const OemDashboard = lazy(() => import("./pages/OemDashboard"));
+const OemSettings = lazy(() => import("./pages/OemSettings"));
+const CoachDashboard = lazy(() => import("./pages/CoachDashboard"));
+const CoachActions = lazy(() => import("./pages/CoachActions"));
+const CoachDealerPage = lazy(() => import("./pages/CoachDealerPage"));
+const Playground = lazy(() => import("./pages/Playground"));
+const ReverseSalesFunnelPage = lazy(() => import("./pages/ReverseSalesFunnelPage"));
+const MarketingRoiPage = lazy(() => import("./pages/MarketingRoiPage"));
+const AbsorptionRateModelerPage = lazy(() => import("./pages/AbsorptionRateModelerPage"));
+const TechUtilizationPage = lazy(() => import("./pages/TechUtilizationPage"));
+const VehicleStockTurnPage = lazy(() => import("./pages/VehicleStockTurnPage"));
 import { AuthProvider } from "@/hooks/useAuth";
 import { MultiTenantProvider } from "@/hooks/useMultiTenant";
 import { RoleProvider } from "@/contexts/RoleContext";
@@ -64,6 +66,7 @@ const App = () => (
                   fallbackTitle="Application Error"
                   fallbackMessage="The application encountered an unexpected error. Please refresh the page or return to the home page."
                 >
+                  <Suspense fallback={null}>
                   <Routes>
                     {/* Public routes — no sidebar */}
                     <Route path="/" element={<Index />} />
@@ -147,6 +150,7 @@ const App = () => (
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  </Suspense>
                 </PageErrorBoundary>
               </BrowserRouter>
             </TooltipProvider>
