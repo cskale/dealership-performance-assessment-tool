@@ -440,7 +440,7 @@ OEM admins manage their network at `/app/oem-settings` (Network Settings in side
 - `buildExecutiveNarrative()` — 32 variants (4 maturity × 8 signals × single/systemic)
 - `ACTION_TEMPLATES` — 22 templates with `relevantBusinessModels[]` and `implementationSteps[]`
 
-**Still unwired**: `evaluateCrossValidations()` in `crossValidationRules.ts` (not called from signalEngine). `generateCeilingInsights()` in `ceilingAnalysis.ts` (not rendered on Results page).
+**Now wired** (as of the Results.tsx build that added `ceilingInsights`/`crossValidationAlerts` memos): `evaluateCrossValidations()` from `crossValidationRules.ts` and `generateCeilingInsights()` from `ceilingAnalysis.ts` are both computed via `useMemo` in `Results.tsx` and rendered inline (`CeilingInsightsPanel`, cross-validation alert cards).
 
 ## i18n
 - Supported languages: EN, DE (complete), FR, ES, IT (schema exists, translations incomplete)

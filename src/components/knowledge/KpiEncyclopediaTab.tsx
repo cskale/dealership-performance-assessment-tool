@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { getAllKPIDefinitions } from '@/lib/kpiDefinitions';
 import { DEPT_DISPLAY_NAMES } from '@/lib/mapSignalsToResources';
 import { Search } from 'lucide-react';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 
 function toSentenceCase(str: string): string {
   return str.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
@@ -11,13 +12,14 @@ function toSentenceCase(str: string): string {
 
 export function KpiEncyclopediaTab() {
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search);
   const [deptFilter, setDeptFilter] = useState<string>('all');
 
   const allKpis = useMemo(() => getAllKPIDefinitions('en'), []);
   const entries = useMemo(() => Object.entries(allKpis), [allKpis]);
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = debouncedSearch.trim().toLowerCase();
     return entries.filter(([key, def]) => {
       if (deptFilter !== 'all' && def.department !== deptFilter) return false;
       if (!q) return true;
@@ -27,7 +29,7 @@ export function KpiEncyclopediaTab() {
         def.definition?.toLowerCase().includes(q)
       );
     });
-  }, [entries, search, deptFilter]);
+  }, [entries, debouncedSearch, deptFilter]);
 
   const allDepts = useMemo(() => {
     const seen = new Set<string>();

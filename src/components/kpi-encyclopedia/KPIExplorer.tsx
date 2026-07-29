@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
 interface KPIExplorerProps {
   scores: Record<string, number>;
@@ -48,6 +49,7 @@ export function KPIExplorer({ initialKpiKey, onKpiClose }: KPIExplorerProps) {
   const { language } = useLanguage();
 
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebouncedValue(searchTerm);
   const [activeDepartment, setActiveDepartment] = useState<string>("all");
   const [selectedKpiKey, setSelectedKpiKey] = useState<string | null>(initialKpiKey ?? null);
 
@@ -74,8 +76,8 @@ export function KPIExplorer({ initialKpiKey, onKpiClose }: KPIExplorerProps) {
     if (activeDepartment !== "all") {
       result = result.filter((i) => i.departmentKey === activeDepartment);
     }
-    if (searchTerm.length >= 2) {
-      const s = searchTerm.toLowerCase();
+    if (debouncedSearchTerm.length >= 2) {
+      const s = debouncedSearchTerm.toLowerCase();
       result = result.filter(
         (i) =>
           i.kpi.title.toLowerCase().includes(s) ||
@@ -84,7 +86,7 @@ export function KPIExplorer({ initialKpiKey, onKpiClose }: KPIExplorerProps) {
       );
     }
     return result;
-  }, [allItems, activeDepartment, searchTerm]);
+  }, [allItems, activeDepartment, debouncedSearchTerm]);
 
   // Department chips with counts
   const departmentChips = useMemo(() => {

@@ -31,6 +31,7 @@ import { ActionSheet } from './ActionSheet';
 import { KanbanBoard } from './action-plan/KanbanBoard';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 
 export interface ActionRecord {
   id: string;
@@ -115,6 +116,7 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebouncedValue(searchQuery);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [filterDepartment, setFilterDepartment] = useState<string>('all');
@@ -439,8 +441,8 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
       } else if (statusFilter !== 'all' && action.status !== statusFilter) return false;
       if (filterPriority !== 'all' && action.priority !== filterPriority) return false;
       if (filterDepartment !== 'all' && action.department !== filterDepartment) return false;
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
+      if (debouncedSearchQuery) {
+        const q = debouncedSearchQuery.toLowerCase();
         if (!action.action_title.toLowerCase().includes(q) && !action.action_description.toLowerCase().includes(q) && !action.department.toLowerCase().includes(q)) return false;
       }
       return true;
@@ -459,7 +461,7 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
       return 0;
     });
     return result;
-  }, [actions, statusFilter, filterPriority, filterDepartment, searchQuery, sortBy]);
+  }, [actions, statusFilter, filterPriority, filterDepartment, debouncedSearchQuery, sortBy]);
 
   const roadmapColumns = useMemo(() => {
     const columns = [

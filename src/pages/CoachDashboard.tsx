@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useActiveRole } from '@/hooks/useActiveRole';
 import { useAuth } from '@/hooks/useAuth';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -117,14 +118,17 @@ interface ActionItem {
 
 function ResourceKpiPanel() {
   const [search, setSearch] = useState('');
-  const entries = Object.entries(KPI_DEFINITIONS);
-  const filtered = search.trim()
-    ? entries.filter(([key, val]) =>
-        key.toLowerCase().includes(search.toLowerCase()) ||
-        val.en.title.toLowerCase().includes(search.toLowerCase()) ||
-        (val.en.definition ?? '').toLowerCase().includes(search.toLowerCase())
-      )
-    : entries;
+  const debouncedSearch = useDebouncedValue(search);
+  const entries = useMemo(() => Object.entries(KPI_DEFINITIONS), []);
+  const filtered = useMemo(() => {
+    const q = debouncedSearch.trim().toLowerCase();
+    if (!q) return entries;
+    return entries.filter(([key, val]) =>
+      key.toLowerCase().includes(q) ||
+      val.en.title.toLowerCase().includes(q) ||
+      (val.en.definition ?? '').toLowerCase().includes(q)
+    );
+  }, [entries, debouncedSearch]);
 
   return (
     <Card className="shadow-card rounded-xl">
@@ -566,7 +570,8 @@ export default function CoachDashboard() {
           variant="outline"
           size="sm"
           className="shrink-0 mt-1"
-          onClick={() => console.log('Export Report — wired in future sprint')}
+          disabled
+          title="Export Report — coming soon"
         >
           <span className="mr-1.5">↓</span> Export Report
         </Button>
