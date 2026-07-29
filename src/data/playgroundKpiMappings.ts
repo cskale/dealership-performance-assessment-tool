@@ -17,4 +17,10 @@ export const PLAYGROUND_KPI_MAPPINGS: Record<string, Record<string, string>> = {
     effectiveLabourRate: 'svc_effective_labour_rate',
   },
   'vehicle-stock-turn': {},
+  // No KPI prefill wired yet for these — same as absorption-rate/vehicle-stock-turn.
+  'sales-velocity': {},
+  'lead-quality': {},
+  'cac-payback': {},
+  'fi-penetration': {},
+  'appointment-density': {},
 };

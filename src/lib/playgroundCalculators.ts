@@ -246,3 +246,251 @@ export function calculateVehicleStockTurn(inputs: VehicleStockTurnInputs): Vehic
     holdingCostPerUnit, inventoryValueAtCost,
   };
 }
+
+// --- Sales Velocity Instrument ---
+
+export interface SalesVelocityInputs {
+  monthlyLeads: number;
+  overallCloseRate: number;
+  avgGrossProfitPerUnit: number;
+  leadToApptDays: number;
+  apptToShowDays: number;
+  showToCloseDays: number;
+}
+
+export interface StageDuration {
+  stage: string;
+  days: number;
+}
+
+export interface SalesVelocityOutputs {
+  totalCycleDays: number;
+  projectedSales: number;
+  monthlyVelocity: number;
+  dailyVelocity: number | null;
+  stageDurations: StageDuration[];
+  bottleneckStage: StageDuration | null;
+}
+
+/**
+ * Sales Velocity = (opportunities x win rate x avg deal value) / cycle length.
+ * Surfaces which pipeline stage consumes the most time so coaching can target
+ * the actual bottleneck instead of the whole funnel.
+ */
+export function calculateSalesVelocity(inputs: SalesVelocityInputs): SalesVelocityOutputs {
+  const {
+    monthlyLeads, overallCloseRate, avgGrossProfitPerUnit,
+    leadToApptDays, apptToShowDays, showToCloseDays,
+  } = inputs;
+
+  const closeRateFrac = overallCloseRate / 100;
+  const projectedSales = monthlyLeads * closeRateFrac;
+  const monthlyVelocity = projectedSales * avgGrossProfitPerUnit;
+  const totalCycleDays = leadToApptDays + apptToShowDays + showToCloseDays;
+  const dailyVelocity = totalCycleDays > 0 ? monthlyVelocity / totalCycleDays : null;
+
+  const stageDurations: StageDuration[] = [
+    { stage: 'Lead → Appointment', days: leadToApptDays },
+    { stage: 'Appointment → Show', days: apptToShowDays },
+    { stage: 'Show → Close', days: showToCloseDays },
+  ];
+  const bottleneckStage = stageDurations.some((s) => s.days > 0)
+    ? stageDurations.reduce((a, b) => (b.days > a.days ? b : a))
+    : null;
+
+  return { totalCycleDays, projectedSales, monthlyVelocity, dailyVelocity, stageDurations, bottleneckStage };
+}
+
+// --- Lead Quality Auditor ---
+
+export interface LeadSourceInput {
+  name: string;
+  leadsReceived: number;
+  unitsClosed: number;
+  avgDaysToClose: number;
+  avgGrossProfitPerSale: number;
+}
+
+export interface LeadSourceResult {
+  name: string;
+  closeRate: number | null;
+  gpPerLead: number | null;
+  totalGp: number;
+  avgDaysToClose: number;
+  qualityScore: number | null;
+}
+
+export interface LeadQualityOutputs {
+  results: LeadSourceResult[];
+  bestSource: LeadSourceResult | null;
+  worstSource: LeadSourceResult | null;
+  totalLeads: number;
+  blendedGpPerLead: number | null;
+}
+
+/**
+ * Quality score blends close rate (50%), GP-per-lead relative to the best
+ * source (30%), and close speed relative to the slowest source (20%) — so a
+ * source with a fast, low-margin close doesn't rank above a slower, higher-GP one.
+ */
+export function calculateLeadQuality(inputs: { sources: LeadSourceInput[] }): LeadQualityOutputs {
+  const { sources } = inputs;
+
+  const raw = sources.map((s) => {
+    const closeRate = s.leadsReceived > 0 ? (s.unitsClosed / s.leadsReceived) * 100 : null;
+    const totalGp = s.unitsClosed * s.avgGrossProfitPerSale;
+    const gpPerLead = s.leadsReceived > 0 ? totalGp / s.leadsReceived : null;
+    return { name: s.name, closeRate, gpPerLead, totalGp, avgDaysToClose: s.avgDaysToClose };
+  });
+
+  const maxGpPerLead = Math.max(0, ...raw.map((r) => r.gpPerLead ?? 0));
+  const maxDays = Math.max(1, ...raw.map((r) => r.avgDaysToClose));
+
+  const results: LeadSourceResult[] = raw.map((r) => {
+    if (r.closeRate === null || r.gpPerLead === null) {
+      return { ...r, qualityScore: null };
+    }
+    const closeScore = Math.min(100, r.closeRate);
+    const gpScore = maxGpPerLead > 0 ? (r.gpPerLead / maxGpPerLead) * 100 : 0;
+    const speedScore = (1 - r.avgDaysToClose / maxDays) * 100;
+    const qualityScore = closeScore * 0.5 + gpScore * 0.3 + speedScore * 0.2;
+    return { ...r, qualityScore };
+  });
+
+  const scored = results.filter((r): r is LeadSourceResult & { qualityScore: number } => r.qualityScore !== null);
+  const bestSource = scored.length ? scored.reduce((a, b) => (b.qualityScore > a.qualityScore ? b : a)) : null;
+  const worstSource = scored.length ? scored.reduce((a, b) => (b.qualityScore < a.qualityScore ? b : a)) : null;
+
+  const totalLeads = sources.reduce((s, x) => s + x.leadsReceived, 0);
+  const totalGpAll = results.reduce((s, x) => s + x.totalGp, 0);
+  const blendedGpPerLead = totalLeads > 0 ? totalGpAll / totalLeads : null;
+
+  return { results, bestSource, worstSource, totalLeads, blendedGpPerLead };
+}
+
+// --- CAC Payback Calculator ---
+
+export interface CacPaybackInputs {
+  monthlyMarketingSpend: number;
+  monthlySalesStaffCost: number;
+  unitsSoldPerMonth: number;
+  avgFrontEndGpPerUnit: number;
+  avgMonthlyRecurringGpPerCustomer: number;
+}
+
+export interface CacPaybackOutputs {
+  totalMonthlyCost: number;
+  cac: number | null;
+  netCacAfterFrontGp: number;
+  paybackMonths: number | null;
+  cumulativeRecovery: { month: number; cumulativeGp: number }[];
+}
+
+/**
+ * CAC is recovered instantly at the point of sale if front-end gross profit
+ * alone exceeds acquisition cost. Any remainder is recovered from recurring
+ * service/parts gross profit over subsequent months.
+ */
+export function calculateCacPayback(inputs: CacPaybackInputs): CacPaybackOutputs {
+  const {
+    monthlyMarketingSpend, monthlySalesStaffCost, unitsSoldPerMonth,
+    avgFrontEndGpPerUnit, avgMonthlyRecurringGpPerCustomer,
+  } = inputs;
+
+  const totalMonthlyCost = monthlyMarketingSpend + monthlySalesStaffCost;
+  const cac = unitsSoldPerMonth > 0 ? totalMonthlyCost / unitsSoldPerMonth : null;
+  const netCacAfterFrontGp = cac !== null ? Math.max(0, cac - avgFrontEndGpPerUnit) : 0;
+  const paybackMonths = netCacAfterFrontGp === 0
+    ? 0
+    : avgMonthlyRecurringGpPerCustomer > 0
+      ? netCacAfterFrontGp / avgMonthlyRecurringGpPerCustomer
+      : null;
+
+  const cumulativeRecovery: { month: number; cumulativeGp: number }[] = [];
+  let cumulative = avgFrontEndGpPerUnit;
+  for (let m = 0; m <= 12; m++) {
+    cumulativeRecovery.push({ month: m, cumulativeGp: cumulative });
+    cumulative += avgMonthlyRecurringGpPerCustomer;
+  }
+
+  return { totalMonthlyCost, cac, netCacAfterFrontGp, paybackMonths, cumulativeRecovery };
+}
+
+// --- F&I Penetration Calculator ---
+
+export interface FiProductInput {
+  name: string;
+  attachRate: number;
+  avgGpPerAttach: number;
+}
+
+export interface FiProductResult {
+  name: string;
+  unitsAttached: number;
+  totalGp: number;
+}
+
+export interface FiPenetrationOutputs {
+  productResults: FiProductResult[];
+  totalFiGp: number;
+  fiGpPerUnit: number | null;
+  blendedAttachRate: number | null;
+}
+
+export function calculateFiPenetration(inputs: { unitsSoldPerMonth: number; products: FiProductInput[] }): FiPenetrationOutputs {
+  const { unitsSoldPerMonth, products } = inputs;
+
+  const productResults: FiProductResult[] = products.map((p) => {
+    const unitsAttached = unitsSoldPerMonth * (p.attachRate / 100);
+    return { name: p.name, unitsAttached, totalGp: unitsAttached * p.avgGpPerAttach };
+  });
+
+  const totalFiGp = productResults.reduce((s, p) => s + p.totalGp, 0);
+  const fiGpPerUnit = unitsSoldPerMonth > 0 ? totalFiGp / unitsSoldPerMonth : null;
+  const totalAttachedUnits = productResults.reduce((s, p) => s + p.unitsAttached, 0);
+  const blendedAttachRate = unitsSoldPerMonth > 0 ? (totalAttachedUnits / unitsSoldPerMonth) * 100 : null;
+
+  return { productResults, totalFiGp, fiGpPerUnit, blendedAttachRate };
+}
+
+// --- Appointment Density Optimizer ---
+
+export interface AppointmentDensityInputs {
+  numberOfBays: number;
+  hoursOpenPerDay: number;
+  avgServiceTimeHours: number;
+  bufferMinutes: number;
+  currentAppointmentsPerDay: number;
+  avgRevenuePerAppointment: number;
+}
+
+export interface AppointmentDensityOutputs {
+  maxCapacityPerDay: number;
+  utilizationPct: number | null;
+  additionalCapacity: number;
+  currentDailyRevenue: number;
+  maxDailyRevenue: number;
+  revenueOpportunity: number;
+}
+
+export function calculateAppointmentDensity(inputs: AppointmentDensityInputs): AppointmentDensityOutputs {
+  const {
+    numberOfBays, hoursOpenPerDay, avgServiceTimeHours,
+    bufferMinutes, currentAppointmentsPerDay, avgRevenuePerAppointment,
+  } = inputs;
+
+  const slotHours = avgServiceTimeHours + bufferMinutes / 60;
+  const maxCapacityPerDay = slotHours > 0
+    ? Math.floor((numberOfBays * hoursOpenPerDay) / slotHours) : 0;
+  const utilizationPct = maxCapacityPerDay > 0
+    ? (currentAppointmentsPerDay / maxCapacityPerDay) * 100 : null;
+  const additionalCapacity = Math.max(0, maxCapacityPerDay - currentAppointmentsPerDay);
+  const currentDailyRevenue = currentAppointmentsPerDay * avgRevenuePerAppointment;
+  const maxDailyRevenue = maxCapacityPerDay * avgRevenuePerAppointment;
+  const revenueOpportunity = Math.max(0, maxDailyRevenue - currentDailyRevenue);
+
+  return {
+    maxCapacityPerDay, utilizationPct, additionalCapacity,
+    currentDailyRevenue, maxDailyRevenue, revenueOpportunity,
+  };
+}

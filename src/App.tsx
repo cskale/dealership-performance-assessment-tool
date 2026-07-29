@@ -30,6 +30,11 @@ const MarketingRoiPage = lazy(() => import("./pages/MarketingRoiPage"));
 const AbsorptionRateModelerPage = lazy(() => import("./pages/AbsorptionRateModelerPage"));
 const TechUtilizationPage = lazy(() => import("./pages/TechUtilizationPage"));
 const VehicleStockTurnPage = lazy(() => import("./pages/VehicleStockTurnPage"));
+const SalesVelocityPage = lazy(() => import("./pages/SalesVelocityPage"));
+const LeadQualityAuditorPage = lazy(() => import("./pages/LeadQualityAuditorPage"));
+const CacPaybackPage = lazy(() => import("./pages/CacPaybackPage"));
+const FiPenetrationPage = lazy(() => import("./pages/FiPenetrationPage"));
+const AppointmentDensityPage = lazy(() => import("./pages/AppointmentDensityPage"));
 import { AuthProvider } from "@/hooks/useAuth";
 import { MultiTenantProvider } from "@/hooks/useMultiTenant";
 import { RoleProvider } from "@/contexts/RoleContext";
@@ -125,6 +130,11 @@ const App = () => (
                             <Route path="playground/absorption-rate" element={<AbsorptionRateModelerPage />} />
                             <Route path="playground/tech-utilization" element={<TechUtilizationPage />} />
                             <Route path="playground/vehicle-stock-turn" element={<VehicleStockTurnPage />} />
+                            <Route path="playground/sales-velocity" element={<SalesVelocityPage />} />
+                            <Route path="playground/lead-quality" element={<LeadQualityAuditorPage />} />
+                            <Route path="playground/cac-payback" element={<CacPaybackPage />} />
+                            <Route path="playground/fi-penetration" element={<FiPenetrationPage />} />
+                            <Route path="playground/appointment-density" element={<AppointmentDensityPage />} />
                           </Routes>
                         </AuthenticatedLayout>
                       </ProtectedRoute>
