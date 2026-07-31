@@ -143,12 +143,6 @@ export default function Results() {
   const { user } = useAuth();
   const { currentOrganization, userMemberships } = useMultiTenant();
   const { actorType } = useActiveRole();
-  const { notes } = useAssessmentNotes(resultsData?.assessmentId);
-  const { data: kpiValues = [] } = useKpiValues(resultsData?.assessmentId);
-  const [oemDealerContext, setOemDealerContext] = useState<{
-    name: string;
-    tier: string | null;
-  } | null>(null);
 
   // Load completed assessment results
   const { data: resultsQuery, isLoading } = useQuery({
@@ -162,6 +156,13 @@ export default function Results() {
         ? 'Diese Bewertung wurde nicht gefunden oder Sie haben keinen Zugriff darauf.'
         : 'This assessment was not found or you do not have access to it.')
     : null;
+
+  const { notes } = useAssessmentNotes(resultsData?.assessmentId);
+  const { data: kpiValues = [] } = useKpiValues(resultsData?.assessmentId);
+  const [oemDealerContext, setOemDealerContext] = useState<{
+    name: string;
+    tier: string | null;
+  } | null>(null);
 
   useEffect(() => {
     if (!resultsQuery || isLoading) return;
