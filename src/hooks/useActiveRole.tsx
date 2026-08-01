@@ -58,18 +58,20 @@ export function useActiveRole(): ActiveRoleData {
       try {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('active_organization_id, actor_type')
+          .select('active_organization_id, active_dealership_id, actor_type')
           .eq('user_id', user.id)
           .maybeSingle();
 
         const activeOrgId = profile?.active_organization_id ?? null;
         setOrganizationId(activeOrgId);
         setActorType((profile?.actor_type as ActorType) ?? null);
+        // dealerId reflects the profile's active dealership directly — it must not depend on
+        // membership role, since org owners/admins (toUXRole -> 'coach') are still dealers too.
+        setDealerId(profile?.active_dealership_id ?? null);
 
         if (!activeOrgId) {
           setUXRole(null);
           setMembershipRole(null);
-          setDealerId(null);
           return;
         }
 
@@ -85,21 +87,9 @@ export function useActiveRole(): ActiveRoleData {
           const mRole = membership.role as MembershipRole;
           setMembershipRole(mRole);
           setUXRole(toUXRole(mRole));
-
-          if (toUXRole(mRole) === 'dealer') {
-            const { data: dealership } = await supabase
-              .from('dealerships')
-              .select('id')
-              .eq('organization_id', activeOrgId)
-              .maybeSingle();
-            setDealerId(dealership?.id ?? null);
-          } else {
-            setDealerId(null);
-          }
         } else {
           setUXRole(null);
           setMembershipRole(null);
-          setDealerId(null);
         }
       } catch (err) {
         console.error('[useActiveRole] Error:', err);

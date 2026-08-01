@@ -4,6 +4,20 @@ Quick-reference log of incremental enhancements, UI fixes, and small quality-of-
 
 ---
 
+## 2026-08-01 — Full-profile QA pass (dealer/coach/OEM)
+
+Finished wiring `qa.coach.test@` and `qa.oem.test@dealershipdiagnostic.qa` (previously only the dealer QA account was fully set up) and manually tested every route across all three roles. Found and fixed 5 bugs:
+
+| # | Enhancement | Details | Commit |
+|---|-------------|---------|--------|
+| 1 | Coach Dashboard showed "No assigned dealers" for every coach | `dealerships` table had no RLS SELECT policy for coaches — `coach_dealership_assignments` and `assessments` granted coach access, but `dealerships` never did. Added `user_can_access_dealership_as_coach()` + policy "Coaches can view assigned dealerships" (Supabase migration `coach_can_view_assigned_dealerships`), mirroring the existing `user_can_access_dealership_as_oem()` pattern. | pending |
+| 2 | Dealer dashboard never showed an assigned coach | `useActiveRole.tsx` only set `dealerId` when the membership-role-derived `uxRole` was `'dealer'` — but `toUXRole()` maps `'owner'`/`'admin'` membership roles to `uxRole: 'coach'`, and every dealer who owns their own org has role `'owner'`. So `dealerId` silently stayed `null` for the primary dealer persona, breaking `Dashboard.tsx`'s coach-assignment lookup and anything else reading `dealerId`. Fixed by reading `dealerId` directly from `profiles.active_dealership_id`, independent of membership role. | pending |
+| 3 | Coach's Knowledge Hub showed dealer-oriented "No assessment yet — Start Assessment" | Coaches don't take assessments themselves. `RecommendedTab.tsx` now branches on `actorType`: coach/OEM users without a single active dealer get a "No dealer assessment selected" state pointing them at their dashboard + KPI Encyclopedia/Downloads, instead of a dead-end CTA to start an assessment they can't take. | pending |
+| 4 | Pluralization bug in dashboard narrative text | "1 dealers require active intervention this quarter" (verb never agreed with count) on both Coach and OEM dashboards. Fixed noun+verb agreement in `CoachDashboard.tsx` and `OemDashboard.tsx`. | pending |
+| 5 | React key warning on every Results page load | `DepartmentHeatmap.tsx` mapped rows into an unkeyed `<>` fragment. Swapped to `<Fragment key={row.departmentKey}>`. | pending |
+
+Also found (documented, not code): the `trg_prevent_actor_type_self_edit` trigger blocks the CLAUDE.md-documented admin path (`UPDATE profiles SET actor_type=...`) unconditionally — its comment claims a service-role bypass that doesn't exist in the trigger body. Provisioning now requires disabling/re-enabling the trigger in the same transaction. Left as-is (out of scope for this pass); worth a follow-up if OEM/coach provisioning via SQL becomes routine.
+
 ## 2026-07-29 — Performance + UX Audit
 
 | # | Enhancement | Details | Commit |

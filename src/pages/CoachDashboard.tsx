@@ -594,8 +594,11 @@ export default function CoachDashboard() {
           : avgScore >= 70
           ? `Most dealers performing well — ${belowBenchmark} below benchmark threshold.`
           : avgScore >= 46
-          ? `${belowBenchmark} dealers require active intervention this quarter.`
-          : `${dealers.filter(d => (d.latestScore ?? 101) < 46).length} dealers at foundational level — priority coaching required.`;
+          ? `${belowBenchmark} dealer${belowBenchmark !== 1 ? 's' : ''} require${belowBenchmark === 1 ? 's' : ''} active intervention this quarter.`
+          : (() => {
+              const foundationalCount = dealers.filter(d => (d.latestScore ?? 101) < 46).length;
+              return `${foundationalCount} dealer${foundationalCount !== 1 ? 's' : ''} at foundational level — priority coaching required.`;
+            })();
 
         const topOverdue = overdueActions.slice(0, 2);
 
