@@ -1,4 +1,5 @@
 import { useLatestAssessment } from '@/hooks/useLatestAssessment';
+import { useActiveRole } from '@/hooks/useActiveRole';
 import { mapSignalsToResources, GapCard, SignalType, DEPT_DISPLAY_NAMES } from '@/lib/mapSignalsToResources';
 import { FreshnessBadge } from '@/components/ui/FreshnessBadge';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -94,6 +95,7 @@ interface ProgressRow {
 
 export function RecommendedTab() {
   const { user } = useAuth();
+  const { actorType } = useActiveRole();
   const queryClient = useQueryClient();
   const [, setSearchParams] = useSearchParams();
   const { data: assessment, isLoading } = useLatestAssessment();
@@ -171,6 +173,27 @@ export function RecommendedTab() {
   }
 
   if (!assessment) {
+    // Coaches and OEM users don't take assessments themselves — a single "active" dealer
+    // assessment isn't available in this context, so point them at browsable content instead.
+    if (actorType === 'coach' || actorType === 'oem') {
+      return (
+        <div className="rounded-2xl border bg-card p-10 text-center">
+          <h3 className="text-lg font-semibold mb-2">No dealer assessment selected</h3>
+          <p className="text-sm text-muted-foreground mb-6">
+            Personalised recommendations are matched to a dealer's assessment. Open a dealer from
+            your {actorType === 'coach' ? 'Coach Dashboard' : 'OEM Dashboard'} to see their gaps, or browse resources below.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Button variant="outline" onClick={() => setSearchParams({ tab: 'kpi' })}>
+              KPI Encyclopedia
+            </Button>
+            <Button variant="outline" onClick={() => setSearchParams({ tab: 'downloads' })}>
+              Downloads
+            </Button>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="rounded-2xl border bg-card p-10 text-center">
         <h3 className="text-lg font-semibold mb-2">No assessment yet</h3>

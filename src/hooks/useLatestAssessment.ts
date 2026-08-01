@@ -16,7 +16,7 @@ export function useLatestAssessment() {
 
   return useQuery({
     queryKey: ['latest-assessment', user?.id, dealerId],
-    // Enable when user exists — dealerId may be null for org owners, fallback to user_id
+    // Enable when user exists — dealerId is null for coaches/OEM (no single active dealer), fallback to user_id
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<LatestAssessment | null> => {
@@ -27,7 +27,7 @@ export function useLatestAssessment() {
         .order('completed_at', { ascending: false })
         .limit(1);
 
-      // Org owners have dealerId=null (mapped to uxRole='coach'); fall back to user_id
+      // Coaches/OEM users have no single active dealership; fall back to the user's own assessments
       if (dealerId) {
         query = query.eq('dealership_id', dealerId);
       } else {

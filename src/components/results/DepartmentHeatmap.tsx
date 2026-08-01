@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
@@ -181,7 +181,7 @@ export function DepartmentHeatmap({ scores, answers, subCategoryData }: HeatmapP
 
             {/* Data rows */}
             {rows.map((row, ri) => (
-              <>
+              <Fragment key={row.departmentKey}>
                 {/* Row label */}
                 <div
                   key={`label-${ri}`}
@@ -227,7 +227,7 @@ export function DepartmentHeatmap({ scores, answers, subCategoryData }: HeatmapP
                     </Tooltip>
                   );
                 })}
-              </>
+              </Fragment>
             ))}
           </div>
         </div>

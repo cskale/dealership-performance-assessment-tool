@@ -95,7 +95,7 @@ function getHeroNarrative(avgScore: number, dealerCount: number, atRiskCount: nu
   if (dealerCount === 0) return 'No dealers enrolled in the network yet.';
   if (avgScore >= 85) return 'Network performing above benchmark across all departments.';
   if (avgScore >= 70) return `Most dealers performing well — ${atRiskCount} below Foundational threshold.`;
-  if (avgScore >= 46) return `${atRiskCount} dealer${atRiskCount !== 1 ? 's' : ''} require active intervention this quarter.`;
+  if (avgScore >= 46) return `${atRiskCount} dealer${atRiskCount !== 1 ? 's' : ''} require${atRiskCount === 1 ? 's' : ''} active intervention this quarter.`;
   return `${atRiskCount} dealer${atRiskCount !== 1 ? 's' : ''} at Foundational level — priority coaching required.`;
 }
 
