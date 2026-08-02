@@ -425,7 +425,7 @@ const Account = () => {
         <h1 className="text-lg font-semibold text-foreground">Account Settings</h1>
       </div>
 
-      <div className="mx-auto max-w-[1200px] px-6 py-8">
+      <div className="mx-auto max-w-[1400px] px-6 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical" className="flex gap-8 items-start">
           {/* Left rail — distinct fog background + border for clear separation from white content */}
           <aside className="w-[240px] shrink-0 lg:w-[240px] max-lg:w-[64px] sticky top-6 self-start rounded-xl border border-[hsl(var(--dd-rule))] bg-[hsl(var(--dd-fog))] p-2">
