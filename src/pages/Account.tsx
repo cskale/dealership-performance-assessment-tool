@@ -502,10 +502,13 @@ const Account = () => {
 
 
             {/* ── PROFILE ── */}
-            <TabsContent value="profile" className="mt-0 space-y-6">
-              <Section title="Personal information">
-                <div className="flex justify-end mb-3 -mt-2">
-                  {!isEditingPersonal ? (
+            <TabsContent value="profile" className="mt-0">
+              <div className="grid gap-6 xl:grid-cols-3">
+                <PaneCard
+                  className="xl:col-span-2"
+                  title="Personal information"
+                  description="How you appear to colleagues and coaches across the platform."
+                  action={!isEditingPersonal ? (
                     <Button variant="outline" size="sm" onClick={() => setIsEditingPersonal(true)} className="text-xs">
                       <Pencil className="h-3 w-3 mr-1" /> Edit
                     </Button>
@@ -525,37 +528,38 @@ const Account = () => {
                       </Button>
                     </div>
                   )}
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    { label: 'Display name', value: displayName, onChange: setDisplayName, readOnly: false },
-                    { label: 'Email address', value: user.email || '', onChange: () => {}, readOnly: true },
-                    { label: 'Job title', value: jobTitle, onChange: setJobTitle, readOnly: false },
-                    { label: 'Department', value: department, onChange: setDepartment, readOnly: false },
-                  ].map(field => (
-                    <div key={field.label}>
-                      <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">{field.label}</div>
-                      {isEditingPersonal && !field.readOnly ? (
-                        <Input value={field.value} onChange={e => field.onChange(e.target.value)} className="text-sm mt-1.5" />
+                >
+                  <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+                    {[
+                      { label: 'Display name', value: displayName, onChange: setDisplayName, readOnly: false },
+                      { label: 'Email address', value: user.email || '', onChange: () => {}, readOnly: true },
+                      { label: 'Job title', value: jobTitle, onChange: setJobTitle, readOnly: false },
+                      { label: 'Department', value: department, onChange: setDepartment, readOnly: false },
+                    ].map(field => (
+                      <div key={field.label}>
+                        <FieldLabel>{field.label}</FieldLabel>
+                        {isEditingPersonal && !field.readOnly ? (
+                          <Input value={field.value} onChange={e => field.onChange(e.target.value)} className="text-sm mt-1.5" />
+                        ) : (
+                          <FieldValue value={field.value} muted={field.readOnly} />
+                        )}
+                      </div>
+                    ))}
+                    <div className="sm:col-span-2">
+                      <FieldLabel>Bio</FieldLabel>
+                      {isEditingPersonal ? (
+                        <Textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} className="text-sm mt-1.5" />
                       ) : (
-                        <div className="text-[15px] text-foreground mt-1.5">{field.value || '—'}</div>
+                        <FieldValue value={bio} />
                       )}
                     </div>
-                  ))}
-                  <div className="col-span-2">
-                    <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">Bio</div>
-                    {isEditingPersonal ? (
-                      <Textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} className="text-sm mt-1.5" />
-                    ) : (
-                      <div className="text-[15px] text-foreground mt-1.5">{bio || '—'}</div>
-                    )}
                   </div>
-                </div>
-              </Section>
+                </PaneCard>
 
-              <Section title="Preferences">
-                <div className="flex justify-end mb-3 -mt-2">
-                  {!isEditingPreferences ? (
+                <PaneCard
+                  title="Preferences"
+                  description="Locale and display settings."
+                  action={!isEditingPreferences ? (
                     <Button variant="outline" size="sm" onClick={() => setIsEditingPreferences(true)} className="text-xs">
                       <Pencil className="h-3 w-3 mr-1" /> Edit
                     </Button>
@@ -569,38 +573,38 @@ const Account = () => {
                       </Button>
                     </div>
                   )}
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">Language</div>
-                    <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
-                      <SelectTrigger className="text-sm mt-1.5 w-full"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="en">English</SelectItem>
-                        <SelectItem value="de">Deutsch</SelectItem>
-                        <SelectItem value="fr">Français</SelectItem>
-                        <SelectItem value="es">Español</SelectItem>
-                        <SelectItem value="it">Italiano</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">Timezone</div>
-                    {isEditingPreferences ? (
-                      <Input value={timezone} onChange={e => setTimezone(e.target.value)} className="text-sm mt-1.5" />
-                    ) : (
-                      <div className="text-[15px] text-foreground mt-1.5">{timezone || 'UTC'}</div>
-                    )}
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">Account created</div>
-                    <div className="text-[15px] text-muted-foreground mt-1.5">
-                      {user.created_at ? format(new Date(user.created_at), 'PPP') : '—'}
+                >
+                  <div className="space-y-5">
+                    <div>
+                      <FieldLabel>Language</FieldLabel>
+                      <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
+                        <SelectTrigger className="text-sm mt-1.5 w-full"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="en">English</SelectItem>
+                          <SelectItem value="de">Deutsch</SelectItem>
+                          <SelectItem value="fr">Français</SelectItem>
+                          <SelectItem value="es">Español</SelectItem>
+                          <SelectItem value="it">Italiano</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <FieldLabel>Timezone</FieldLabel>
+                      {isEditingPreferences ? (
+                        <Input value={timezone} onChange={e => setTimezone(e.target.value)} className="text-sm mt-1.5" />
+                      ) : (
+                        <FieldValue value={timezone || 'UTC'} />
+                      )}
+                    </div>
+                    <div className="pt-4 border-t border-[hsl(var(--dd-rule))]">
+                      <FieldLabel>Account created</FieldLabel>
+                      <FieldValue muted value={user.created_at ? format(new Date(user.created_at), 'PPP') : undefined} />
                     </div>
                   </div>
-                </div>
-              </Section>
+                </PaneCard>
+              </div>
             </TabsContent>
+
 
             {/* ── ORGANIZATION ── */}
             <TabsContent value="organization" className="mt-0 space-y-6">
