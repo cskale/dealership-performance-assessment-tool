@@ -46,8 +46,8 @@ export function AppSidebar() {
 
   const navItemClass = (path: string) =>
     cn(
-      'flex items-center gap-2.5 h-9 text-[13px] transition-colors duration-100 mr-3',
-      collapsed ? 'px-0 justify-center rounded-md' : 'px-3 rounded-r-md',
+      'flex items-center gap-2.5 h-9 text-[13px] transition-colors duration-100',
+      collapsed ? 'px-0 justify-center rounded-md' : 'px-3 mr-3 rounded-r-md',
       isActive(path)
         ? 'sidebar-pill-active border-l-2 border-brand-500 text-white'
         : 'text-white/55 hover:text-white/85 hover:bg-white/5 border-l-2 border-transparent'
