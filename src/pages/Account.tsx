@@ -618,36 +618,64 @@ const Account = () => {
             <TabsContent value="team" className="mt-0">
               {actorType === 'coach' ? (
                 <div className="space-y-5">
-                  <div className="flex items-start gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] flex items-center justify-center shrink-0">
-                      <Users className="h-5 w-5" />
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] flex items-center justify-center shrink-0">
+                        <Users className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-semibold tracking-tight">Assigned dealerships</h2>
+                        <p className="text-sm text-muted-foreground mt-0.5">
+                          Dealerships you've been assigned to coach. Managed by the dealership admin.
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="text-lg font-semibold tracking-tight">Assigned dealerships</h2>
-                      <p className="text-sm text-muted-foreground mt-0.5">
-                        Dealerships you've been assigned to coach. Managed by the dealership admin.
-                      </p>
-                    </div>
+                    {!assignedDealershipsLoading && assignedDealerships.length > 0 && (
+                      <span className="shrink-0 inline-flex items-center rounded-full bg-[hsl(var(--dd-fog))] border border-[hsl(var(--dd-rule))] px-2.5 py-1 text-xs font-medium text-muted-foreground tabular-nums">
+                        {assignedDealerships.length} assigned
+                      </span>
+                    )}
                   </div>
                   {assignedDealershipsLoading ? (
-                    <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>
+                    <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>
                   ) : assignedDealerships.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No dealerships assigned yet.</p>
+                    <div className="rounded-xl border border-dashed border-[hsl(var(--dd-rule))] bg-[hsl(var(--dd-fog))] py-12 text-center">
+                      <Building2 className="h-7 w-7 mx-auto text-muted-foreground/50 mb-3" />
+                      <div className="text-sm font-medium text-foreground">No dealerships assigned yet</div>
+                      <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                        Once a dealership admin assigns you, their outlets will appear here.
+                      </p>
+                    </div>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                       {assignedDealerships.map(d => (
-                        <div key={d.id} className="flex items-center gap-3 p-3.5 rounded-lg border border-[hsl(var(--dd-rule))] bg-white">
-                          <div className="w-9 h-9 rounded-full bg-[hsl(var(--dd-accent-light))] flex items-center justify-center shrink-0">
-                            <Building2 className="h-4 w-4 text-[hsl(var(--dd-accent))]" />
+                        <div
+                          key={d.id}
+                          className="group flex items-start gap-3 p-4 rounded-xl border border-[hsl(var(--dd-rule))] bg-background shadow-sm transition-all hover:-translate-y-0.5 hover:border-[hsl(var(--dd-accent))]/40 hover:shadow-md"
+                        >
+                          <div
+                            className="w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 text-xs font-semibold tracking-tight"
+                            style={brandMonogramStyle(d.brand || d.name)}
+                          >
+                            {(d.brand || d.name || '?').slice(0, 2).toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium truncate">{d.name}</div>
-                            <div className="text-xs text-muted-foreground truncate">{d.brand} · {d.location}</div>
+                            <div className="text-sm font-semibold text-foreground truncate">{d.name}</div>
+                            {d.brand && (
+                              <div className="text-xs text-muted-foreground truncate mt-0.5">{d.brand}</div>
+                            )}
+                            {d.location && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground/80 mt-2 truncate">
+                                <MapPin className="h-3 w-3 shrink-0" />
+                                <span className="truncate">{d.location}</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
+
                 </div>
               ) : canManageTeam && (
                 <div className="space-y-5">
