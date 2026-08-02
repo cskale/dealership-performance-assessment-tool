@@ -2036,6 +2036,10 @@ export type Database = {
         Args: { _dealership_id: string }
         Returns: boolean
       }
+      user_can_access_dealership_as_coach: {
+        Args: { _dealership_id: string }
+        Returns: boolean
+      }
       user_can_access_dealership_as_oem: {
         Args: { _dealership_id: string }
         Returns: boolean

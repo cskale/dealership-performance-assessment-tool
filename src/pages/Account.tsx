@@ -28,7 +28,7 @@ import { OemModeToggle } from '@/components/OemModeToggle';
 import {
   User, Shield, Download, Trash2, Monitor, Smartphone, Globe,
   Mail, CheckCircle, Building2, Users, Activity, Link2, Key,
-  ChevronRight, Pencil, Save, X, Bell, Camera, ShieldAlert, AlertTriangle, Eye, EyeOff
+  ChevronRight, Pencil, Save, X, Bell, Camera, ShieldAlert, AlertTriangle, Eye, EyeOff, MapPin
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { profileSchema } from '@/lib/validationSchemas';
@@ -109,6 +109,54 @@ const Row = ({ label, description, children }: { label: string; description?: Re
     <div className="shrink-0">{children}</div>
   </div>
 );
+
+/** Card wrapper used by the Profile tab columns. */
+const PaneCard = ({
+  title,
+  description,
+  action,
+  children,
+  className,
+}: {
+  title: string;
+  description?: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <section className={`rounded-xl border border-[hsl(var(--dd-rule))] bg-background shadow-sm ${className ?? ''}`}>
+    <header className="flex items-start justify-between gap-4 px-5 py-4 border-b border-[hsl(var(--dd-rule))]">
+      <div className="min-w-0">
+        <h2 className="text-sm font-semibold tracking-tight text-foreground">{title}</h2>
+        {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
+      </div>
+      {action && <div className="shrink-0">{action}</div>}
+    </header>
+    <div className="px-5 py-5">{children}</div>
+  </section>
+);
+
+/** Read-only field with a polished empty state. */
+const FieldValue = ({ value, muted = false }: { value?: string | null; muted?: boolean }) =>
+  value
+    ? <div className={`text-[15px] mt-1.5 ${muted ? 'text-muted-foreground' : 'text-foreground'}`}>{value}</div>
+    : <div className="text-[15px] mt-1.5 text-muted-foreground/60 italic">Not set</div>;
+
+const FieldLabel = ({ children }: { children: React.ReactNode }) => (
+  <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">{children}</div>
+);
+
+/** Deterministic accent hue for a brand monogram badge (no external logo API). */
+const brandMonogramStyle = (brand: string) => {
+  const seed = Array.from(brand || '?').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const hue = seed % 360;
+  return {
+    background: `hsl(${hue} 62% 94%)`,
+    color: `hsl(${hue} 58% 34%)`,
+    borderColor: `hsl(${hue} 50% 82%)`,
+  };
+};
+
 
 const Account = () => {
   useEffect(() => { document.title = 'Account Settings — Dealer Diagnostic'; }, []);
@@ -377,7 +425,7 @@ const Account = () => {
         <h1 className="text-lg font-semibold text-foreground">Account Settings</h1>
       </div>
 
-      <div className="mx-auto max-w-[1200px] px-6 py-8">
+      <div className="mx-auto max-w-[1400px] px-6 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical" className="flex gap-8 items-start">
           {/* Left rail — distinct fog background + border for clear separation from white content */}
           <aside className="w-[240px] shrink-0 lg:w-[240px] max-lg:w-[64px] sticky top-6 self-start rounded-xl border border-[hsl(var(--dd-rule))] bg-[hsl(var(--dd-fog))] p-2">
@@ -408,12 +456,12 @@ const Account = () => {
           </aside>
 
           {/* Content pane */}
-          <div className="flex-1 min-w-0 max-w-[720px]">
-            {/* Compact identity header */}
-            <div className="mb-6">
-              <div className="flex items-center gap-4">
+          <div className="flex-1 min-w-0 max-w-[1040px]">
+            {/* Identity banner */}
+            <div className="mb-6 rounded-xl border border-[hsl(var(--dd-rule))] bg-[hsl(var(--dd-fog))] px-5 py-5">
+              <div className="flex items-center gap-4 max-sm:flex-col max-sm:items-start">
                 <div className="relative group shrink-0">
-                  <div className="w-14 h-14 rounded-full bg-[hsl(var(--dd-accent))] text-white flex items-center justify-center text-lg font-semibold">
+                  <div className="w-16 h-16 rounded-full bg-[hsl(var(--dd-accent))] text-white flex items-center justify-center text-xl font-semibold ring-4 ring-background">
                     {getInitials(displayName || user.email || '')}
                   </div>
                   <button
@@ -432,31 +480,35 @@ const Account = () => {
                   <div className="text-sm text-muted-foreground mt-0.5 truncate">
                     {roleLabelDisplay} · {user.email}
                   </div>
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    <span className="inline-flex items-center bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] text-[11px] px-2 py-0.5 rounded-full font-medium">
-                      {roleLabelDisplay}
+                </div>
+                <div className="flex flex-wrap gap-1.5 shrink-0">
+                  <span className="inline-flex items-center bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] text-[11px] px-2 py-0.5 rounded-full font-medium">
+                    {roleLabelDisplay}
+                  </span>
+                  {user.email_confirmed_at && (
+                    <span className="inline-flex items-center gap-1 bg-[hsl(var(--dd-green-light))] text-[hsl(var(--dd-green))] text-[11px] px-2 py-0.5 rounded-full font-medium">
+                      <CheckCircle className="h-3 w-3" /> Verified
                     </span>
-                    {user.email_confirmed_at && (
-                      <span className="inline-flex items-center gap-1 bg-[hsl(var(--dd-green-light))] text-[hsl(var(--dd-green))] text-[11px] px-2 py-0.5 rounded-full font-medium">
-                        <CheckCircle className="h-3 w-3" /> Verified
-                      </span>
-                    )}
-                    {currentOrganization && (
-                      <span className="inline-flex items-center bg-[hsl(var(--dd-fog))] text-muted-foreground text-[11px] px-2 py-0.5 rounded-full font-medium border border-[hsl(var(--dd-rule))]">
-                        {currentOrganization.name}
-                      </span>
-                    )}
-                  </div>
+                  )}
+                  {currentOrganization && (
+                    <span className="inline-flex items-center bg-background text-muted-foreground text-[11px] px-2 py-0.5 rounded-full font-medium border border-[hsl(var(--dd-rule))]">
+                      {currentOrganization.name}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
 
 
+
             {/* ── PROFILE ── */}
-            <TabsContent value="profile" className="mt-0 space-y-6">
-              <Section title="Personal information">
-                <div className="flex justify-end mb-3 -mt-2">
-                  {!isEditingPersonal ? (
+            <TabsContent value="profile" className="mt-0">
+              <div className="grid gap-6 xl:grid-cols-3">
+                <PaneCard
+                  className="xl:col-span-2"
+                  title="Personal information"
+                  description="How you appear to colleagues and coaches across the platform."
+                  action={!isEditingPersonal ? (
                     <Button variant="outline" size="sm" onClick={() => setIsEditingPersonal(true)} className="text-xs">
                       <Pencil className="h-3 w-3 mr-1" /> Edit
                     </Button>
@@ -476,37 +528,38 @@ const Account = () => {
                       </Button>
                     </div>
                   )}
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    { label: 'Display name', value: displayName, onChange: setDisplayName, readOnly: false },
-                    { label: 'Email address', value: user.email || '', onChange: () => {}, readOnly: true },
-                    { label: 'Job title', value: jobTitle, onChange: setJobTitle, readOnly: false },
-                    { label: 'Department', value: department, onChange: setDepartment, readOnly: false },
-                  ].map(field => (
-                    <div key={field.label}>
-                      <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">{field.label}</div>
-                      {isEditingPersonal && !field.readOnly ? (
-                        <Input value={field.value} onChange={e => field.onChange(e.target.value)} className="text-sm mt-1.5" />
+                >
+                  <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+                    {[
+                      { label: 'Display name', value: displayName, onChange: setDisplayName, readOnly: false },
+                      { label: 'Email address', value: user.email || '', onChange: () => {}, readOnly: true },
+                      { label: 'Job title', value: jobTitle, onChange: setJobTitle, readOnly: false },
+                      { label: 'Department', value: department, onChange: setDepartment, readOnly: false },
+                    ].map(field => (
+                      <div key={field.label}>
+                        <FieldLabel>{field.label}</FieldLabel>
+                        {isEditingPersonal && !field.readOnly ? (
+                          <Input value={field.value} onChange={e => field.onChange(e.target.value)} className="text-sm mt-1.5" />
+                        ) : (
+                          <FieldValue value={field.value} muted={field.readOnly} />
+                        )}
+                      </div>
+                    ))}
+                    <div className="sm:col-span-2">
+                      <FieldLabel>Bio</FieldLabel>
+                      {isEditingPersonal ? (
+                        <Textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} className="text-sm mt-1.5" />
                       ) : (
-                        <div className="text-[15px] text-foreground mt-1.5">{field.value || '—'}</div>
+                        <FieldValue value={bio} />
                       )}
                     </div>
-                  ))}
-                  <div className="col-span-2">
-                    <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">Bio</div>
-                    {isEditingPersonal ? (
-                      <Textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} className="text-sm mt-1.5" />
-                    ) : (
-                      <div className="text-[15px] text-foreground mt-1.5">{bio || '—'}</div>
-                    )}
                   </div>
-                </div>
-              </Section>
+                </PaneCard>
 
-              <Section title="Preferences">
-                <div className="flex justify-end mb-3 -mt-2">
-                  {!isEditingPreferences ? (
+                <PaneCard
+                  title="Preferences"
+                  description="Locale and display settings."
+                  action={!isEditingPreferences ? (
                     <Button variant="outline" size="sm" onClick={() => setIsEditingPreferences(true)} className="text-xs">
                       <Pencil className="h-3 w-3 mr-1" /> Edit
                     </Button>
@@ -520,38 +573,38 @@ const Account = () => {
                       </Button>
                     </div>
                   )}
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">Language</div>
-                    <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
-                      <SelectTrigger className="text-sm mt-1.5 w-full"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="en">English</SelectItem>
-                        <SelectItem value="de">Deutsch</SelectItem>
-                        <SelectItem value="fr">Français</SelectItem>
-                        <SelectItem value="es">Español</SelectItem>
-                        <SelectItem value="it">Italiano</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">Timezone</div>
-                    {isEditingPreferences ? (
-                      <Input value={timezone} onChange={e => setTimezone(e.target.value)} className="text-sm mt-1.5" />
-                    ) : (
-                      <div className="text-[15px] text-foreground mt-1.5">{timezone || 'UTC'}</div>
-                    )}
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">Account created</div>
-                    <div className="text-[15px] text-muted-foreground mt-1.5">
-                      {user.created_at ? format(new Date(user.created_at), 'PPP') : '—'}
+                >
+                  <div className="space-y-5">
+                    <div>
+                      <FieldLabel>Language</FieldLabel>
+                      <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
+                        <SelectTrigger className="text-sm mt-1.5 w-full"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="en">English</SelectItem>
+                          <SelectItem value="de">Deutsch</SelectItem>
+                          <SelectItem value="fr">Français</SelectItem>
+                          <SelectItem value="es">Español</SelectItem>
+                          <SelectItem value="it">Italiano</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <FieldLabel>Timezone</FieldLabel>
+                      {isEditingPreferences ? (
+                        <Input value={timezone} onChange={e => setTimezone(e.target.value)} className="text-sm mt-1.5" />
+                      ) : (
+                        <FieldValue value={timezone || 'UTC'} />
+                      )}
+                    </div>
+                    <div className="pt-4 border-t border-[hsl(var(--dd-rule))]">
+                      <FieldLabel>Account created</FieldLabel>
+                      <FieldValue muted value={user.created_at ? format(new Date(user.created_at), 'PPP') : undefined} />
                     </div>
                   </div>
-                </div>
-              </Section>
+                </PaneCard>
+              </div>
             </TabsContent>
+
 
             {/* ── ORGANIZATION ── */}
             <TabsContent value="organization" className="mt-0 space-y-6">
@@ -565,36 +618,64 @@ const Account = () => {
             <TabsContent value="team" className="mt-0">
               {actorType === 'coach' ? (
                 <div className="space-y-5">
-                  <div className="flex items-start gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] flex items-center justify-center shrink-0">
-                      <Users className="h-5 w-5" />
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] flex items-center justify-center shrink-0">
+                        <Users className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-semibold tracking-tight">Assigned dealerships</h2>
+                        <p className="text-sm text-muted-foreground mt-0.5">
+                          Dealerships you've been assigned to coach. Managed by the dealership admin.
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="text-lg font-semibold tracking-tight">Assigned dealerships</h2>
-                      <p className="text-sm text-muted-foreground mt-0.5">
-                        Dealerships you've been assigned to coach. Managed by the dealership admin.
-                      </p>
-                    </div>
+                    {!assignedDealershipsLoading && assignedDealerships.length > 0 && (
+                      <span className="shrink-0 inline-flex items-center rounded-full bg-[hsl(var(--dd-fog))] border border-[hsl(var(--dd-rule))] px-2.5 py-1 text-xs font-medium text-muted-foreground tabular-nums">
+                        {assignedDealerships.length} assigned
+                      </span>
+                    )}
                   </div>
                   {assignedDealershipsLoading ? (
-                    <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>
+                    <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>
                   ) : assignedDealerships.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No dealerships assigned yet.</p>
+                    <div className="rounded-xl border border-dashed border-[hsl(var(--dd-rule))] bg-[hsl(var(--dd-fog))] py-12 text-center">
+                      <Building2 className="h-7 w-7 mx-auto text-muted-foreground/50 mb-3" />
+                      <div className="text-sm font-medium text-foreground">No dealerships assigned yet</div>
+                      <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                        Once a dealership admin assigns you, their outlets will appear here.
+                      </p>
+                    </div>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                       {assignedDealerships.map(d => (
-                        <div key={d.id} className="flex items-center gap-3 p-3.5 rounded-lg border border-[hsl(var(--dd-rule))] bg-white">
-                          <div className="w-9 h-9 rounded-full bg-[hsl(var(--dd-accent-light))] flex items-center justify-center shrink-0">
-                            <Building2 className="h-4 w-4 text-[hsl(var(--dd-accent))]" />
+                        <div
+                          key={d.id}
+                          className="group flex items-start gap-3 p-4 rounded-xl border border-[hsl(var(--dd-rule))] bg-background shadow-sm transition-all hover:-translate-y-0.5 hover:border-[hsl(var(--dd-accent))]/40 hover:shadow-md"
+                        >
+                          <div
+                            className="w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 text-xs font-semibold tracking-tight"
+                            style={brandMonogramStyle(d.brand || d.name)}
+                          >
+                            {(d.brand || d.name || '?').slice(0, 2).toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium truncate">{d.name}</div>
-                            <div className="text-xs text-muted-foreground truncate">{d.brand} · {d.location}</div>
+                            <div className="text-sm font-semibold text-foreground truncate">{d.name}</div>
+                            {d.brand && (
+                              <div className="text-xs text-muted-foreground truncate mt-0.5">{d.brand}</div>
+                            )}
+                            {d.location && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground/80 mt-2 truncate">
+                                <MapPin className="h-3 w-3 shrink-0" />
+                                <span className="truncate">{d.location}</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
+
                 </div>
               ) : canManageTeam && (
                 <div className="space-y-5">
