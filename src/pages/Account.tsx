@@ -456,12 +456,12 @@ const Account = () => {
           </aside>
 
           {/* Content pane */}
-          <div className="flex-1 min-w-0 max-w-[720px]">
-            {/* Compact identity header */}
-            <div className="mb-6">
-              <div className="flex items-center gap-4">
+          <div className="flex-1 min-w-0 max-w-[1040px]">
+            {/* Identity banner */}
+            <div className="mb-6 rounded-xl border border-[hsl(var(--dd-rule))] bg-[hsl(var(--dd-fog))] px-5 py-5">
+              <div className="flex items-center gap-4 max-sm:flex-col max-sm:items-start">
                 <div className="relative group shrink-0">
-                  <div className="w-14 h-14 rounded-full bg-[hsl(var(--dd-accent))] text-white flex items-center justify-center text-lg font-semibold">
+                  <div className="w-16 h-16 rounded-full bg-[hsl(var(--dd-accent))] text-white flex items-center justify-center text-xl font-semibold ring-4 ring-background">
                     {getInitials(displayName || user.email || '')}
                   </div>
                   <button
@@ -480,24 +480,25 @@ const Account = () => {
                   <div className="text-sm text-muted-foreground mt-0.5 truncate">
                     {roleLabelDisplay} · {user.email}
                   </div>
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    <span className="inline-flex items-center bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] text-[11px] px-2 py-0.5 rounded-full font-medium">
-                      {roleLabelDisplay}
+                </div>
+                <div className="flex flex-wrap gap-1.5 shrink-0">
+                  <span className="inline-flex items-center bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] text-[11px] px-2 py-0.5 rounded-full font-medium">
+                    {roleLabelDisplay}
+                  </span>
+                  {user.email_confirmed_at && (
+                    <span className="inline-flex items-center gap-1 bg-[hsl(var(--dd-green-light))] text-[hsl(var(--dd-green))] text-[11px] px-2 py-0.5 rounded-full font-medium">
+                      <CheckCircle className="h-3 w-3" /> Verified
                     </span>
-                    {user.email_confirmed_at && (
-                      <span className="inline-flex items-center gap-1 bg-[hsl(var(--dd-green-light))] text-[hsl(var(--dd-green))] text-[11px] px-2 py-0.5 rounded-full font-medium">
-                        <CheckCircle className="h-3 w-3" /> Verified
-                      </span>
-                    )}
-                    {currentOrganization && (
-                      <span className="inline-flex items-center bg-[hsl(var(--dd-fog))] text-muted-foreground text-[11px] px-2 py-0.5 rounded-full font-medium border border-[hsl(var(--dd-rule))]">
-                        {currentOrganization.name}
-                      </span>
-                    )}
-                  </div>
+                  )}
+                  {currentOrganization && (
+                    <span className="inline-flex items-center bg-background text-muted-foreground text-[11px] px-2 py-0.5 rounded-full font-medium border border-[hsl(var(--dd-rule))]">
+                      {currentOrganization.name}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
+
 
 
             {/* ── PROFILE ── */}
