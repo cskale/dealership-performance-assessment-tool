@@ -41,7 +41,7 @@ export const ProtectedRoute = ({
   }
 
   if (requiresOnboarding && !isOnboardingRoute) {
-    if (onboardingLoading) {
+    if (onboardingLoading || roleLoading) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-background">
           <div className="text-center space-y-4">
@@ -51,6 +51,10 @@ export const ProtectedRoute = ({
         </div>
       );
     }
+    // Coaches/OEM admins never own a dealership — send them back to their own
+    // dashboard instead of the "create a dealership" wizard.
+    if (actorType === 'coach') return <Navigate to="/app/coach-dashboard" replace />;
+    if (actorType === 'oem') return <Navigate to="/app/oem-dashboard" replace />;
     if (onboardingStatus === 'needs_organization' || onboardingStatus === 'needs_dealership') {
       return <Navigate to="/app/onboarding" replace />;
     }

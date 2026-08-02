@@ -120,7 +120,7 @@ export function AppSidebar() {
         {/* Collapse toggle — pokes out from right edge when collapsed */}
       </div>
       {/* Collapse toggle — sits between header and nav */}
-      <div className="flex justify-end px-2 py-1">
+      <div className={cn('flex px-2 py-1', collapsed ? 'justify-center' : 'justify-end')}>
         <button
           type="button"
           onClick={() => setCollapsed(prev => !prev)}

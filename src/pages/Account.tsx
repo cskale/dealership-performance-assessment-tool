@@ -64,6 +64,18 @@ async function fetchProfileRow(userId: string): Promise<Tables<'profiles'> | nul
   return data;
 }
 
+async function fetchAssignedDealerships(coachUserId: string): Promise<{ id: string; name: string; location: string; brand: string }[]> {
+  const { data: assignments } = await supabase
+    .from('coach_dealership_assignments')
+    .select('dealership_id')
+    .eq('coach_user_id', coachUserId)
+    .eq('is_active', true);
+  const ids = (assignments ?? []).map(a => a.dealership_id);
+  if (!ids.length) return [];
+  const { data } = await supabase.from('dealerships').select('id, name, location, brand').in('id', ids);
+  return data ?? [];
+}
+
 async function fetchAccountAssessments(userId: string): Promise<AssessmentRecord[]> {
   const { data, error } = await supabase
     .from('assessments')
@@ -160,6 +172,12 @@ const Account = () => {
     queryKey: ['account-assessments', user?.id],
     queryFn: () => fetchAccountAssessments(user!.id),
     enabled: !!user,
+  });
+
+  const { data: assignedDealerships = [], isLoading: assignedDealershipsLoading } = useQuery({
+    queryKey: ['account-assigned-dealerships', user?.id],
+    queryFn: () => fetchAssignedDealerships(user!.id),
+    enabled: !!user && actorType === 'coach',
   });
 
   const updateProfile = async () => {
@@ -345,7 +363,7 @@ const Account = () => {
   const NAV_ITEMS = [
     { value: 'profile',       label: 'Profile',        icon: User },
     ...(actorType !== 'coach' ? [{ value: 'organization', label: 'Organization', icon: Building2 }] : []),
-    ...(canManageTeam    ? [{ value: 'team',     label: 'Team',        icon: Users }]    : []),
+    ...(canManageTeam || actorType === 'coach' ? [{ value: 'team', label: actorType === 'coach' ? 'Dealerships' : 'Team', icon: Users }] : []),
     ...(hasActivityData  ? [{ value: 'activity', label: 'Activity',    icon: Activity }] : []),
     { value: 'security',      label: 'Security',       icon: Shield },
     { value: 'privacy',       label: 'Privacy',        icon: Globe },
@@ -545,7 +563,40 @@ const Account = () => {
 
             {/* ── TEAM ── */}
             <TabsContent value="team" className="mt-0">
-              {canManageTeam && (
+              {actorType === 'coach' ? (
+                <div className="space-y-5">
+                  <div className="flex items-start gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] flex items-center justify-center shrink-0">
+                      <Users className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold tracking-tight">Assigned dealerships</h2>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        Dealerships you've been assigned to coach. Managed by the dealership admin.
+                      </p>
+                    </div>
+                  </div>
+                  {assignedDealershipsLoading ? (
+                    <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>
+                  ) : assignedDealerships.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No dealerships assigned yet.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {assignedDealerships.map(d => (
+                        <div key={d.id} className="flex items-center gap-3 p-3.5 rounded-lg border border-[hsl(var(--dd-rule))] bg-white">
+                          <div className="w-9 h-9 rounded-full bg-[hsl(var(--dd-accent-light))] flex items-center justify-center shrink-0">
+                            <Building2 className="h-4 w-4 text-[hsl(var(--dd-accent))]" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium truncate">{d.name}</div>
+                            <div className="text-xs text-muted-foreground truncate">{d.brand} · {d.location}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : canManageTeam && (
                 <div className="space-y-5">
                   <div className="flex items-start gap-3">
                     <div className="h-10 w-10 rounded-xl bg-[hsl(var(--dd-accent-light))] text-[hsl(var(--dd-accent))] flex items-center justify-center shrink-0">
