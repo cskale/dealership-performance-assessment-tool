@@ -110,6 +110,54 @@ const Row = ({ label, description, children }: { label: string; description?: Re
   </div>
 );
 
+/** Card wrapper used by the Profile tab columns. */
+const PaneCard = ({
+  title,
+  description,
+  action,
+  children,
+  className,
+}: {
+  title: string;
+  description?: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <section className={`rounded-xl border border-[hsl(var(--dd-rule))] bg-background shadow-sm ${className ?? ''}`}>
+    <header className="flex items-start justify-between gap-4 px-5 py-4 border-b border-[hsl(var(--dd-rule))]">
+      <div className="min-w-0">
+        <h2 className="text-sm font-semibold tracking-tight text-foreground">{title}</h2>
+        {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
+      </div>
+      {action && <div className="shrink-0">{action}</div>}
+    </header>
+    <div className="px-5 py-5">{children}</div>
+  </section>
+);
+
+/** Read-only field with a polished empty state. */
+const FieldValue = ({ value, muted = false }: { value?: string | null; muted?: boolean }) =>
+  value
+    ? <div className={`text-[15px] mt-1.5 ${muted ? 'text-muted-foreground' : 'text-foreground'}`}>{value}</div>
+    : <div className="text-[15px] mt-1.5 text-muted-foreground/60 italic">Not set</div>;
+
+const FieldLabel = ({ children }: { children: React.ReactNode }) => (
+  <div className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">{children}</div>
+);
+
+/** Deterministic accent hue for a brand monogram badge (no external logo API). */
+const brandMonogramStyle = (brand: string) => {
+  const seed = Array.from(brand || '?').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const hue = seed % 360;
+  return {
+    background: `hsl(${hue} 62% 94%)`,
+    color: `hsl(${hue} 58% 34%)`,
+    borderColor: `hsl(${hue} 50% 82%)`,
+  };
+};
+
+
 const Account = () => {
   useEffect(() => { document.title = 'Account Settings — Dealer Diagnostic'; }, []);
   const { user } = useAuth();
