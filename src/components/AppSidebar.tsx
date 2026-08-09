@@ -92,10 +92,19 @@ export function AppSidebar() {
   return (
     <aside
       className={cn(
-        'shrink-0 bg-[hsl(var(--dd-midnight))] flex flex-col h-screen sticky top-0 transition-all duration-300 overflow-hidden',
+        'relative shrink-0 flex flex-col h-screen sticky top-0 transition-all duration-300 overflow-hidden',
         collapsed ? 'w-14' : 'w-60'
       )}
+      style={{
+        backgroundColor: 'hsl(var(--dd-midnight))',
+        backgroundImage: [
+          'radial-gradient(120% 60% at 0% 0%, hsl(var(--brand-500) / 0.28), transparent 60%)',
+          'radial-gradient(100% 45% at 100% 55%, hsl(var(--brand-500) / 0.20), transparent 65%)',
+          'linear-gradient(180deg, hsl(var(--dd-midnight)) 0%, hsl(var(--brand-700, var(--brand-600)) / 0.55) 55%, hsl(var(--dd-midnight)) 100%)',
+        ].join(', '),
+      }}
     >
+
       {/* Header — h-14 with always-visible collapse button */}
       <div className={cn(
         'flex items-center h-14 border-b border-white/[0.06] shrink-0 relative',
