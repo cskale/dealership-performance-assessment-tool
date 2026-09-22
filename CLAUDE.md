@@ -519,3 +519,17 @@ OEM admins manage their network at `/app/oem-settings` (Network Settings in side
 ## Global Skills (auto-loaded via stitch-skills CLI)
 - `shadcn-ui` → `~\.agents\skills\shadcn-ui`
 - `react:components` → `~\.agents\skills\react-components`
+
+## Agent skills
+
+### Issue tracker
+
+Issues live as GitHub issues on `cskale/dealership-performance-assessment-tool`, managed via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five canonical labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
