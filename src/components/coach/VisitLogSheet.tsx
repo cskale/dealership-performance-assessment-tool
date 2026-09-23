@@ -195,6 +195,18 @@ export function VisitLogSheet({ open, onOpenChange, visit, dealershipId, dealerN
   const PRIORITY_OPTIONS: Array<'critical' | 'high' | 'medium' | 'low'> = ['critical', 'high', 'medium', 'low'];
   const DEPT_OPTIONS = ['New Vehicle Sales', 'Used Vehicle Sales', 'Service', 'Parts & Inventory', 'Financial Operations'];
 
+  // ── Review last visit's actions ──────────────────────────────────────────────
+  const isEditingLastVisit = visit.id === brief?.last_visit?.id;
+  const actionsToReview = (brief?.agreed_actions ?? []).filter(a => a.status !== 'Completed');
+  const showReviewSection = !!brief?.last_visit && !isEditingLastVisit;
+
+  const OUTCOME_OPTIONS: { value: ReviewOutcome; label: string }[] = [
+    { value: 'done',        label: 'Done' },
+    { value: 'in_progress', label: 'In progress' },
+    { value: 'blocked',     label: 'Blocked' },
+    { value: 'not_started', label: 'Not started' },
+  ];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
