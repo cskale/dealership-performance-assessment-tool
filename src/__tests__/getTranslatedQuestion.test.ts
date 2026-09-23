@@ -23,8 +23,8 @@ describe('getTranslatedQuestion', () => {
     const nvs1 = questionnaire.sections[0].questions.find(q => q.id === 'nvs-1');
     if (!nvs1) throw new Error('nvs-1 not found in questionnaire');
 
-    // Cast through unknown: 'fr' is a valid Language but nvs-1 has no 'fr' translation entry
-    const translated = getTranslatedQuestion(nvs1, 'fr' as Parameters<typeof getTranslatedQuestion>[1]);
-    expect(translated).toBe(nvs1);
+    // Strip translations so the test doesn't depend on which languages the data covers.
+    const untranslated = { ...nvs1, translations: undefined };
+    expect(getTranslatedQuestion(untranslated, 'fr')).toBe(untranslated);
   });
 });
