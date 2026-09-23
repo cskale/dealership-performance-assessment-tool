@@ -1190,6 +1190,9 @@ export default function OemDashboard() {
               )}
             </CardContent>
           </Card>
+
+          {/* Coaching coverage — below the leaderboard */}
+          <CoachingCoverageCard rows={coachingStats} isLoading={loadingCoachingStats} />
         </TabsContent>
       </Tabs>
 
