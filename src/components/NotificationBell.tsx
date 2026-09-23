@@ -28,6 +28,20 @@ function truncate(text: string, max = 80): string {
   return text.length <= max ? text : text.slice(0, max).trimEnd() + '...';
 }
 
+/** Retry briefly (rAF, up to ~1s) — the section may render only after data loads. */
+function scrollToCoachingVisits(): void {
+  const start = Date.now();
+  const attempt = () => {
+    const el = document.getElementById('coaching-visits');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    if (Date.now() - start < 1000) requestAnimationFrame(attempt);
+  };
+  requestAnimationFrame(attempt);
+}
+
 interface NotificationBellProps {
   /** collapsed = icon-only mode (sidebar collapsed state) */
   collapsed?: boolean;
@@ -91,6 +105,9 @@ export function NotificationBell({ collapsed = false, headerMode = false }: Noti
       } else {
         navigate('/app/dashboard#coach-notes');
       }
+    } else if (n.entity_type === 'visit_recap') {
+      navigate('/app/dashboard#coaching-visits');
+      scrollToCoachingVisits();
     } else {
       // digest, milestone, stale_action — all land on action plan
       navigate('/app/actions');
