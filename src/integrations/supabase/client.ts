@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
+import { brokeredPreviewStorage } from './previewAuthStorage';
 
 const FALLBACK_SUPABASE_URL = 'https://xrypgosuyfdkkqafftae.supabase.co';
 const FALLBACK_SUPABASE_ANON_KEY =
@@ -39,7 +40,7 @@ const SUPABASE_ANON_KEY = getValidSupabaseAnonKey();
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    storage: localStorage,
+    storage: brokeredPreviewStorage(),
     persistSession: true,
     autoRefreshToken: true,
   },
