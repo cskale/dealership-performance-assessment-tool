@@ -114,6 +114,8 @@ const App = () => (
                                 <CoachActions />
                               </ProtectedRoute>
                             } />
+                            {/* Notifications, emails and coach notes link to /app/actions; the page lives at /actions. */}
+                            <Route path="actions" element={<Navigate to="/actions" replace />} />
                             <Route path="onboarding" element={<Onboarding />} />
                             <Route path="assessment" element={
                               <ProtectedRoute requiresOnboarding>
