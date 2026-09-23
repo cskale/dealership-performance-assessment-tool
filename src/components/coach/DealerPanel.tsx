@@ -1302,7 +1302,7 @@ function PreVisitBriefCard({
           <Skeleton className="h-16" />
           <Skeleton className="h-16" />
         </div>
-ec      </div>
+      </div>
     );
   }
 
