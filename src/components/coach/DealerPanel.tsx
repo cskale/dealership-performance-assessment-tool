@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { MapPin, Loader2, Trash2, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { MapPin, Loader2, Trash2, X, CheckCircle, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { format, formatDistanceToNowStrict } from 'date-fns';
 import { toast } from 'sonner';
 import { Calendar } from '@/components/ui/calendar';
@@ -26,6 +26,8 @@ import { generateVisitReport, type VisitReportData } from '@/lib/pdfReportGenera
 import { STATIC_BENCHMARKS, sectionToModuleCode } from '@/lib/benchmarkUtils';
 import { getDepartmentName } from '@/lib/departmentNames';
 import { sendVisitNotification, notifyOemVisitConfirmed } from '@/lib/notifications';
+import { useVisitBrief, type VisitBrief } from '@/hooks/useCoachVisitLoop';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // ── Local types ────────────────────────────────────────────────────────────────
 
@@ -1267,6 +1269,229 @@ function InsightCard({
   );
 }
 
+// ── Pre-visit brief ────────────────────────────────────────────────────────────
+
+const ACTION_STATUS_PILL: Record<string, string> = {
+  'Open':        'bg-amber-500/10 text-amber-700 border-amber-500/20',
+  'In Progress': 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20',
+  'Completed':   'bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20',
+};
+
+const REVIEW_OUTCOME_LABEL: Record<string, string> = {
+  done: 'Done',
+  in_progress: 'In progress',
+  blocked: 'Blocked',
+  not_started: 'Not started',
+};
+
+function PreVisitBriefCard({
+  brief,
+  isLoading,
+}: {
+  brief: VisitBrief | null | undefined;
+  isLoading: boolean;
+}) {
+  const [notesExpanded, setNotesExpanded] = useState(false);
+
+  if (isLoading) {
+    return (
+      <div className="mx-6 mt-4 rounded-xl border border-border bg-card p-4 shrink-0 space-y-3">
+        <Skeleton className="h-3 w-44" />
+        <div className="grid grid-cols-3 gap-4">
+          <Skeleton className="h-16" />
+          <Skeleton className="h-16" />
+          <Skeleton className="h-16" />
+        </div>
+      </div>
+    );
+  }
+
+  const lastVisit = brief?.last_visit ?? null;
+  const daysSince = brief?.days_since_last_visit ?? null;
+  const score = brief?.score;
+
+  const sharedDepartments =
+    score?.departments_current && score?.departments_at_last_visit
+      ? Object.keys(score.departments_current)
+          .filter(d => d in score.departments_at_last_visit!)
+          .map(d => ({
+            name: d,
+            current: score.departments_current![d],
+            previous: score.departments_at_last_visit![d],
+          }))
+      : [];
+
+  return (
+    <div className="mx-6 mt-4 rounded-xl border border-border bg-card shrink-0">
+      {/* Header line */}
+      <div className="flex items-center justify-between gap-3 flex-wrap px-4 pt-3.5">
+        <p className="text-[10px] uppercase tracking-[0.1em] font-semibold text-muted-foreground">
+          Pre-visit brief
+        </p>
+        {lastVisit ? (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">
+              Last visit {format(new Date(lastVisit.visit_date), 'dd MMM yyyy')} · {daysSince} days ago
+            </span>
+            {(daysSince ?? 0) > 45 && (
+              <Badge
+                variant="outline"
+                className="text-[10px] font-semibold bg-amber-500/10 text-amber-700 border-amber-500/20"
+              >
+                Overdue for a visit
+              </Badge>
+            )}
+          </div>
+        ) : (
+          <span className="text-xs text-muted-foreground">No visit logged yet</span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 px-4 py-3.5">
+        {/* 2. Score movement */}
+        <div className="space-y-2">
+          <p className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground font-semibold">
+            Score movement
+          </p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-2xl font-bold text-foreground leading-none tabular-nums">
+              {score?.current != null ? Math.round(score.current) : '—'}
+            </span>
+            {score?.delta != null && (
+              <Badge
+                variant="outline"
+                className={`text-[10px] font-semibold ${
+                  score.delta >= 0
+                    ? 'bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/20'
+                    : 'bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20'
+                }`}
+              >
+                {score.delta >= 0 ? '▲' : '▼'} {Math.abs(score.delta)} since last visit
+              </Badge>
+            )}
+          </div>
+          {score?.delta == null && (
+            <p className="text-xs text-muted-foreground">No new assessment since last visit</p>
+          )}
+          {sharedDepartments.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {sharedDepartments.map(d => {
+                const delta = d.current - d.previous;
+                return (
+                  <span
+                    key={d.name}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2 py-0.5 text-[11px]"
+                  >
+                    <span className="text-muted-foreground truncate max-w-[110px]">{d.name}</span>
+                    <span className="font-semibold text-foreground tabular-nums">{d.current}</span>
+                    <span
+                      className={`tabular-nums font-medium ${
+                        delta > 0 ? 'text-[#16a34a]' : delta < 0 ? 'text-[#dc2626]' : 'text-muted-foreground'
+                      }`}
+                    >
+                      {delta > 0 ? '▲' : delta < 0 ? '▼' : '·'} {Math.abs(delta)}
+                    </span>
+                  </span>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* 3. Agreed at last visit */}
+        <div className="space-y-2">
+          <p className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground font-semibold">
+            Agreed at last visit
+          </p>
+          {brief && brief.agreed_actions.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No actions were agreed at the last visit.</p>
+          ) : (
+            <ul className="space-y-2">
+              {(brief?.agreed_actions ?? []).slice(0, 4).map(a => (
+                <li key={a.id} className="space-y-0.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-xs font-medium text-foreground leading-snug">{a.title}</span>
+                    <Badge
+                      variant="outline"
+                      className={`text-[9px] font-semibold shrink-0 ${ACTION_STATUS_PILL[a.status] ?? ''}`}
+                    >
+                      {a.status}
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    {a.responsible_person ?? 'Unassigned'}
+                    {a.target_completion_date &&
+                      ` · due ${format(new Date(a.target_completion_date), 'dd MMM yyyy')}`}
+                  </p>
+                  {a.last_review && (
+                    <p className="text-[11px] text-muted-foreground/80 italic">
+                      {REVIEW_OUTCOME_LABEL[a.last_review.outcome] ?? a.last_review.outcome}
+                      {a.last_review.note ? ` — ${a.last_review.note}` : ''}
+                    </p>
+                  )}
+                </li>
+              ))}
+              {(brief?.agreed_actions.length ?? 0) > 4 && (
+                <li className="text-[11px] text-muted-foreground">
+                  +{(brief?.agreed_actions.length ?? 0) - 4} more
+                </li>
+              )}
+            </ul>
+          )}
+        </div>
+
+        {/* 4. Needs attention */}
+        <div className="space-y-2">
+          <p className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground font-semibold">
+            Needs attention
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {brief?.overdue_count ?? 0} overdue · {brief?.stale_count ?? 0} with no update in 21+ days ·{' '}
+            {brief?.completed_since_last_visit ?? 0} completed since last visit
+          </p>
+          {(brief?.overdue_actions ?? []).length > 0 && (
+            <ul className="space-y-1.5">
+              {brief!.overdue_actions.slice(0, 5).map(a => (
+                <li key={a.id} className="flex items-start justify-between gap-2 text-xs">
+                  <span className="font-medium text-foreground leading-snug">{a.title}</span>
+                  <span className="text-[#dc2626] font-medium shrink-0 tabular-nums">
+                    {a.days_overdue}d overdue
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      {/* 5. Last visit notes */}
+      {lastVisit?.summary && (
+        <div className="px-4 pb-3.5 space-y-1">
+          <p className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground font-semibold">
+            Last visit notes
+          </p>
+          <p
+            className={`text-xs text-foreground/80 leading-relaxed whitespace-pre-line ${
+              notesExpanded ? '' : 'line-clamp-3'
+            }`}
+          >
+            {lastVisit.summary}
+          </p>
+          {lastVisit.summary.length > 180 && (
+            <button
+              className="text-xs font-medium text-[hsl(var(--brand-500))] hover:underline inline-flex items-center gap-0.5"
+              onClick={() => setNotesExpanded(v => !v)}
+            >
+              {notesExpanded ? 'Show less' : 'Show more'}
+              {notesExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Tab constant (module-level so it is stable across renders) ─────────────────
 
 const TABS = ['activity', 'visits', 'notes'] as const;
@@ -1303,6 +1528,7 @@ export function DealerPanel({
   }, [open, initialTab]);
 
   const { user } = useAuth();
+  const { data: brief, isLoading: briefLoading } = useVisitBrief(dealer.dealershipId);
   const [data, setData] = useState<PanelData | null>(null);
   const [dataLoading, setDataLoading] = useState(false);
 
@@ -1534,7 +1760,11 @@ export function DealerPanel({
           </div>
         </DialogHeader>
 
+        {/* Pre-visit brief — above the visit controls */}
+        <PreVisitBriefCard brief={brief} isLoading={briefLoading} />
+
         {/* Tab strip */}
+
         <div className="flex items-center gap-1 border-b border-border px-4 py-2 shrink-0 bg-background">
           {TABS.map(tab => (
             <button
