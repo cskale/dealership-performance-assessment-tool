@@ -103,13 +103,17 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   }, [userId]);
 
   const [dict, setDict] = useState<Record<string, string>>(en);
+  // Hold first paint until the saved language's dictionary arrives, so non-English
+  // users never see an English flash. Later switches keep the page mounted.
+  const [firstDictReady, setFirstDictReady] = useState(language === 'en');
 
   useEffect(() => {
-    if (language === 'en') { setDict(en); return; }
+    if (language === 'en') { setDict(en); setFirstDictReady(true); return; }
     let cancelled = false;
     loaders[language]()
       .then(m => { if (!cancelled) setDict(m.default); })
-      .catch(err => console.error(`Error loading ${language} translations:`, err));
+      .catch(err => console.error(`Error loading ${language} translations:`, err))
+      .finally(() => { if (!cancelled) setFirstDictReady(true); });
     return () => { cancelled = true; };
   }, [language]);
 
@@ -123,7 +127,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t, isLoading }}>
-      {children}
+      {firstDictReady ? children : null}
     </LanguageContext.Provider>
   );
 }
