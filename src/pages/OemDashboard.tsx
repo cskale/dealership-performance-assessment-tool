@@ -322,6 +322,148 @@ async function fetchDealerNextVisits(dealershipIds: string[]): Promise<Record<st
   return visitMap;
 }
 
+function CoachingCoverageCard({ rows, isLoading }: { rows: CoachingStatsRow[]; isLoading: boolean }) {
+  const kpis = useMemo(() => {
+    const total = rows.length;
+    const visited90 = rows.filter(r => r.visits_last_90d > 0).length;
+    const daysVals = rows.map(r => r.days_since_last_visit).filter((d): d is number => d != null);
+    const agreed = rows.reduce((s, r) => s + r.agreed_actions, 0);
+    const completed = rows.reduce((s, r) => s + r.agreed_actions_completed, 0);
+    return {
+      visited90Pct: total > 0 ? Math.round((visited90 / total) * 100) : null,
+      avgDays: daysVals.length ? Math.round(daysVals.reduce((a, b) => a + b, 0) / daysVals.length) : null,
+      completionPct: agreed > 0 ? Math.round((completed / agreed) * 100) : null,
+    };
+  }, [rows]);
+
+  const kpiTiles = [
+    {
+      label: 'Visited in last 90 days',
+      value: kpis.visited90Pct != null ? `${kpis.visited90Pct}%` : '—',
+    },
+    {
+      label: 'Avg days since last visit',
+      value: kpis.avgDays != null ? String(kpis.avgDays) : '—',
+    },
+    {
+      label: 'Agreed-action completion',
+      value: kpis.completionPct != null ? `${kpis.completionPct}%` : '—',
+    },
+  ];
+
+  const daysSinceClass = (days: number | null): string => {
+    if (days == null) return 'text-muted-foreground';
+    if (days > 90) return 'text-[#dc2626] font-semibold';
+    if (days > 45) return 'text-[#d97706] font-medium';
+    return 'text-foreground';
+  };
+
+  return (
+    <Card className="shadow-card rounded-xl">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base font-semibold">Coaching coverage</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        {isLoading ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="rounded-lg border p-4 space-y-2">
+                  <Skeleton className="h-3 w-28" />
+                  <Skeleton className="h-7 w-12" />
+                </div>
+              ))}
+            </div>
+            <div className="space-y-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-10 w-full" />
+              ))}
+            </div>
+          </div>
+        ) : rows.length === 0 ? (
+          <div className="py-10 text-center">
+            <p className="text-sm text-muted-foreground">No dealers in your network yet.</p>
+          </div>
+        ) : (
+          <>
+            {/* KPI tiles */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {kpiTiles.map(tile => (
+                <div key={tile.label} className="rounded-lg border p-4">
+                  <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                    {tile.label}
+                  </p>
+                  <p className="text-2xl font-semibold text-foreground mt-1">{tile.value}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Per-dealer table */}
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Dealer</TableHead>
+                    <TableHead className="text-center">Last visit</TableHead>
+                    <TableHead className="text-center">Days since</TableHead>
+                    <TableHead className="text-center">Visits (90d)</TableHead>
+                    <TableHead className="text-center">Agreed actions</TableHead>
+                    <TableHead className="text-center">Completion %</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rows.map(r => {
+                    const completionPct =
+                      r.agreed_actions > 0
+                        ? Math.round((r.agreed_actions_completed / r.agreed_actions) * 100)
+                        : null;
+                    return (
+                      <TableRow key={r.dealership_id}>
+                        <TableCell className="font-medium text-foreground">{r.dealership_name}</TableCell>
+                        <TableCell className="text-center">
+                          {r.last_visit_date ? (
+                            <span className="text-sm">{format(new Date(r.last_visit_date), 'dd MMM yyyy')}</span>
+                          ) : (
+                            <Badge variant="outline" className="bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20 text-xs">
+                              Never
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className={`text-center text-sm ${daysSinceClass(r.days_since_last_visit)}`}>
+                          {r.days_since_last_visit ?? '—'}
+                        </TableCell>
+                        <TableCell className="text-center text-sm">{r.visits_last_90d}</TableCell>
+                        <TableCell className="text-center text-sm">
+                          {r.agreed_actions_completed}/{r.agreed_actions}
+                        </TableCell>
+                        <TableCell>
+                          {completionPct == null ? (
+                            <span className="text-sm text-muted-foreground">—</span>
+                          ) : (
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="h-1.5 w-16 bg-muted rounded-full overflow-hidden">
+                                <div
+                                  className="h-1.5 rounded-full bg-[#2563eb]"
+                                  style={{ width: `${completionPct}%` }}
+                                />
+                              </div>
+                              <span className="text-xs font-medium text-foreground w-9">{completionPct}%</span>
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function OemDashboard() {
   const { actorType, loading: roleLoading } = useActiveRole();
   const { currentOrganization } = useMultiTenant();
