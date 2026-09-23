@@ -11,7 +11,6 @@ import { FileText, Loader2, Globe, Shield, AlertCircle, FileSpreadsheet } from '
 import { useToast } from '@/hooks/use-toast';
 import { generatePDFReport, type PDFExportData } from '@/lib/pdfReportGenerator';
 import { generateExcelReport, type ExcelExportParams } from '@/lib/excelExportGenerator';
-import { useTranslation } from 'react-i18next';
 import { getDepartmentName } from '@/lib/departmentNames';
 import { getMaturityLevel } from '@/lib/constants';
 import { calculateWeightedScore } from '@/lib/scoringEngine';
@@ -35,7 +34,6 @@ export function ExportPDFModal({ open, onOpenChange, exportData }: ExportPDFModa
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [xlsxGenerating, setXlsxGenerating] = useState(false);
   const { toast } = useToast();
-  const { t } = useTranslation();
 
   const reportLang = exportData?.organization?.default_language || 'en';
 
