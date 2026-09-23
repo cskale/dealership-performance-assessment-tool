@@ -185,15 +185,27 @@ export function NotificationBell({ collapsed = false, headerMode = false }: Noti
                 className="w-full text-left px-4 py-3 border-b border-border/50 last:border-0 hover:bg-muted/40 transition-colors"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <p className="text-body-sm font-medium text-foreground leading-snug flex-1">
-                    {n.title}
-                  </p>
+                  <div className="flex items-start gap-2 flex-1 min-w-0">
+                    {n.entity_type === 'visit_recap' && (
+                      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[hsl(var(--brand-500))]/10 text-[hsl(var(--brand-500))]">
+                        <ClipboardCheck className="h-3.5 w-3.5" />
+                      </span>
+                    )}
+                    <p className="text-body-sm font-medium text-foreground leading-snug flex-1">
+                      {n.title}
+                    </p>
+                  </div>
                   <span className="text-caption text-muted-foreground shrink-0 mt-0.5">
                     {timeAgo(n.created_at)}
                   </span>
                 </div>
-                <p className="text-body-sm text-muted-foreground mt-0.5 leading-snug">
-                  {truncate(n.body)}
+                <p
+                  className={cn(
+                    'text-body-sm text-muted-foreground mt-0.5 leading-snug',
+                    n.entity_type === 'visit_recap' && 'line-clamp-2',
+                  )}
+                >
+                  {n.entity_type === 'visit_recap' ? n.body : truncate(n.body)}
                 </p>
                 {n.entity_type === 'improvement_action' && (
                   <Badge variant="outline" className="mt-1.5 text-caption px-1.5 py-0">
