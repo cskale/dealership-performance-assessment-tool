@@ -221,6 +221,76 @@ export function VisitLogSheet({ open, onOpenChange, visit, dealershipId, dealerN
         </DialogHeader>
 
         <div className="mt-6 space-y-6">
+          {/* Review last visit's actions */}
+          {showReviewSection && (
+            <div className="space-y-2">
+              <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Review last visit's actions
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Marking Done completes the action in the dealer's plan.
+              </p>
+              {actionsToReview.length === 0 ? (
+                <p className="text-xs text-muted-foreground">No open actions from the last visit.</p>
+              ) : (
+                <div className="space-y-3">
+                  {actionsToReview.map(action => {
+                    const selected = reviewOutcomes[action.id] ?? action.last_review?.outcome ?? null;
+                    return (
+                      <div key={action.id} className="rounded-lg border border-border p-3 space-y-2.5">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-xs font-medium leading-snug">{action.title}</p>
+                          {action.last_review && (
+                            <Badge
+                              variant="outline"
+                              className="text-[9px] font-semibold shrink-0 bg-muted text-muted-foreground border-border"
+                            >
+                              Previously: {OUTCOME_OPTIONS.find(o => o.value === action.last_review!.outcome)?.label ?? action.last_review.outcome}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">
+                          {action.responsible_person || 'No owner'} · Due {action.target_completion_date ? format(new Date(action.target_completion_date), 'dd MMM yyyy') : '—'}
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {OUTCOME_OPTIONS.map(opt => (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={() =>
+                                setReviewOutcomes(prev => {
+                                  const next = { ...prev };
+                                  if (selected === opt.value) delete next[action.id];
+                                  else next[action.id] = opt.value;
+                                  return next;
+                                })
+                              }
+                              className={`text-xs px-3 py-1.5 rounded-md border transition-colors ${
+                                selected === opt.value
+                                  ? 'border-[hsl(var(--brand-500))] bg-[hsl(var(--brand-500))]/10 text-[hsl(var(--brand-500))]'
+                                  : 'border-border bg-background text-muted-foreground hover:border-border/80'
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                        <Input
+                          type="text"
+                          placeholder="What's blocking it / what changed?"
+                          value={reviewNotes[action.id] ?? ''}
+                          onChange={e => setReviewNotes(prev => ({ ...prev, [action.id]: e.target.value }))}
+                          maxLength={500}
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Visit type */}
           <div className="space-y-2">
             <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Visit type</Label>
