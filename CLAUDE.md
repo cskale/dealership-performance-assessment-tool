@@ -222,8 +222,9 @@ OEM admins manage their network at `/app/oem-settings` (Network Settings in side
 `evaluateCrossValidations()` from `src/data/crossValidationRules.ts` and `generateCeilingInsights()` from `ceilingAnalysis.ts` are both computed via `useMemo` in `Results.tsx` and rendered inline (`CeilingInsightsPanel`, cross-validation alert cards).
 
 ## i18n
-- EN + DE complete; FR, ES, IT incomplete.
-- Two systems coexist: `src/contexts/LanguageContext.tsx` (`useLanguage()`, bulk of UI strings) and `src/lib/i18n.ts` (i18next, JSON in `src/i18n/*.json`). Add new keys where the surrounding component already reads from.
+- Single system: `useLanguage()` from `src/contexts/LanguageContext.tsx`. Dictionaries live in `src/i18n/<lang>.ts` (flat `'area.key': 'text'` maps). `en.ts` is bundled and is the fallback; other languages are lazy-loaded.
+- Adding a string: add the key to `en.ts` and all four other language files. All 5 dictionaries are complete for existing keys.
+- Gap: many pages/components (Dashboard, Auth, Onboarding, Knowledge Hub, Playground calculators, etc.) still hard-code English. All new user-facing text must go through `t()`.
 - All `oem.*` and `coach.*` i18n keys are present in EN and DE.
 
 ## Development Rules

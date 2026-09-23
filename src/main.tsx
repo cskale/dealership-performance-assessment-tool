@@ -1,5 +1,4 @@
 import './instrument';
-import '@/lib/i18n';
 import * as Sentry from '@sentry/react';
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
