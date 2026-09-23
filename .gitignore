@@ -23,6 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .env
+.env.test
 
 # Superpowers plugin local session files
 .superpowers/
@@ -30,3 +31,7 @@ dist-ssr
 # Bun lock files (project uses npm)
 bun.lock
 bun.lockb
+
+# Local-only
+.claude/settings.local.json
+brag-output/

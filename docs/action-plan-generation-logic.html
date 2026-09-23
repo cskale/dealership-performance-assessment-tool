@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Action Plan Generation Logic — Dealer Diagnostic Platform</title>
+<style>
+  :root {
+    --bg: #f8f9fb;
+    --card: #ffffff;
+    --border: #e2e6ed;
+    --text: #1a1f2e;
+    --muted: #5c6478;
+    --accent: #1a3a6b;
+    --accent-light: #e8eef7;
+    --signal-high: #c0392b;
+    --signal-med: #e67e22;
+    --signal-low: #2980b9;
+    --green: #27ae60;
+    --purple: #8e44ad;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    padding: 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* ─── Header ─── */
+  .doc-header {
+    background: var(--accent);
+    color: #fff;
+    padding: 2.5rem 2.5rem 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+  }
+  .doc-header h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: .35rem; }
+  .doc-header .subtitle { font-size: 1.05rem; opacity: .85; }
+  .doc-header .meta { margin-top: 1.2rem; font-size: .85rem; opacity: .7; display: flex; gap: 2rem; flex-wrap: wrap; }
+
+  /* ─── Sections ─── */
+  section { margin-bottom: 2rem; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.75rem 2rem;
+    margin-bottom: 1.25rem;
+  }
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  h2 .num {
+    background: var(--accent);
+    color: #fff;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .8rem;
+    flex-shrink: 0;
+  }
+  h3 { font-size: 1.05rem; font-weight: 600; margin: 1rem 0 .5rem; color: var(--text); }
+  p { margin-bottom: .75rem; color: var(--muted); }
+  p.lead { color: var(--text); font-size: 1.02rem; }
+
+  ul, ol { margin: .5rem 0 1rem 1.5rem; color: var(--muted); }
+  li { margin-bottom: .35rem; }
+  li strong { color: var(--text); }
+
+  /* ─── Signal badges ─── */
+  .signal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: .75rem;
+    margin: 1rem 0;
+  }
+  .signal-chip {
+    background: var(--accent-light);
+    border-left: 4px solid var(--accent);
+    border-radius: 6px;
+    padding: .6rem .9rem;
+    font-size: .88rem;
+  }
+  .signal-chip .code { font-weight: 700; color: var(--accent); font-size: .82rem; font-family: 'Consolas', monospace; }
+  .signal-chip .desc { color: var(--muted); font-size: .82rem; margin-top: .15rem; }
+
+  /* ─── Severity table ─── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: .9rem;
+  }
+  th {
+    background: var(--accent);
+    color: #fff;
+    padding: .6rem .9rem;
+    text-align: left;
+    font-weight: 600;
+  }
+  th:first-child { border-radius: 6px 0 0 0; }
+  th:last-child { border-radius: 0 6px 0 0; }
+  td {
+    padding: .55rem .9rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) { background: #fafbfd; }
+
+  .sev-high { color: var(--signal-high); font-weight: 600; }
+  .sev-med { color: var(--signal-med); font-weight: 600; }
+  .sev-low { color: var(--signal-low); font-weight: 600; }
+
+  /* ─── Block Diagram ─── */
+  .diagram-wrap {
+    overflow-x: auto;
+    padding: 1rem 0;
+  }
+  .diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    min-width: 700px;
+  }
+  .d-block {
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    padding: .9rem 1.5rem;
+    text-align: center;
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--card);
+    min-width: 340px;
+    max-width: 520px;
+    position: relative;
+  }
+  .d-block.start {
+    background: var(--accent);
+    color: #fff;
+    border-radius: 24px;
+  }
+  .d-block.decision {
+    border-radius: 4px;
+    transform: none;
+    background: #fff8e1;
+    border-color: #e67e22;
+    color: #b7791f;
+  }
+  .d-block.process {
+    background: var(--accent-light);
+  }
+  .d-block.output {
+    background: #e8f5e9;
+    border-color: var(--green);
+    color: #1b6e37;
+  }
+  .d-block.enrich {
+    background: #f3e8ff;
+    border-color: var(--purple);
+    color: #6b21a8;
+  }
+  .d-block .sub {
+    display: block;
+    font-weight: 400;
+    font-size: .78rem;
+    margin-top: .25rem;
+    opacity: .8;
+  }
+
+  .d-arrow {
+    width: 2px;
+    height: 28px;
+    background: var(--accent);
+    position: relative;
+  }
+  .d-arrow::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid var(--accent);
+  }
+  .d-arrow.orange { background: #e67e22; }
+  .d-arrow.orange::after { border-top-color: #e67e22; }
+  .d-arrow.green { background: var(--green); }
+  .d-arrow.green::after { border-top-color: var(--green); }
+  .d-arrow.purple { background: var(--purple); }
+  .d-arrow.purple::after { border-top-color: var(--purple); }
+
+  .d-label {
+    font-size: .75rem;
+    color: var(--muted);
+    text-align: center;
+    padding: .15rem 0;
+    font-style: italic;
+  }
+
+  .d-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .d-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* ─── Key terms ─── */
+  .term-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: .75rem;
+    margin: 1rem 0;
+  }
+  .term-card {
+    background: #fafbfd;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .75rem 1rem;
+  }
+  .term-card dt { font-weight: 700; color: var(--accent); font-size: .9rem; margin-bottom: .2rem; }
+  .term-card dd { font-size: .85rem; color: var(--muted); }
+
+  /* ─── Print ─── */
+  @media print {
+    body { padding: .5rem; }
+    .doc-header { background: #1a3a6b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card { break-inside: avoid; }
+    th { background: #1a3a6b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+  @media (max-width: 600px) {
+    body { padding: 1rem; }
+    .card { padding: 1.25rem; }
+    .signal-grid, .term-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════ HEADER ════════ -->
+<div class="doc-header">
+  <h1>Action Plan Generation Logic</h1>
+  <div class="subtitle">How the platform turns assessment answers into targeted improvement actions</div>
+  <div class="meta">
+    <span>Product: Dealer Diagnostic Platform</span>
+    <span>Version: June 2026</span>
+    <span>Audience: Stakeholders &amp; Presentations</span>
+  </div>
+</div>
+
+<!-- ════════ OVERVIEW ════════ -->
+<section>
+  <div class="card">
+    <h2><span class="num">1</span> Overview</h2>
+    <p class="lead">
+      When a dealer completes an assessment, the platform automatically generates a prioritised action plan.
+      The entire process is <strong>deterministic</strong> &mdash; the same answers always produce the same actions.
+      There is no AI/ML, no randomness, and no manual intervention required.
+    </p>
+    <p>
+      The engine analyses each answer, identifies <strong>signals</strong> (patterns of operational weakness),
+      matches them to pre-built <strong>action templates</strong>, and enriches each action with consulting-grade
+      context before saving to the database. The dealer and their coach see the finished action plan immediately.
+    </p>
+  </div>
+</section>
+
+<!-- ════════ BLOCK DIAGRAM ════════ -->
+<section>
+  <div class="card">
+    <h2><span class="num">2</span> Block Diagram &mdash; End-to-End Flow</h2>
+    <div class="diagram-wrap">
+      <div class="diagram">
+
+        <!-- Step 1 -->
+        <div class="d-block start">
+          Dealer Completes Assessment
+          <span class="sub">61 questions across 5 departments &middot; score 1&ndash;5 each</span>
+        </div>
+        <div class="d-arrow"></div>
+
+        <!-- Step 2 -->
+        <div class="d-block process">
+          Rate Limit Check
+          <span class="sub">Edge Function: max 5 generations per user per hour</span>
+        </div>
+        <div class="d-arrow"></div>
+
+        <!-- Step 3 -->
+        <div class="d-block process">
+          Load Assessment Answers + Question Weights
+          <span class="sub">Each question has a weight (1.0&ndash;1.5&times;) reflecting business impact</span>
+        </div>
+        <div class="d-arrow"></div>
+
+        <!-- Step 4: Signal Generation -->
+        <div class="d-block" style="border-color: var(--signal-high); color: var(--signal-high);">
+          Signal Generation Engine
+          <span class="sub">Scan every answer &le; 3 &rarr; resolve signal code &rarr; group by department</span>
+        </div>
+        <div class="d-arrow" style="background: var(--signal-high);">
+          <span style="display:none;">arrow</span>
+        </div>
+        <div class="d-label">3-tier signal resolution: Question &rarr; Mapping table &rarr; Category fallback</div>
+        <div class="d-arrow" style="background: var(--signal-high);">
+          <span style="display:none;">arrow</span>
+        </div>
+
+        <!-- Step 5: Severity -->
+        <div class="d-block decision">
+          Severity Classification
+          <span class="sub">Score &times; weight &rarr; HIGH / MEDIUM / LOW &middot; escalation if &ge;3 questions trigger same signal</span>
+        </div>
+        <div class="d-arrow orange"></div>
+
+        <!-- Step 5b: Ceiling -->
+        <div class="d-block decision">
+          Ceiling Pass (High-Performing Departments)
+          <span class="sub">Score = 4 on high-weight questions in departments scoring &ge;65 &rarr; soft signal for "last mile" improvement</span>
+        </div>
+        <div class="d-arrow orange"></div>
+
+        <!-- Step 6: Template Selection -->
+        <div class="d-block process">
+          Template Selection (4-pass cascade)
+          <span class="sub">
+            1. Tiered department-specific templates &rarr;
+            2. KPI-specific templates &rarr;
+            3. Generic signal templates &rarr;
+            4. Emergency fallback
+          </span>
+        </div>
+        <div class="d-arrow"></div>
+        <div class="d-label">Filters: score band (foundational / developing / optimising) + business model (2S / 3S / 4S)</div>
+        <div class="d-arrow"></div>
+
+        <!-- Step 7: Context Intelligence -->
+        <div class="d-block enrich">
+          Context Intelligence Enrichment
+          <span class="sub">
+            Adds: business impact narrative, root cause analysis, expected benefit,
+            likely drivers &amp; consequences, impact / effort / urgency scores
+          </span>
+        </div>
+        <div class="d-arrow purple"></div>
+
+        <!-- Step 8: Cross-validation -->
+        <div class="d-block process">
+          Cross-Validation Checks
+          <span class="sub">Consistency rules between related answers &rarr; alert flags on contradictions</span>
+        </div>
+        <div class="d-arrow"></div>
+
+        <!-- Step 9: Format + Insert -->
+        <div class="d-block output">
+          Format &amp; Save to Database
+          <span class="sub">
+            Clean titles, set owner roles, calculate due dates, assign priority &rarr;
+            INSERT into improvement_actions &middot; max 10 actions per assessment
+          </span>
+        </div>
+        <div class="d-arrow green"></div>
+
+        <!-- Step 10 -->
+        <div class="d-block start" style="background: var(--green); border-color: var(--green);">
+          Action Plan Visible to Dealer + Coach
+          <span class="sub">Kanban board &middot; Roadmap view &middot; ActionSheet detail panels &middot; PDF/Excel export</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ STEP-BY-STEP ════════ -->
+<section>
+  <div class="card">
+    <h2><span class="num">3</span> Step-by-Step Explanation</h2>
+
+    <h3>Step 1 &mdash; Assessment Completion</h3>
+    <p>
+      A dealer answers 61 scored questions across five departments: New Vehicle Sales, Used Vehicle Sales,
+      Service, Parts &amp; Inventory, and Financial Operations. Each answer is a score from 1 (lowest) to 5 (highest).
+      Each question also carries a <strong>weight</strong> (1.0&times; to 1.5&times;) that reflects how much business
+      impact that area has.
+    </p>
+
+    <h3>Step 2 &mdash; Rate Limiting</h3>
+    <p>
+      Before generating, the platform checks a server-side rate limit: a user can generate actions at most
+      <strong>5 times per hour</strong>. This prevents accidental duplicate runs and protects infrastructure.
+      The check happens via a Supabase Edge Function.
+    </p>
+
+    <h3>Step 3 &mdash; Signal Generation</h3>
+    <p>
+      The Signal Engine scans every answer. Any question scored <strong>3 or below</strong> is flagged as a
+      weakness. The engine then determines <em>what type</em> of weakness it is by resolving a
+      <strong>signal code</strong> &mdash; a standardised label like "PROCESS_NOT_STANDARDISED" or "KPI_NOT_REVIEWED".
+    </p>
+    <p>
+      Resolution uses a 3-tier fallback:
+    </p>
+    <ol>
+      <li><strong>Tier 1 &mdash; Question-level:</strong> The question itself declares its signal code (most precise, zero-maintenance).</li>
+      <li><strong>Tier 2 &mdash; Mapping table:</strong> A central lookup table maps question IDs to signal codes.</li>
+      <li><strong>Tier 3 &mdash; Category derivation:</strong> If neither above matches, the question's category (e.g. "inventory", "digital") is mapped to a signal code automatically.</li>
+    </ol>
+    <p>
+      Weak answers with the <em>same signal code in the same department</em> are grouped together into a single
+      signal. This grouping is important &mdash; it means "three weak inventory questions" becomes one strong
+      inventory signal, not three separate alerts.
+    </p>
+
+    <h3>Step 4 &mdash; Severity &amp; Escalation</h3>
+    <p>
+      Each signal is assigned a severity based on the worst score and the question weight:
+    </p>
+    <table>
+      <thead>
+        <tr><th>Condition</th><th>Severity</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Score &le; 2 and weight &ge; 1.3&times;</td><td class="sev-high">HIGH</td></tr>
+        <tr><td>Score &le; 2 and weight &ge; 1.0&times;</td><td class="sev-med">MEDIUM</td></tr>
+        <tr><td>Score = 3</td><td class="sev-low">LOW</td></tr>
+      </tbody>
+    </table>
+    <p>
+      <strong>Escalation rule:</strong> If 3 or more questions trigger the same signal, severity is bumped up
+      one level (LOW &rarr; MEDIUM, MEDIUM &rarr; HIGH). This catches systemic problems that individually look
+      moderate but collectively are serious.
+    </p>
+
+    <h3>Step 5 &mdash; Ceiling Pass (High Performers)</h3>
+    <p>
+      For departments already scoring well (&ge;65), the engine looks for high-weight questions scored exactly 4.
+      These create soft "ceiling" signals &mdash; opportunities for a strong department to reach the next level.
+      This ensures high-performing dealers still get useful, aspirational actions instead of an empty plan.
+    </p>
+
+    <h3>Step 6 &mdash; Template Selection</h3>
+    <p>
+      Each signal is matched to one or more <strong>action templates</strong> from a library of 22+ pre-built templates.
+      Selection uses a 4-pass cascade:
+    </p>
+    <ol>
+      <li><strong>Tiered templates</strong> &mdash; Department-specific templates (e.g. "NVS Lead Response", "SVC Workshop Utilisation") matched by score band (foundational / developing / optimising). These are the most tailored.</li>
+      <li><strong>KPI-specific templates</strong> &mdash; Templates linked to specific KPIs that overlap with the signal's linked KPIs.</li>
+      <li><strong>Generic signal templates</strong> &mdash; Broader templates that match the signal code alone.</li>
+      <li><strong>Emergency fallback</strong> &mdash; If all above return nothing, any unbanded template for the signal code is used to guarantee at least one action.</li>
+    </ol>
+    <p>
+      Templates are also filtered by <strong>business model</strong> (2S sales+service, 3S +parts, 4S +bodyshop)
+      so a 2S dealer never gets a parts-specific action.
+    </p>
+    <p>
+      Each template already contains: a title, description, owner role, timeframe, priority level,
+      step-by-step implementation instructions with role assignments, and linked KPIs.
+    </p>
+
+    <h3>Step 7 &mdash; Context Intelligence Enrichment</h3>
+    <p>
+      Before saving, each action is enriched with <strong>consulting-grade context</strong>:
+    </p>
+    <ul>
+      <li><strong>Action Context</strong> &mdash; a plain-language explanation of what the gap is and why it matters, using real industry benchmarks (e.g. "top-quartile labour utilisation: 85&ndash;92%").</li>
+      <li><strong>Business Impact</strong> &mdash; quantified consequences of inaction (e.g. "typically costing 3&ndash;5% in recoverable revenue").</li>
+      <li><strong>Root Cause Analysis</strong> &mdash; identifies whether the issue is people, process, tools, structure, or incentives.</li>
+      <li><strong>Likely Drivers &amp; Consequences</strong> &mdash; upstream causes and downstream effects.</li>
+      <li><strong>Impact / Effort / Urgency scores</strong> (1&ndash;5) &mdash; helps dealers prioritise which actions to tackle first.</li>
+      <li><strong>KPI Interdependencies</strong> &mdash; from a database of 111 KPI definitions, showing which metrics this action will affect.</li>
+    </ul>
+
+    <h3>Step 8 &mdash; Cross-Validation</h3>
+    <p>
+      The engine runs consistency checks between related answers. For example, if a dealer claims high customer
+      satisfaction but scores poorly on all service-process questions, the system flags this contradiction.
+      These alerts appear alongside the action plan as advisory notes.
+    </p>
+
+    <h3>Step 9 &mdash; Save &amp; Present</h3>
+    <p>
+      Actions are formatted for storage: titles are cleaned, owner roles assigned, due dates calculated
+      from the template's default timeframe, and the full set (max 10 actions) is inserted into the database.
+      A DB trigger automatically logs every insert into an audit trail.
+    </p>
+    <p>
+      The dealer immediately sees their action plan on:
+    </p>
+    <ul>
+      <li><strong>Kanban board</strong> &mdash; drag-and-drop between Open / In Progress / Completed</li>
+      <li><strong>Roadmap view</strong> &mdash; actions grouped into 30 / 60 / 90-day columns</li>
+      <li><strong>Action detail panel</strong> &mdash; full context, implementation steps, activity feed</li>
+      <li><strong>PDF / Excel export</strong> &mdash; for offline use and reporting</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ════════ SIGNAL CODES ════════ -->
+<section>
+  <div class="card">
+    <h2><span class="num">4</span> The 8 Signal Codes</h2>
+    <p>Every operational weakness detected by the engine maps to one of these eight signal codes:</p>
+    <div class="signal-grid">
+      <div class="signal-chip">
+        <div class="code">PROCESS_NOT_STANDARDISED</div>
+        <div class="desc">SOPs missing or inconsistent</div>
+      </div>
+      <div class="signal-chip">
+        <div class="code">PROCESS_NOT_EXECUTED</div>
+        <div class="desc">Defined processes not being followed</div>
+      </div>
+      <div class="signal-chip">
+        <div class="code">ROLE_OWNERSHIP_MISSING</div>
+        <div class="desc">Accountability and ownership gaps</div>
+      </div>
+      <div class="signal-chip">
+        <div class="code">KPI_NOT_DEFINED</div>
+        <div class="desc">Performance metrics not established</div>
+      </div>
+      <div class="signal-chip">
+        <div class="code">KPI_NOT_REVIEWED</div>
+        <div class="desc">Metrics exist but aren't acted on</div>
+      </div>
+      <div class="signal-chip">
+        <div class="code">CAPACITY_MISALIGNED</div>
+        <div class="desc">Resources don't match demand</div>
+      </div>
+      <div class="signal-chip">
+        <div class="code">TOOL_UNDERUTILISED</div>
+        <div class="desc">Technology not fully leveraged</div>
+      </div>
+      <div class="signal-chip">
+        <div class="code">GOVERNANCE_WEAK</div>
+        <div class="desc">Oversight structures insufficient</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SCORE BANDS ════════ -->
+<section>
+  <div class="card">
+    <h2><span class="num">5</span> Score Bands &amp; Template Tiers</h2>
+    <p>
+      The department's overall score determines which <em>tier</em> of template is selected,
+      so actions are calibrated to the dealer's maturity level:
+    </p>
+    <table>
+      <thead>
+        <tr><th>Score Range</th><th>Band</th><th>Template Tone</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>0 &ndash; 45</td><td><strong>Foundational</strong></td><td>Build the basics &mdash; create SOPs, define roles, establish KPIs</td></tr>
+        <tr><td>46 &ndash; 69</td><td><strong>Developing</strong></td><td>Improve execution &mdash; enforce processes, monitor compliance, train staff</td></tr>
+        <tr><td>70 &ndash; 84</td><td><strong>Optimising</strong></td><td>Fine-tune &mdash; optimise throughput, leverage data, refine governance</td></tr>
+        <tr><td>85 &ndash; 100</td><td><strong>Ceiling</strong></td><td>Last-mile improvements &mdash; soft signals only, aspirational actions</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════════ KEY PROPERTIES ════════ -->
+<section>
+  <div class="card">
+    <h2><span class="num">6</span> Key Design Properties</h2>
+    <div class="term-grid">
+      <dl class="term-card">
+        <dt>Deterministic</dt>
+        <dd>Same answers always produce the same signals and actions. No AI, no randomness. Fully auditable and reproducible.</dd>
+      </dl>
+      <dl class="term-card">
+        <dt>Idempotent</dt>
+        <dd>Running the generator twice on the same assessment is safe &mdash; it checks for existing actions and skips if already generated.</dd>
+      </dl>
+      <dl class="term-card">
+        <dt>Business-Model Aware</dt>
+        <dd>Templates are filtered by dealership type (2S/3S/4S) so irrelevant actions are never shown.</dd>
+      </dl>
+      <dl class="term-card">
+        <dt>KPI-Linked</dt>
+        <dd>Every action is connected to specific KPIs from a 111-KPI database, showing exactly which metrics will improve.</dd>
+      </dl>
+      <dl class="term-card">
+        <dt>Maturity-Calibrated</dt>
+        <dd>A struggling department gets "build the basics" actions; a strong one gets "fine-tune" actions. Same signal, different prescription.</dd>
+      </dl>
+      <dl class="term-card">
+        <dt>Rate-Limited</dt>
+        <dd>Server-side rate limiting (5 per hour) prevents abuse. Feature flag allows disabling auto-generation entirely.</dd>
+      </dl>
+      <dl class="term-card">
+        <dt>Audit-Trailed</dt>
+        <dd>Every action creation and status change is automatically logged by a database trigger. No client-side logging needed.</dd>
+      </dl>
+      <dl class="term-card">
+        <dt>Coach-Visible</dt>
+        <dd>Actions are visible to the dealer's assigned coach in real-time. Both parties can edit, comment, and track progress.</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ EXAMPLE ════════ -->
+<section>
+  <div class="card">
+    <h2><span class="num">7</span> Worked Example</h2>
+    <p class="lead">A dealer scores poorly on three Service department questions:</p>
+    <table>
+      <thead>
+        <tr><th>Question</th><th>Score</th><th>Weight</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>"How consistently are service appointments scheduled using the DMS?"</td><td>2</td><td>1.3&times;</td></tr>
+        <tr><td>"Is workshop loading monitored against available capacity daily?"</td><td>2</td><td>1.2&times;</td></tr>
+        <tr><td>"Are service advisors following the vehicle health check process?"</td><td>3</td><td>1.0&times;</td></tr>
+      </tbody>
+    </table>
+    <h3>What happens:</h3>
+    <ol>
+      <li>All three questions resolve to signal <code>CAPACITY_MISALIGNED</code> in the <code>service-performance</code> module via Tier 1 resolution.</li>
+      <li>They are grouped into <strong>one signal</strong> with severity initially HIGH (score 2, weight 1.3&times;).</li>
+      <li>With 3 triggering questions, escalation applies &mdash; but severity is already HIGH, so it stays HIGH.</li>
+      <li>The tiered lookup maps <code>service-performance::CAPACITY_MISALIGNED</code> to the <code>SVC_WORKSHOP_UTILISATION</code> tiered template.</li>
+      <li>If the Service department score is 52 (band = "developing"), the developing-tier version of that template is selected.</li>
+      <li>The template is enriched with Context Intelligence: benchmark data ("top-quartile labour utilisation: 85&ndash;92%"), root cause ("absence of data-driven capacity planning"), and impact/effort/urgency scores.</li>
+      <li>Result: <strong>one high-priority action</strong> titled something like "Implement data-driven workshop capacity planning" with 6 implementation steps, assigned to the Workshop Controller, due in 30 days.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ════════ DATA FLOW SUMMARY ════════ -->
+<section>
+  <div class="card">
+    <h2><span class="num">8</span> Data Flow Summary</h2>
+    <table>
+      <thead>
+        <tr><th>Stage</th><th>Input</th><th>Output</th><th>Source File</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Rate limit</td><td>User ID, timestamp</td><td>Allow / reject</td><td><code>supabase/functions/generate-actions/</code></td></tr>
+        <tr><td>Signal generation</td><td>Answers + weights</td><td>Grouped signals with severity</td><td><code>src/lib/signalEngine.ts</code></td></tr>
+        <tr><td>Template selection</td><td>Signals + score bands + business model</td><td>Matched action templates</td><td><code>src/data/actionTemplates.ts</code></td></tr>
+        <tr><td>Context enrichment</td><td>Instantiated actions</td><td>Actions with narratives + scores</td><td><code>src/lib/contextIntelligence.ts</code></td></tr>
+        <tr><td>Cross-validation</td><td>Raw answers</td><td>Contradiction alerts</td><td><code>src/data/crossValidationRules.ts</code></td></tr>
+        <tr><td>Persistence</td><td>Enriched actions</td><td>Rows in <code>improvement_actions</code></td><td><code>src/lib/signalEngine.ts</code></td></tr>
+        <tr><td>Audit logging</td><td>DB trigger on insert/update</td><td>Rows in <code>action_audit_log</code></td><td>DB trigger (migration)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════════ FOOTER ════════ -->
+<div style="text-align: center; padding: 2rem 0 1rem; color: var(--muted); font-size: .8rem;">
+  Dealer Diagnostic Platform &middot; Action Plan Generation Logic &middot; June 2026<br>
+  For internal use and stakeholder presentations
+</div>
+
+</body>
+</html>
