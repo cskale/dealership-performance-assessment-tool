@@ -65,7 +65,8 @@ The core business logic lives in `src/lib/`:
 
 ### State Pattern
 
-- **Server state**: TanStack React Query (5-min stale time)
+- **Server state**: TanStack React Query (5-min stale time). New page-level data fetching goes through `useQuery`, not `useEffect` + `supabase`.
+- **Routes**: page components are `lazy()`-loaded in `App.tsx` — keep new pages lazy.
 - **Auth/multi-tenant/role state**: React Context with custom hooks (`useAuth`, `useMultiTenant`, `useActiveRole`)
 - **Forms**: React Hook Form + Zod validation schemas in `src/lib/validationSchemas.ts`
 
@@ -78,225 +79,9 @@ Base components come from shadcn/ui (`src/components/ui/`) — don't edit these 
 - PDF: `src/lib/pdfReportGenerator.ts` (html2canvas + jsPDF)
 - Excel: `src/lib/excelExportGenerator.ts` (xlsx)
 
-### Internationalization
-
-`src/contexts/LanguageContext.tsx` (44KB) contains translations. English and German are complete; other languages (ES, FR, IT) are stubs. Use `useLanguage()` hook for translations.
-
 ## Testing
 
 Tests live in `src/__tests__/`. The test setup is in `src/test-setup.ts`. Coverage thresholds are 80% for branches, functions, lines, and statements. Vitest uses jsdom environment.
-
-## Loaded Skills
-
-### artifacts-builder
-
-To build powerful frontend claude.ai artifacts, follow these steps:
-1. Initialize the frontend repo using `scripts/init-artifact.sh`
-2. Develop your artifact by editing the generated code
-3. Bundle all code into a single HTML file using `scripts/bundle-artifact.sh`
-4. Display artifact to user
-5. (Optional) Test the artifact
-
-**Stack**: React 18 + TypeScript + Vite + Parcel (bundling) + Tailwind CSS + shadcn/ui
-
-#### Design & Style Guidelines
-
-VERY IMPORTANT: To avoid what is often referred to as "AI slop", avoid using excessive centered layouts, purple gradients, uniform rounded corners, and Inter font.
-
-#### Quick Start
-
-##### Step 1: Initialize Project
-
-Run the initialization script to create a new React project:
-```bash
-bash scripts/init-artifact.sh <project-name>
-cd <project-name>
-```
-
-This creates a fully configured project with:
-- ✅ React + TypeScript (via Vite)
-- ✅ Tailwind CSS 3.4.1 with shadcn/ui theming system
-- ✅ Path aliases (`@/`) configured
-- ✅ 40+ shadcn/ui components pre-installed
-- ✅ All Radix UI dependencies included
-- ✅ Parcel configured for bundling (via .parcelrc)
-- ✅ Node 18+ compatibility (auto-detects and pins Vite version)
-
-##### Step 2: Develop Your Artifact
-
-To build the artifact, edit the generated files. See **Common Development Tasks** below for guidance.
-
-##### Step 3: Bundle to Single HTML File
-
-To bundle the React app into a single HTML artifact:
-```bash
-bash scripts/bundle-artifact.sh
-```
-
-This creates `bundle.html` - a self-contained artifact with all JavaScript, CSS, and dependencies inlined. This file can be directly shared in Claude conversations as an artifact.
-
-**Requirements**: Your project must have an `index.html` in the root directory.
-
-**What the script does**:
-- Installs bundling dependencies (parcel, @parcel/config-default, parcel-resolver-tspaths, html-inline)
-- Creates `.parcelrc` config with path alias support
-- Builds with Parcel (no source maps)
-- Inlines all assets into single HTML using html-inline
-
-##### Step 4: Share Artifact with User
-
-Finally, share the bundled HTML file in conversation with the user so they can view it as an artifact.
-
-##### Step 5: Testing/Visualizing the Artifact (Optional)
-
-Note: This is a completely optional step. Only perform if necessary or requested.
-
-To test/visualize the artifact, use available tools (including other Skills or built-in tools like Playwright or Puppeteer). In general, avoid testing the artifact upfront as it adds latency between the request and when the finished artifact can be seen. Test later, after presenting the artifact, if requested or if issues arise.
-
-#### Reference
-
-- **shadcn/ui components**: https://ui.shadcn.com/docs/components
-
----
-
-### webapp-testing
-
-To test local web applications, write native Python Playwright scripts.
-
-**Helper Scripts Available**:
-- `scripts/with_server.py` - Manages server lifecycle (supports multiple servers)
-
-**Always run scripts with `--help` first** to see usage. DO NOT read the source until you try running the script first and find that a customized solution is absolutely necessary. These scripts can be very large and thus pollute your context window. They exist to be called directly as black-box scripts rather than ingested into your context window.
-
-#### Decision Tree: Choosing Your Approach
-
-```
-User task → Is it static HTML?
-    ├─ Yes → Read HTML file directly to identify selectors
-    │         ├─ Success → Write Playwright script using selectors
-    │         └─ Fails/Incomplete → Treat as dynamic (below)
-    │
-    └─ No (dynamic webapp) → Is the server already running?
-        ├─ No → Run: python scripts/with_server.py --help
-        │        Then use the helper + write simplified Playwright script
-        │
-        └─ Yes → Reconnaissance-then-action:
-            1. Navigate and wait for networkidle
-            2. Take screenshot or inspect DOM
-            3. Identify selectors from rendered state
-            4. Execute actions with discovered selectors
-```
-
-#### Example: Using with_server.py
-
-To start a server, run `--help` first, then use the helper:
-
-**Single server:**
-```bash
-python scripts/with_server.py --server "npm run dev" --port 5173 -- python your_automation.py
-```
-
-**Multiple servers (e.g., backend + frontend):**
-```bash
-python scripts/with_server.py \
-  --server "cd backend && python server.py" --port 3000 \
-  --server "cd frontend && npm run dev" --port 5173 \
-  -- python your_automation.py
-```
-
-To create an automation script, include only Playwright logic (servers are managed automatically):
-```python
-from playwright.sync_api import sync_playwright
-
-with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True) # Always launch chromium in headless mode
-    page = browser.new_page()
-    page.goto('http://localhost:5173') # Server already running and ready
-    page.wait_for_load_state('networkidle') # CRITICAL: Wait for JS to execute
-    # ... your automation logic
-    browser.close()
-```
-
-#### Reconnaissance-Then-Action Pattern
-
-1. **Inspect rendered DOM**:
-   ```python
-   page.screenshot(path='/tmp/inspect.png', full_page=True)
-   content = page.content()
-   page.locator('button').all()
-   ```
-
-2. **Identify selectors** from inspection results
-
-3. **Execute actions** using discovered selectors
-
-#### Common Pitfall
-
-❌ **Don't** inspect the DOM before waiting for `networkidle` on dynamic apps
-✅ **Do** wait for `page.wait_for_load_state('networkidle')` before inspection
-
-#### Best Practices
-
-- **Use bundled scripts as black boxes** - To accomplish a task, consider whether one of the scripts available in `scripts/` can help. These scripts handle common, complex workflows reliably without cluttering the context window. Use `--help` to see usage, then invoke directly.
-- Use `sync_playwright()` for synchronous scripts
-- Always close the browser when done
-- Use descriptive selectors: `text=`, `role=`, CSS selectors, or IDs
-- Add appropriate waits: `page.wait_for_selector()` or `page.wait_for_timeout()`
-
-#### Reference Files
-
-- **examples/** - Examples showing common patterns:
-  - `element_discovery.py` - Discovering buttons, links, and inputs on a page
-  - `static_html_automation.py` - Using file:// URLs for local HTML
-  - `console_logging.py` - Capturing console logs during automation
-
----
-
-### mcp-builder
-
-To create high-quality MCP (Model Context Protocol) servers that enable LLMs to effectively interact with external services, use this skill. An MCP server provides tools that allow LLMs to access external services and APIs. The quality of an MCP server is measured by how well it enables LLMs to accomplish real-world tasks using the tools provided.
-
-#### High-Level Workflow
-
-Creating a high-quality MCP server involves four main phases:
-
-**Phase 1: Deep Research and Planning**
-
-- Understand agent-centric design principles: build for workflows (not just API endpoints), optimize for limited context, design actionable error messages, follow natural task subdivisions, use evaluation-driven development.
-- Fetch the latest MCP protocol documentation via WebFetch: `https://modelcontextprotocol.io/llms-full.txt`
-- For Python: fetch `https://raw.githubusercontent.com/modelcontextprotocol/python-sdk/main/README.md`
-- For Node/TypeScript: fetch `https://raw.githubusercontent.com/modelcontextprotocol/typescript-sdk/main/README.md`
-- Study all available API documentation exhaustively.
-- Create a comprehensive implementation plan covering tool selection, shared utilities, input/output design, and error handling strategy.
-
-**Phase 2: Implementation**
-
-- Python: single `.py` file or modules, MCP Python SDK, Pydantic models, async/await.
-- Node/TypeScript: proper project structure, `package.json`/`tsconfig.json`, MCP TypeScript SDK, Zod schemas.
-- Implement core infrastructure first (API helpers, error handling, response formatting, pagination, auth).
-- For each tool: define input schema with Pydantic/Zod, write comprehensive docstrings, implement logic with shared utilities, add tool annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`).
-
-**Phase 3: Review and Refine**
-
-- Review for DRY, composability, consistency, error handling, type safety, documentation.
-- **Important**: MCP servers are long-running processes — running directly will hang. Safe testing: use evaluation harness, run in tmux, or use `timeout 5s python server.py`.
-- Python: verify syntax with `python -m py_compile your_server.py`.
-- Node/TypeScript: run `npm run build` and verify `dist/index.js` is created.
-
-**Phase 4: Create Evaluations**
-
-- Create 10 evaluation questions that are independent, read-only, complex, realistic, verifiable, and stable.
-- Output as XML: `<evaluation><qa_pair><question>...</question><answer>...</answer></qa_pair></evaluation>`
-
-#### Reference Files (load as needed)
-
-- MCP Protocol: `https://modelcontextprotocol.io/llms-full.txt`
-- Python SDK: `https://raw.githubusercontent.com/modelcontextprotocol/python-sdk/main/README.md`
-- TypeScript SDK: `https://raw.githubusercontent.com/modelcontextprotocol/typescript-sdk/main/README.md`
-- Language-specific guides: `./reference/python_mcp_server.md`, `./reference/node_mcp_server.md`
-- Evaluation guide: `./reference/evaluation.md`
-
----
 
 # Project Context — Dealership Performance Assessment Tool
 
@@ -305,7 +90,6 @@ Creating a high-quality MCP server involves four main phases:
 - **Target users**: Dealer principals, field coaches, OEM programme managers (BMW, Mercedes, VW-group)
 - **Repo**: `cskale/dealership-performance-assessment-tool` (private, GitHub)
 - **Production URL**: `https://dealership-performance-assessment-t.vercel.app`
-- **Current branch**: `main` — all changes commit here unless explicitly branching
 
 ## Stack
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui (Radix UI primitives)
@@ -321,18 +105,17 @@ Creating a high-quality MCP server involves four main phases:
 - **Vercel team ID**: `team_cdH1L9KDYd3JzW48BrxrKkQq`
 
 ## Key File Locations
-- **Assessment questions**: `src/data/assessmentQuestions.ts`
+- **Assessment questions**: `src/data/questionnaire.ts`
 - **KPI definitions**: `src/lib/kpiDefinitions.ts`
 - **Signal engine**: `src/lib/signalEngine.ts`
 - **Action templates**: `src/data/actionTemplates.ts`
 - **Benchmark governance**: `src/lib/benchmarkGovernance.ts`
 - **Narrative templates**: `src/lib/narrativeTemplates.ts`
-- **Cross-validation rules**: `src/lib/crossValidationRules.ts`
+- **Cross-validation rules**: `src/data/crossValidationRules.ts`
 - **Ceiling analysis**: `src/lib/ceilingAnalysis.ts`
 - **PDF generator**: `src/lib/pdfReportGenerator.ts`
 - **Active role hook**: `src/hooks/useActiveRole.tsx` — reads `actor_type` from profiles; use this for role-gating
 - **Multi-tenant hook**: `src/hooks/useMultiTenant.tsx` — org-level scoping for dealer data
-- **i18n**: `src/lib/i18n.ts` — EN + DE complete, FR/ES/IT partial
 - **Supabase types**: `src/integrations/supabase/types.ts` — auto-generated, regenerate via Supabase MCP after schema changes
 - **Edge functions**: `supabase/functions/` — CORS locked to allowlist
 - **OEM dashboard**: `src/pages/OemDashboard.tsx` — live at `/app/oem-dashboard`, gated to `actor_type='oem'`
@@ -342,14 +125,13 @@ Creating a high-quality MCP server involves four main phases:
 - **Invite team members**: `src/components/InviteTeamMembers.tsx` — dealer team invites (Account → Team tab)
 - **Invite coach**: `src/components/InviteCoach.tsx` — coach invites (Account → Team tab, below InviteTeamMembers)
 - **Protected route**: `src/components/ProtectedRoute.tsx` — supports `requiresActorType` prop
-- **Playground catalog**: `src/pages/Playground.tsx` — live at `/app/playground`, lists all calculators (1 live, 11 "Coming Soon")
-- **Reverse Sales Funnel Calculator**: `src/pages/ReverseSalesFunnelPage.tsx` — live at `/app/playground/reverse-sales-funnel`
+- **Playground catalog**: `src/pages/Playground.tsx` — live at `/app/playground`, lists all calculators; each live one has its own `src/pages/*Page.tsx` built on `PlaygroundCalculatorShell`
 - **Playground calculator shell**: `src/components/playground/PlaygroundCalculatorShell.tsx` — shared layout for all Playground tools
 - **Playground calculator logic**: `src/lib/playgroundCalculators.ts`
 - **Playground KPI mappings**: `src/data/playgroundKpiMappings.ts` — maps calculator input fields to `kpiKey`s for prefill
 - **Playground prefill hook**: `src/hooks/usePlaygroundPrefill.ts` — fetches latest KPI values for mapped fields
 
-## Role Architecture (implemented as of 29 Apr 2026)
+## Role Architecture
 
 Three actor types exist in `profiles.actor_type` enum: `'dealer' | 'coach' | 'oem' | 'internal'`
 
@@ -367,7 +149,6 @@ Dealer     (actor_type='dealer')→  /app/dashboard — own dealership only
 - `actor_type='dealer'` — set automatically when a user accepts a dealer invite (via `accept_dealership_invite` RPC)
 - `actor_type='coach'` — set when a user accepts a coach invite (sent via `InviteCoach` component → `send-invite` Edge Function → `/invite/:token` → `accept_dealership_invite` with `invite_type='coach'`)
 - `actor_type='oem'` — set manually via Supabase SQL: `UPDATE profiles SET actor_type='oem' WHERE user_id='<uuid>';`
-- Existing users without `actor_type`: migration `20260429090200` backfilled all to `'dealer'`
 
 **`useActiveRole` hook**: reads `actor_type` + `memberships.role` from DB. Returns `{ actorType, uxRole, membershipRole, organizationId, dealerId, loading }`. Use `actorType` for role gating (not `uxRole` — `uxRole` can be null when `active_organization_id` is null, which is intentional for coaches).
 
@@ -391,7 +172,7 @@ Dealer     (actor_type='dealer')→  /app/dashboard — own dealership only
 ### Invite table
 - `dealership_invites` — token, invited_email, dealership_id, organization_id, membership_role, status, expires_at, `invite_type` ('dealer'|'coach'). `invite_type='coach'` invites create a `coach_dealership_assignments` row on acceptance instead of a `memberships` row.
 
-## OEM Network Setup (implemented 29 Apr 2026)
+## OEM Network Setup
 
 OEM admins manage their network at `/app/oem-settings` (Network Settings in sidebar).
 
@@ -412,9 +193,7 @@ OEM admins manage their network at `/app/oem-settings` (Network Settings in side
 
 **Removing a dealer:** soft-delete — sets `dealer_network_memberships.is_active = false`. Dealer disappears from leaderboard. Re-adding re-activates the row via `ON CONFLICT DO UPDATE`.
 
-**OEM provisioning (still manual):** `UPDATE profiles SET actor_type='oem' WHERE user_id='<uuid>';` — no UI yet.
-
-## Coach Invite Flow (implemented 29 Apr 2026)
+## Coach Invite Flow
 
 1. Org owner opens Account → Team tab → "Invite a Coach" card
 2. Enters coach email (+ dealership picker if org has multiple dealerships)
@@ -432,7 +211,7 @@ OEM admins manage their network at `/app/oem-settings` (Network Settings in side
 - **Weights**: defined in `CATEGORY_WEIGHTS` in scoring logic
 - **Business models**: 2S (sales+service), 3S (+parts), 4S (+bodyshop) — branching not yet implemented
 
-## Diagnostic Engine (implemented, partially wired)
+## Diagnostic Engine
 - `signalEngine.ts` — generates signal codes from scores (CRITICAL_GAP, HIGH_PRIORITY, etc.)
 - `detectSystemicPatterns()` — cross-department clustering (3+ depts = systemic, 2 = recurring)
 - `calculateEnhancedMaturity()` — 5-level model, requires ≥85 AND no sub-cat below 60 for Advanced
@@ -440,11 +219,11 @@ OEM admins manage their network at `/app/oem-settings` (Network Settings in side
 - `buildExecutiveNarrative()` — 32 variants (4 maturity × 8 signals × single/systemic)
 - `ACTION_TEMPLATES` — 22 templates with `relevantBusinessModels[]` and `implementationSteps[]`
 
-**Now wired** (as of the Results.tsx build that added `ceilingInsights`/`crossValidationAlerts` memos): `evaluateCrossValidations()` from `crossValidationRules.ts` and `generateCeilingInsights()` from `ceilingAnalysis.ts` are both computed via `useMemo` in `Results.tsx` and rendered inline (`CeilingInsightsPanel`, cross-validation alert cards).
+`evaluateCrossValidations()` from `src/data/crossValidationRules.ts` and `generateCeilingInsights()` from `ceilingAnalysis.ts` are both computed via `useMemo` in `Results.tsx` and rendered inline (`CeilingInsightsPanel`, cross-validation alert cards).
 
 ## i18n
-- Supported languages: EN, DE (complete), FR, ES, IT (schema exists, translations incomplete)
-- Language context: `src/contexts/LanguageContext.tsx`
+- EN + DE complete; FR, ES, IT incomplete.
+- Two systems coexist: `src/contexts/LanguageContext.tsx` (`useLanguage()`, bulk of UI strings) and `src/lib/i18n.ts` (i18next, JSON in `src/i18n/*.json`). Add new keys where the surrounding component already reads from.
 - All `oem.*` and `coach.*` i18n keys are present in EN and DE.
 
 ## Development Rules
@@ -490,35 +269,17 @@ OEM admins manage their network at `/app/oem-settings` (Network Settings in side
 ### RLS Recursion (dealer_network_memberships)
 - Any RLS policy that directly joins `dealer_network_memberships` inside a policy on `dealerships` or `assessments` causes infinite recursion — the policy re-evaluates itself. Always wrap such logic in a `SECURITY DEFINER` function in the `private` schema and call that from the policy instead.
 
-### Known Non-Blocking Issues (as of 19 Jun 2026)
+### Results page memo ordering
+- `useMemo`/derived values in `Results.tsx` must be declared after everything they reference. Referencing a later `const` throws a TDZ ReferenceError at runtime and blanks Results, History and Action Plans.
+
+### Known Non-Blocking Issues
 - `useOnboarding` RLS false negatives: RLS timing can make a valid `active_dealership_id` appear inaccessible on first load. The hook now logs a warning and preserves the stored value instead of nulling it — but the root cause (RLS propagation delay) is not fixed.
 
-### Resolved Non-Blocking Issues
-- ~~`action_audit_log` 403~~ — fixed: DB trigger handles inserts (migration `20260514000001`), SELECT policy added (migration `20260514000004`), no client-side inserts remain.
-- ~~ActionSheet PATCH body serialisation~~ — fixed: `performUpdate` uses Supabase `.update()` correctly; no raw REST calls.
-- ~~`DialogContent` without `DialogTitle`~~ — fixed: all rendered dialogs have `DialogTitle`; unused `CommandDialog` in shadcn/ui `command.tsx` is not rendered anywhere.
+## Improvement Tracker
+- Status and priorities: `improvement_tracker_updated.html` (open in browser). Don't duplicate status here.
 
-## Current Tracker Status (as of 15 June 2026)
-- Total items: 63 (62 from 1 May 2026 + #84 Playground KPI seeding)
-- Done: ~50 (79%)
-- Pending/Partial: ~13 (21%)
-- **Completed (April–May 2026 sessions)**: #01 role architecture, #05 network tables + RLS, #31 score decomposition, #35 30/60/90 roadmap, #38 OEM dashboard + settings, #39 coach dashboard + action tracker, #41 OEM peer rank, #45 confidence variance warning, #47 dashboard empty state/onboarding, #55 coach invite flow, #56 OEM self-service activation, #57 OEM cross-org RLS + lookup functions, signal mapping refactor (question-driven architecture), 11 KPI-proxy questions added (61 total)
-- **Completed (June 2026 session)**: #84 Playground — Reverse Sales Funnel Calculator (`/app/playground`), `PlaygroundCalculatorShell` reusable shell, KPI-seeded pre-fill (`usePlaygroundPrefill` + `PLAYGROUND_KPI_MAPPINGS`), `kpi_benchmark_thresholds` schema scaffold, design-language restyle (commits `8f8f408`, `2243f40`, `671a20d`, `0ed73c7`)
-- **Remaining priorities (Claude Code)**: #58 Results page OEM "viewing as dealer" context, #36 delta scoring (needs DB design), #12 context intake questionnaire, coach assignment management UI, remaining 11 Playground calculators
-- **Remaining priorities (Lovable)**: #42 neutral option tiles (anchoring bias), #44 scrollable single-page results, #48 score trajectory card (blocked on #36), #14 modular assessment
-
-## Improvement Tracker File
-- Location in repo: `improvement_tracker_updated.html`
-- Open in browser to view full status — filterable by status, category, phase
-
-## Loaded Skills (in this CLAUDE.md)
-- `artifacts-builder` — multi-component React artifact generation
-- `webapp-testing` — Playwright-based web app testing
-- `mcp-builder` — MCP server creation patterns
-
-## Global Skills (auto-loaded via stitch-skills CLI)
-- `shadcn-ui` → `~\.agents\skills\shadcn-ui`
-- `react:components` → `~\.agents\skills\react-components`
+## Project skills
+- Engineering skills (mattpocock set + `brag`) live in `.claude/skills/`.
 
 ## Agent skills
 
@@ -532,4 +293,4 @@ Default five canonical labels (`needs-triage`, `needs-info`, `ready-for-agent`, 
 
 ### Domain docs
 
-Single-context: `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+Single-context: `CONTEXT.md` + `docs/adr/` at the repo root (not yet created — create via the `domain-modeling` skill when first needed). See `docs/agents/domain.md`.
