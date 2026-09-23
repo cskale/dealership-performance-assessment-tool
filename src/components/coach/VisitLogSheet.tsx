@@ -156,6 +156,15 @@ export function VisitLogSheet({ open, onOpenChange, visit, dealershipId, dealerN
         ? [...linkedActionIds, newlyCreatedActionId]
         : linkedActionIds;
 
+      // 2b. Save reviews of last visit's agreed actions (before the visit update)
+      const reviews = actionsToReview.flatMap(a => {
+        const outcome = reviewOutcomes[a.id] ?? a.last_review?.outcome;
+        return outcome ? [{ actionId: a.id, outcome, note: reviewNotes[a.id] }] : [];
+      });
+      if (reviews.length) {
+        await saveReviews.mutateAsync({ visitId: visit.id, reviews });
+      }
+
       // 3. Update coach_visits with log fields
       const { error } = await supabase
         .from('coach_visits')
