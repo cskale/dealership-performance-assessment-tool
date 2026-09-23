@@ -35,6 +35,8 @@ const VISIT_TYPE_OPTIONS: { value: VisitType; label: string }[] = [
 
 export function VisitLogSheet({ open, onOpenChange, visit, dealershipId, dealerName, latestAssessmentId, onLogSaved }: VisitLogSheetProps) {
   const { user } = useAuth();
+  const { data: brief } = useVisitBrief(visit.dealership_id);
+  const saveReviews = useSaveVisitReviews(visit.dealership_id);
 
   // Form state — pre-fill from existing visit log if present
   const [visitType, setVisitType]           = useState<VisitType | ''>(visit.visit_type ?? '');
@@ -44,6 +46,10 @@ export function VisitLogSheet({ open, onOpenChange, visit, dealershipId, dealerN
     visit.next_visit_date ? new Date(visit.next_visit_date) : undefined
   );
   const [saving, setSaving]                 = useState(false);
+
+  // Review of last visit's agreed actions (per-action outcome + note)
+  const [reviewOutcomes, setReviewOutcomes] = useState<Record<string, ReviewOutcome>>({});
+  const [reviewNotes, setReviewNotes]       = useState<Record<string, string>>({});
 
   // Open actions for "link existing" section
   const [openActions, setOpenActions]       = useState<OpenAction[]>([]);
@@ -62,6 +68,8 @@ export function VisitLogSheet({ open, onOpenChange, visit, dealershipId, dealerN
       setSummary(visit.summary ?? '');
       setNextVisitDate(visit.next_visit_date ? new Date(visit.next_visit_date) : undefined);
       setLinkedActionIds(visit.agreed_action_ids ?? []);
+      setReviewOutcomes({});
+      setReviewNotes({});
       fetchOpenActions();
     }
   }, [open, visit]);
