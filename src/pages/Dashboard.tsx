@@ -12,6 +12,8 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { calculateWeightedScore } from '@/lib/scoringEngine';
 import { getMaturityLevel, MATURITY_LEVELS } from '@/lib/maturityConfig';
+import { CoachingVisitsSection } from '@/components/CoachingVisitsSection';
+import { useVisitBrief, useVisitHistory } from '@/hooks/useCoachVisitLoop';
 import { CoachNotesPanel } from '@/components/CoachNotesPanel';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -711,6 +713,9 @@ export default function Dashboard() {
     enabled: !!user?.id && actorType === 'dealer',
   });
 
+  const { data: visitHistory, isLoading: visitHistoryLoading } = useVisitHistory(dealerId);
+  const { data: visitBrief } = useVisitBrief(dealerId);
+
   const derived = useMemo(() => {
     if (!data) return null;
     const { assessment, actions } = data;
@@ -999,6 +1004,14 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+        )}
+
+        {dealerId && (
+          <CoachingVisitsSection
+            visits={visitHistory ?? []}
+            brief={visitBrief ?? null}
+            loading={visitHistoryLoading}
+          />
         )}
 
         {/* ── Hero card ── */}

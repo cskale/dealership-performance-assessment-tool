@@ -158,7 +158,7 @@ export function VisitLogSheet({ open, onOpenChange, visit, dealershipId, dealerN
 
       // 2b. Save reviews of last visit's agreed actions (before the visit update)
       const reviews = actionsToReview.flatMap(a => {
-        const outcome = reviewOutcomes[a.id] ?? a.last_review?.outcome;
+        const outcome = reviewOutcomes[a.id];
         return outcome ? [{ actionId: a.id, outcome, note: reviewNotes[a.id] }] : [];
       });
       if (reviews.length) {
@@ -235,7 +235,7 @@ export function VisitLogSheet({ open, onOpenChange, visit, dealershipId, dealerN
               ) : (
                 <div className="space-y-3">
                   {actionsToReview.map(action => {
-                    const selected = reviewOutcomes[action.id] ?? action.last_review?.outcome ?? null;
+                    const selected = reviewOutcomes[action.id] ?? null;
                     return (
                       <div key={action.id} className="rounded-lg border border-border p-3 space-y-2.5">
                         <div className="flex items-start justify-between gap-2">
