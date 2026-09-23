@@ -1,4 +1,5 @@
 // src/lib/dashboardUtils.ts
+import { differenceInCalendarDays, parseISO } from 'date-fns';
 import { getMaturityLevel } from '@/lib/maturityConfig';
 
 // ─── Department metadata ────────────────────────────────────────────────────
@@ -93,9 +94,9 @@ export function endOfCurrentQuarter(): string {
 
 /** "18 days away" / "3 days ago" relative label */
 export function relativeDays(iso: string): string {
-  const diff = Math.round(
-    (new Date(iso).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-  );
+  // Calendar days in local time: parseISO reads a date-only '2026-09-23' as local midnight,
+  // whereas new Date() reads it as UTC and shows "1 day ago" for today in the evening.
+  const diff = differenceInCalendarDays(parseISO(iso), new Date());
   if (diff === 0) return 'today';
   if (diff > 0) return `${diff} day${diff === 1 ? '' : 's'} away`;
   return `${Math.abs(diff)} day${Math.abs(diff) === 1 ? '' : 's'} ago`;

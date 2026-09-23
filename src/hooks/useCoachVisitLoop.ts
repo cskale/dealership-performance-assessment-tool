@@ -64,6 +64,7 @@ export interface VisitHistoryItem {
   modules_reviewed: string[];
   next_visit_date: string | null;
   agreed_actions: { id: string; action_title: string; status: string; responsible_person: string | null; target_completion_date: string | null }[];
+  /** Latest review of each agreed action, from whichever later visit recorded it. */
   reviews: { action_id: string; outcome: ReviewOutcome; note: string | null }[];
 }
 
@@ -119,13 +120,17 @@ export function useVisitHistory(dealershipId: string | null | undefined) {
               .in('id', actionIds)
           : Promise.resolve({ data: [], error: null }),
         supabase.from('visit_action_reviews')
-          .select('visit_id, action_id, outcome, note')
-          .in('visit_id', visits.map(v => v.id)),
+          .select('visit_id, action_id, outcome, note, created_at')
+          .in('visit_id', visits.map(v => v.id))
+          .order('created_at', { ascending: true }),
       ]);
       if (actionsRes.error) throw actionsRes.error;
       if (reviewsRes.error) throw reviewsRes.error;
 
       const actionsById = new Map((actionsRes.data ?? []).map(a => [a.id, a]));
+      // Actions agreed at visit N are reviewed at visit N+1, so attach each agreed
+      // action's latest review from any visit (ascending order → last write wins).
+      const latestReviewByAction = new Map((reviewsRes.data ?? []).map(r => [r.action_id, r]));
       return visits.map(v => ({
         id: v.id,
         visit_date: v.visit_date,
@@ -134,9 +139,10 @@ export function useVisitHistory(dealershipId: string | null | undefined) {
         modules_reviewed: v.modules_reviewed ?? [],
         next_visit_date: v.next_visit_date,
         agreed_actions: (v.agreed_action_ids ?? []).flatMap(id => actionsById.get(id) ?? []),
-        reviews: (reviewsRes.data ?? [])
-          .filter(r => r.visit_id === v.id)
-          .map(r => ({ action_id: r.action_id, outcome: r.outcome as ReviewOutcome, note: r.note })),
+        reviews: (v.agreed_action_ids ?? []).flatMap(id => {
+          const r = latestReviewByAction.get(id);
+          return r ? [{ action_id: r.action_id, outcome: r.outcome as ReviewOutcome, note: r.note }] : [];
+        }),
       }));
     },
   });

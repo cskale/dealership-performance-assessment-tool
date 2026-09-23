@@ -27,6 +27,15 @@ function makeSupabaseChain(resolvedValue: { data: unknown; error: unknown }) {
   return chain
 }
 
+// coach_notes and profiles are fetched separately (no FK for an embedded join).
+function mockTables(notes: unknown[], profiles: unknown[] = []) {
+  mockFrom.mockImplementation((table: string) =>
+    table === 'profiles'
+      ? { select: vi.fn().mockReturnThis(), in: vi.fn().mockResolvedValue({ data: profiles, error: null }) }
+      : makeSupabaseChain({ data: notes, error: null }),
+  )
+}
+
 describe('CoachNotesPanel', () => {
   beforeEach(() => {
     mockFrom.mockReset()
@@ -40,18 +49,16 @@ describe('CoachNotesPanel', () => {
   })
 
   it('renders coach note when data is present', async () => {
-    mockFrom.mockReturnValue(makeSupabaseChain({
-      data: [
-        {
-          id: 'note-1',
-          note_text: 'Great progress on NVS follow-up process.',
-          created_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
-          action_id: null,
-          profiles: { display_name: 'Coach Smith', full_name: 'John Smith' },
-        },
-      ],
-      error: null,
-    }))
+    mockTables(
+      [{
+        id: 'note-1',
+        note_text: 'Great progress on NVS follow-up process.',
+        created_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+        action_id: null,
+        coach_user_id: 'coach-1',
+      }],
+      [{ user_id: 'coach-1', display_name: 'Coach Smith', full_name: 'John Smith' }],
+    )
 
     render(<MemoryRouter><CoachNotesPanel dealershipId="d1" /></MemoryRouter>)
 
@@ -75,18 +82,16 @@ describe('CoachNotesPanel', () => {
   })
 
   it('shows Linked to action badge when action_id is set', async () => {
-    mockFrom.mockReturnValue(makeSupabaseChain({
-      data: [
-        {
-          id: 'note-2',
-          note_text: 'Follow up on pricing action.',
-          created_at: new Date().toISOString(),
-          action_id: 'action-uuid-123',
-          profiles: { display_name: null, full_name: 'Jane Coach' },
-        },
-      ],
-      error: null,
-    }))
+    mockTables(
+      [{
+        id: 'note-2',
+        note_text: 'Follow up on pricing action.',
+        created_at: new Date().toISOString(),
+        action_id: 'action-uuid-123',
+        coach_user_id: 'coach-2',
+      }],
+      [{ user_id: 'coach-2', display_name: null, full_name: 'Jane Coach' }],
+    )
 
     render(<MemoryRouter><CoachNotesPanel dealershipId="d1" /></MemoryRouter>)
 
