@@ -205,6 +205,13 @@ OEM admins manage their network at `/app/oem-settings` (Network Settings in side
    - Does NOT create a `memberships` row
 6. `AcceptInvite.tsx` reads `invite_type` from RPC response → redirects to `/app/coach-dashboard`
 
+## Coach Visit Loop
+
+- Tables: `coach_visits` (scheduling + log: summary, agreed_action_ids, next_visit_date, recap_sent_at), `visit_action_reviews` (per-visit outcome for previously agreed actions: done/in_progress/blocked/not_started; a trigger syncs `improvement_actions.status`).
+- RPCs: `get_visit_brief(dealership_id)` (coach, dealer members, network OEM), `get_network_coaching_stats()` (OEM only). Access guard: `private.can_view_dealership()`.
+- Saving a completed visit with a summary fires a one-time in-app `visit_recap` notification to the dealer org (email pending Resend domain).
+- Hooks: `src/hooks/useCoachVisitLoop.ts`. UI handoff prompts: `docs/lovable/coach-visit-loop.md`.
+
 ## Assessment Structure
 - **5 departments**: New Vehicle Sales (NVS), Used Vehicle Sales (UVS), Service (SVC), Parts (PTS), Financial Operations (FIN)
 - **Scoring**: 1–5 scale per question, weighted by category, normalised to 0–100
@@ -235,7 +242,7 @@ OEM admins manage their network at `/app/oem-settings` (Network Settings in side
 - **Vercel MCP**: use for deployments and environment variable management
 - **Supabase types**: regenerate via `mcp__claude_ai_Supabase__generate_typescript_types` (project_id: `xrypgosuyfdkkqafftae`) after any schema change — write output to `src/integrations/supabase/types.ts`
 - **actor_type gating**: always use `actorType` from `useActiveRole()`, not `uxRole` — `uxRole` is null when `active_organization_id` is null (valid for coaches)
-- **Claude Code owned files** (Lovable must not edit): `src/data/questionnaire.ts`, `src/data/signalTypes.ts`, `src/data/signalMappings.ts`, `src/lib/signalEngine.ts`, `src/components/assessment/KpiQuestionInput.tsx`, `src/components/results/PerformanceDataPanel.tsx`, `src/lib/kpiCrossValidation.ts`, `src/hooks/useKpiValues.ts`, `src/lib/playgroundCalculators.ts`, `src/data/playgroundKpiMappings.ts`, `src/hooks/usePlaygroundPrefill.ts` — any changes require TypeScript validation and signal mapping consistency check
+- **Claude Code owned files** (Lovable must not edit): `src/data/questionnaire.ts`, `src/data/signalTypes.ts`, `src/data/signalMappings.ts`, `src/lib/signalEngine.ts`, `src/components/assessment/KpiQuestionInput.tsx`, `src/components/results/PerformanceDataPanel.tsx`, `src/lib/kpiCrossValidation.ts`, `src/hooks/useKpiValues.ts`, `src/lib/playgroundCalculators.ts`, `src/data/playgroundKpiMappings.ts`, `src/hooks/usePlaygroundPrefill.ts`, `src/hooks/useCoachVisitLoop.ts` — any changes require TypeScript validation and signal mapping consistency check
 - **Lovable owned files** (Claude Code must not edit): `src/components/results/RadarBenchmarkChart.tsx` (radar chart with benchmark ring), `src/components/action-plan/KanbanBoard.tsx` (kanban drag-and-drop board), `src/components/ui/FreshnessBadge.tsx` (assessment freshness pill), `src/lib/assessmentFreshness.ts` (freshness utility, no scoring logic)
 
 ## Known Pitfalls
