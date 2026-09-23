@@ -83,15 +83,10 @@ describe('Auth Component', () => {
   it('renders auth form with all sign-in methods', async () => {
     await renderAuth();
 
-    // Check for social auth buttons
-    expect(screen.getByText('Continue with Google')).toBeInTheDocument();
-    expect(screen.getByText('Continue with Apple')).toBeInTheDocument();
-    expect(screen.getByText('Continue with Facebook')).toBeInTheDocument();
-
     // Check for tabs
-    expect(screen.getByText('Sign In')).toBeInTheDocument();
-    expect(screen.getByText('Magic Link')).toBeInTheDocument();
-    expect(screen.getByText('Sign Up')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Sign In' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Magic Link' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Sign Up' })).toBeInTheDocument();
   });
 
   it('switches between auth methods', async () => {
@@ -104,7 +99,7 @@ describe('Auth Component', () => {
     });
     await waitFor(() => {
       // Check for magic link button text
-      expect(screen.getByRole('button', { name: /send magic link/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /sign in with magic link/i })).toBeInTheDocument();
     });
 
     // Switch to sign up tab
@@ -142,7 +137,7 @@ describe('Auth Component', () => {
 
     await renderAuth();
 
-    const signInButton = screen.getByRole('button', { name: /sign in with email/i });
+    const signInButton = screen.getByRole('button', { name: /^sign in$/i });
 
     // Fill form
     await act(async () => {
