@@ -244,8 +244,12 @@ async function fetchOemDealerScores(networkId: string): Promise<DealerScore[]> {
     .eq('status', 'completed')
     .order('created_at', { ascending: false });
 
+  // Latest assessment per dealer only (rows are newest first); older action plans are superseded.
   const assessmentIdToDealer = new Map<string, string>();
+  const seenDealers = new Set<string>();
   for (const a of (assessments as Array<{ id: string; dealership_id: string }> | null) ?? []) {
+    if (seenDealers.has(a.dealership_id)) continue;
+    seenDealers.add(a.dealership_id);
     assessmentIdToDealer.set(a.id, a.dealership_id);
   }
   const assessmentIds = Array.from(assessmentIdToDealer.keys());

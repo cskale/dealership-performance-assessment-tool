@@ -325,22 +325,20 @@ function TimelineSlot({ label, date, sub, status, badgeText }: TimelineSlotProps
 function TimelineStrip({
   assessment,
   coach,
+  lastVisitDate,
+  nextVisit,
 }: {
   assessment: AssessmentRow;
   coach: CoachRow | null;
+  /** visit_date of the latest completed coach visit */
+  lastVisitDate: string | null;
+  nextVisit: UpcomingVisit | null;
 }) {
   const nextDue = nextAssessmentDue(assessment.completed_at);
   const qEnd    = endOfCurrentQuarter();
   const nextDueOverdue = isOverdue(nextDue);
 
-  const coachAssignedDate = coach?.assigned_at
-    ? formatDisplayDate(coach.assigned_at)
-    : null;
-
-  // A coach visit is "done" if valid_from is in the past, otherwise upcoming
-  const coachVisitDone = coach
-    ? isOverdue(coach.valid_from ?? coach.assigned_at)
-    : false;
+  const nextVisitConfirmed = nextVisit?.status === 'confirmed';
 
   return (
     <div className="bg-white rounded-xl shadow-card border border-neutral-200 grid grid-cols-5 overflow-hidden">
@@ -360,17 +358,17 @@ function TimelineStrip({
       />
       <TimelineSlot
         label="Last Coach Visit"
-        date={coachAssignedDate ?? 'Not scheduled'}
-        sub={coach ? 'Field coach assigned' : 'No coach assigned'}
-        status={coach ? (coachVisitDone ? 'done' : 'upcoming') : 'upcoming'}
-        badgeText={coach ? (coachVisitDone ? 'Completed' : 'Scheduled') : 'Not scheduled'}
+        date={lastVisitDate ? formatDisplayDate(lastVisitDate) : 'None yet'}
+        sub={lastVisitDate ? relativeDays(lastVisitDate) : coach ? 'Field coach assigned' : 'No coach assigned'}
+        status={lastVisitDate ? 'done' : 'upcoming'}
+        badgeText={lastVisitDate ? 'Completed' : 'No visits yet'}
       />
       <TimelineSlot
         label="Next Coach Visit"
-        date={coach?.valid_to ? formatDisplayDate(coach.valid_to) : 'Not scheduled'}
-        sub={coach?.valid_to ? relativeDays(coach.valid_to) : 'Contact your programme manager'}
+        date={nextVisit ? formatDisplayDate(nextVisit.visit_date) : 'Not scheduled'}
+        sub={nextVisit ? relativeDays(nextVisit.visit_date) : coach ? 'Your coach will propose a date' : 'Contact your programme manager'}
         status="upcoming"
-        badgeText={coach?.valid_to ? 'Scheduled' : 'Not scheduled'}
+        badgeText={nextVisit ? (nextVisitConfirmed ? 'Confirmed' : 'Awaiting confirmation') : 'Not scheduled'}
       />
       <TimelineSlot
         label="Action Plan Review"
@@ -1026,7 +1024,12 @@ export default function Dashboard() {
         />
 
         {/* ── Timeline strip ── */}
-        <TimelineStrip assessment={assessment} coach={coach} />
+        <TimelineStrip
+          assessment={assessment}
+          coach={coach}
+          lastVisitDate={visitBrief?.last_visit?.visit_date ?? null}
+          nextVisit={upcomingVisit ?? null}
+        />
 
         {/* ── Priority card — only when a critical gap exists ── */}
         {gapCount > 0 && (

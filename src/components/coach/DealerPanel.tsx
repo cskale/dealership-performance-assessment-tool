@@ -1371,7 +1371,9 @@ function PreVisitBriefCard({
             )}
           </div>
           {score?.delta == null && (
-            <p className="text-xs text-muted-foreground">No new assessment since last visit</p>
+            <p className="text-xs text-muted-foreground">
+              {lastVisit ? 'No new assessment since last visit' : 'Baseline for your first visit'}
+            </p>
           )}
           {sharedDepartments.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
@@ -1404,7 +1406,9 @@ function PreVisitBriefCard({
             Agreed at last visit
           </p>
           {brief && brief.agreed_actions.length === 0 ? (
-            <p className="text-xs text-muted-foreground">No actions were agreed at the last visit.</p>
+            <p className="text-xs text-muted-foreground">
+              {lastVisit ? 'No actions were agreed at the last visit.' : 'Nothing to follow up yet — agree actions when you log your first visit.'}
+            </p>
           ) : (
             <ul className="space-y-2">
               {(brief?.agreed_actions ?? []).slice(0, 4).map(a => (
@@ -1447,7 +1451,7 @@ function PreVisitBriefCard({
           </p>
           <p className="text-xs text-muted-foreground">
             {brief?.overdue_count ?? 0} overdue · {brief?.stale_count ?? 0} with no update in 21+ days ·{' '}
-            {brief?.completed_since_last_visit ?? 0} completed since last visit
+            {lastVisit ? `${brief?.completed_since_last_visit ?? 0} completed since last visit` : 'first visit pending'}
           </p>
           {(brief?.overdue_actions ?? []).length > 0 && (
             <ul className="space-y-1.5">
