@@ -81,6 +81,8 @@ Base components come from shadcn/ui (`src/components/ui/`) — don't edit these 
 
 ## Testing
 
+**Signed-in click-through (all roles):** `python scripts/qa_click_through.py [base_url] [out_dir]` signs in as the QA dealer, coach and OEM accounts (credentials in git-ignored `.env.test`), screenshots each role's key screens, and reports page errors and failed HTTP requests. Read-only. Defaults to production; pass `http://localhost:8080` to test a local `npm run dev`.
+
 Tests live in `src/__tests__/`. The test setup is in `src/test-setup.ts`. Coverage thresholds are 80% for branches, functions, lines, and statements. Vitest uses jsdom environment.
 
 # Project Context — Dealership Performance Assessment Tool

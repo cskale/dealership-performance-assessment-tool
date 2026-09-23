@@ -40,16 +40,25 @@ export function CoachNotesPanel({ dealershipId }: CoachNotesPanelProps) {
   useEffect(() => {
     if (!dealershipId) { setLoaded(true); return; }
 
-    supabase
-      .from('coach_notes')
-      .select('id, note_text, created_at, action_id, profiles:coach_user_id(display_name, full_name)')
-      .eq('dealership_id', dealershipId)
-      .order('created_at', { ascending: false })
-      .limit(5)
-      .then(({ data, error }) => {
-        if (!error && data) setNotes(data as unknown as CoachNote[]);
-        setLoaded(true);
-      });
+    // Two queries: coach_notes has no FK to profiles, so an embedded join 400s.
+    (async () => {
+      const { data, error } = await supabase
+        .from('coach_notes')
+        .select('id, note_text, created_at, action_id, coach_user_id')
+        .eq('dealership_id', dealershipId)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      if (error || !data) { setLoaded(true); return; }
+
+      const coachIds = [...new Set(data.map(n => n.coach_user_id))];
+      const { data: profiles } = coachIds.length
+        ? await supabase.from('profiles').select('user_id, display_name, full_name').in('user_id', coachIds)
+        : { data: [] };
+      const byId = new Map((profiles ?? []).map(p => [p.user_id, p]));
+
+      setNotes(data.map(n => ({ ...n, profiles: byId.get(n.coach_user_id) ?? null })));
+      setLoaded(true);
+    })();
   }, [dealershipId]);
 
   if (!dealershipId || !loaded || notes.length === 0) return null;
