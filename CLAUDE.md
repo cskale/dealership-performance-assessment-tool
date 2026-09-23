@@ -68,7 +68,7 @@ The core business logic lives in `src/lib/`:
 - **Server state**: TanStack React Query (5-min stale time). New page-level data fetching goes through `useQuery`, not `useEffect` + `supabase`.
 - **Routes**: page components are `lazy()`-loaded in `App.tsx` — keep new pages lazy.
 - **Auth/multi-tenant/role state**: React Context with custom hooks (`useAuth`, `useMultiTenant`, `useActiveRole`)
-- **Forms**: React Hook Form + Zod validation schemas in `src/lib/validationSchemas.ts`
+- **Forms**: controlled components + Zod validation schemas in `src/lib/validationSchemas.ts`
 
 ### UI Components
 
@@ -76,7 +76,7 @@ Base components come from shadcn/ui (`src/components/ui/`) — don't edit these 
 
 ### Exports
 
-- PDF: `src/lib/pdfReportGenerator.ts` (html2canvas + jsPDF)
+- PDF: `src/lib/pdfReportGenerator.ts` (jsPDF + jspdf-autotable)
 - Excel: `src/lib/excelExportGenerator.ts` (xlsx)
 
 ## Testing

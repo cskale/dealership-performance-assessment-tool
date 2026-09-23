@@ -1,8 +1,0 @@
-/* KPI card micro-interactions */
-.kpi-card {
-  transition: transform 150ms ease, box-shadow 150ms ease;
-}
-.kpi-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px hsl(var(--neutral-1000) / 0.08);
-}
