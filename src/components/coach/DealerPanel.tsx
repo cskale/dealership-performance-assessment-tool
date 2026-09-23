@@ -1315,7 +1315,7 @@ function PreVisitBriefCard({
       ? Object.keys(score.departments_current)
           .filter(d => d in score.departments_at_last_visit!)
           .map(d => ({
-            name: d,
+            name: VISIT_MODULES.find(m => m.id === d)?.label ?? d,
             current: score.departments_current![d],
             previous: score.departments_at_last_visit![d],
           }))
