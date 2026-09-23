@@ -20,6 +20,7 @@ import {
 import { SharedLoadingState } from '@/components/shared/SharedLoadingState';
 import { SharedEmptyState } from '@/components/shared/SharedEmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useNetworkCoachingStats, type CoachingStatsRow } from '@/hooks/useCoachVisitLoop';
 import { TierBadge } from '@/components/shared/TierBadge';
 import { ScoreGauge } from '@/components/shared/ScoreGauge';
 import {
@@ -353,6 +354,8 @@ export default function OemDashboard() {
     queryFn: () => fetchDealerNextVisits(dealershipIds),
     enabled: dealershipIds.length > 0,
   });
+
+  const { data: coachingStats = [], isLoading: loadingCoachingStats } = useNetworkCoachingStats(actorType === 'oem');
 
   const sortedDealers = useMemo(() =>
     [...dealerScores].sort((a, b) => (b.latestScore ?? 0) - (a.latestScore ?? 0)),
