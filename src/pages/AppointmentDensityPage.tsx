@@ -10,6 +10,7 @@ import {
 } from '@/lib/playgroundCalculators';
 import { formatEuro } from '@/utils/euroFormatter';
 import { PlaygroundCalculatorShell } from '@/components/playground/PlaygroundCalculatorShell';
+import { AnimatedNumber } from '@/components/playground/AnimatedNumber';
 
 const DEFAULT_INPUTS: AppointmentDensityInputs = {
   numberOfBays: 8,
@@ -97,9 +98,10 @@ export default function AppointmentDensityPage() {
 
       <div className="flex items-baseline justify-between mb-2">
         <span className="text-xs text-muted-foreground">Utilization</span>
-        <span className={`text-2xl font-bold ${utilizationColor(outputs.utilizationPct)}`}>
-          {outputs.utilizationPct === null ? '—' : `${outputs.utilizationPct.toFixed(0)}%`}
-        </span>
+        <AnimatedNumber
+          value={outputs.utilizationPct === null ? '—' : `${outputs.utilizationPct.toFixed(0)}%`}
+          className={`text-2xl font-bold numeric ${utilizationColor(outputs.utilizationPct)}`}
+        />
       </div>
 
       <div className="h-[160px] -ml-2 mb-2">

@@ -42,10 +42,10 @@ const DEFAULT_ADJ: Adjustments = {
 const formatPct = (n: number | null) => (n === null ? '—' : `${n.toFixed(1)}%`);
 
 function absorptionColor(rate: number | null): string {
-  if (rate === null) return 'bg-gray-200';
-  if (rate >= 100) return 'bg-green-500';
-  if (rate >= 80) return 'bg-amber-500';
-  return 'bg-red-500';
+  if (rate === null) return 'text-neutral-300 from-neutral-200 to-neutral-300';
+  if (rate >= 100) return 'text-success from-success/60 to-success';
+  if (rate >= 80) return 'text-warning from-warning/60 to-warning';
+  return 'text-destructive from-destructive/60 to-destructive';
 }
 
 export default function AbsorptionRateModelerPage() {
@@ -200,15 +200,13 @@ export default function AbsorptionRateModelerPage() {
       <div className="mb-5">
         <div className="flex items-baseline justify-between mb-2">
           <span className="text-xs text-muted-foreground">Absorption Rate</span>
-          <span className={`text-2xl font-bold ${
+          <AnimatedNumber value={formatPct(outputs.adjustedAbsorptionRate)} className={`text-2xl font-bold numeric ${
             outputs.adjustedAbsorptionRate !== null && outputs.adjustedAbsorptionRate >= 100
               ? 'text-green-600'
               : outputs.adjustedAbsorptionRate !== null && outputs.adjustedAbsorptionRate >= 80
                 ? 'text-amber-600'
                 : 'text-red-600'
-          }`}>
-            {formatPct(outputs.adjustedAbsorptionRate)}
-          </span>
+          }`} />
         </div>
         <ScaleGauge
           value={outputs.adjustedAbsorptionRate}

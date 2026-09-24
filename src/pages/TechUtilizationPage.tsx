@@ -47,10 +47,10 @@ const formatNum = (n: number) =>
 const formatPct = (n: number | null) => (n === null ? '—' : `${n.toFixed(1)}%`);
 
 function utilizationColor(rate: number | null): string {
-  if (rate === null) return 'bg-gray-200';
-  if (rate >= 85) return 'bg-green-500';
-  if (rate >= 70) return 'bg-amber-500';
-  return 'bg-red-500';
+  if (rate === null) return 'text-neutral-300 from-neutral-200 to-neutral-300';
+  if (rate >= 85) return 'text-success from-success/60 to-success';
+  if (rate >= 70) return 'text-warning from-warning/60 to-warning';
+  return 'text-destructive from-destructive/60 to-destructive';
 }
 
 export default function TechUtilizationPage() {
@@ -128,15 +128,13 @@ export default function TechUtilizationPage() {
       <div className="mb-5">
         <div className="flex items-baseline justify-between mb-2">
           <span className="text-xs text-muted-foreground">Utilization Rate</span>
-          <span className={`text-2xl font-bold ${
+          <AnimatedNumber value={formatPct(outputs.utilizationPct)} className={`text-2xl font-bold numeric ${
             outputs.utilizationPct !== null && outputs.utilizationPct >= 85
               ? 'text-green-600'
               : outputs.utilizationPct !== null && outputs.utilizationPct >= 70
                 ? 'text-amber-600'
                 : 'text-red-600'
-          }`}>
-            {formatPct(outputs.utilizationPct)}
-          </span>
+          }`} />
         </div>
         <ScaleGauge
           value={outputs.utilizationPct}

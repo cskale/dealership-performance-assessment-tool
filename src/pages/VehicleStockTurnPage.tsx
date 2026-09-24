@@ -10,6 +10,7 @@ import {
 } from '@/lib/playgroundCalculators';
 import { formatEuro } from '@/utils/euroFormatter';
 import { PlaygroundCalculatorShell } from '@/components/playground/PlaygroundCalculatorShell';
+import { AnimatedNumber } from '@/components/playground/AnimatedNumber';
 
 const DEFAULTS: VehicleStockTurnInputs = {
   averageInventoryCount: 60,
@@ -132,9 +133,10 @@ export default function VehicleStockTurnPage() {
         <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">
           Average Days in Stock
         </p>
-        <p className={`text-4xl font-bold ${daysColor(outputs.avgDaysInStock)}`}>
-          {outputs.avgDaysInStock === null ? '—' : formatNum(outputs.avgDaysInStock)}
-        </p>
+        <AnimatedNumber
+          value={outputs.avgDaysInStock === null ? '—' : formatNum(outputs.avgDaysInStock)}
+          className={`block text-4xl font-bold numeric ${daysColor(outputs.avgDaysInStock)}`}
+        />
         <p className="text-[10px] text-muted-foreground mt-1">
           Target: &lt; 45 days
         </p>

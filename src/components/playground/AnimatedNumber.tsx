@@ -14,11 +14,18 @@ function parseFormattedNumber(value: string) {
   const token = match[0];
   const lastComma = token.lastIndexOf(',');
   const lastDot = token.lastIndexOf('.');
-  const decimalMark = lastComma > lastDot ? ',' : lastDot > lastComma ? '.' : '';
+  const singleSeparator = lastComma >= 0 ? ',' : lastDot >= 0 ? '.' : '';
+  const trailingDigits = singleSeparator ? token.length - Math.max(lastComma, lastDot) - 1 : 0;
+  const hasBothSeparators = lastComma >= 0 && lastDot >= 0;
+  const decimalMark = hasBothSeparators
+    ? (lastComma > lastDot ? ',' : '.')
+    : trailingDigits > 0 && trailingDigits !== 3 ? singleSeparator : '';
   const decimalPlaces = decimalMark ? token.length - Math.max(lastComma, lastDot) - 1 : 0;
   const normalized = decimalMark === ','
     ? token.replace(/\./g, '').replace(',', '.')
-    : token.replace(/,/g, '');
+    : decimalMark === '.'
+      ? token.replace(/,/g, '')
+      : token.replace(/[.,]/g, '');
   const number = Number(normalized);
 
   if (!Number.isFinite(number)) return null;
@@ -27,12 +34,14 @@ function parseFormattedNumber(value: string) {
     prefix: value.slice(0, match.index),
     suffix: value.slice((match.index ?? 0) + token.length),
     decimalPlaces,
-    usesGermanSeparators: decimalMark === ',' || token.includes('.'),
+    usesGermanSeparators: decimalMark === ',' || (!decimalMark && token.includes('.')),
   };
 }
 
 export function AnimatedNumber({ value, className }: AnimatedNumberProps) {
-  const parsed = typeof value === 'string' ? parseFormattedNumber(value) : null;
+  const parsed = typeof value === 'number'
+    ? { number: value, prefix: '', suffix: '', decimalPlaces: 0, usesGermanSeparators: true }
+    : typeof value === 'string' ? parseFormattedNumber(value) : null;
   const previousValue = useRef(parsed?.number ?? 0);
   const [displayValue, setDisplayValue] = useState(parsed?.number ?? 0);
 
