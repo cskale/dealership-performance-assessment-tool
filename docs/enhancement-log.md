@@ -4,6 +4,36 @@ Quick-reference log of incremental enhancements, UI fixes, and small quality-of-
 
 ---
 
+## 2026-09-23/24 — Production trust fixes, coach visit loop, signed-in QA
+
+Production audit (Supabase logs/advisors, Vercel, CSP) followed by fixes, a new coach visit loop, and end-to-end testing as real signed-in QA users (dealer/coach/OEM).
+
+| # | Enhancement | Details | Commit |
+|---|-------------|---------|--------|
+| 1 | Stale-action notification flood | One user got 1,868 in-app + 245 email "Action overdue" nudges in 30 days: 557 of 597 open actions sat on superseded assessments. Nudges and weekly digests now only consider each dealership's latest assessment; one nudge email per user per run. Repo migration re-synced with the drifted live function. | `296e1a5` |
+| 2 | Sentry blocked by CSP | Added Sentry ingest domains to `connect-src` and `worker-src 'self' blob:` (session replay worker was blocked). | `296e1a5` |
+| 3 | Anonymous access to SECURITY DEFINER fn | Revoked `anon` EXECUTE on `user_can_access_dealership_as_coach`. | `296e1a5` |
+| 4 | Dead code + unused deps | Removed 18 unreferenced files and 6 packages (react-hook-form, @hookform/resolvers, html2canvas, radix avatar/toggle, tailwind typography). | `5e9b40d` |
+| 5 | Single i18n source | Removed unused i18next setup; dictionaries moved to `src/i18n/<lang>.ts`, non-English lazy-loaded; no English flash on first load. | `2a39194`, `0d7d80e` |
+| 6 | Failing tests | Auth tests aligned with current sign-in page; translation test made data-independent. All tests green. | `08c6008` |
+| 7 | Coach visit loop (backend) | `visit_action_reviews` (Done/In progress/Blocked/Not started, syncs action status), `get_visit_brief()`, one-time `visit_recap` in-app notification to the dealer org, `get_network_coaching_stats()` for OEMs, `useCoachVisitLoop` hooks. | `742fe33` |
+| 8 | Coach visit loop (UI, Lovable) | Pre-visit brief card, review step in visit log, dealer "Coaching visits" timeline, recap notifications, OEM "Coaching coverage" card. | `3d9a425` … `43f720d` |
+| 9 | Recap notifications misrouted | Bell matched `visit_recap` on `entity_type` instead of `type`. | `4a2ff52` |
+| 10 | Coach notes never loaded for dealers | Embedded `profiles:coach_user_id` join has no FK → PostgREST 400, swallowed silently. Split into two queries. | `2014b93` |
+| 11 | Signed-in QA click-through | `scripts/qa_click_through.py` signs in as QA dealer/coach/OEM, screenshots key screens, flags page errors + failed requests. Stale `.env.test` password corrected. | `2014b93` |
+| 12 | Fake visit dates on dealer timeline | "Last/Next Coach Visit" showed coach *assignment* dates; now the latest logged visit and next scheduled visit. | `44f09b8` |
+| 13 | OEM saw 0 open actions | No OEM read policy on `improvement_actions`; added network-scoped read policy via SECURITY DEFINER helper; count latest assessment only. | `44f09b8` |
+| 14 | Review step never shown (found by E2E) | Coaches mark a visit completed before logging it, so it became the "last visit". Brief now uses the latest *logged* visit. Dealer timeline now shows each agreed action's latest review. | `fe99bda` |
+| 15 | `/app/actions` blank page | Bell, coach notes, stale-action emails and token pages linked to a non-existent route; redirect to `/actions`. | `82de77c` |
+| 16 | "1 day ago" for today | `relativeDays` now uses local calendar days; regression test added. | `fe99bda` |
+| 17 | Calculator gauges misreported values | New shared `ScaleGauge`: scale extends past its default max (227.8% no longer clipped at 150%) and the target tick sits at its true position. Absorption tile hard-coded "100%" replaced by the service/parts GP split. | `5145f8c` |
+| 18 | Raw JSON in notifications | Bell now lists only `in_app` rows (email delivery rows hold template JSON). 1,158 stale/incorrect notifications from the flood marked read (data fix, no deletions). | `5145f8c` |
+| 19 | Premium calculator UI (Lovable) | Animated numbers, status-accented KPI strip, restyled gauge with target pin, what-if delta chips + reset, recharts visuals, insight callouts, entrance motion; calculation logic untouched. | `655b22e` … `95a5fd1` |
+
+Open follow-ups: Resend sending domain not verified (no email is delivered); `VITE_SENTRY_DSN` in Vercel unverified; leaked-password protection + TOTP MFA to enable in Supabase dashboard; app sidebar not responsive at phone width; `[QA TEST]` visit data on QA Test Dealership.
+
+---
+
 ## 2026-08-01 — Full-profile QA pass (dealer/coach/OEM)
 
 Finished wiring `qa.coach.test@` and `qa.oem.test@dealershipdiagnostic.qa` (previously only the dealer QA account was fully set up) and manually tested every route across all three roles. Found and fixed 5 bugs:
