@@ -55,11 +55,11 @@ export default function AppointmentDensityPage() {
   ];
 
   const leftCard = (
-    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+    <div className="playground-card min-w-0 bg-card rounded-lg border border-border shadow-card p-4 sm:p-5 transition-all duration-200 hover:border-brand-200 hover:shadow-elevated">
+      <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">
         Inputs
       </p>
-      <h2 className="text-[15px] font-bold text-[#172B4D] mb-1">Workshop Scheduling Inputs</h2>
+      <h2 className="text-[15px] font-bold text-foreground mb-1">Workshop Scheduling Inputs</h2>
       <p className="text-xs text-muted-foreground mb-5">
         Enter bay capacity, service time, and current booking volume.
       </p>
@@ -86,11 +86,11 @@ export default function AppointmentDensityPage() {
   );
 
   const rightCard = (
-    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+    <div className="playground-card min-w-0 bg-card rounded-lg border border-border shadow-card p-4 sm:p-5 transition-all duration-200 hover:border-brand-200 hover:shadow-elevated">
+      <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">
         Output
       </p>
-      <h2 className="text-[15px] font-bold text-[#172B4D] mb-1">Capacity Analysis</h2>
+      <h2 className="text-[15px] font-bold text-foreground mb-1">Capacity Analysis</h2>
       <p className="text-xs text-muted-foreground mb-4">
         Current bookings against maximum theoretical bay capacity per day.
       </p>
@@ -129,23 +129,23 @@ export default function AppointmentDensityPage() {
         </ResponsiveContainer>
       </div>
 
-      <div className="rounded-lg border border-[#DFE1E6] divide-y divide-[#DFE1E6]">
+      <div className="rounded-lg border border-border divide-y divide-border bg-card">
         <StatRow label="Max Daily Capacity" value={`${outputs.maxCapacityPerDay} appointments`} />
         <StatRow label="Additional Capacity Available" value={`${outputs.additionalCapacity} appointments`} />
         <StatRow label="Current Daily Revenue" value={formatEuro(outputs.currentDailyRevenue)} />
         <StatRow label="Revenue Opportunity" value={formatEuro(outputs.revenueOpportunity)} emphasised />
       </div>
 
-      <div className="mt-5 flex gap-3 rounded-lg border border-[#1D7AFC]/20 bg-[#1D7AFC]/5 px-4 py-3">
-        <Info className="h-4 w-4 text-[#1D7AFC] mt-0.5 flex-shrink-0" />
+      <div className="mt-5 flex gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3.5 shadow-soft transition-colors duration-200">
+        <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
         <p className="text-xs text-foreground leading-relaxed">
-          <span className="font-semibold text-[#172B4D]">Calculated Insight: </span>
+          <span className="font-semibold text-foreground">Calculated Insight: </span>
           {outputs.additionalCapacity > 0 ? (
             <>
               Filling the remaining{' '}
-              <span className="font-semibold text-[#172B4D]">{outputs.additionalCapacity} appointments/day</span>{' '}
+              <span className="font-semibold text-foreground">{outputs.additionalCapacity} appointments/day</span>{' '}
               of open bay capacity is worth{' '}
-              <span className="font-semibold text-[#172B4D]">{formatEuro(outputs.revenueOpportunity)}</span> in
+              <span className="font-semibold text-foreground">{formatEuro(outputs.revenueOpportunity)}</span> in
               additional daily revenue.
             </>
           ) : (
@@ -182,7 +182,7 @@ function StatRow({ label, value, emphasised }: { label: string; value: React.Rea
   return (
     <div className="flex items-center justify-between px-4 py-2.5">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={emphasised ? 'text-base font-bold text-[#172B4D]' : 'text-sm font-semibold text-[#172B4D]'}>
+      <span className={emphasised ? 'text-base font-bold text-foreground' : 'text-sm font-semibold text-foreground'}>
         {value}
       </span>
     </div>

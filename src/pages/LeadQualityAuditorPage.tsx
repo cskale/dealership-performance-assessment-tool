@@ -56,13 +56,13 @@ export default function LeadQualityAuditorPage() {
     .sort((a, b) => (b.qualityScore ?? 0) - (a.qualityScore ?? 0));
 
   const leftCard = (
-    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
+    <div className="playground-card min-w-0 bg-card rounded-lg border border-border shadow-card p-4 sm:p-5 transition-all duration-200 hover:border-brand-200 hover:shadow-elevated">
       <div className="flex items-start justify-between mb-1">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+          <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">
             Inputs
           </p>
-          <h2 className="text-[15px] font-bold text-[#172B4D]">Lead Sources</h2>
+          <h2 className="text-[15px] font-bold text-foreground">Lead Sources</h2>
         </div>
         <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={addSource}>
           <Plus className="h-3 w-3" /> Add source
@@ -74,7 +74,7 @@ export default function LeadQualityAuditorPage() {
 
       <div className="space-y-4">
         {sources.map((s, i) => (
-          <div key={i} className="rounded-lg border border-[#DFE1E6] p-3.5 space-y-3">
+          <div key={i} className="rounded-lg border border-border p-3.5 space-y-3">
             <div className="flex items-center gap-2">
               <Input
                 value={s.name}
@@ -106,11 +106,11 @@ export default function LeadQualityAuditorPage() {
   );
 
   const rightCard = (
-    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+    <div className="playground-card min-w-0 bg-card rounded-lg border border-border shadow-card p-4 sm:p-5 transition-all duration-200 hover:border-brand-200 hover:shadow-elevated">
+      <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">
         Output
       </p>
-      <h2 className="text-[15px] font-bold text-[#172B4D] mb-1">Quality Ranking</h2>
+      <h2 className="text-[15px] font-bold text-foreground mb-1">Quality Ranking</h2>
       <p className="text-xs text-muted-foreground mb-4">
         Composite score: 50% close rate, 30% GP per lead, 20% close speed.
       </p>
@@ -149,7 +149,7 @@ export default function LeadQualityAuditorPage() {
         </ResponsiveContainer>
       </div>
 
-      <div className="rounded-lg border border-[#DFE1E6] divide-y divide-[#DFE1E6] mt-2">
+      <div className="rounded-lg border border-border divide-y divide-border bg-card mt-2">
         <StatRow label="Total Leads" value={outputs.totalLeads} />
         <StatRow label="Blended GP per Lead" value={formatEuro(outputs.blendedGpPerLead ?? 0)} emphasised />
         {outputs.bestSource && (
@@ -160,15 +160,15 @@ export default function LeadQualityAuditorPage() {
         )}
       </div>
 
-      <div className="mt-5 flex gap-3 rounded-lg border border-[#1D7AFC]/20 bg-[#1D7AFC]/5 px-4 py-3">
-        <Info className="h-4 w-4 text-[#1D7AFC] mt-0.5 flex-shrink-0" />
+      <div className="mt-5 flex gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3.5 shadow-soft transition-colors duration-200">
+        <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
         <p className="text-xs text-foreground leading-relaxed">
-          <span className="font-semibold text-[#172B4D]">Calculated Insight: </span>
+          <span className="font-semibold text-foreground">Calculated Insight: </span>
           {outputs.bestSource && outputs.worstSource && outputs.bestSource.name !== outputs.worstSource.name ? (
             <>
-              <span className="font-semibold text-[#172B4D]">{outputs.bestSource.name}</span> converts at{' '}
+              <span className="font-semibold text-foreground">{outputs.bestSource.name}</span> converts at{' '}
               {formatPct(outputs.bestSource.closeRate)} close rate vs.{' '}
-              <span className="font-semibold text-[#172B4D]">{outputs.worstSource.name}</span> at{' '}
+              <span className="font-semibold text-foreground">{outputs.worstSource.name}</span> at{' '}
               {formatPct(outputs.worstSource.closeRate)} — reallocating spend toward the stronger source
               raises blended GP per lead.
             </>
@@ -223,7 +223,7 @@ function StatRow({ label, value, emphasised }: { label: string; value: React.Rea
   return (
     <div className="flex items-center justify-between px-4 py-2.5">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={emphasised ? 'text-base font-bold text-[#172B4D]' : 'text-sm font-semibold text-[#172B4D]'}>
+      <span className={emphasised ? 'text-base font-bold text-foreground' : 'text-sm font-semibold text-foreground'}>
         {value}
       </span>
     </div>

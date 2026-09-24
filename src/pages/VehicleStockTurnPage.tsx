@@ -97,18 +97,18 @@ export default function VehicleStockTurnPage() {
   );
 
   const leftCard = (
-    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+    <div className="playground-card min-w-0 bg-card rounded-lg border border-border shadow-card p-4 sm:p-5 transition-all duration-200 hover:border-brand-200 hover:shadow-elevated">
+      <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">
         Inputs
       </p>
-      <h2 className="text-[15px] font-bold text-[#172B4D] mb-1">Inventory Inputs</h2>
+      <h2 className="text-[15px] font-bold text-foreground mb-1">Inventory Inputs</h2>
       <p className="text-xs text-muted-foreground mb-5">
         Enter current inventory levels, sales velocity, and cost assumptions.
       </p>
       <div className="space-y-4">
         {inventoryFields.map(renderField)}
-        <div className="pt-3 border-t border-[#DFE1E6]">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-3">
+        <div className="pt-3 border-t border-border">
+          <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-3">
             Cost Assumptions
           </p>
           <div className="space-y-4">{costFields.map(renderField)}</div>
@@ -118,18 +118,18 @@ export default function VehicleStockTurnPage() {
   );
 
   const rightCard = (
-    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+    <div className="playground-card min-w-0 bg-card rounded-lg border border-border shadow-card p-4 sm:p-5 transition-all duration-200 hover:border-brand-200 hover:shadow-elevated">
+      <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">
         Output
       </p>
-      <h2 className="text-[15px] font-bold text-[#172B4D] mb-1">Stock Performance</h2>
+      <h2 className="text-[15px] font-bold text-foreground mb-1">Stock Performance</h2>
       <p className="text-xs text-muted-foreground mb-5">
         Inventory velocity, aging risk, and holding cost analysis.
       </p>
 
       {/* Days in stock — prominent metric */}
-      <div className="mb-5 text-center py-4 rounded-lg border border-[#DFE1E6] bg-gray-50">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+      <div className="mb-5 text-center py-4 rounded-lg border border-border bg-gray-50">
+        <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">
           Average Days in Stock
         </p>
         <p className={`text-4xl font-bold ${daysColor(outputs.avgDaysInStock)}`}>
@@ -141,7 +141,7 @@ export default function VehicleStockTurnPage() {
       </div>
 
       {/* Stat rows */}
-      <div className="rounded-lg border border-[#DFE1E6] divide-y divide-[#DFE1E6]">
+      <div className="rounded-lg border border-border divide-y divide-border bg-card">
         <StatRow label="Annual Stock Turn" value={`${formatDecimal(outputs.annualStockTurn)}x`} />
         <StatRow label="Inventory Value at Cost" value={formatEuro(outputs.inventoryValueAtCost)} />
         <StatRow label="Monthly Holding Cost" value={formatEuro(outputs.monthlyHoldingCost)} emphasised />
@@ -152,29 +152,29 @@ export default function VehicleStockTurnPage() {
       </div>
 
       {/* Insight callout */}
-      <div className="mt-5 flex gap-3 rounded-lg border border-[#1D7AFC]/20 bg-[#1D7AFC]/5 px-4 py-3">
-        <Info className="h-4 w-4 text-[#1D7AFC] mt-0.5 flex-shrink-0" />
+      <div className="mt-5 flex gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3.5 shadow-soft transition-colors duration-200">
+        <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
         <p className="text-xs text-foreground leading-relaxed">
-          <span className="font-semibold text-[#172B4D]">Calculated Insight: </span>
+          <span className="font-semibold text-foreground">Calculated Insight: </span>
           {outputs.avgDaysInStock === null ? (
             <>Enter sales volume to calculate days in stock.</>
           ) : outputs.avgDaysInStock <= 45 ? (
             <>
               Inventory turns at{' '}
-              <span className="font-semibold text-[#172B4D]">{formatDecimal(outputs.annualStockTurn)}x</span>{' '}
+              <span className="font-semibold text-foreground">{formatDecimal(outputs.annualStockTurn)}x</span>{' '}
               annually — healthy velocity. Monthly holding cost is{' '}
-              <span className="font-semibold text-[#172B4D]">{formatEuro(outputs.monthlyHoldingCost)}</span>.
+              <span className="font-semibold text-foreground">{formatEuro(outputs.monthlyHoldingCost)}</span>.
             </>
           ) : (
             <>
               At{' '}
-              <span className="font-semibold text-[#172B4D]">{formatNum(outputs.avgDaysInStock)}</span> average
+              <span className="font-semibold text-foreground">{formatNum(outputs.avgDaysInStock)}</span> average
               days in stock, each unit carries{' '}
-              <span className="font-semibold text-[#172B4D]">
+              <span className="font-semibold text-foreground">
                 {outputs.holdingCostPerUnit === null ? '—' : formatEuro(outputs.holdingCostPerUnit)}
               </span>{' '}
               in holding cost before it sells. Reducing inventory by 10 units saves{' '}
-              <span className="font-semibold text-[#172B4D]">
+              <span className="font-semibold text-foreground">
                 {formatEuro(10 * inputs.avgVehicleCost * (inputs.holdingCostPctPerMonth / 100))}
               </span>
               /month.
@@ -235,7 +235,7 @@ function StatRow({
   return (
     <div className="flex items-center justify-between px-4 py-2.5">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={emphasised ? 'text-base font-bold text-[#172B4D]' : 'text-sm font-semibold text-[#172B4D]'}>
+      <span className={emphasised ? 'text-base font-bold text-foreground' : 'text-sm font-semibold text-foreground'}>
         {value}
       </span>
     </div>

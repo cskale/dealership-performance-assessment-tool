@@ -46,11 +46,11 @@ export default function FiPenetrationPage() {
   const chartData = outputs.productResults.map((r) => ({ name: r.name, totalGp: r.totalGp }));
 
   const leftCard = (
-    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+    <div className="playground-card min-w-0 bg-card rounded-lg border border-border shadow-card p-4 sm:p-5 transition-all duration-200 hover:border-brand-200 hover:shadow-elevated">
+      <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">
         Inputs
       </p>
-      <h2 className="text-[15px] font-bold text-[#172B4D] mb-1">F&amp;I Attach Rates</h2>
+      <h2 className="text-[15px] font-bold text-foreground mb-1">F&amp;I Attach Rates</h2>
       <p className="text-xs text-muted-foreground mb-5">
         Enter monthly unit sales and attach rate + average GP for each F&amp;I product.
       </p>
@@ -75,13 +75,13 @@ export default function FiPenetrationPage() {
 
       <div className="space-y-3">
         {products.map((p, i) => (
-          <div key={p.name} className="rounded-lg border border-[#DFE1E6] p-3.5">
+          <div key={p.name} className="rounded-lg border border-border p-3.5">
             <div className="flex items-center gap-2 mb-3">
               <span
                 className="h-2.5 w-2.5 rounded-full shrink-0"
                 style={{ backgroundColor: PRODUCT_COLORS[p.name] ?? FALLBACK_COLOR }}
               />
-              <span className="text-sm font-semibold text-[#172B4D]">{p.name}</span>
+              <span className="text-sm font-semibold text-foreground">{p.name}</span>
             </div>
             <div className="grid grid-cols-2 gap-2.5">
               <div className="space-y-1">
@@ -117,11 +117,11 @@ export default function FiPenetrationPage() {
   );
 
   const rightCard = (
-    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+    <div className="playground-card min-w-0 bg-card rounded-lg border border-border shadow-card p-4 sm:p-5 transition-all duration-200 hover:border-brand-200 hover:shadow-elevated">
+      <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">
         Output
       </p>
-      <h2 className="text-[15px] font-bold text-[#172B4D] mb-1">F&amp;I Gross Profit by Product</h2>
+      <h2 className="text-[15px] font-bold text-foreground mb-1">F&amp;I Gross Profit by Product</h2>
       <p className="text-xs text-muted-foreground mb-4">
         Monthly gross profit contribution from each finance & insurance product line.
       </p>
@@ -153,25 +153,25 @@ export default function FiPenetrationPage() {
         </ResponsiveContainer>
       </div>
 
-      <div className="rounded-lg border border-[#DFE1E6] divide-y divide-[#DFE1E6] mt-2">
+      <div className="rounded-lg border border-border divide-y divide-border bg-card mt-2">
         <StatRow label="Total F&I GP / Month" value={formatEuro(outputs.totalFiGp)} emphasised />
         <StatRow label="F&I GP per Unit" value={outputs.fiGpPerUnit === null ? '—' : formatEuro(outputs.fiGpPerUnit)} />
         <StatRow label="Blended Attach Rate" value={outputs.blendedAttachRate === null ? '—' : `${outputs.blendedAttachRate.toFixed(0)}%`} />
       </div>
 
-      <div className="mt-5 flex gap-3 rounded-lg border border-[#1D7AFC]/20 bg-[#1D7AFC]/5 px-4 py-3">
-        <Info className="h-4 w-4 text-[#1D7AFC] mt-0.5 flex-shrink-0" />
+      <div className="mt-5 flex gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3.5 shadow-soft transition-colors duration-200">
+        <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
         <p className="text-xs text-foreground leading-relaxed">
-          <span className="font-semibold text-[#172B4D]">Calculated Insight: </span>
+          <span className="font-semibold text-foreground">Calculated Insight: </span>
           {outputs.fiGpPerUnit !== null && outputs.fiGpPerUnit < 800 ? (
             <>
-              F&amp;I GP per unit is <span className="font-semibold text-[#172B4D]">{formatEuro(outputs.fiGpPerUnit)}</span>,
+              F&amp;I GP per unit is <span className="font-semibold text-foreground">{formatEuro(outputs.fiGpPerUnit)}</span>,
               below the ~€800–1,200 industry benchmark — raising Extended Warranty or GAP attach rates has the most
               headroom to close the gap.
             </>
           ) : outputs.fiGpPerUnit !== null ? (
             <>
-              F&amp;I GP per unit is <span className="font-semibold text-[#172B4D]">{formatEuro(outputs.fiGpPerUnit)}</span>,
+              F&amp;I GP per unit is <span className="font-semibold text-foreground">{formatEuro(outputs.fiGpPerUnit)}</span>,
               at or above the industry benchmark range.
             </>
           ) : (
@@ -204,7 +204,7 @@ function StatRow({ label, value, emphasised }: { label: string; value: React.Rea
   return (
     <div className="flex items-center justify-between px-4 py-2.5">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={emphasised ? 'text-base font-bold text-[#172B4D]' : 'text-sm font-semibold text-[#172B4D]'}>
+      <span className={emphasised ? 'text-base font-bold text-foreground' : 'text-sm font-semibold text-foreground'}>
         {value}
       </span>
     </div>
