@@ -240,7 +240,7 @@ export default function MarketingRoiPage() {
       <div className="mt-5 flex gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3.5 shadow-soft transition-colors duration-200">
         <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
         <p className="text-xs text-foreground leading-relaxed">
-          <span className="font-semibold text-foreground">Break-Even Insight: </span>
+          <span className="block text-sm font-bold text-foreground">Break-Even Insight</span>
           {outputs.breakEvenCPL === null || outputs.breakEvenCPL === 0 ? (
             <>Enter a non-zero close rate and GP to calculate break-even cost per lead.</>
           ) : (

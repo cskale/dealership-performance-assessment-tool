@@ -154,7 +154,7 @@ export default function SalesVelocityPage() {
       <div className="mt-5 flex gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3.5 shadow-soft transition-colors duration-200">
         <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
         <p className="text-xs text-foreground leading-relaxed">
-          <span className="font-semibold text-foreground">Calculated Insight: </span>
+          <span className="block text-sm font-bold text-foreground">Calculated Insight</span>
           {outputs.bottleneckStage && outputs.bottleneckStage.days > 0 ? (
             <>
               <span className="font-semibold text-foreground">{outputs.bottleneckStage.stage}</span> is your
