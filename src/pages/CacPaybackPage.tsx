@@ -138,7 +138,7 @@ export default function CacPaybackPage() {
         <StatRow label="Remaining CAC After Front GP" value={formatEuro(outputs.netCacAfterFrontGp)} />
       </div>
 
-      <div className="mt-5 flex gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3.5 shadow-soft transition-colors duration-200">
+      <div className={`mt-5 flex gap-3 rounded-lg border px-4 py-3.5 shadow-soft transition-colors duration-200 ${outputs.paybackMonths === null ? 'border-destructive/25 bg-destructive/5' : outputs.paybackMonths === 0 ? 'border-success/25 bg-success/5' : 'border-warning/30 bg-warning/5'}`}>
         <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
         <p className="text-xs text-foreground leading-relaxed">
           <span className="block text-sm font-bold text-foreground">Calculated Insight</span>

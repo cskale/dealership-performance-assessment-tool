@@ -159,7 +159,7 @@ export default function FiPenetrationPage() {
         <StatRow label="Blended Attach Rate" value={outputs.blendedAttachRate === null ? '—' : `${outputs.blendedAttachRate.toFixed(0)}%`} />
       </div>
 
-      <div className="mt-5 flex gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3.5 shadow-soft transition-colors duration-200">
+      <div className={`mt-5 flex gap-3 rounded-lg border px-4 py-3.5 shadow-soft transition-colors duration-200 ${outputs.fiGpPerUnit === null ? 'border-primary/20 bg-primary/5' : outputs.fiGpPerUnit >= 800 ? 'border-success/25 bg-success/5' : 'border-warning/30 bg-warning/5'}`}>
         <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
         <p className="text-xs text-foreground leading-relaxed">
           <span className="block text-sm font-bold text-foreground">Calculated Insight</span>
