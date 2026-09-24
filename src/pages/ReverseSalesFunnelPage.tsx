@@ -140,7 +140,7 @@ export default function ReverseSalesFunnelPage() {
           onChange={(e) => handleChange(field.id, e.target.value)}
         />
         {showChip && (
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-[#1D7AFC]/10 text-[#1D7AFC] px-2.5 py-1 text-xs">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary px-2.5 py-1 text-xs">
             <span>{chipText}</span>
             <button
               type="button"
@@ -167,18 +167,18 @@ export default function ReverseSalesFunnelPage() {
   ];
 
   const leftCard = (
-    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+    <div className="playground-card min-w-0 bg-card rounded-lg border border-border shadow-card p-4 sm:p-5 transition-all duration-200 hover:border-brand-200 hover:shadow-elevated">
+      <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">
         Inputs
       </p>
-      <h2 className="text-[15px] font-bold text-[#172B4D] mb-1">Operational Inputs</h2>
+      <h2 className="text-[15px] font-bold text-foreground mb-1">Operational Inputs</h2>
       <p className="text-xs text-muted-foreground mb-5">
         Configure target volume and current conversion performance.
       </p>
       <div className="space-y-4">
         {volumeFields.map(renderField)}
-        <div className="pt-3 border-t border-[#DFE1E6]">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-3">
+        <div className="pt-3 border-t border-border">
+          <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-3">
             Conversion Rates
           </p>
           <div className="space-y-4">{conversionFields.map(renderField)}</div>
@@ -188,11 +188,11 @@ export default function ReverseSalesFunnelPage() {
   );
 
   const rightCard = (
-    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+    <div className="playground-card min-w-0 bg-card rounded-lg border border-border shadow-card p-4 sm:p-5 transition-all duration-200 hover:border-brand-200 hover:shadow-elevated">
+      <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">
         Output
       </p>
-      <h2 className="text-[15px] font-bold text-[#172B4D] mb-1">Required Funnel Volume</h2>
+      <h2 className="text-[15px] font-bold text-foreground mb-1">Required Funnel Volume</h2>
       <p className="text-xs text-muted-foreground mb-5">
         Calculated volume requirements based on input conversion rates.
       </p>
@@ -218,7 +218,7 @@ export default function ReverseSalesFunnelPage() {
         </div>
 
         {/* Stat list */}
-        <div className="rounded-lg border border-[#DFE1E6] divide-y divide-[#DFE1E6] self-start">
+        <div className="rounded-lg border border-border divide-y divide-border bg-card self-start">
           <StatRow label="Required Leads" value={renderRequired(outputs.requiredLeads)} />
           <StatRow
             label="Required Appointments"
@@ -230,27 +230,27 @@ export default function ReverseSalesFunnelPage() {
           />
           <StatRow
             label="Targeted Unit Output"
-            value={<span className="text-[#1D7AFC]">{formatNumber(inputs.targetUnitSales)}</span>}
+            value={<span className="text-primary">{formatNumber(inputs.targetUnitSales)}</span>}
             emphasised
           />
         </div>
       </div>
 
       {/* Insight callout */}
-      <div className="mt-5 flex gap-3 rounded-lg border border-[#1D7AFC]/20 bg-[#1D7AFC]/5 px-4 py-3">
-        <Info className="h-4 w-4 text-[#1D7AFC] mt-0.5 flex-shrink-0" />
+      <div className="mt-5 flex gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3.5 shadow-soft transition-colors duration-200">
+        <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
         <p className="text-xs text-foreground leading-relaxed">
-          <span className="font-semibold text-[#172B4D]">Calculated Insight: </span>
+          <span className="block text-sm font-bold text-foreground">Calculated Insight</span>
           {outputs.requiredLeads === null ? (
             <>Enter non-zero conversion rates to generate a lead-volume insight.</>
           ) : (
             <>
-              To reach <span className="font-semibold text-[#172B4D]">{formatNumber(inputs.targetUnitSales)}</span> unit sales
+              To reach <span className="font-semibold text-foreground">{formatNumber(inputs.targetUnitSales)}</span> unit sales
               at your current conversion rates, you'll need approximately{' '}
-              <span className="font-semibold text-[#172B4D]">{formatNumber(outputs.requiredLeads)}</span> leads,{' '}
-              <span className="font-semibold text-[#172B4D]">{formatNumber(outputs.requiredAppointments!)}</span>{' '}
+              <span className="font-semibold text-foreground">{formatNumber(outputs.requiredLeads)}</span> leads,{' '}
+              <span className="font-semibold text-foreground">{formatNumber(outputs.requiredAppointments!)}</span>{' '}
               appointments, and{' '}
-              <span className="font-semibold text-[#172B4D]">{formatNumber(outputs.requiredShows!)}</span> showroom visits.
+              <span className="font-semibold text-foreground">{formatNumber(outputs.requiredShows!)}</span> showroom visits.
             </>
           )}
         </p>
@@ -270,14 +270,17 @@ export default function ReverseSalesFunnelPage() {
           label: 'Projected Gross Profit',
           value: formatEuro(outputs.projectedGrossProfit),
           emphasis: true,
+          caption: 'Gross profit at the target sales volume',
         },
         {
           label: 'Lead Efficiency',
           value: leadEfficiency === null ? '—' : `${leadEfficiency.toFixed(1)}%`,
+          caption: 'Share of leads that become sales',
         },
         {
           label: 'Required Lead Volume',
           value: outputs.requiredLeads === null ? '—' : formatNumber(outputs.requiredLeads),
+          caption: 'Top-of-funnel volume needed for target',
         },
       ]}
       leftCard={leftCard}
@@ -304,7 +307,7 @@ function StatRow({
   return (
     <div className="flex items-center justify-between px-4 py-2.5">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={emphasised ? 'text-base font-bold text-[#172B4D]' : 'text-sm font-semibold text-[#172B4D]'}>
+      <span className={emphasised ? 'text-base font-bold text-foreground' : 'text-sm font-semibold text-foreground'}>
         {value}
       </span>
     </div>

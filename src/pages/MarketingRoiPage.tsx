@@ -97,11 +97,11 @@ export default function MarketingRoiPage() {
     : null;
 
   const leftCard = (
-    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+    <div className="playground-card min-w-0 bg-card rounded-lg border border-border shadow-card p-4 sm:p-5 transition-all duration-200 hover:border-brand-200 hover:shadow-elevated">
+      <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">
         Inputs
       </p>
-      <h2 className="text-[15px] font-bold text-[#172B4D] mb-1">Operational Inputs</h2>
+      <h2 className="text-[15px] font-bold text-foreground mb-1">Operational Inputs</h2>
       <p className="text-xs text-muted-foreground mb-5">
         Set average deal economics and per-channel marketing spend.
       </p>
@@ -122,7 +122,7 @@ export default function MarketingRoiPage() {
             onChange={(e) => handleSharedChange('avgGrossProfitPerUnit', e.target.value)}
           />
           {prefillChipText && (
-            <p className="inline-flex items-center rounded-full bg-[#1D7AFC]/10 text-[#1D7AFC] px-2.5 py-1 text-xs">
+            <p className="inline-flex items-center rounded-full bg-primary/10 text-primary px-2.5 py-1 text-xs">
               {prefillChipText}
             </p>
           )}
@@ -145,14 +145,14 @@ export default function MarketingRoiPage() {
       </div>
 
       {/* Channel table */}
-      <div className="pt-4 border-t border-[#DFE1E6]">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-3">
+      <div className="pt-4 border-t border-border">
+        <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-3">
           Channel Spend & Leads
         </p>
         <div className="space-y-3">
           {channels.map((ch, i) => (
             <div key={ch.name} className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
-              <p className="text-xs font-medium text-[#172B4D] self-center">{ch.name}</p>
+              <p className="text-xs font-medium text-foreground self-center">{ch.name}</p>
               <div className="w-24">
                 <Label className="text-[10px] text-muted-foreground">Spend (€)</Label>
                 <Input
@@ -185,11 +185,11 @@ export default function MarketingRoiPage() {
   );
 
   const rightCard = (
-    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+    <div className="playground-card min-w-0 bg-card rounded-lg border border-border shadow-card p-4 sm:p-5 transition-all duration-200 hover:border-brand-200 hover:shadow-elevated">
+      <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">
         Output
       </p>
-      <h2 className="text-[15px] font-bold text-[#172B4D] mb-1">Channel Performance</h2>
+      <h2 className="text-[15px] font-bold text-foreground mb-1">Channel Performance</h2>
       <p className="text-xs text-muted-foreground mb-5">
         Per-channel return on ad spend and cost metrics.
       </p>
@@ -198,7 +198,7 @@ export default function MarketingRoiPage() {
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
-            <tr className="border-b border-[#DFE1E6]">
+            <tr className="border-b border-border">
               <th className="text-left py-2 pr-2 text-muted-foreground font-semibold">Channel</th>
               <th className="text-right py-2 px-2 text-muted-foreground font-semibold">CPL</th>
               <th className="text-right py-2 px-2 text-muted-foreground font-semibold">CPS</th>
@@ -208,8 +208,8 @@ export default function MarketingRoiPage() {
           </thead>
           <tbody>
             {outputs.channelResults.map((cr) => (
-              <tr key={cr.name} className="border-b border-[#DFE1E6]/50">
-                <td className="py-2 pr-2 font-medium text-[#172B4D]">{cr.name}</td>
+              <tr key={cr.name} className="border-b border-border/50">
+                <td className="py-2 pr-2 font-medium text-foreground">{cr.name}</td>
                 <td className="py-2 px-2 text-right">
                   {cr.costPerLead === null ? '—' : formatEuro(cr.costPerLead)}
                 </td>
@@ -221,7 +221,7 @@ export default function MarketingRoiPage() {
               </tr>
             ))}
             {/* Totals row */}
-            <tr className="font-semibold text-[#172B4D]">
+            <tr className="font-semibold text-foreground">
               <td className="py-2 pr-2">Total</td>
               <td className="py-2 px-2 text-right">
                 {outputs.blendedCPL === null ? '—' : formatEuro(outputs.blendedCPL)}
@@ -237,16 +237,16 @@ export default function MarketingRoiPage() {
       </div>
 
       {/* Insight callout */}
-      <div className="mt-5 flex gap-3 rounded-lg border border-[#1D7AFC]/20 bg-[#1D7AFC]/5 px-4 py-3">
-        <Info className="h-4 w-4 text-[#1D7AFC] mt-0.5 flex-shrink-0" />
+      <div className="mt-5 flex gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3.5 shadow-soft transition-colors duration-200">
+        <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
         <p className="text-xs text-foreground leading-relaxed">
-          <span className="font-semibold text-[#172B4D]">Break-Even Insight: </span>
+          <span className="block text-sm font-bold text-foreground">Break-Even Insight</span>
           {outputs.breakEvenCPL === null || outputs.breakEvenCPL === 0 ? (
             <>Enter a non-zero close rate and GP to calculate break-even cost per lead.</>
           ) : (
             <>
               At your current close rate and GP, break-even cost per lead is{' '}
-              <span className="font-semibold text-[#172B4D]">{formatEuro(outputs.breakEvenCPL)}</span>.
+              <span className="font-semibold text-foreground">{formatEuro(outputs.breakEvenCPL)}</span>.
               Any channel with a CPL below this threshold is profitable.
             </>
           )}
@@ -267,14 +267,17 @@ export default function MarketingRoiPage() {
           label: 'Total ROAS',
           value: formatRoas(outputs.overallROAS),
           emphasis: true,
+          caption: 'Gross profit returned per euro of spend',
         },
         {
           label: 'Blended CPL',
           value: outputs.blendedCPL === null ? '—' : formatEuro(outputs.blendedCPL),
+          caption: 'Average acquisition cost per lead',
         },
         {
           label: 'Total Marketing Spend',
           value: formatEuro(outputs.totalSpend),
+          caption: 'Combined monthly channel investment',
         },
       ]}
       leftCard={leftCard}

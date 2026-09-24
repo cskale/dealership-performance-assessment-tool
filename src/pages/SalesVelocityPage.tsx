@@ -52,11 +52,11 @@ export default function SalesVelocityPage() {
   }));
 
   const leftCard = (
-    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+    <div className="playground-card min-w-0 bg-card rounded-lg border border-border shadow-card p-4 sm:p-5 transition-all duration-200 hover:border-brand-200 hover:shadow-elevated">
+      <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">
         Inputs
       </p>
-      <h2 className="text-[15px] font-bold text-[#172B4D] mb-1">Pipeline Inputs</h2>
+      <h2 className="text-[15px] font-bold text-foreground mb-1">Pipeline Inputs</h2>
       <p className="text-xs text-muted-foreground mb-5">
         Enter monthly lead volume, close rate, and average deal value.
       </p>
@@ -80,8 +80,8 @@ export default function SalesVelocityPage() {
         ))}
       </div>
 
-      <div className="pt-4 mt-4 border-t border-[#DFE1E6]">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-3">
+      <div className="pt-4 mt-4 border-t border-border">
+        <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-3">
           Stage Durations
         </p>
         <div className="space-y-4">
@@ -105,11 +105,11 @@ export default function SalesVelocityPage() {
   );
 
   const rightCard = (
-    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+    <div className="playground-card min-w-0 bg-card rounded-lg border border-border shadow-card p-4 sm:p-5 transition-all duration-200 hover:border-brand-200 hover:shadow-elevated">
+      <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">
         Output
       </p>
-      <h2 className="text-[15px] font-bold text-[#172B4D] mb-1">Pipeline Velocity</h2>
+      <h2 className="text-[15px] font-bold text-foreground mb-1">Pipeline Velocity</h2>
       <p className="text-xs text-muted-foreground mb-4">
         Stage duration by day — the longest bar is the bottleneck slowing deal flow.
       </p>
@@ -141,7 +141,7 @@ export default function SalesVelocityPage() {
         </ResponsiveContainer>
       </div>
 
-      <div className="rounded-lg border border-[#DFE1E6] divide-y divide-[#DFE1E6] mt-2">
+      <div className="rounded-lg border border-border divide-y divide-border bg-card mt-2">
         <StatRow label="Total Sales Cycle" value={`${outputs.totalCycleDays} days`} />
         <StatRow label="Projected Monthly Sales" value={formatNumber(outputs.projectedSales)} />
         <StatRow label="Monthly Velocity (GP)" value={formatEuro(outputs.monthlyVelocity)} emphasised />
@@ -151,14 +151,14 @@ export default function SalesVelocityPage() {
         />
       </div>
 
-      <div className="mt-5 flex gap-3 rounded-lg border border-[#1D7AFC]/20 bg-[#1D7AFC]/5 px-4 py-3">
-        <Info className="h-4 w-4 text-[#1D7AFC] mt-0.5 flex-shrink-0" />
+      <div className="mt-5 flex gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3.5 shadow-soft transition-colors duration-200">
+        <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
         <p className="text-xs text-foreground leading-relaxed">
-          <span className="font-semibold text-[#172B4D]">Calculated Insight: </span>
+          <span className="block text-sm font-bold text-foreground">Calculated Insight</span>
           {outputs.bottleneckStage && outputs.bottleneckStage.days > 0 ? (
             <>
-              <span className="font-semibold text-[#172B4D]">{outputs.bottleneckStage.stage}</span> is your
-              slowest stage at <span className="font-semibold text-[#172B4D]">{outputs.bottleneckStage.days} days</span> —
+              <span className="font-semibold text-foreground">{outputs.bottleneckStage.stage}</span> is your
+              slowest stage at <span className="font-semibold text-foreground">{outputs.bottleneckStage.days} days</span> —
               tightening it shortens the full cycle and compounds monthly velocity.
             </>
           ) : (
@@ -177,11 +177,13 @@ export default function SalesVelocityPage() {
       title="Sales Velocity Instrument"
       description="Quantify deal-flow speed across the pipeline and identify bottleneck stages."
       kpiStrip={[
-        { label: 'Monthly Velocity', value: formatEuro(outputs.monthlyVelocity), emphasis: true },
-        { label: 'Sales Cycle Length', value: `${outputs.totalCycleDays} days` },
+        { label: 'Monthly Velocity', value: formatEuro(outputs.monthlyVelocity), emphasis: true, caption: 'Projected gross profit flowing each month' },
+        { label: 'Sales Cycle Length', value: `${outputs.totalCycleDays} days`, caption: 'Total time from lead to close' },
         {
           label: 'Bottleneck Stage',
           value: outputs.bottleneckStage && outputs.bottleneckStage.days > 0 ? outputs.bottleneckStage.stage : '—',
+          caption: 'Longest stage slowing the pipeline',
+          status: outputs.bottleneckStage && outputs.bottleneckStage.days > 0 ? 'risk' : 'neutral',
         },
       ]}
       leftCard={leftCard}
@@ -194,7 +196,7 @@ function StatRow({ label, value, emphasised }: { label: string; value: React.Rea
   return (
     <div className="flex items-center justify-between px-4 py-2.5">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={emphasised ? 'text-base font-bold text-[#172B4D]' : 'text-sm font-semibold text-[#172B4D]'}>
+      <span className={emphasised ? 'text-base font-bold text-foreground' : 'text-sm font-semibold text-foreground'}>
         {value}
       </span>
     </div>

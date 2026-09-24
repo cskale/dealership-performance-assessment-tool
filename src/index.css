@@ -432,3 +432,55 @@
 }
 html { scroll-behavior: smooth; }
 
+/* ── Playground financial instruments ── */
+@layer components {
+  .playground-calculator .playground-card {
+    background-image: linear-gradient(180deg, hsl(var(--card)), hsl(var(--neutral-050) / 0.35));
+  }
+
+  .playground-calculator .playground-card > p:first-child {
+    letter-spacing: 0;
+  }
+
+  .playground-calculator input[type="number"],
+  .playground-calculator input[type="text"] {
+    @apply w-full bg-card font-medium text-foreground transition-all duration-200;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  .playground-calculator input[type="number"]:focus,
+  .playground-calculator input[type="text"]:focus {
+    @apply border-primary shadow-[0_0_0_3px_hsl(var(--brand-100))];
+  }
+
+  .playground-calculator input[type="range"] {
+    min-height: 24px;
+  }
+
+  .playground-calculator table {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  .playground-calculator .recharts-wrapper,
+  .playground-calculator .recharts-surface {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .playground-calculator .playground-card {
+    padding: 1rem;
+  }
+
+  .playground-calculator .playground-card .grid-cols-2,
+  .playground-calculator .playground-card .grid-cols-\[1fr_auto_auto\] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .playground-calculator .playground-card [class*="w-20"],
+  .playground-calculator .playground-card [class*="w-24"] {
+    width: 100%;
+  }
+
+}
+
