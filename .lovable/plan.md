@@ -1,68 +1,26 @@
-# Port "Dealer Compass" landing page into this project
+# Premium Playground calculator upgrade
 
-Yes — possible. Caveat: the source project uses TanStack Start + Tailwind v4 (`@theme inline`), and this project uses React Router + Vite + Tailwind v3. The **visual output and content will be 1:1**, but the underlying tokens/routing must be adapted (a literal file copy won't compile).
+## Goal
+Make the full Playground area feel like a calm, precise financial workspace while preserving every existing calculation, formatter, prefill path, and route.
 
-## Scope
+## Shared foundation
+- Add a reusable `AnimatedNumber` that parses the existing formatted values, animates only the numeric portion over about 400ms, preserves currency/percentage/unit formatting, and respects reduced-motion preferences.
+- Upgrade `PlaygroundCalculatorShell` with a stronger header, larger animated KPI numerals, status accents, one-line metric captions, refined card framing, staggered entrance motion, and responsive one-column behavior.
+- Add shared presentation primitives for premium calculator cards, status-aware insight callouts, headline metric output, what-if slider rows, and accessible chart framing. Existing calculator data remains the source of truth.
+- Restyle `ScaleGauge` without changing `niceScaleMax`, target positioning, or scale calculations: slimmer track, semantic gradient fill, target pin/label, smooth motion, and overflow cue.
 
-Replace the current landing experience with Dealer Compass's:
-- Full-bleed dark hero with its own top nav ("Dealer Diagnostic" wordmark, links, Request Demo pill)
-- Floating dashboard mock with score bars
-- "The Engine" 3-step section with animated connector line
-- "Platform Capabilities" dark grid
-- "See It In Action" ScrollShowcase (sticky scroll with 7 mock panels)
-- Reveal/Counter scroll animations + float animation
-- The page's own footer / CTA section as built in Dealer Compass
+## Calculator pages
+- Apply shared card, field, output, stat-row, and insight treatments across the ten live calculators: Reverse Sales Funnel, Sales Velocity, Lead Quality, Marketing ROI, CAC Payback, Technician Utilization, Vehicle Stock Turn, Absorption Rate, Appointment Density, and F&I Penetration.
+- Preserve each page’s existing status thresholds and use them for KPI/insight status colors where available; neutral status is used where no threshold exists.
+- Add compact Recharts visuals to Absorption Rate and Technician Utilization using their existing calculated outputs, with screen-reader summaries.
+- Upgrade Absorption Rate’s existing what-if sliders with live baseline-to-adjusted delta chips and a Reset action.
+- Keep all existing chart values, tables, funnel values, and formatted output unchanged.
 
-The existing `HomeHeader` and `Footer` will **not** be used on this page (Dealer Compass landing has its own nav/footer baked in, which is part of the 1:1 look). They remain available for other public routes.
-
-## Files to change
-
-1. **`src/pages/Index.tsx`** — rewrite to mirror `src/routes/index.tsx` from Dealer Compass.
-   - Keep our auth redirect at the top:
-     ```tsx
-     const { user, loading } = useAuth();
-     if (!loading && user) return <Navigate to="/app/dashboard" replace />;
-     ```
-   - Strip TanStack `createFileRoute` / `head()` meta. Move meta tags to `react-helmet-async` if already in project, otherwise into a `useEffect` setting `document.title` (matching how other pages here do SEO).
-   - Replace `<a href="/methodology">` with React Router `<Link>`.
-
-2. **`src/components/landing/Reveal.tsx`** — replace with Dealer Compass version (exports `Reveal` and `Counter`). IntersectionObserver-based, no library deps.
-
-3. **`src/components/landing/ScrollShowcase.tsx`** — replace with Dealer Compass version (sticky scroll, 7 `ShowcasePanel` mocks: Diagnostic Command, Action Plan, KPI Encyclopedia, etc.).
-
-4. **`src/index.css`** — add the Dealer Compass design tokens as Tailwind v3 CSS variables and utilities:
-   - `--brand: #1D7AFC`, `--midnight`, `--fog`, `--success`, `--warning`, `--danger` (HSL where needed for opacity utilities)
-   - `.reveal` / `.reveal-in` utility classes
-   - `@keyframes float` + `.animate-float`
-   - `@keyframes drawLine` for the connector line
-   - Smooth scroll on `html`
-
-5. **`tailwind.config.ts`** — extend `theme.colors` with `brand`, `midnight`, `fog`, `success`, `warning`, `danger` mapped to the new CSS vars so utilities like `bg-brand`, `text-midnight`, `bg-fog`, `bg-success/10` compile under Tailwind v3.
-
-6. **`src/components/landing/ProductSneakPeek.tsx`** — leave as the empty stub it already is (or delete; not imported by the new page).
-
-## Adaptations required (why it's not a literal copy)
-
-| Source (Dealer Compass) | This project |
-|---|---|
-| TanStack `createFileRoute` + `head()` | React Router page + manual `document.title` / Helmet |
-| Tailwind v4 `@theme inline { --color-brand: var(--brand) }` | Tailwind v3 `tailwind.config.ts` `extend.colors.brand` referencing CSS var |
-| `bg-brand/10`, `text-success` etc. work via v4 auto-generated palette | Same classes work in v3 only after adding them to `tailwind.config.ts` |
-| `font-sans: Inter` via `@theme` | Add Inter via existing font setup or `<link>` in `index.html` if not present |
-| `<a href="/methodology">` | `<Link to="/methodology">` |
-
-Logic, copy text, layout, colours, spacing, animations, and the 7 ScrollShowcase panels will be reproduced verbatim from the source.
-
-## Out of scope
-
-- Backend, auth, routing, or any `/app/*` page changes
-- Translation of landing content (keeps English, matching source)
-- Replacing the global `HomeHeader`/`Footer` for other public routes (`/methodology`, `/auth`, etc.)
+## Catalog and mobile
+- Give the Playground catalog the same premium visual language for a cohesive eleven-page area.
+- Ensure 390px layouts have full-width inputs, stacked KPI rows and cards, responsive tables/charts, and no horizontal page overflow.
 
 ## Verification
-
-- `npm run build` clean
-- `npx vitest run` clean (no existing tests touch `Index.tsx` or landing components)
-- Visual check of `/` in preview at 1408px and mobile widths
-
-Approve and I'll implement.
+- Run the TypeScript check and project build/test command.
+- Inspect the live Playground catalog and representative calculator pages at desktop and 390px widths.
+- Confirm the protected calculation, mapping, and prefill files remain untouched.
