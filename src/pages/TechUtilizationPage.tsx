@@ -9,6 +9,7 @@ import {
 } from '@/lib/playgroundCalculators';
 import { formatEuro } from '@/utils/euroFormatter';
 import { PlaygroundCalculatorShell } from '@/components/playground/PlaygroundCalculatorShell';
+import { ScaleGauge } from '@/components/playground/ScaleGauge';
 
 const DEFAULTS: TechUtilizationInputs = {
   numberOfTechnicians: 5,
@@ -63,10 +64,6 @@ export default function TechUtilizationPage() {
 
   const capacityFields = FIELDS.filter((f) => f.group === 'capacity');
   const performanceFields = FIELDS.filter((f) => f.group === 'performance');
-
-  const gaugeWidth = outputs.utilizationPct === null
-    ? 0
-    : Math.min(outputs.utilizationPct, 120);
 
   const renderField = (field: FieldConfig) => (
     <div key={field.id} className="space-y-1.5">
@@ -134,17 +131,12 @@ export default function TechUtilizationPage() {
             {formatPct(outputs.utilizationPct)}
           </span>
         </div>
-        <div className="w-full h-4 bg-gray-100 rounded-full overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-300 ${utilizationColor(outputs.utilizationPct)}`}
-            style={{ width: `${Math.max(0, (gaugeWidth / 120) * 100)}%` }}
-          />
-        </div>
-        <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-          <span>0%</span>
-          <span className="border-l border-dashed border-gray-300 px-1">85%</span>
-          <span>120%</span>
-        </div>
+        <ScaleGauge
+          value={outputs.utilizationPct}
+          max={120}
+          target={85}
+          fillClass={utilizationColor(outputs.utilizationPct)}
+        />
       </div>
 
       {/* Stat rows */}

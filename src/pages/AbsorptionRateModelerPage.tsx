@@ -10,6 +10,7 @@ import {
 } from '@/lib/playgroundCalculators';
 import { formatEuro } from '@/utils/euroFormatter';
 import { PlaygroundCalculatorShell } from '@/components/playground/PlaygroundCalculatorShell';
+import { ScaleGauge } from '@/components/playground/ScaleGauge';
 
 interface BaseInputs {
   serviceGrossProfit: number;
@@ -68,10 +69,6 @@ export default function AbsorptionRateModelerPage() {
   const handleAdjChange = (field: keyof Adjustments, val: number) => {
     setAdj((prev) => ({ ...prev, [field]: val }));
   };
-
-  const gaugeWidth = outputs.adjustedAbsorptionRate === null
-    ? 0
-    : Math.min(outputs.adjustedAbsorptionRate, 150);
 
   const sliders: { field: keyof Adjustments; label: string; adjustedValue: number }[] = [
     { field: 'serviceAdjustmentPct', label: 'Service GP', adjustedValue: outputs.adjustedServiceGP },
@@ -201,17 +198,12 @@ export default function AbsorptionRateModelerPage() {
             {formatPct(outputs.adjustedAbsorptionRate)}
           </span>
         </div>
-        <div className="w-full h-4 bg-gray-100 rounded-full overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-300 ${absorptionColor(outputs.adjustedAbsorptionRate)}`}
-            style={{ width: `${Math.max(0, (gaugeWidth / 150) * 100)}%` }}
-          />
-        </div>
-        <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-          <span>0%</span>
-          <span className="border-l border-dashed border-gray-300 px-1">100%</span>
-          <span>150%</span>
-        </div>
+        <ScaleGauge
+          value={outputs.adjustedAbsorptionRate}
+          max={150}
+          target={100}
+          fillClass={absorptionColor(outputs.adjustedAbsorptionRate)}
+        />
       </div>
 
       {/* Stat rows */}
@@ -278,9 +270,9 @@ export default function AbsorptionRateModelerPage() {
           value: formatEuro(outputs.monthlySurplusDeficit),
         },
         {
-          label: 'Aftersales GP Share',
+          label: 'Service / Parts GP Split',
           value: outputs.serviceGpShare !== null && outputs.partsGpShare !== null
-            ? '100%'
+            ? `${Math.round(outputs.serviceGpShare)}% / ${Math.round(outputs.partsGpShare)}%`
             : '—',
         },
       ]}

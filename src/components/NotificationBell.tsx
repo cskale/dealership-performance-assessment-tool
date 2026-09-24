@@ -61,6 +61,7 @@ export function NotificationBell({ collapsed = false, headerMode = false }: Noti
       .from('notifications')
       .select('*')
       .eq('user_id', user.id)
+      .eq('channel', 'in_app') // email rows are delivery records (digest bodies are JSON for the template)
       .eq('read', false)
       .order('created_at', { ascending: false })
       .limit(20);
