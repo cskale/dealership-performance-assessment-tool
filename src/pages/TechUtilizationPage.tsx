@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Wrench, Info } from 'lucide-react';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from 'recharts';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +11,7 @@ import {
 import { formatEuro } from '@/utils/euroFormatter';
 import { PlaygroundCalculatorShell } from '@/components/playground/PlaygroundCalculatorShell';
 import { ScaleGauge } from '@/components/playground/ScaleGauge';
+import { AnimatedNumber } from '@/components/playground/AnimatedNumber';
 
 const DEFAULTS: TechUtilizationInputs = {
   numberOfTechnicians: 5,
@@ -64,6 +66,11 @@ export default function TechUtilizationPage() {
 
   const capacityFields = FIELDS.filter((f) => f.group === 'capacity');
   const performanceFields = FIELDS.filter((f) => f.group === 'performance');
+  const hoursChartData = [
+    { label: 'Billed', hours: inputs.actualBilledHoursPerMonth, fill: 'hsl(var(--brand-500))' },
+    { label: 'Idle', hours: outputs.idleHours, fill: 'hsl(var(--warning))' },
+    { label: 'Available', hours: outputs.totalAvailableHours, fill: 'hsl(var(--neutral-200))' },
+  ];
 
   const renderField = (field: FieldConfig) => (
     <div key={field.id} className="space-y-1.5">
@@ -139,6 +146,22 @@ export default function TechUtilizationPage() {
         />
       </div>
 
+      <div className="mb-5 rounded-lg border border-border bg-muted/30 p-3" role="img" aria-label={`${formatNum(inputs.actualBilledHoursPerMonth)} billed hours and ${formatNum(outputs.idleHours)} idle hours from ${formatNum(outputs.totalAvailableHours)} available hours.`}>
+        <div className="h-[150px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={hoursChartData} layout="vertical" margin={{ top: 4, right: 12, bottom: 4, left: 4 }}>
+              <CartesianGrid horizontal={false} stroke="hsl(var(--neutral-100))" />
+              <XAxis type="number" hide />
+              <YAxis type="category" dataKey="label" width={62} tick={{ fontSize: 10, fill: 'hsl(var(--neutral-600))' }} axisLine={false} tickLine={false} />
+              <ChartTooltip formatter={(value: number) => [`${formatNum(value)} hrs`, 'Hours']} />
+              <Bar dataKey="hours" radius={[0, 4, 4, 0]} maxBarSize={22}>
+                {hoursChartData.map((entry) => <rect key={entry.label} fill={entry.fill} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
       {/* Stat rows */}
       <div className="rounded-lg border border-[#DFE1E6] divide-y divide-[#DFE1E6]">
         <StatRow label="Total Available Hours" value={`${formatNum(outputs.totalAvailableHours)} hrs`} />
@@ -187,14 +210,19 @@ export default function TechUtilizationPage() {
           label: 'Utilization Rate',
           value: formatPct(outputs.utilizationPct),
           emphasis: true,
+          caption: 'Billed hours as a share of capacity',
+          status: outputs.utilizationPct === null ? 'neutral' : outputs.utilizationPct >= 85 ? 'good' : outputs.utilizationPct >= 70 ? 'watch' : 'risk',
         },
         {
           label: 'Revenue at Current Util.',
           value: formatEuro(outputs.revenueAtCurrentUtil),
+          caption: 'Monthly labour revenue captured',
         },
         {
           label: 'Revenue Opportunity Lost',
           value: formatEuro(outputs.revenueLost),
+          caption: 'Potential revenue in idle capacity',
+          status: outputs.revenueLost > 0 ? 'watch' : 'good',
         },
       ]}
       leftCard={leftCard}
@@ -225,9 +253,7 @@ function StatRow({
   return (
     <div className="flex items-center justify-between px-4 py-2.5">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={emphasised ? 'text-base font-bold text-[#172B4D]' : 'text-sm font-semibold text-[#172B4D]'}>
-        {value}
-      </span>
+      <AnimatedNumber value={value} className={emphasised ? 'text-base font-bold text-foreground numeric' : 'text-sm font-semibold text-foreground numeric'} />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { ShieldCheck, Info } from 'lucide-react';
+import { Bar, BarChart, CartesianGrid, Legend, ReferenceLine, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from 'recharts';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +12,8 @@ import {
 import { formatEuro } from '@/utils/euroFormatter';
 import { PlaygroundCalculatorShell } from '@/components/playground/PlaygroundCalculatorShell';
 import { ScaleGauge } from '@/components/playground/ScaleGauge';
+import { AnimatedNumber } from '@/components/playground/AnimatedNumber';
+import { WhatIfHeader } from '@/components/playground/CalculatorPrimitives';
 
 interface BaseInputs {
   serviceGrossProfit: number;
@@ -75,6 +78,17 @@ export default function AbsorptionRateModelerPage() {
     { field: 'partsAdjustmentPct', label: 'Parts GP', adjustedValue: outputs.adjustedPartsGP },
     { field: 'overheadAdjustmentPct', label: 'Fixed Overhead', adjustedValue: outputs.adjustedOverhead },
   ];
+
+  const baselineValues: Record<keyof Adjustments, number> = {
+    serviceAdjustmentPct: base.serviceGrossProfit,
+    partsAdjustmentPct: base.partsGrossProfit,
+    overheadAdjustmentPct: base.totalFixedOverhead,
+  };
+  const coverageChartData = [{
+    label: 'Monthly coverage',
+    service: outputs.adjustedServiceGP,
+    parts: outputs.adjustedPartsGP,
+  }];
 
   const leftCard = (
     <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
@@ -141,16 +155,14 @@ export default function AbsorptionRateModelerPage() {
 
       {/* What-if sliders */}
       <div className="pt-4 mt-4 border-t border-[#DFE1E6]">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-3">
-          What-If Adjustments
-        </p>
+        <WhatIfHeader onReset={() => setAdj(DEFAULT_ADJ)} disabled={!hasAdjustments} />
         <div className="space-y-4">
           {sliders.map((s) => (
             <div key={s.field} className="space-y-1">
               <div className="flex items-center justify-between">
                 <Label className="text-xs">{s.label}</Label>
-                <span className="text-xs font-medium text-[#172B4D]">
-                  {adj[s.field] > 0 ? '+' : ''}{adj[s.field]}% → {formatEuro(s.adjustedValue)}
+                <span key={`${s.field}-${adj[s.field]}`} className="animate-in fade-in zoom-in-95 duration-200 rounded-full border border-primary/15 bg-primary/5 px-2 py-1 text-[11px] font-semibold text-primary numeric">
+                  {formatEuro(baselineValues[s.field])} → {adj[s.field] > 0 ? '+' : ''}{adj[s.field]}% · {formatEuro(s.adjustedValue - baselineValues[s.field])}
                 </span>
               </div>
               <input
@@ -160,7 +172,7 @@ export default function AbsorptionRateModelerPage() {
                 step={1}
                 value={adj[s.field]}
                 onChange={(e) => handleAdjChange(s.field, Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#1D7AFC]"
+                className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary transition-all duration-200"
               />
               <div className="flex justify-between text-[10px] text-muted-foreground">
                 <span>−20%</span>
@@ -204,6 +216,23 @@ export default function AbsorptionRateModelerPage() {
           target={100}
           fillClass={absorptionColor(outputs.adjustedAbsorptionRate)}
         />
+      </div>
+
+      <div className="mb-5 rounded-lg border border-border bg-muted/30 p-3" role="img" aria-label={`Service and parts gross profit total ${formatEuro(outputs.adjustedServiceGP + outputs.adjustedPartsGP)} against fixed overhead of ${formatEuro(outputs.adjustedOverhead)}.`}>
+        <div className="h-[150px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={coverageChartData} layout="vertical" margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
+              <CartesianGrid horizontal={false} stroke="hsl(var(--neutral-100))" />
+              <XAxis type="number" hide />
+              <YAxis type="category" dataKey="label" hide />
+              <ChartTooltip formatter={(value: number) => formatEuro(value)} />
+              <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
+              <ReferenceLine x={outputs.adjustedOverhead} stroke="hsl(var(--neutral-600))" strokeDasharray="4 4" label={{ value: 'Fixed overhead', position: 'insideTopRight', fontSize: 10, fill: 'hsl(var(--neutral-600))' }} />
+              <Bar dataKey="service" name="Service GP" stackId="coverage" fill="hsl(var(--brand-500))" radius={[4, 0, 0, 4]} maxBarSize={34} />
+              <Bar dataKey="parts" name="Parts GP" stackId="coverage" fill="hsl(var(--dd-teal))" radius={[0, 4, 4, 0]} maxBarSize={34} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {/* Stat rows */}
@@ -264,16 +293,20 @@ export default function AbsorptionRateModelerPage() {
           label: 'Absorption Rate',
           value: formatPct(outputs.adjustedAbsorptionRate),
           emphasis: true,
+          caption: 'Aftersales coverage of fixed overhead',
+          status: outputs.adjustedAbsorptionRate === null ? 'neutral' : outputs.adjustedAbsorptionRate >= 100 ? 'good' : outputs.adjustedAbsorptionRate >= 80 ? 'watch' : 'risk',
         },
         {
           label: 'Monthly Surplus/Deficit',
           value: formatEuro(outputs.monthlySurplusDeficit),
+          caption: 'Monthly position after fixed overhead',
         },
         {
           label: 'Service / Parts GP Split',
           value: outputs.serviceGpShare !== null && outputs.partsGpShare !== null
             ? `${Math.round(outputs.serviceGpShare)}% / ${Math.round(outputs.partsGpShare)}%`
             : '—',
+          caption: 'Contribution mix across aftersales',
         },
       ]}
       leftCard={leftCard}
@@ -294,9 +327,7 @@ function StatRow({
   return (
     <div className="flex items-center justify-between px-4 py-2.5">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={emphasised ? 'text-base font-bold text-[#172B4D]' : 'text-sm font-semibold text-[#172B4D]'}>
-        {value}
-      </span>
+      <AnimatedNumber value={value} className={emphasised ? 'text-base font-bold text-foreground numeric' : 'text-sm font-semibold text-foreground numeric'} />
     </div>
   );
 }
