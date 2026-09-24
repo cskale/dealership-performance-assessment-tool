@@ -156,28 +156,29 @@ const TOTAL_LIVE = CATEGORIES.reduce(
 
 export default function Playground() {
   return (
-    <div className="px-6 py-8 max-w-7xl mx-auto">
-      <header className="mb-8">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-2">
+    <div className="w-full max-w-7xl mx-auto overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8">
+      <header className="relative mb-8 overflow-hidden rounded-lg border border-border bg-card px-5 py-6 shadow-card animate-in fade-in slide-in-from-bottom-2 duration-300 sm:px-7">
+        <span className="absolute inset-y-0 left-0 w-1 bg-primary" aria-hidden />
+        <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-2">
           Playground
         </p>
-        <h1 className="text-[20px] font-bold text-[#172B4D] mb-1">Precision Playground</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-1">Precision Playground</h1>
         <p className="text-sm text-muted-foreground max-w-2xl">
           High-fidelity analytical instruments for strategic scenario modeling.
         </p>
-        <div className="mt-3 inline-flex items-center gap-2 text-xs text-muted-foreground bg-white border border-[#DFE1E6] rounded-full px-3 py-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#1D7AFC]" />
-          <span className="font-medium text-[#172B4D]">{TOTAL_LIVE}</span> live
-          <span className="text-[#DFE1E6]">·</span>
-          <span className="font-medium text-[#172B4D]">{TOTAL_PLANNED - TOTAL_LIVE}</span> planned
+        <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-3 py-1 text-xs text-muted-foreground">
+          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+          <span className="font-medium text-foreground numeric">{TOTAL_LIVE}</span> live
+          <span className="text-border">·</span>
+          <span className="font-medium text-foreground numeric">{TOTAL_PLANNED - TOTAL_LIVE}</span> planned
         </div>
       </header>
 
       <div className="space-y-8">
         {CATEGORIES.map((category) => (
-          <section key={category.title}>
+          <section key={category.title} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
             <div className="mb-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
+              <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">
                 {category.title}
               </p>
               <p className="text-xs text-muted-foreground">{category.description}</p>
@@ -200,9 +201,9 @@ function CalculatorCard({ item }: { item: CalculatorMeta }) {
   const inner = (
     <div
       className={[
-        'h-full bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5 flex flex-col transition-all',
+        'h-full bg-card rounded-lg border border-border shadow-card p-5 flex flex-col transition-all duration-200',
         item.live
-          ? 'hover:border-[#1D7AFC]/40 hover:shadow-elevated cursor-pointer'
+          ? 'hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-elevated cursor-pointer'
           : 'opacity-60 cursor-not-allowed',
       ].join(' ')}
     >
@@ -210,7 +211,7 @@ function CalculatorCard({ item }: { item: CalculatorMeta }) {
         <div
           className={[
             'rounded-md p-2',
-            item.live ? 'bg-[#1D7AFC]/10 text-[#1D7AFC]' : 'bg-muted text-muted-foreground',
+            item.live ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground',
           ].join(' ')}
         >
           <Icon className="h-4 w-4" />
@@ -221,10 +222,10 @@ function CalculatorCard({ item }: { item: CalculatorMeta }) {
           </Badge>
         )}
       </div>
-      <h3 className="text-[13px] font-bold text-[#172B4D] leading-snug mb-1.5">{item.name}</h3>
+      <h3 className="text-sm font-bold text-foreground leading-snug mb-1.5">{item.name}</h3>
       <p className="text-xs text-muted-foreground leading-relaxed flex-1">{item.description}</p>
       {item.live && (
-        <div className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#1D7AFC]">
+        <div className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-primary">
           Open Calculator <ArrowRight className="h-3 w-3" />
         </div>
       )}

@@ -91,11 +91,11 @@ export default function AbsorptionRateModelerPage() {
   }];
 
   const leftCard = (
-    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
+    <div className="playground-card min-w-0 bg-card rounded-lg border border-border shadow-card p-4 sm:p-5 transition-all duration-200 hover:border-brand-200 hover:shadow-elevated">
       <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
         Inputs
       </p>
-      <h2 className="text-[15px] font-bold text-[#172B4D] mb-1">Operational Inputs</h2>
+      <h2 className="text-[15px] font-bold text-foreground mb-1">Operational Inputs</h2>
       <p className="text-xs text-muted-foreground mb-5">
         Enter monthly gross profit and fixed overhead figures.
       </p>
@@ -154,7 +154,7 @@ export default function AbsorptionRateModelerPage() {
       </div>
 
       {/* What-if sliders */}
-      <div className="pt-4 mt-4 border-t border-[#DFE1E6]">
+      <div className="pt-4 mt-4 border-t border-border">
         <WhatIfHeader onReset={() => setAdj(DEFAULT_ADJ)} disabled={!hasAdjustments} />
         <div className="space-y-4">
           {sliders.map((s) => (
@@ -187,11 +187,11 @@ export default function AbsorptionRateModelerPage() {
   );
 
   const rightCard = (
-    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
+    <div className="playground-card min-w-0 bg-card rounded-lg border border-border shadow-card p-4 sm:p-5 transition-all duration-200 hover:border-brand-200 hover:shadow-elevated">
       <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
         Output
       </p>
-      <h2 className="text-[15px] font-bold text-[#172B4D] mb-1">Absorption Analysis</h2>
+      <h2 className="text-[15px] font-bold text-foreground mb-1">Absorption Analysis</h2>
       <p className="text-xs text-muted-foreground mb-5">
         How well aftersales gross profit covers fixed dealership overhead.
       </p>
@@ -236,7 +236,7 @@ export default function AbsorptionRateModelerPage() {
       </div>
 
       {/* Stat rows */}
-      <div className="rounded-lg border border-[#DFE1E6] divide-y divide-[#DFE1E6]">
+      <div className="rounded-lg border border-border divide-y divide-border bg-card">
         <StatRow label="Baseline Absorption" value={formatPct(outputs.baselineAbsorptionRate)} />
         {hasAdjustments && (
           <StatRow label="Adjusted Absorption" value={formatPct(outputs.adjustedAbsorptionRate)} emphasised />
@@ -251,26 +251,26 @@ export default function AbsorptionRateModelerPage() {
       </div>
 
       {/* Insight callout */}
-      <div className="mt-5 flex gap-3 rounded-lg border border-[#1D7AFC]/20 bg-[#1D7AFC]/5 px-4 py-3">
-        <Info className="h-4 w-4 text-[#1D7AFC] mt-0.5 flex-shrink-0" />
+      <div className="mt-5 flex gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3.5 shadow-soft transition-colors duration-200">
+        <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
         <p className="text-xs text-foreground leading-relaxed">
-          <span className="font-semibold text-[#172B4D]">Calculated Insight: </span>
+          <span className="block text-sm font-bold text-foreground">Calculated Insight</span>
           {outputs.adjustedAbsorptionRate === null ? (
             <>Enter a non-zero overhead value to calculate absorption rate.</>
           ) : outputs.adjustedAbsorptionRate >= 100 ? (
             <>
               Aftersales departments fully cover fixed overhead with{' '}
-              <span className="font-semibold text-[#172B4D]">{formatEuro(outputs.monthlySurplusDeficit)}</span>{' '}
+              <span className="font-semibold text-foreground">{formatEuro(outputs.monthlySurplusDeficit)}</span>{' '}
               monthly surplus.
             </>
           ) : (
             <>
               Fixed overhead is{' '}
-              <span className="font-semibold text-[#172B4D]">
+              <span className="font-semibold text-foreground">
                 {(100 - outputs.adjustedAbsorptionRate).toFixed(1)}%
               </span>{' '}
               under-absorbed. Closing the gap requires{' '}
-              <span className="font-semibold text-[#172B4D]">
+              <span className="font-semibold text-foreground">
                 {formatEuro(Math.abs(outputs.monthlySurplusDeficit))}
               </span>
               /month in additional aftersales GP.

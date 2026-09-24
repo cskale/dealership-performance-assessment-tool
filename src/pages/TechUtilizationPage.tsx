@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Wrench, Info } from 'lucide-react';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from 'recharts';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -94,17 +94,17 @@ export default function TechUtilizationPage() {
   );
 
   const leftCard = (
-    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
+    <div className="playground-card min-w-0 bg-card rounded-lg border border-border shadow-card p-4 sm:p-5 transition-all duration-200 hover:border-brand-200 hover:shadow-elevated">
       <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
         Inputs
       </p>
-      <h2 className="text-[15px] font-bold text-[#172B4D] mb-1">Workshop Inputs</h2>
+      <h2 className="text-[15px] font-bold text-foreground mb-1">Workshop Inputs</h2>
       <p className="text-xs text-muted-foreground mb-5">
         Enter workshop capacity and actual billing performance.
       </p>
       <div className="space-y-4">
         {capacityFields.map(renderField)}
-        <div className="pt-3 border-t border-[#DFE1E6]">
+        <div className="pt-3 border-t border-border">
           <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-3">
             Billing Performance
           </p>
@@ -115,11 +115,11 @@ export default function TechUtilizationPage() {
   );
 
   const rightCard = (
-    <div className="bg-white rounded-xl border border-[#DFE1E6] shadow-card p-5">
+    <div className="playground-card min-w-0 bg-card rounded-lg border border-border shadow-card p-4 sm:p-5 transition-all duration-200 hover:border-brand-200 hover:shadow-elevated">
       <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1">
         Output
       </p>
-      <h2 className="text-[15px] font-bold text-[#172B4D] mb-1">Utilization Analysis</h2>
+      <h2 className="text-[15px] font-bold text-foreground mb-1">Utilization Analysis</h2>
       <p className="text-xs text-muted-foreground mb-5">
         How effectively technician capacity converts to billed revenue.
       </p>
@@ -155,7 +155,7 @@ export default function TechUtilizationPage() {
               <YAxis type="category" dataKey="label" width={62} tick={{ fontSize: 10, fill: 'hsl(var(--neutral-600))' }} axisLine={false} tickLine={false} />
               <ChartTooltip formatter={(value: number) => [`${formatNum(value)} hrs`, 'Hours']} />
               <Bar dataKey="hours" radius={[0, 4, 4, 0]} maxBarSize={22}>
-                {hoursChartData.map((entry) => <rect key={entry.label} fill={entry.fill} />)}
+                {hoursChartData.map((entry) => <Cell key={entry.label} fill={entry.fill} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -163,7 +163,7 @@ export default function TechUtilizationPage() {
       </div>
 
       {/* Stat rows */}
-      <div className="rounded-lg border border-[#DFE1E6] divide-y divide-[#DFE1E6]">
+      <div className="rounded-lg border border-border divide-y divide-border bg-card">
         <StatRow label="Total Available Hours" value={`${formatNum(outputs.totalAvailableHours)} hrs`} />
         <StatRow label="Billed Hours" value={`${formatNum(inputs.actualBilledHoursPerMonth)} hrs`} />
         <StatRow label="Idle Hours" value={`${formatNum(outputs.idleHours)} hrs`} />
@@ -173,23 +173,23 @@ export default function TechUtilizationPage() {
       </div>
 
       {/* Insight callout */}
-      <div className="mt-5 flex gap-3 rounded-lg border border-[#1D7AFC]/20 bg-[#1D7AFC]/5 px-4 py-3">
-        <Info className="h-4 w-4 text-[#1D7AFC] mt-0.5 flex-shrink-0" />
+      <div className="mt-5 flex gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3.5 shadow-soft transition-colors duration-200">
+        <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
         <p className="text-xs text-foreground leading-relaxed">
-          <span className="font-semibold text-[#172B4D]">Calculated Insight: </span>
+          <span className="block text-sm font-bold text-foreground">Calculated Insight</span>
           {outputs.utilizationPct === null ? (
             <>Enter technician count and hours to calculate utilization.</>
           ) : outputs.utilizationPct >= 85 ? (
             <>
               Workshop is running at{' '}
-              <span className="font-semibold text-[#172B4D]">{formatPct(outputs.utilizationPct)}</span>{' '}
+              <span className="font-semibold text-foreground">{formatPct(outputs.utilizationPct)}</span>{' '}
               utilization — strong performance. Focus on efficiency and labour rate optimization.
             </>
           ) : (
             <>
-              <span className="font-semibold text-[#172B4D]">{formatNum(outputs.idleHours)}</span> idle hours
+              <span className="font-semibold text-foreground">{formatNum(outputs.idleHours)}</span> idle hours
               represent{' '}
-              <span className="font-semibold text-[#172B4D]">{formatEuro(outputs.revenueLost)}</span> in
+              <span className="font-semibold text-foreground">{formatEuro(outputs.revenueLost)}</span> in
               unrealised monthly revenue at your current labour rate.
             </>
           )}
