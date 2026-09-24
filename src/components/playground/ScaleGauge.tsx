@@ -22,21 +22,28 @@ interface ScaleGaugeProps {
 export function ScaleGauge({ value, max, target, fillClass }: ScaleGaugeProps) {
   const scaleMax = niceScaleMax(value, max);
   const pos = (v: number) => `${Math.min(100, Math.max(0, (v / scaleMax) * 100))}%`;
+  const hasOverflow = value !== null && value > max;
 
   return (
-    <div>
-      <div className="relative w-full h-4 bg-gray-100 rounded-full overflow-hidden">
+    <div className="pt-6">
+      <div className="relative h-2.5 w-full overflow-visible rounded-full bg-muted shadow-inner">
         <div
-          className={`h-full rounded-full transition-all duration-500 ease-out ${fillClass}`}
+          className={`h-full rounded-full bg-gradient-to-r from-primary/70 to-current transition-all duration-500 ease-out ${fillClass}`}
           style={{ width: value === null ? '0%' : pos(value) }}
         />
-        <div className="absolute inset-y-0 w-px bg-gray-400/70" style={{ left: pos(target) }} aria-hidden />
+        <div className="absolute -top-6 -translate-x-1/2" style={{ left: pos(target) }} aria-hidden>
+          <span className="whitespace-nowrap rounded bg-foreground px-1.5 py-0.5 text-[9px] font-semibold text-background shadow-soft">Target {target}%</span>
+          <span className="mx-auto block h-2 w-px bg-foreground/60" />
+        </div>
+        <div className="absolute -top-1 h-[18px] w-px bg-foreground/60" style={{ left: pos(target) }} aria-hidden />
+        {hasOverflow && <span className="absolute -right-0.5 top-1/2 h-4 w-1 -translate-y-1/2 rounded-full bg-primary shadow-[0_0_0_3px_hsl(var(--brand-100))]" aria-label="Value extends beyond the default range" />}
       </div>
-      <div className="relative h-4 text-[10px] text-muted-foreground mt-1">
+      <div className="relative mt-1.5 h-4 text-[10px] text-muted-foreground numeric">
         <span className="absolute left-0">0%</span>
         <span className="absolute -translate-x-1/2 font-medium" style={{ left: pos(target) }}>{target}%</span>
         <span className="absolute right-0">{scaleMax}%</span>
       </div>
+      {hasOverflow && <p className="mt-1 text-right text-[10px] font-medium text-primary">Scale extended beyond {max}%</p>}
     </div>
   );
 }
