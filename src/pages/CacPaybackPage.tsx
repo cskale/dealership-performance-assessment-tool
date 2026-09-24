@@ -167,12 +167,14 @@ export default function CacPaybackPage() {
       title="CAC Payback Calculator"
       description="Determine months to recover customer acquisition cost from average gross profit per unit."
       kpiStrip={[
-        { label: 'Customer Acquisition Cost', value: outputs.cac === null ? '—' : formatEuro(outputs.cac), emphasis: true },
+        { label: 'Customer Acquisition Cost', value: outputs.cac === null ? '—' : formatEuro(outputs.cac), emphasis: true, caption: 'Sales and marketing cost per customer' },
         {
           label: 'Payback Period',
           value: outputs.paybackMonths === null ? '—' : outputs.paybackMonths === 0 ? 'Instant' : `${outputs.paybackMonths.toFixed(1)} mo`,
+          caption: 'Time until acquisition cost is recovered',
+          status: outputs.paybackMonths === null ? 'risk' : outputs.paybackMonths === 0 ? 'good' : 'watch',
         },
-        { label: 'Total Monthly Acquisition Cost', value: formatEuro(outputs.totalMonthlyCost) },
+        { label: 'Total Monthly Acquisition Cost', value: formatEuro(outputs.totalMonthlyCost), caption: 'Combined monthly spend and staffing cost' },
       ]}
       leftCard={leftCard}
       rightCard={rightCard}

@@ -270,14 +270,17 @@ export default function ReverseSalesFunnelPage() {
           label: 'Projected Gross Profit',
           value: formatEuro(outputs.projectedGrossProfit),
           emphasis: true,
+          caption: 'Gross profit at the target sales volume',
         },
         {
           label: 'Lead Efficiency',
           value: leadEfficiency === null ? '—' : `${leadEfficiency.toFixed(1)}%`,
+          caption: 'Share of leads that become sales',
         },
         {
           label: 'Required Lead Volume',
           value: outputs.requiredLeads === null ? '—' : formatNumber(outputs.requiredLeads),
+          caption: 'Top-of-funnel volume needed for target',
         },
       ]}
       leftCard={leftCard}

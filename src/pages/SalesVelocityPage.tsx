@@ -177,11 +177,13 @@ export default function SalesVelocityPage() {
       title="Sales Velocity Instrument"
       description="Quantify deal-flow speed across the pipeline and identify bottleneck stages."
       kpiStrip={[
-        { label: 'Monthly Velocity', value: formatEuro(outputs.monthlyVelocity), emphasis: true },
-        { label: 'Sales Cycle Length', value: `${outputs.totalCycleDays} days` },
+        { label: 'Monthly Velocity', value: formatEuro(outputs.monthlyVelocity), emphasis: true, caption: 'Projected gross profit flowing each month' },
+        { label: 'Sales Cycle Length', value: `${outputs.totalCycleDays} days`, caption: 'Total time from lead to close' },
         {
           label: 'Bottleneck Stage',
           value: outputs.bottleneckStage && outputs.bottleneckStage.days > 0 ? outputs.bottleneckStage.stage : '—',
+          caption: 'Longest stage slowing the pipeline',
+          status: outputs.bottleneckStage && outputs.bottleneckStage.days > 0 ? 'risk' : 'neutral',
         },
       ]}
       leftCard={leftCard}

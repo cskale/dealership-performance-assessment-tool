@@ -190,9 +190,9 @@ export default function FiPenetrationPage() {
       title="F&I Penetration Calculator"
       description="Model finance, insurance, and warranty attach rates against gross profit uplift."
       kpiStrip={[
-        { label: 'Total F&I GP / Month', value: formatEuro(outputs.totalFiGp), emphasis: true },
-        { label: 'F&I GP per Unit', value: outputs.fiGpPerUnit === null ? '—' : formatEuro(outputs.fiGpPerUnit) },
-        { label: 'Blended Attach Rate', value: outputs.blendedAttachRate === null ? '—' : `${outputs.blendedAttachRate.toFixed(0)}%` },
+        { label: 'Total F&I GP / Month', value: formatEuro(outputs.totalFiGp), emphasis: true, caption: 'Monthly contribution across all products' },
+        { label: 'F&I GP per Unit', value: outputs.fiGpPerUnit === null ? '—' : formatEuro(outputs.fiGpPerUnit), caption: 'Average contribution per vehicle sold', status: outputs.fiGpPerUnit === null ? 'neutral' : outputs.fiGpPerUnit >= 800 ? 'good' : 'watch' },
+        { label: 'Blended Attach Rate', value: outputs.blendedAttachRate === null ? '—' : `${outputs.blendedAttachRate.toFixed(0)}%`, caption: 'Average product attachment across sales' },
       ]}
       leftCard={leftCard}
       rightCard={rightCard}

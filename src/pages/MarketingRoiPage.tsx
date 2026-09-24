@@ -267,14 +267,17 @@ export default function MarketingRoiPage() {
           label: 'Total ROAS',
           value: formatRoas(outputs.overallROAS),
           emphasis: true,
+          caption: 'Gross profit returned per euro of spend',
         },
         {
           label: 'Blended CPL',
           value: outputs.blendedCPL === null ? '—' : formatEuro(outputs.blendedCPL),
+          caption: 'Average acquisition cost per lead',
         },
         {
           label: 'Total Marketing Spend',
           value: formatEuro(outputs.totalSpend),
+          caption: 'Combined monthly channel investment',
         },
       ]}
       leftCard={leftCard}

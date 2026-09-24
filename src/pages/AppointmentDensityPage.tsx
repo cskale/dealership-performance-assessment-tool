@@ -168,9 +168,11 @@ export default function AppointmentDensityPage() {
           label: 'Utilization',
           value: outputs.utilizationPct === null ? '—' : `${outputs.utilizationPct.toFixed(0)}%`,
           emphasis: true,
+          caption: 'Booked appointments against bay capacity',
+          status: outputs.utilizationPct === null ? 'neutral' : outputs.utilizationPct >= 90 ? 'risk' : outputs.utilizationPct >= 75 ? 'good' : 'watch',
         },
-        { label: 'Max Daily Capacity', value: `${outputs.maxCapacityPerDay} appts` },
-        { label: 'Revenue Opportunity', value: formatEuro(outputs.revenueOpportunity) },
+        { label: 'Max Daily Capacity', value: `${outputs.maxCapacityPerDay} appts`, caption: 'Theoretical daily workshop throughput' },
+        { label: 'Revenue Opportunity', value: formatEuro(outputs.revenueOpportunity), caption: 'Value of currently open capacity', status: outputs.revenueOpportunity > 0 ? 'watch' : 'good' },
       ]}
       leftCard={leftCard}
       rightCard={rightCard}

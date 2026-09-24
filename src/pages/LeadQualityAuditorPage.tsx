@@ -188,9 +188,9 @@ export default function LeadQualityAuditorPage() {
       title="Lead Quality Auditor"
       description="Score lead sources by close rate, time-to-close, and gross profit contribution."
       kpiStrip={[
-        { label: 'Blended GP per Lead', value: formatEuro(outputs.blendedGpPerLead ?? 0), emphasis: true },
-        { label: 'Best Source', value: outputs.bestSource?.name ?? '—' },
-        { label: 'Total Monthly Leads', value: String(outputs.totalLeads) },
+        { label: 'Blended GP per Lead', value: formatEuro(outputs.blendedGpPerLead ?? 0), emphasis: true, caption: 'Gross profit yield across all lead sources' },
+        { label: 'Best Source', value: outputs.bestSource?.name ?? '—', caption: 'Highest composite lead quality score', status: outputs.bestSource ? 'good' : 'neutral' },
+        { label: 'Total Monthly Leads', value: String(outputs.totalLeads), caption: 'Combined source volume in the model' },
       ]}
       leftCard={leftCard}
       rightCard={rightCard}

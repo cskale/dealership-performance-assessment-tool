@@ -197,14 +197,18 @@ export default function VehicleStockTurnPage() {
           label: 'Avg Days in Stock',
           value: outputs.avgDaysInStock === null ? '—' : `${formatNum(outputs.avgDaysInStock)} days`,
           emphasis: true,
+          caption: 'Average time before a vehicle sells',
+          status: outputs.avgDaysInStock === null ? 'neutral' : outputs.avgDaysInStock <= 45 ? 'good' : outputs.avgDaysInStock <= 75 ? 'watch' : 'risk',
         },
         {
           label: 'Annual Stock Turn',
           value: `${formatDecimal(outputs.annualStockTurn)}x`,
+          caption: 'Times inventory turns each year',
         },
         {
           label: 'Monthly Holding Cost',
           value: formatEuro(outputs.monthlyHoldingCost),
+          caption: 'Monthly cost of carrying current stock',
         },
       ]}
       leftCard={leftCard}
