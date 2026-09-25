@@ -92,6 +92,6 @@ export function generateExcelReport(params: ExcelExportParams): void {
   XLSX.utils.book_append_sheet(wb, gapSheet, 'Gap Analysis');
 
   // Trigger download
-  const safeName = params.dealerName.replace(/[^a-zA-Z0-9_\-]/g, '_');
+  const safeName = params.dealerName.replace(/[^a-zA-Z0-9_-]/g, '_');
   XLSX.writeFile(wb, `DealerDiagnostic_${safeName}_${params.assessmentDate}.xlsx`);
 }

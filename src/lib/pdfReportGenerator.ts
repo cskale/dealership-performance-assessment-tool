@@ -404,7 +404,7 @@ function shortId(id: string): string {
 
 function sanitizeFilename(name: string): string {
   return name
-    .replace(/[^\w\s\-]/g, '')
+    .replace(/[^\w\s-]/g, '')
     .replace(/\s+/g, '_')
     .replace(/_+/g, '_')
     .slice(0, 50)
@@ -458,7 +458,7 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
     pdf.setFont('helvetica', 'normal');
     const headerLeft = logoDataUrl ? margin + 12 : margin;
     if (logoDataUrl) {
-      try { pdf.addImage(logoDataUrl, 'PNG', margin, 6, 10, 10); } catch {}
+      try { pdf.addImage(logoDataUrl, 'PNG', margin, 6, 10, 10); } catch { /* logo is optional: skip if the image can't be decoded */ }
     }
     pdf.text(`${orgName}  |  ${l(lang, 'confidential')}  |  ${l(lang, 'generated')}: ${dateStr} ${timeStr}`, headerLeft, headerY);
     pdf.setDrawColor(210, 210, 210);
@@ -500,7 +500,7 @@ export async function generatePDFReport(data: PDFExportData): Promise<void> {
 
   // Logo on cover
   if (logoDataUrl) {
-    try { pdf.addImage(logoDataUrl, 'PNG', pageW - margin - 28, 18, 28, 28); } catch {}
+    try { pdf.addImage(logoDataUrl, 'PNG', pageW - margin - 28, 18, 28, 28); } catch { /* logo is optional: skip if the image can't be decoded */ }
   }
 
   // Title

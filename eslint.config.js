@@ -24,6 +24,13 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
       "@typescript-eslint/no-unused-vars": "off",
+      // ponytail: 92 legacy `any`s; clean up as files are touched, then flip back to "error".
+      "@typescript-eslint/no-explicit-any": "warn",
     },
+  },
+  {
+    // shadcn/ui is regenerated, not hand-edited (see CLAUDE.md).
+    files: ["src/components/ui/**"],
+    rules: { "@typescript-eslint/no-empty-object-type": "off" },
   }
 );
