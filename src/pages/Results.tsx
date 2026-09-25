@@ -1,38 +1,27 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { FileText, RefreshCw, ArrowLeft, ClipboardList, BarChart3, Award, CheckSquare, AlertCircle, X, Globe } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FileText, RefreshCw, ArrowLeft, ClipboardList, CheckSquare, AlertCircle, Globe } from "lucide-react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { ExecutiveSummary } from "@/components/ExecutiveSummary";
-import { CeilingInsightsPanel } from "@/components/results/CeilingInsightsPanel";
-import { MaturityScoring } from "@/components/MaturityScoring";
 import { ActionPlan } from "@/components/ActionPlan";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { evaluateCrossValidations } from "@/data/crossValidationRules";
-import type { CrossValidationFinding } from "@/data/crossValidationRules";
 
 import { ExportPDFModal } from "@/components/ExportPDFModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useMultiTenant } from "@/hooks/useMultiTenant";
 import { useActiveRole } from "@/hooks/useActiveRole";
 import { useKpiValues } from "@/hooks/useKpiValues";
-import { PerformanceDataPanel } from "@/components/results/PerformanceDataPanel";
+import { useDealershipAssessments } from "@/hooks/useDealershipAssessments";
 import { TierBadge } from "@/components/shared/TierBadge";
 import { supabase } from "@/integrations/supabase/client";
 import type { PDFExportData } from "@/lib/pdfReportGenerator";
-import { calculateWeightedScore, CATEGORY_WEIGHTS } from "@/lib/scoringEngine";
-import { TOTAL_QUESTIONS } from "@/lib/constants";
-import { getMaturityLevel } from "@/lib/maturityConfig";
-import { generateCeilingInsights } from "@/lib/ceilingAnalysis";
-import { fetchModuleBenchmarks, STATIC_BENCHMARKS, type ModuleBenchmark } from "@/lib/benchmarkUtils";
+import { calculateWeightedScore } from "@/lib/scoringEngine";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
-import { cn } from "@/lib/utils";
-import { FreshnessBadge } from "@/components/ui/FreshnessBadge";
 import { getAssessmentFreshness } from "@/lib/assessmentFreshness";
 import { useAssessmentNotes } from "@/hooks/useAssessmentNotes";
 
@@ -129,13 +118,8 @@ async function fetchPdfActions(assessmentId: string, organizationId: string | un
 export default function Results() {
   useEffect(() => { document.title = 'Results — Dealer Diagnostic'; }, []);
   const { assessmentId: routeAssessmentId } = useParams<{ assessmentId: string }>();
-  const [activeTab, setActiveTab] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('tab') || "executive";
-  });
-  const [animatedScore, setAnimatedScore] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showExportModal, setShowExportModal] = useState(false);
-  const [benchmarks, setBenchmarks] = useState<Record<string, ModuleBenchmark>>(STATIC_BENCHMARKS);
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -151,6 +135,7 @@ export default function Results() {
   });
 
   const resultsData = resultsQuery?.data ?? null;
+  const activeTab = searchParams.get('tab') === 'action-plan' ? 'action-plan' : 'diagnosis';
   const loadError = resultsQuery?.notFound
     ? (language === 'de'
         ? 'Diese Bewertung wurde nicht gefunden oder Sie haben keinen Zugriff darauf.'
@@ -159,6 +144,7 @@ export default function Results() {
 
   const { notes } = useAssessmentNotes(resultsData?.assessmentId);
   const { data: kpiValues = [] } = useKpiValues(resultsData?.assessmentId);
+  const { data: dealershipAssessments = [], isLoading: assessmentsLoading } = useDealershipAssessments(resultsData?.dealershipId);
   const [oemDealerContext, setOemDealerContext] = useState<{
     name: string;
     tier: string | null;
@@ -173,45 +159,17 @@ export default function Results() {
   }, [resultsQuery, isLoading, navigate, toast, t]);
 
   useEffect(() => {
-    const org = currentOrganization as any;
-    fetchModuleBenchmarks(org?.positioning ?? null, org?.business_model ?? null)
-      .then(setBenchmarks);
-  }, [currentOrganization]);
+    const requestedTab = searchParams.get('tab');
+    if (requestedTab === 'diagnosis' || requestedTab === 'action-plan') return;
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('tab', 'diagnosis');
+    setSearchParams(nextParams, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const overallScore = useMemo(() => {
     if (!resultsData?.scores) return 0;
     return calculateWeightedScore(resultsData.scores);
   }, [resultsData?.scores]);
-
-  const ceilingInsights = useMemo(() => {
-    if (!resultsData?.answers || !resultsData?.scores) return [];
-    return generateCeilingInsights(
-      resultsData.answers as Record<string, number>,
-      resultsData.scores as Record<string, number>
-    );
-  }, [resultsData]);
-
-  const crossValidationAlerts = useMemo((): CrossValidationFinding[] => {
-    if (!resultsData?.answers) return [];
-    return evaluateCrossValidations(resultsData.answers as Record<string, number>);
-  }, [resultsData]);
-
-  const hasAnimated = useRef(false);
-  useEffect(() => {
-    if (overallScore > 0 && !isLoading && !hasAnimated.current) {
-      hasAnimated.current = true;
-      const duration = 1200;
-      const startTime = Date.now();
-      const animate = () => {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        setAnimatedScore(Math.round(overallScore * eased));
-        if (progress < 1) requestAnimationFrame(animate);
-      };
-      requestAnimationFrame(animate);
-    }
-  }, [overallScore, isLoading]);
 
   const handleRetakeAssessment = () => {
     localStorage.removeItem('completed_assessment_results');
@@ -278,13 +236,22 @@ export default function Results() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US', {
+    const locales = { en: 'en-GB', de: 'de-DE', fr: 'fr-FR', es: 'es-ES', it: 'it-IT' } as const;
+    return new Date(dateString).toLocaleDateString(locales[language], {
       year: 'numeric', month: 'long', day: 'numeric'
     });
   };
 
-  const assessmentId = resultsData?.assessmentId;
-  const actionCount = pdfActions.length;
+  const handleTabChange = (tab: string) => {
+    if (tab !== 'diagnosis' && tab !== 'action-plan') return;
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('tab', tab);
+    setSearchParams(nextParams);
+  };
+
+  const handleAssessmentChange = (assessmentId: string) => {
+    navigate(`/app/results/${assessmentId}?${searchParams.toString()}`);
+  };
 
   // Loading state
   if (isLoading) {
@@ -368,16 +335,47 @@ export default function Results() {
       )}
       <div className="px-6 py-6" id="results-content">
 
-        {/* Results Hero */}
+          {/* Results shell */}
         <div className="mb-8">
           {/* Precision Header */}
           <header className="mb-6">
-            {/* Top row: label + actions inline */}
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-caption uppercase tracking-wider text-muted-foreground">
-                {language === 'de' ? 'BEWERTUNGSERGEBNISSE' : 'ASSESSMENT RESULTS'}
-              </span>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-4 border-b border-border pb-5 lg:flex-row lg:items-end lg:justify-between">
+                <div className="min-w-0">
+                  <p className="text-caption uppercase tracking-wider text-muted-foreground">
+                    {t('results.title')}
+                  </p>
+                  <h1 className="mt-1 text-h2 text-foreground">
+                    {oemDealerContext?.name || currentOrganization?.name || t('results.title')}
+                  </h1>
+                  <p className="mt-1 text-body-sm text-muted-foreground">
+                    {t('results.completedOn')} {formatDate(resultsData.completedAt)}
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                  <div className="min-w-0 sm:w-60">
+                    <label htmlFor="assessment-picker" className="mb-1.5 block text-label text-muted-foreground">
+                      {t('results.picker.label')}
+                    </label>
+                    <Select
+                      value={resultsData.assessmentId}
+                      onValueChange={handleAssessmentChange}
+                      disabled={assessmentsLoading || dealershipAssessments.length === 0}
+                    >
+                      <SelectTrigger id="assessment-picker" aria-label={t('results.picker.label')}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {dealershipAssessments.map((assessment) => (
+                          <SelectItem key={assessment.id} value={assessment.id}>
+                            {formatDate(assessment.completed_at ?? assessment.created_at)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
                 <Button onClick={() => setShowExportModal(true)} size="sm" className="gap-1.5">
                   <FileText className="h-4 w-4" />
                   {t('results.exportPDF')}
@@ -386,20 +384,9 @@ export default function Results() {
                   <RefreshCw className="h-4 w-4" />
                   {t('results.retakeAssessment')}
                 </Button>
+                  </div>
               </div>
             </div>
-
-            {/* Main heading */}
-            <h1 className="text-h2 text-foreground">
-              {currentOrganization?.name || (language === 'de' ? 'Händler-Diagnose' : 'Dealer Diagnostic')}
-            </h1>
-
-            {/* Subtitle */}
-            <p className="text-body-sm text-muted-foreground mt-1">
-              {language === 'de' ? 'Abgeschlossen am' : 'Completed'} {formatDate(resultsData.completedAt)}
-            </p>
-
-            <div className="border-t border-border mt-5" />
           </header>
 
           {/* Stale assessment banner */}
@@ -422,99 +409,6 @@ export default function Results() {
             );
           })()}
 
-          {/* Summary metric cards */}
-          {(() => {
-            const maturityKey = getMaturityLevel(overallScore);
-            const maturityLabelEn: Record<string, string> = { leading: 'Leading', advanced: 'Advanced', developing: 'Developing', foundational: 'Foundational' };
-            const maturityLabelDe: Record<string, string> = { leading: 'Führend', advanced: 'Fortgeschritten', developing: 'Entwickelnd', foundational: 'Grundlegend' };
-            const maturityLabel = language === 'de' ? maturityLabelDe[maturityKey] : maturityLabelEn[maturityKey];
-
-            const modulesAssessed = resultsData?.scores ? Object.keys(resultsData.scores).length : 0;
-            const answeredQuestions = resultsData?.answers ? Object.keys(resultsData.answers).length : 0;
-
-            const cardBase = "bg-card border border-border rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]";
-            const labelClass = "text-xs uppercase tracking-wide text-muted-foreground mb-1";
-
-            // SVG Score Ring constants
-            const ringSize = 80;
-            const strokeWidth = 6;
-            const radius = (ringSize - strokeWidth) / 2;
-            const circumference = 2 * Math.PI * radius;
-            const scoreOffset = circumference - (circumference * animatedScore) / 100;
-            const ringColor = overallScore >= 85 ? 'hsl(var(--success))'
-              : overallScore >= 70 ? 'hsl(var(--primary))'
-              : overallScore >= 46 ? 'hsl(var(--warning))'
-              : 'hsl(var(--destructive))';
-
-            return (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <style>{`@keyframes resultsCardCascade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}.results-cascade-card{opacity:0;animation:resultsCardCascade 300ms ease-out forwards}`}</style>
-                {/* Card 1 — Overall Score with SVG Ring */}
-                <div className={cn(cardBase, "results-cascade-card flex flex-col items-center text-center")} style={{ animationDelay: '1300ms' }}>
-                  <div className="relative flex-shrink-0 mb-2" style={{ width: ringSize, height: ringSize }}>
-                    <svg width={ringSize} height={ringSize} className="-rotate-90">
-                      <defs>
-                        <linearGradient id="scoreArcGrad" x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0%" stopColor={ringColor} stopOpacity={1} />
-                          <stop offset="100%" stopColor={ringColor} stopOpacity={0.55} />
-                        </linearGradient>
-                      </defs>
-                      <circle
-                        cx={ringSize / 2} cy={ringSize / 2} r={radius}
-                        fill="none" stroke="hsl(var(--muted))" strokeWidth={strokeWidth}
-                      />
-                      <circle
-                        cx={ringSize / 2} cy={ringSize / 2} r={radius}
-                        fill="none" stroke="url(#scoreArcGrad)" strokeWidth={strokeWidth}
-                        strokeLinecap="round"
-                        strokeDasharray={circumference}
-                        strokeDashoffset={scoreOffset}
-                        style={{ transition: 'stroke-dashoffset 0.3s ease-out' }}
-                      />
-                      {animatedScore === overallScore && overallScore > 0 && (
-                        <circle
-                          cx={ringSize / 2 + radius * Math.cos((overallScore / 100) * 2 * Math.PI - Math.PI / 2)}
-                          cy={ringSize / 2 + radius * Math.sin((overallScore / 100) * 2 * Math.PI - Math.PI / 2)}
-                          r={4}
-                          fill={ringColor}
-                          className="score-terminus-glow"
-                        />
-                      )}
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-h4 font-bold text-foreground">{animatedScore}</span>
-                      <span className="text-xs text-muted-foreground">/100</span>
-                    </div>
-                  </div>
-                  <div className={labelClass}>{language === 'de' ? 'Gesamtbewertung' : 'Overall Score'}</div>
-                </div>
-
-                {/* Card 2 — Maturity Level */}
-                <div className={cn(cardBase, "results-cascade-card min-h-[100px] flex flex-col items-center justify-center text-center")} style={{ animationDelay: '1450ms' }}>
-                  <div className={labelClass}>{language === 'de' ? 'Reifegrad' : 'Maturity Level'}</div>
-                  <div className="text-xl font-bold text-foreground">{maturityLabel}</div>
-                </div>
-
-                {/* Card 3 — Modules Assessed */}
-                <div className={cn(cardBase, "results-cascade-card min-h-[100px] flex flex-col items-center justify-center text-center")} style={{ animationDelay: '1600ms' }}>
-                  <div className={labelClass}>{language === 'de' ? 'Module bewertet' : 'Modules Assessed'}</div>
-                  <div className="text-xl font-bold text-foreground">{modulesAssessed}</div>
-                  <div className="text-caption text-muted-foreground">
-                    {language === 'de' ? 'von 5 Modulen' : 'of 5 modules'}
-                  </div>
-                </div>
-
-                {/* Card 4 — Assessment Coverage */}
-                <div className={cn(cardBase, "results-cascade-card min-h-[100px] flex flex-col items-center justify-center text-center")} style={{ animationDelay: '1750ms' }}>
-                  <div className={labelClass}>{language === 'de' ? 'Bewertungsabdeckung' : 'Assessment Coverage'}</div>
-                  <div className="text-xl font-bold text-foreground">{answeredQuestions}/{TOTAL_QUESTIONS}</div>
-                  <div className="text-caption text-muted-foreground mt-1">
-                    {language === 'de' ? `Fragen · ${modulesAssessed} Module bewertet` : `questions · ${modulesAssessed} modules assessed`}
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
         </div>
 
         <ExportPDFModal
@@ -523,19 +417,11 @@ export default function Results() {
           exportData={pdfExportData}
         />
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 h-11 bg-card border">
-            <TabsTrigger value="executive" className="gap-1.5 text-body-sm">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
+          <TabsList className="grid h-11 w-full grid-cols-2 border border-border bg-card">
+            <TabsTrigger value="diagnosis" className="gap-1.5 text-body-sm">
               <ClipboardList className="h-4 w-4 hidden sm:inline" />
-              {t('results.tab.executive')}
-            </TabsTrigger>
-            <TabsTrigger value="kpi" className="gap-1.5 text-body-sm">
-              <BarChart3 className="h-4 w-4 hidden sm:inline" />
-              {t('results.tab.kpi')}
-            </TabsTrigger>
-            <TabsTrigger value="maturity" className="gap-1.5 text-body-sm">
-              <Award className="h-4 w-4 hidden sm:inline" />
-              {t('results.tab.maturity')}
+              {t('results.tab.diagnosis')}
             </TabsTrigger>
             <TabsTrigger value="action-plan" className="gap-1.5 text-body-sm">
               <CheckSquare className="h-4 w-4 hidden sm:inline" />
@@ -543,66 +429,8 @@ export default function Results() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="executive" className="space-y-6 animate-fade-in" style={{ willChange: 'opacity, transform' }}>
-            <ErrorBoundary fallbackTitle={language === 'de' ? 'Zusammenfassung nicht verfügbar' : 'Summary unavailable'}>
-              <ExecutiveSummary
-                overallScore={overallScore}
-                scores={resultsData.scores}
-                answers={resultsData.answers}
-                completedAt={resultsData.completedAt}
-                benchmarks={benchmarks}
-                kpiValues={kpiValues}
-                onNavigateToEncyclopedia={(kpiKey) => {
-                  navigate(kpiKey ? `/app/knowledge/kpi/${kpiKey}` : '/app/knowledge?tab=kpi');
-                }}
-              />
-            </ErrorBoundary>
-            {ceilingInsights.length > 0 && (
-              <ErrorBoundary fallbackTitle={language === 'de' ? 'Deckenanalyse nicht verfügbar' : 'Ceiling analysis unavailable'}>
-                <CeilingInsightsPanel insights={ceilingInsights} />
-              </ErrorBoundary>
-            )}
-            {crossValidationAlerts.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">
-                  {language === 'de' ? 'Quervalidierungen' : 'Cross-Validation Findings'}
-                </h3>
-                {crossValidationAlerts.map((alert) => (
-                  <div
-                    key={alert.ruleId}
-                    className={cn(
-                      'flex items-start gap-3 px-4 py-3 rounded-r-md border-l-[3px]',
-                      alert.severity === 'HIGH'   && 'bg-destructive/8 border-l-destructive',
-                      alert.severity === 'MEDIUM' && 'bg-[hsl(var(--signal-warning))]/8 border-l-[hsl(var(--signal-warning))]',
-                      alert.severity === 'LOW'    && 'bg-muted border-l-muted-foreground/30',
-                    )}
-                  >
-                    <div className={cn(
-                      'mt-1.5 w-1.5 h-1.5 rounded-full shrink-0',
-                      alert.severity === 'HIGH'   && 'bg-destructive',
-                      alert.severity === 'MEDIUM' && 'bg-[hsl(var(--signal-warning))]',
-                      alert.severity === 'LOW'    && 'bg-muted-foreground/50',
-                    )} />
-                    <div>
-                      <p className="text-[11px] font-medium text-foreground">{alert.title}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">{alert.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="kpi" className="space-y-6 animate-fade-in">
-            <ErrorBoundary fallbackTitle={language === 'de' ? 'Leistungsdaten nicht verfügbar' : 'Performance data unavailable'}>
-              <PerformanceDataPanel kpiValues={kpiValues} />
-            </ErrorBoundary>
-          </TabsContent>
-
-          <TabsContent value="maturity" className="space-y-6 animate-fade-in">
-            <ErrorBoundary fallbackTitle={language === 'de' ? 'Reifegradanalyse nicht verfügbar' : 'Maturity analysis unavailable'}>
-              <MaturityScoring scores={resultsData.scores} answers={resultsData.answers} benchmarks={benchmarks} notes={notes} />
-            </ErrorBoundary>
+          <TabsContent value="diagnosis" className="animate-fade-in">
+            <div data-results-hero-placeholder />
           </TabsContent>
 
           <TabsContent value="action-plan" className="space-y-6 animate-fade-in">
