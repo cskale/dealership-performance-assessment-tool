@@ -65,6 +65,17 @@ maturity colours (red <46, amber 46–69, blue 70–84, green ≥85) encode stat
 
 Units, direction (higher/lower is better) and benchmarks come from `kpiDefinitions.ts`.
 
+All 10 are assessment data questions. Every assessment KPI that overlaps a Playground calculator is included:
+`nvs_gross_profit_per_unit` (input to reverse-sales-funnel, marketing-roi, sales-velocity), `svc_effective_labour_rate` (input to tech-utilization),
+`svc_workshop_loading_pct` (≈ tech-utilization `utilizationPct` output), `uvs_days_to_sale` (≈ vehicle-stock-turn `avgDaysInStock` output).
+Other calculators need monthly volumes/€ figures the assessment does not ask; adding them would increase dealer effort, so they stay out.
+
+### Single entry across assessment, check-ins and Playground
+
+- `usePlaygroundPrefill` reads the latest value from `useKpiTimeline` (check-in, else assessment snapshot) instead of assessment only.
+- Playground calculators touching a tracked KPI show **"Save as <Month> check-in"** (upsert to `kpi_checkins`): input fields for the two input KPIs, computed output for workshop loading and days to sale.
+- Assessment KPI questions prefill from the latest timeline value (check-in or previous assessment); dealer confirms or edits.
+
 ### Timeline
 
 `useKpiTimeline(dealershipId, kpiKey)` (React Query): merges `kpi_checkins` with `assessment_kpi_values` (assessment value counts for the month of the assessment's `created_at`); check-in wins on same month. Returns points sorted by month with source (`checkin-dealer`, `checkin-coach`, `assessment`).
