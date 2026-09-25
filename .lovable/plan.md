@@ -1,57 +1,41 @@
-# Prompt 1 plan: Results shell, header, tabs, and assessment picker
+# Prompt 2 plan: Results hero band
 
-## Scope and prerequisite
+## Scope and files
 
-- Before implementation, confirm the working copy is based on the latest `main`. The current sandbox is on managed branch `edit/edt-041e70ba-3c63-41cb-ab20-82531fcc8b1b` at `248eba7`; Lovable manages Git state, so synchronization must use the platform-supported latest-main flow rather than a direct stateful Git command.
-- Implement Prompt 1 only. Do not build the hero band, department rows, KPI cards, forecasting, check-ins, or Action Plan restyle from Prompts 2–5.
-- Do not install packages, edit the sidebar, modify translations, or touch any Claude-owned/protected file listed in the handoff.
+- Update `src/pages/Results.tsx` to replace the Diagnosis placeholder with one responsive three-zone hero card.
+- Make the smallest targeted update to `src/components/ActionPlan.tsx` needed for a hero link to focus/open the selected action; preserve all existing loading, filtering, editing, Kanban, and status-update behavior.
+- Preserve the restored `prefer-const` suppression in `src/integrations/supabase/previewAuthStorage.ts`. The current workspace includes `6f0905d`, but its working copy has dropped that comment, so restore the exact comment before verification.
+- Do not edit the protected files listed in the handoff, translations, migrations, department rows, or KPI cards.
 
-## Files to change
+## Hero data and behavior
 
-### `src/pages/Results.tsx`
+### 1. Score ring
+- Reuse the previous 120px SVG ring pattern with an 8px `neutral-200` track, tonal status arc, boundary ticks, count-up animation, and one-time terminus glow.
+- Drive the ring only from `overallScore` for the currently selected assessment.
+- Respect reduced-motion settings and keep status colour confined to the ring’s score encoding.
 
-This is the only source file to modify.
+### 2. Maturity ladder and narrative
+- Derive the current maturity through `getMaturityLevel`, keeping the helper call and all related memos above early returns and after `overallScore`.
+- Render four ordered steps, with only the active label/marker using the maturity status colour; tracks, dividers, and inactive steps use neutral tokens.
+- Recreate the existing real narrative pipeline from the selected assessment: questionnaire weights + `generateSignals(answers, weights)` + `detectSystemicPatterns(...)` feed `buildExecutiveNarrative(...)`.
+- Show a two-line collapsed preview, then expand the full generated situation, diagnosis, and priority inline using `t('results.hero.readNarrative')`; no navigation and no fabricated summary copy.
 
-1. **Add URL-backed tab state safely**
-   - Add `useSearchParams` beside the existing router hooks and call it unconditionally before every early return.
-   - Accept only `diagnosis` and `action-plan`; normalize a missing or invalid value to `diagnosis`.
-   - Update `?tab=` when the user switches tabs, preserving shareable/reloadable state.
+### 3. Biggest lever and coverage
+- Load module benchmarks with the existing `fetchModuleBenchmarks` fallback pattern and use the displayed assessment’s `scores`.
+- For every assessed department, map its section ID with `sectionToModuleCode`, calculate `score - benchmark.meanScore`, filter to negative gaps, and choose the most negative value. If no department is below benchmark, do not invent a lever.
+- Extend the existing assessment-action read to include action ID/title/department/status/priority. For the lever department, select the highest-priority non-completed action using `critical → high → medium → low`, with stable database order as the tie-breaker.
+- Link that real action to `?tab=action-plan&action=<id>`. `ActionPlan` will consume only this optional parameter after its existing action load, reveal/open that matching action, and otherwise behave exactly as before.
+- Build coverage from `Object.keys(scores).length`, `Object.keys(answers).length`, and `TOTAL_QUESTIONS`, replacing the three placeholders in `t('results.hero.coverage')`.
+- Keep selected-assessment identity throughout: scores, answers, actions, benchmarks, coverage, and narrative all derive from `resultsData`, so dealer, coach, and OEM views use the dealership result currently on screen.
 
-2. **Add the completed-assessment picker**
-   - Read `dealerId` from the existing top-level `useActiveRole()` call.
-   - Call `useDealershipAssessments(dealerId)` unconditionally with the other hooks.
-   - Render the existing shadcn `Select` in the header, with `t('results.picker.label')` as its accessible label.
-   - Show every completed assessment returned by the hook in its existing newest-first order, label it with `completed_at ?? created_at` using the active language locale, select the current assessment ID, and navigate selections to `/app/results/:id`.
+## Verified translation constraint
 
-3. **Rebuild the header row within existing behavior**
-   - Present the current organization/dealership name, assessment picker, existing Export PDF control/modal, and existing Retake control in a responsive header.
-   - Reuse current data and handlers; use existing translation keys such as `results.title`, `results.completedOn`, `results.exportPDF`, and `results.retakeAssessment` for modified UI text.
-   - Style only with existing DESIGN.md semantic brand/neutral classes, Inter typography, shadcn controls, and existing shadow/radius tokens.
+The existing dictionaries contain `results.hero.*` and `maturity.foundational/developing/advanced/leading`, but no `maturity.performing` key. To honor “existing keys only,” the ladder will use the repository’s translated four-level names returned by the mandated helper: Foundational, Developing, Advanced, Leading. No hard-coded or newly added user-facing translation text will be introduced.
 
-4. **Replace the old Results navigation**
-   - Replace the four triggers and contents (`executive`, `kpi`, `maturity`, `action-plan`) with exactly two: `t('results.tab.diagnosis')` and `t('results.tab.actionPlan')`.
-   - Leave the Action Plan content and its props/behavior unchanged.
-   - Put only the requested empty placeholder `<div>` in Diagnosis for the future hero band; do not invent temporary content.
+## Validation
 
-5. **Remove superseded Prompt 1 code from this page**
-   - Remove the four summary tiles and their score-ring animation/state used only by those tiles.
-   - Remove the old Executive Summary, standalone KPI Analysis, and Maturity tab render blocks plus imports/derived values that become unused in `Results.tsx`.
-   - Keep the underlying component files in place: Prompt 1 is limited to `Results.tsx`, later prompts own relocation/restyling, and no repo-wide component deletion is required yet.
-   - Keep `ExportPDFModal`, assessment freshness handling, OEM context, PDF data preparation, notes/KPI data needed by PDF or Action Plan, and the complete `ActionPlan` component call intact.
-
-## Hook and safety guarantees
-
-- All hooks remain unconditional and above loading/error/no-data returns.
-- Derived values stay after the data they reference; no temporal-dead-zone ordering risk is introduced.
-- Every JSX control/icon is explicitly imported.
-- No changes to `ActionPlan.tsx`, `KanbanBoard.tsx`, fetching logic, Supabase files, migrations, protected hooks, design tokens, or i18n dictionaries.
-
-## Verification against Prompt 1 acceptance
-
-- Run the TypeScript check and production build without installing dependencies.
-- In the preview, verify both result routes load with exactly two tabs.
-- Verify missing/invalid `?tab=` resolves to Diagnosis, switching tabs updates the URL, and reload restores Action Plan.
-- Verify the picker contains all returned completed assessments in newest-first order, displays localized dates, changes the assessment route, and loads the selected result.
-- Verify Export PDF and Retake remain present.
-- Smoke-test the existing Action Plan tab controls and confirm its rendering/behavior is unchanged.
-- Check desktop and 390px layouts for clipping or horizontal overflow, then confirm the latest observability build entry is clean.
+- Confirm the hero updates when selecting another assessment.
+- Confirm narrative expansion stays inline.
+- Confirm a lever action link opens the matching non-completed action in Action Plan and a missing eligible action does not produce a false link.
+- Check desktop and 390px layouts for stacking and overflow.
+- Run focused type checking, lint, production build, and relevant tests; confirm the `prefer-const` suppression remains present.
