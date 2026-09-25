@@ -54,3 +54,19 @@ export function buildKpiValueRows(
 
   return rows;
 }
+
+/**
+ * Fills in KPI answers for keys that have no existing entry, using the
+ * latest known value for that key. Never overwrites an existing entry
+ * (whether user-provided or previously restored from a draft).
+ */
+export function prefillKpiAnswers(
+  existing: Record<string, KpiAnswerState>,
+  latest: Record<string, number | null>,
+): Record<string, KpiAnswerState> {
+  const out = { ...existing };
+  for (const [k, v] of Object.entries(latest)) {
+    if (v !== null && !(k in out)) out[k] = { value: v, skipped: false };
+  }
+  return out;
+}
