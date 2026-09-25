@@ -229,12 +229,6 @@ export default function Results() {
     kpiValues,
   } : null;
 
-  const getScoreColor = (score: number) => {
-    if (score >= 85) return 'stroke-success';
-    if (score >= 70) return 'stroke-warning';
-    return 'stroke-destructive';
-  };
-
   const formatDate = (dateString: string) => {
     const locales = { en: 'en-GB', de: 'de-DE', fr: 'fr-FR', es: 'es-ES', it: 'it-IT' } as const;
     return new Date(dateString).toLocaleDateString(locales[language], {
@@ -335,11 +329,11 @@ export default function Results() {
       )}
       <div className="px-6 py-6" id="results-content">
 
-          {/* Results shell */}
+        {/* Results shell */}
         <div className="mb-8">
           {/* Precision Header */}
           <header className="mb-6">
-              <div className="flex flex-col gap-4 border-b border-border pb-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="flex flex-col gap-4 border-b border-border pb-5 lg:flex-row lg:items-end lg:justify-between">
                 <div className="min-w-0">
                   <p className="text-caption uppercase tracking-wider text-muted-foreground">
                     {t('results.title')}
@@ -376,14 +370,14 @@ export default function Results() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
-                <Button onClick={() => setShowExportModal(true)} size="sm" className="gap-1.5">
-                  <FileText className="h-4 w-4" />
-                  {t('results.exportPDF')}
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleRetakeAssessment} className="gap-1.5">
-                  <RefreshCw className="h-4 w-4" />
-                  {t('results.retakeAssessment')}
-                </Button>
+                    <Button onClick={() => setShowExportModal(true)} size="sm" className="gap-1.5">
+                      <FileText className="h-4 w-4" />
+                      {t('results.exportPDF')}
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleRetakeAssessment} className="gap-1.5">
+                      <RefreshCw className="h-4 w-4" />
+                      {t('results.retakeAssessment')}
+                    </Button>
                   </div>
               </div>
             </div>
