@@ -105,4 +105,16 @@ describe('buildKpiValueRows', () => {
 
     expect(rows).toHaveLength(0);
   });
+
+  it('omits an entry marked prefilled: true but includes an edited (confirmed) one', () => {
+    const kpiAnswers: Record<string, KpiAnswerState> = {
+      nvs_gross_profit_per_unit: { value: 1200, skipped: false, prefilled: true },
+      uvs_days_to_sale: { value: 45, skipped: false },
+    };
+
+    const rows = buildKpiValueRows('assessment-1', 'dealership-1', dataQuestions, kpiAnswers);
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0].kpi_key).toBe('uvs_days_to_sale');
+  });
 });

@@ -69,10 +69,10 @@ export default function Assessment() {
   // (last completed assessment or a newer monthly check-in). Runs once per
   // dealership; never overwrites a value the user has already entered or a
   // restored draft has already set.
-  const prefilledRef = useRef(false);
+  const prefilledRef = useRef<string | null>(null);
   useEffect(() => {
-    if (prefilledRef.current || !dealershipId || allDataQuestions.length === 0) return;
-    prefilledRef.current = true;
+    if (!dealershipId || allDataQuestions.length === 0 || prefilledRef.current === dealershipId) return;
+    prefilledRef.current = dealershipId;
     const keys = allDataQuestions.map((q) => q.kpiKey);
     Promise.all(keys.map((k) => fetchLatestKpiValue(dealershipId, k).catch(() => null)))
       .then((res) => {
