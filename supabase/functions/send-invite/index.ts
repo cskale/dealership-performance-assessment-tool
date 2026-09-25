@@ -139,10 +139,20 @@ serve(async (req) => {
     const validRoles = ['owner', 'admin', 'member', 'viewer']
     // Coach invites always use 'viewer' as the membership_role (unused in coach path but required by schema)
     const inviteRole = inviteType === 'coach' ? 'viewer' : (role && validRoles.includes(role) ? role : 'viewer')
+    if (inviteRole === 'owner' && membership.role !== 'owner') {
+      return new Response(JSON.stringify({ error: 'Only owners can invite owners' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+    if (dealership_id) {
+      const { data: ownDealership } = await supabaseAdmin.from('dealerships').select('id').eq('id', dealership_id).eq('organization_id', organization_id).maybeSingle()
+      if (!ownDealership) {
+        return new Response(JSON.stringify({ error: 'Dealership does not belong to this organisation' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+    }
 
     const { data: existingInvite } = await supabaseAdmin
       .from('dealership_invites')
       .select('id, token')
+      .eq('organization_id', organization_id)
       .eq('dealership_id', dealership_id)
       .eq('invited_email', normalizedEmail)
       .eq('status', 'pending')

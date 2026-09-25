@@ -78,9 +78,10 @@ serve(async (req) => {
     return htmlPage('Invalid link', 'This link is missing required parameters. Please use the link from your notification email.', true)
   }
 
-  const newStatus = STATUS_LABEL_MAP[rawStatus]
+  // Own-key lookup only, and never echo the raw value into HTML.
+  const newStatus = Object.hasOwn(STATUS_LABEL_MAP, rawStatus) ? STATUS_LABEL_MAP[rawStatus] : undefined
   if (!newStatus) {
-    return htmlPage('Invalid status', `"${rawStatus}" is not a valid status.`, true)
+    return htmlPage('Invalid status', 'This link has an invalid status. Please use the link from your notification email.', true)
   }
 
   const secret = Deno.env.get('SUPABASE_JWT_SECRET')
