@@ -191,8 +191,7 @@ Visual-only changes:
 > navigates to `/app/results/:id`), the existing Export PDF button (`ExportPDFModal`), and the
 > existing Retake button. Use `results.picker.label` for the picker's accessible label.
 >
-> Remove the sidebar's `nav.history` item in `src/components/AppSidebar.tsx` (around line 78) —
-> History is being dropped, the assessment picker replaces it.
+> History has already been removed from the sidebar — do not edit `AppSidebar.tsx`.
 >
 > Remove the old 4-tile grid (Overall Score / Maturity Level / Modules Assessed / Assessment
 > Coverage — currently `Results.tsx` lines ~450–514) entirely; its content moves into the hero
@@ -205,8 +204,8 @@ Visual-only changes:
 >
 > **Acceptance**: page loads with 2 tabs, `?tab=` reflects the active tab and restores it on
 > reload, the assessment picker lists all completed assessments for the dealership newest-first
-> and navigating via it changes the URL and reloads results, History is gone from the sidebar,
-> Action Plan tab still works exactly as before (it's untouched in this prompt).
+> and navigating via it changes the URL and reloads results, Action Plan tab still works exactly
+> as before (it's untouched in this prompt).
 
 ## Prompt 2: Hero band
 
