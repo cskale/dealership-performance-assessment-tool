@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { useActiveRole } from '@/hooks/useActiveRole';
 import {
-  BarChart3, Plus, ClipboardList, CheckSquare,
+  BarChart3, Plus, CheckSquare,
   GraduationCap, FileText, LogOut, Globe, Users, Settings, Calculator,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
@@ -75,7 +75,6 @@ export function AppSidebar() {
       label: t('nav.diagnostic'),
       items: [
         { path: '/app/assessment', label: t('nav.newAssessment'), icon: Plus },
-        { path: '/app/results', label: t('nav.history'), icon: ClipboardList },
         { path: '/actions', label: t('nav.actionPlans'), icon: CheckSquare },
       ],
     }] : []),
