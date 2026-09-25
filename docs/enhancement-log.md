@@ -4,6 +4,28 @@ Quick-reference log of incremental enhancements, UI fixes, and small quality-of-
 
 ---
 
+## 2026-09-24/25 — Security audit and fixes
+
+Full security audit (Cloudflare `security-audit` skill, standard profile) of the repo and the live Supabase policies/functions. 16 leads verified independently: 10 confirmed, 3 unresolved (fixed anyway), 3 rejected. No evidence any hole was used (data checked before fixing). All fixes live in DB, edge functions and Vercel. Report: `~/security-audit-skill/dealership-performance-assessment-tool/run-1/REPORT.md`.
+
+| # | Enhancement | Details | Commit |
+|---|-------------|---------|--------|
+| 1 | Org owner takeover (high) | `memberships_insert` bootstrap branch let a user add themselves as owner of an existing org. Removed; inserts need owner/admin, and only owners can grant `owner`. | `510f022` |
+| 2 | OEM self-enrolment (high) | Any org owner could create an OEM network, enrol any dealership and read its data. Network/enrolment writes and OEM read helpers now require `actor_type='oem'` and an active network. | `510f022` |
+| 3 | Profile-based tenancy | Coach notes/visits policies trusted self-editable `profiles.active_*`. Replaced with membership checks; `caller_oem_org_id()` verifies membership. | `510f022` |
+| 4 | Unbound coach visits | Visits and visit reviews required no coach assignment. Now bound to an active assignment; review-driven status sync limited to the visit's dealership. | `510f022` |
+| 5 | Unbound assessment/action/KPI/comment writes | Tenant columns weren't checked on write. Writes now bound to the caller's org/assessment; org-sync trigger also fires on `organization_id` changes. | `510f022` |
+| 6 | Privilege escalation inside an org | Members could mint owner invites, admins could demote/delete owners, and a live-only policy let members self-assign as coach. All closed. | `510f022` |
+| 7 | GDPR export scope | `export_user_data` returned other members' assessments. Now caller's own rows, active memberships only. | `510f022` |
+| 8 | Edge functions | `send-invite`: owner-only owner invites, dealership must belong to org, org-scoped reuse. `action-token-update`: no input reflection, constant-time signature check, signed status enforced. `send-notification`: no raw provider errors. | `510f022`, `a63e30e` |
+| 9 | Coach invites failing | `actor_type` guard trigger blocked every change, including invite acceptance. Now blocks only direct client edits. OEM mode toggle removed and `toggle_oem_mode` revoked (it let any owner self-grant OEM). | `a63e30e` |
+| 10 | Hardening | Anon write grants revoked on public tables; logo bucket limited to raster images ≤ 2 MB; duplicate logo policies dropped; `get_dealership_details` scoped to caller's network; CSP `script-src` drops `'unsafe-inline'`; unused `netlify.toml` removed; vite 5.4.21; `qa-screens/` ignored. | `a63e30e` |
+| 11 | Lint errors 100 → 0 | Small fixes; `no-explicit-any` set to warn (92 to clean up as files are touched); shadcn `ui/` override. 15 hook-dependency warnings reviewed: all intentional, no bugs. | `206ec63` |
+
+Side effect: the "CSK Demo Org" pilot network lost OEM visibility (its owner isn't an OEM). Open follow-ups: enable leaked-password protection + MFA in the Supabase dashboard; test one real coach invite end to end; localhost CORS origins and a dedicated action-token key left as-is.
+
+---
+
 ## 2026-09-23/24 — Production trust fixes, coach visit loop, signed-in QA
 
 Production audit (Supabase logs/advisors, Vercel, CSP) followed by fixes, a new coach visit loop, and end-to-end testing as real signed-in QA users (dealer/coach/OEM).
