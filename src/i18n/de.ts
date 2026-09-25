@@ -39,6 +39,7 @@ const de: Record<string, string> = {
   'assessment.saveAndContinue': 'Speichern & Weiter',
   'assessment.dontHaveFigure': 'Mir liegt diese Kennzahl nicht vor',
   'assessment.kpiInputPlaceholder': 'Wert eingeben',
+  'kpi.lastValueHint': 'Letzter Wert: {value}',
   'assessment.performanceData': 'Leistungsdaten',
   'assessment.optional': 'Optional',
   'assessment.performanceDataIntro': 'Die folgenden Fragen erfassen tatsächliche Leistungskennzahlen. Sie wirken sich nicht auf Ihre Bewertung aus — sie liefern Kontext für Benchmarking und Coaching.',

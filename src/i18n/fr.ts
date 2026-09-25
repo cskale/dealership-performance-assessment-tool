@@ -39,6 +39,7 @@ const fr: Record<string, string> = {
   'assessment.saveAndContinue': 'Enregistrer et continuer',
   'assessment.dontHaveFigure': 'Je ne dispose pas de ce chiffre',
   'assessment.kpiInputPlaceholder': 'Saisir la valeur',
+  'kpi.lastValueHint': 'Dernière valeur : {value}',
   'assessment.performanceData': 'Données de performance',
   'assessment.optional': 'Facultatif',
   'assessment.performanceDataIntro': 'Les questions suivantes collectent des chiffres de performance réels. Elles n\'affectent pas votre score d\'évaluation — elles fournissent un contexte pour le benchmarking et le coaching.',

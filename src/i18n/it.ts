@@ -39,6 +39,7 @@ const it: Record<string, string> = {
   'assessment.saveAndContinue': 'Salva e Continua',
   'assessment.dontHaveFigure': 'Non dispongo di questo dato',
   'assessment.kpiInputPlaceholder': 'Inserire valore',
+  'kpi.lastValueHint': 'Ultimo valore: {value}',
   'assessment.performanceData': 'Dati di Performance',
   'assessment.optional': 'Facoltativo',
   'assessment.performanceDataIntro': 'Le seguenti domande raccolgono dati di performance effettivi. Non influiscono sul punteggio della valutazione — forniscono contesto per il benchmarking e il coaching.',

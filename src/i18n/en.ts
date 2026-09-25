@@ -39,6 +39,7 @@ const en: Record<string, string> = {
   'assessment.saveAndContinue': 'Save & Continue',
   'assessment.dontHaveFigure': "I don't have this figure",
   'assessment.kpiInputPlaceholder': 'Enter value',
+  'kpi.lastValueHint': 'Last value: {value}',
   'assessment.performanceData': 'Performance Data',
   'assessment.optional': 'Optional',
   'assessment.performanceDataIntro': 'The following questions collect actual performance figures. They do not affect your assessment score — they provide context for benchmarking and coaching.',
