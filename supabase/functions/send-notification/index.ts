@@ -116,7 +116,7 @@ serve(async (req) => {
   } catch (err) {
     console.error('Network error calling Resend:', err);
     return new Response(
-      JSON.stringify({ error: 'Failed to reach Resend API', detail: String(err) }),
+      JSON.stringify({ error: 'Failed to reach Resend API' }),
       { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }
@@ -126,7 +126,7 @@ serve(async (req) => {
   if (!resendRes.ok) {
     console.error('Resend API error:', resendRes.status, resendData);
     return new Response(
-      JSON.stringify({ error: 'Resend API error', detail: resendData }),
+      JSON.stringify({ error: 'Resend API error' }),
       { status: resendRes.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }

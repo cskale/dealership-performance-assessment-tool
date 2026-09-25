@@ -24,7 +24,6 @@ import { OrganizationSettings } from '@/components/OrganizationSettings';
 import { InviteTeamMembers } from '@/components/InviteTeamMembers';
 import { InviteCoach } from '@/components/InviteCoach';
 import { InviteOemUser } from '@/components/InviteOemUser';
-import { OemModeToggle } from '@/components/OemModeToggle';
 import {
   User, Shield, Download, Trash2, Monitor, Smartphone, Globe,
   Mail, CheckCircle, Building2, Users, Activity, Link2, Key,
@@ -611,7 +610,6 @@ const Account = () => {
               {currentOrganization && (
                 <OrganizationSettings organizationId={currentOrganization.id} isAdmin={isOrgAdmin} />
               )}
-              <OemModeToggle />
             </TabsContent>
 
             {/* ── TEAM ── */}

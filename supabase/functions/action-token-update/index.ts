@@ -33,10 +33,9 @@ async function verifyToken(
 
     const key = await importHmacKey(secret)
     const data = new TextEncoder().encode(JSON.stringify(payload))
-    const expectedSig = await crypto.subtle.sign('HMAC', key, data)
-    const expectedSigB64 = btoa(String.fromCharCode(...new Uint8Array(expectedSig)))
-
-    if (sig !== expectedSigB64) return null
+    const sigBytes = Uint8Array.from(atob(sig), c => c.charCodeAt(0))
+    // crypto.subtle.verify compares in constant time
+    if (!(await crypto.subtle.verify('HMAC', key, sigBytes, data))) return null
     return payload
   } catch {
     return null
@@ -92,6 +91,11 @@ serve(async (req) => {
 
   const payload = await verifyToken(token, secret)
   if (!payload) {
+    return htmlPage('Invalid link', 'This link is invalid or has been tampered with.', true)
+  }
+
+  // The link may only apply the status it was signed for.
+  if (payload.status !== rawStatus) {
     return htmlPage('Invalid link', 'This link is invalid or has been tampered with.', true)
   }
 
