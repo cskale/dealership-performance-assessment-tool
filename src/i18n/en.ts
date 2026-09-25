@@ -39,6 +39,7 @@ const en: Record<string, string> = {
   'assessment.saveAndContinue': 'Save & Continue',
   'assessment.dontHaveFigure': "I don't have this figure",
   'assessment.kpiInputPlaceholder': 'Enter value',
+  'kpi.lastValueHint': 'Last value: {value}',
   'assessment.performanceData': 'Performance Data',
   'assessment.optional': 'Optional',
   'assessment.performanceDataIntro': 'The following questions collect actual performance figures. They do not affect your assessment score — they provide context for benchmarking and coaching.',
@@ -435,6 +436,24 @@ const en: Record<string, string> = {
   'results.ceiling.showLess': 'Show less',
   'results.ceiling.badge': 'Optimisation Opportunity',
   'results.ceiling.currentScore': 'Current score',
+
+  // Results redesign — tabs, hero, picker
+  'results.tab.diagnosis': 'Diagnosis',
+  'results.hero.biggestLever': 'Biggest lever',
+  'results.hero.coverage': '{assessed} of 5 departments assessed · {answered}/{total} questions',
+  'results.hero.readNarrative': 'Read full narrative',
+  'results.dept.notAssessed': 'Not assessed — include in next assessment',
+  'results.picker.label': 'Assessment',
+
+  // KPI check-in
+  'kpi.logMonth': 'Log {month}',
+  'kpi.trendUnlocks': 'Trend unlocks after 2 check-ins',
+  'kpi.projectionBasis': 'Projection based on {n} months',
+  'kpi.onTrack': 'On track to reach benchmark by {month}',
+  'kpi.offTrack': 'Off track to reach benchmark',
+  'kpi.enteredByCoach': 'Entered by coach',
+  'kpi.saveAsCheckin': 'Save as {month} check-in',
+  'kpi.saved': 'KPI saved',
 };
 
 export default en;

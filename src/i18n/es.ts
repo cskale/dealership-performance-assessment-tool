@@ -39,6 +39,7 @@ const es: Record<string, string> = {
   'assessment.saveAndContinue': 'Guardar y continuar',
   'assessment.dontHaveFigure': 'No dispongo de este dato',
   'assessment.kpiInputPlaceholder': 'Introducir valor',
+  'kpi.lastValueHint': 'Último valor: {value}',
   'assessment.performanceData': 'Datos de rendimiento',
   'assessment.optional': 'Opcional',
   'assessment.performanceDataIntro': 'Las siguientes preguntas recogen datos reales de rendimiento. No afectan a su puntuacion de evaluacion; proporcionan contexto para el benchmarking y el coaching.',
@@ -435,6 +436,24 @@ const es: Record<string, string> = {
   'results.ceiling.showLess': 'Mostrar menos',
   'results.ceiling.badge': 'Oportunidad de optimizacion',
   'results.ceiling.currentScore': 'Puntuacion actual',
+
+  // Results redesign — tabs, hero, picker
+  'results.tab.diagnosis': 'Diagnostico',
+  'results.hero.biggestLever': 'Mayor palanca',
+  'results.hero.coverage': '{assessed} de 5 departamentos evaluados · {answered}/{total} preguntas',
+  'results.hero.readNarrative': 'Leer el analisis completo',
+  'results.dept.notAssessed': 'No evaluado — incluir en la proxima evaluacion',
+  'results.picker.label': 'Evaluacion',
+
+  // KPI check-in
+  'kpi.logMonth': 'Registrar {month}',
+  'kpi.trendUnlocks': 'La tendencia se activa tras 2 registros',
+  'kpi.projectionBasis': 'Proyeccion basada en {n} meses',
+  'kpi.onTrack': 'En camino de alcanzar el referente para {month}',
+  'kpi.offTrack': 'No se espera alcanzar el referente',
+  'kpi.enteredByCoach': 'Introducido por el coach',
+  'kpi.saveAsCheckin': 'Guardar como registro de {month}',
+  'kpi.saved': 'KPI guardado',
 };
 
 export default es;

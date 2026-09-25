@@ -39,6 +39,7 @@ const it: Record<string, string> = {
   'assessment.saveAndContinue': 'Salva e Continua',
   'assessment.dontHaveFigure': 'Non dispongo di questo dato',
   'assessment.kpiInputPlaceholder': 'Inserire valore',
+  'kpi.lastValueHint': 'Ultimo valore: {value}',
   'assessment.performanceData': 'Dati di Performance',
   'assessment.optional': 'Facoltativo',
   'assessment.performanceDataIntro': 'Le seguenti domande raccolgono dati di performance effettivi. Non influiscono sul punteggio della valutazione — forniscono contesto per il benchmarking e il coaching.',
@@ -435,6 +436,24 @@ const it: Record<string, string> = {
   'results.ceiling.showLess': 'Mostra meno',
   'results.ceiling.badge': 'Opportunità di Ottimizzazione',
   'results.ceiling.currentScore': 'Punteggio attuale',
+
+  // Results redesign — tabs, hero, picker
+  'results.tab.diagnosis': 'Diagnosi',
+  'results.hero.biggestLever': 'Leva principale',
+  'results.hero.coverage': '{assessed} di 5 reparti valutati · {answered}/{total} domande',
+  'results.hero.readNarrative': 'Leggi l\'analisi completa',
+  'results.dept.notAssessed': 'Non valutato — includere nella prossima valutazione',
+  'results.picker.label': 'Valutazione',
+
+  // KPI check-in
+  'kpi.logMonth': 'Registra {month}',
+  'kpi.trendUnlocks': 'Il trend si sblocca dopo 2 rilevazioni',
+  'kpi.projectionBasis': 'Proiezione basata su {n} mesi',
+  'kpi.onTrack': 'In linea per raggiungere il benchmark entro {month}',
+  'kpi.offTrack': 'Benchmark non raggiungibile secondo il trend attuale',
+  'kpi.enteredByCoach': 'Inserito dal coach',
+  'kpi.saveAsCheckin': 'Salva come rilevazione di {month}',
+  'kpi.saved': 'KPI salvato',
 };
 
 export default it;

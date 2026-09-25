@@ -1296,6 +1296,50 @@ export type Database = {
         }
         Relationships: []
       }
+      kpi_checkins: {
+        Row: {
+          created_at: string
+          dealership_id: string
+          entered_by: string
+          entered_by_role: string
+          id: string
+          kpi_key: string
+          period_month: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          dealership_id: string
+          entered_by?: string
+          entered_by_role?: string
+          id?: string
+          kpi_key: string
+          period_month: string
+          updated_at?: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          dealership_id?: string
+          entered_by?: string
+          entered_by_role?: string
+          id?: string
+          kpi_key?: string
+          period_month?: string
+          updated_at?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kpi_checkins_dealership_id_fkey"
+            columns: ["dealership_id"]
+            isOneToOne: false
+            referencedRelation: "dealerships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       memberships: {
         Row: {
           created_at: string
@@ -2076,6 +2120,7 @@ export type Database = {
         Returns: boolean
       }
       lookup_dealer_by_email: { Args: { p_email: string }; Returns: Json }
+      process_kpi_checkin_reminders: { Args: never; Returns: undefined }
       process_stale_actions: { Args: never; Returns: undefined }
       send_weekly_digests: { Args: never; Returns: undefined }
       toggle_oem_mode: { Args: { p_activate?: boolean }; Returns: Json }

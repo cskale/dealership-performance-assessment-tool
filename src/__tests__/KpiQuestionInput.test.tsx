@@ -147,4 +147,27 @@ describe('KpiQuestionInput', () => {
     expect(screen.getByText('Total gross ÷ units sold')).toBeTruthy();
     expect(screen.getByText(/DMS sales journal/)).toBeTruthy();
   });
+
+  it('shows a prefilled value as a placeholder hint, leaving the input empty', () => {
+    renderInput(percentageQuestion, { value: 67, skipped: false, prefilled: true });
+
+    const input = screen.getByPlaceholderText(/Last value: 67 %/) as HTMLInputElement;
+    expect(input.value).toBe('');
+  });
+
+  it('renders a non-prefilled value normally, unchanged from existing behaviour', () => {
+    renderInput(percentageQuestion, { value: 67, skipped: false });
+
+    const input = screen.getByPlaceholderText('Enter value') as HTMLInputElement;
+    expect(input.value).toBe('67');
+  });
+
+  it('typing into a prefilled field calls onChange with the typed value (becomes a real answer)', () => {
+    const onChange = renderInput(percentageQuestion, { value: 67, skipped: false, prefilled: true });
+
+    const input = screen.getByPlaceholderText(/Last value: 67 %/);
+    fireEvent.change(input, { target: { value: '42' } });
+
+    expect(onChange).toHaveBeenCalledWith(42, false);
+  });
 });

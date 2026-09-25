@@ -3,6 +3,8 @@ import type { DataQuestion } from '@/data/questionnaire';
 export interface KpiAnswerState {
   value: number | null;
   skipped: boolean;
+  /** True when this entry was auto-filled from a prior value and has not yet been confirmed or edited by the dealer. */
+  prefilled?: boolean;
 }
 
 export interface KpiValueRow {
@@ -24,6 +26,8 @@ export interface KpiValueRow {
  *   the table's CHECK constraint on partial input).
  * - Skipped -> value null, skipped true.
  * - Provided -> value set, skipped false.
+ * - Prefilled but not yet confirmed/edited by the dealer -> no row (avoids
+ *   silently re-saving last cycle's figures as this assessment's snapshot).
  */
 export function buildKpiValueRows(
   assessmentId: string,
@@ -36,6 +40,7 @@ export function buildKpiValueRows(
   for (const q of dataQuestions) {
     const answer = kpiAnswers[q.kpiKey];
     if (!answer) continue;
+    if (answer.prefilled === true) continue;
     if (!answer.skipped && answer.value === null) continue;
 
     rows.push({
@@ -53,4 +58,20 @@ export function buildKpiValueRows(
   }
 
   return rows;
+}
+
+/**
+ * Fills in KPI answers for keys that have no existing entry, using the
+ * latest known value for that key. Never overwrites an existing entry
+ * (whether user-provided or previously restored from a draft).
+ */
+export function prefillKpiAnswers(
+  existing: Record<string, KpiAnswerState>,
+  latest: Record<string, number | null>,
+): Record<string, KpiAnswerState> {
+  const out = { ...existing };
+  for (const [k, v] of Object.entries(latest)) {
+    if (v !== null && !(k in out)) out[k] = { value: v, skipped: false, prefilled: true };
+  }
+  return out;
 }

@@ -21,9 +21,16 @@ export function getUnitLabel(question: DataQuestion): string {
 
 export function KpiQuestionInput({ question, value, onChange }: KpiQuestionInputProps) {
   const { t } = useLanguage();
-  const [rawInput, setRawInput] = useState<string>(value.value !== null ? String(value.value) : "");
+  const [rawInput, setRawInput] = useState<string>(
+    value.value !== null && !value.prefilled ? String(value.value) : ""
+  );
 
   const unitLabel = getUnitLabel(question);
+
+  const placeholder =
+    value.prefilled && value.value !== null
+      ? t("kpi.lastValueHint").replace("{value}", `${value.value}${unitLabel ? ` ${unitLabel}` : ""}`)
+      : t("assessment.kpiInputPlaceholder");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
@@ -79,7 +86,7 @@ export function KpiQuestionInput({ question, value, onChange }: KpiQuestionInput
               inputMode="decimal"
               value={rawInput}
               onChange={handleInputChange}
-              placeholder={t("assessment.kpiInputPlaceholder")}
+              placeholder={placeholder}
               className={unitLabel ? "pr-12" : undefined}
             />
             {unitLabel && (

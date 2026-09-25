@@ -22,7 +22,19 @@ function setupFromMock() {
     limit: () => chain,
     maybeSingle: mockMaybeSingle,
   };
-  mockFrom.mockImplementation(() => chain);
+  const emptyCheckinChain = {
+    select: () => emptyCheckinChain,
+    eq: () => emptyCheckinChain,
+    order: () => emptyCheckinChain,
+    limit: () => emptyCheckinChain,
+    maybeSingle: async () => ({ data: null, error: null }),
+  };
+  // fetchLatestKpiValue now also queries kpi_checkins in parallel; these
+  // tests only exercise the assessment_kpi_values path, so kpi_checkins
+  // is stubbed to "no check-in" here (not in the production code).
+  mockFrom.mockImplementation((table: string) =>
+    table === 'kpi_checkins' ? emptyCheckinChain : chain
+  );
 }
 
 function createWrapper() {

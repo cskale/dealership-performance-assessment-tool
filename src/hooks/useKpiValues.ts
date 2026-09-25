@@ -38,36 +38,63 @@ export function useKpiValues(assessmentId: string | null | undefined) {
 
 export interface LatestKpiValue {
   row: AssessmentKpiValue;
-  /** created_at of the assessment the row belongs to */
+  /** Date the value applies to: assessment created_at, or check-in period_month */
   assessmentCreatedAt: string;
+  source: 'assessment' | 'checkin';
 }
 
 /**
  * Fetches the most recent non-skipped value for a given KPI across all of a
- * dealership's assessments, ordered by the parent assessment's created_at.
+ * dealership's assessments, ordered by the parent assessment's created_at —
+ * but prefers a newer monthly check-in (kpi_checkins) when one exists for a
+ * month at or after the latest assessment's month.
  * Shared by useLatestKpiValue and the Playground prefill hook.
  */
 export async function fetchLatestKpiValue(
   dealershipId: string,
   kpiKey: string
 ): Promise<LatestKpiValue | null> {
-  const { data, error } = await supabase
-    .from('assessment_kpi_values')
-    .select('*, assessments!inner(created_at)')
-    .eq('dealership_id', dealershipId)
-    .eq('kpi_key', kpiKey)
-    .eq('skipped', false)
-    .order('created_at', { referencedTable: 'assessments', ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const [snap, checkin] = await Promise.all([
+    supabase
+      .from('assessment_kpi_values')
+      .select('*, assessments!inner(created_at)')
+      .eq('dealership_id', dealershipId)
+      .eq('kpi_key', kpiKey)
+      .eq('skipped', false)
+      .order('created_at', { referencedTable: 'assessments', ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('kpi_checkins')
+      .select('value, period_month')
+      .eq('dealership_id', dealershipId)
+      .eq('kpi_key', kpiKey)
+      .order('period_month', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
-  if (error) throw error;
-  if (!data) return null;
+  if (snap.error) throw snap.error;
+  if (checkin.error) throw checkin.error;
 
-  const { assessments, ...row } = data as AssessmentKpiValue & {
-    assessments: { created_at: string };
-  };
-  return { row: row as AssessmentKpiValue, assessmentCreatedAt: assessments.created_at };
+  const s = snap.data as (AssessmentKpiValue & { assessments: { created_at: string } }) | null;
+  const c = checkin.data as { value: number; period_month: string } | null;
+  const snapMonth = s ? s.assessments.created_at.slice(0, 7) : '';
+
+  if (c && c.period_month.slice(0, 7) >= snapMonth) {
+    const base = s
+      ? (({ assessments, ...r }) => r)(s)
+      : ({ kpi_key: kpiKey, dealership_id: dealershipId } as AssessmentKpiValue);
+    return {
+      row: { ...base, value: Number(c.value) } as AssessmentKpiValue,
+      assessmentCreatedAt: c.period_month,
+      source: 'checkin',
+    };
+  }
+
+  if (!s) return null;
+  const { assessments, ...row } = s;
+  return { row: row as AssessmentKpiValue, assessmentCreatedAt: assessments.created_at, source: 'assessment' };
 }
 
 /**

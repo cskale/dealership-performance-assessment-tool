@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +14,8 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { useMultiTenant } from "@/hooks/useMultiTenant";
 import { getActiveSections, getSuppressedSectionCount } from "@/lib/moduleGating";
 import { getScoredQuestionCount, isSectionComplete } from "@/lib/assessmentUtils";
-import type { KpiAnswerState } from "@/lib/kpiAnswerPersistence";
+import { prefillKpiAnswers, type KpiAnswerState } from "@/lib/kpiAnswerPersistence";
+import { fetchLatestKpiValue } from "@/hooks/useKpiValues";
 
 type CompletionState = 'idle' | 'saving' | 'generating_actions' | 'complete' | 'error';
 
@@ -61,6 +62,24 @@ export default function Assessment() {
   const allDataQuestions = useMemo(() => {
     return translatedSections.flatMap(section => section.questions.filter(isDataQuestion));
   }, [translatedSections]);
+
+  const dealershipId = onboardingContext.dealershipId;
+
+  // Prefill unanswered KPI questions from the dealer's latest known values
+  // (last completed assessment or a newer monthly check-in). Runs once per
+  // dealership; never overwrites a value the user has already entered or a
+  // restored draft has already set.
+  const prefilledRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!dealershipId || allDataQuestions.length === 0 || prefilledRef.current === dealershipId) return;
+    prefilledRef.current = dealershipId;
+    const keys = allDataQuestions.map((q) => q.kpiKey);
+    Promise.all(keys.map((k) => fetchLatestKpiValue(dealershipId, k).catch(() => null)))
+      .then((res) => {
+        const latest = Object.fromEntries(keys.map((k, i) => [k, res[i]?.row.value ?? null]));
+        setKpiAnswers((prev) => prefillKpiAnswers(prev, latest));
+      });
+  }, [dealershipId, allDataQuestions]);
 
   // Calculate real-time scores using question weights
   const calculateScores = useCallback((currentAnswers: Record<string, number>) => {

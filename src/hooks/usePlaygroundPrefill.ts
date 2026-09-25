@@ -67,5 +67,6 @@ export function formatPlaygroundPeriod(isoDate: string, language: 'en' | 'de'): 
   return new Intl.DateTimeFormat(language === 'de' ? 'de-DE' : 'en-US', {
     month: 'long',
     year: 'numeric',
+    timeZone: 'UTC',
   }).format(new Date(isoDate));
 }
