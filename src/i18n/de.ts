@@ -138,7 +138,7 @@ const de: Record<string, string> = {
   'results.tab.executive': 'Zusammenfassung',
   'results.tab.kpi': 'KPI-Analyse',
   'results.tab.maturity': 'Reifegrad',
-  'results.tab.actionPlan': 'Aktionsplan',
+  'results.tab.actionPlan': 'Maßnahmenplan',
   'results.tab.resources': 'Ressourcen',
   
   // Executive Summary
@@ -435,6 +435,24 @@ const de: Record<string, string> = {
   'results.ceiling.showLess': 'Weniger anzeigen',
   'results.ceiling.badge': 'Optimierungschance',
   'results.ceiling.currentScore': 'Aktuelle Bewertung',
+
+  // Results redesign — tabs, hero, picker
+  'results.tab.diagnosis': 'Diagnose',
+  'results.hero.biggestLever': 'Größter Hebel',
+  'results.hero.coverage': '{assessed} von 5 Bereichen bewertet · {answered}/{total} Fragen',
+  'results.hero.readNarrative': 'Vollständige Analyse lesen',
+  'results.dept.notAssessed': 'Nicht bewertet – in nächste Bewertung aufnehmen',
+  'results.picker.label': 'Bewertung',
+
+  // KPI check-in
+  'kpi.logMonth': '{month} erfassen',
+  'kpi.trendUnlocks': 'Trend ab 2 Erfassungen verfügbar',
+  'kpi.projectionBasis': 'Prognose auf Basis von {n} Monaten',
+  'kpi.onTrack': 'Auf Kurs, Benchmark bis {month} zu erreichen',
+  'kpi.offTrack': 'Benchmark wird voraussichtlich nicht erreicht',
+  'kpi.enteredByCoach': 'Vom Coach erfasst',
+  'kpi.saveAsCheckin': 'Als Erfassung für {month} speichern',
+  'kpi.saved': 'KPI gespeichert',
 };
 
 export default de;

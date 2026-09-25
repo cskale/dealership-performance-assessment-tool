@@ -435,6 +435,24 @@ const fr: Record<string, string> = {
   'results.ceiling.showLess': 'Afficher moins',
   'results.ceiling.badge': 'Opportunité d\'optimisation',
   'results.ceiling.currentScore': 'Score actuel',
+
+  // Results redesign — tabs, hero, picker
+  'results.tab.diagnosis': 'Diagnostic',
+  'results.hero.biggestLever': 'Levier principal',
+  'results.hero.coverage': '{assessed} sur 5 départements évalués · {answered}/{total} questions',
+  'results.hero.readNarrative': 'Lire l\'analyse complète',
+  'results.dept.notAssessed': 'Non évalué — à inclure dans la prochaine évaluation',
+  'results.picker.label': 'Évaluation',
+
+  // KPI check-in
+  'kpi.logMonth': 'Enregistrer {month}',
+  'kpi.trendUnlocks': 'Tendance disponible après 2 relevés',
+  'kpi.projectionBasis': 'Projection basée sur {n} mois',
+  'kpi.onTrack': 'En bonne voie pour atteindre la référence d\'ici {month}',
+  'kpi.offTrack': 'Référence non atteinte selon la tendance actuelle',
+  'kpi.enteredByCoach': 'Saisi par le coach',
+  'kpi.saveAsCheckin': 'Enregistrer comme relevé de {month}',
+  'kpi.saved': 'KPI enregistré',
 };
 
 export default fr;
