@@ -239,6 +239,7 @@ const de: Record<string, string> = {
   'kpi.subtitle': 'Echtzeit-Leistungskennzahlen mit europäischen Marktbenchmarks',
   'kpi.performanceScore': 'Leistungsbewertung',
   'kpi.benchmark': 'Benchmark',
+  'kpi.yourValue': 'Ihr Wert',
   'kpi.excellent': 'Ausgezeichnet',
   'kpi.good': 'Gut',
   'kpi.needsFocus': 'Fokus erforderlich',
@@ -299,7 +300,7 @@ const de: Record<string, string> = {
   'dashboard.insight3.impact': 'Erwartete Auswirkung: +18.000€ monatlich',
   
   // Action Plan
-  'actionPlan.title': 'Aktionsplan',
+  'actionPlan.title': 'Maßnahmenplan',
   'actionPlan.subtitle': 'Strategische Initiativen zur Verbesserung der Leistung Ihres Autohauses',
   'actionPlan.generateAI': 'KI-Aktionen generieren',
   'actionPlan.generating': 'Generiere...',
