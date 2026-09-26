@@ -129,7 +129,7 @@ export function ResultsHeroBand({ overallScore, scores, answers, benchmarks, act
         DEPT_LABEL_TO_SECTION_ID[action.department] === biggestLever.departmentId
       ))
       .sort((a, b) => (PRIORITY_ORDER[a.priority.toLowerCase()] ?? 99) - (PRIORITY_ORDER[b.priority.toLowerCase()] ?? 99))[0] ?? null;
-  }, [actions, biggestLever, departmentNames]);
+  }, [actions, biggestLever]);
 
   const narrative = useMemo(() => {
     const questionWeights: Record<string, number> = {};
