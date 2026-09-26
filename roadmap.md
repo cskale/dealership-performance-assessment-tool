@@ -12,3 +12,4 @@
 - [x] Add role-gated, range-validated KPI check-ins defaulting to the previous month.
 - [x] Verify Prompt 3 with typecheck, lint, tests, and the automatic production build.
 - [ ] Verify authenticated desktop and mobile Results layouts (blocked: this external Supabase preview cannot provide an automated session).
+- [ ] Implement Prompt 4 Action Plan visual restyle, with KPI chips suppressed when dealership context is unavailable.
