@@ -10,6 +10,7 @@ import {
 } from '@/lib/playgroundCalculators';
 import { formatEuro, formatNumber } from '@/utils/euroFormatter';
 import { PlaygroundCalculatorShell } from '@/components/playground/PlaygroundCalculatorShell';
+import { KpiCheckinControl } from '@/components/playground/KpiCheckinControl';
 
 const DEFAULT_INPUTS: SalesVelocityInputs = {
   monthlyLeads: 220,
@@ -76,6 +77,12 @@ export default function SalesVelocityPage() {
               value={inputs[f.key]}
               onChange={(e) => handleChange(f.key, e.target.value)}
             />
+            {f.key === 'avgGrossProfitPerUnit' && (
+              <KpiCheckinControl
+                kpiKey="nvs_gross_profit_per_unit"
+                value={inputs.avgGrossProfitPerUnit}
+              />
+            )}
           </div>
         ))}
       </div>

@@ -13,6 +13,7 @@ import { useActiveRole } from '@/hooks/useActiveRole';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatEuro } from '@/utils/euroFormatter';
 import { PlaygroundCalculatorShell } from '@/components/playground/PlaygroundCalculatorShell';
+import { KpiCheckinControl } from '@/components/playground/KpiCheckinControl';
 
 const CALCULATOR_ID = 'reverse-sales-funnel';
 
@@ -139,6 +140,12 @@ export default function ReverseSalesFunnelPage() {
           value={inputs[field.id]}
           onChange={(e) => handleChange(field.id, e.target.value)}
         />
+        {field.id === 'avgGrossProfitPerUnit' && (
+          <KpiCheckinControl
+            kpiKey="nvs_gross_profit_per_unit"
+            value={inputs.avgGrossProfitPerUnit}
+          />
+        )}
         {showChip && (
           <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary px-2.5 py-1 text-xs">
             <span>{chipText}</span>

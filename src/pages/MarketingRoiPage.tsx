@@ -13,6 +13,7 @@ import { useActiveRole } from '@/hooks/useActiveRole';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatEuro } from '@/utils/euroFormatter';
 import { PlaygroundCalculatorShell } from '@/components/playground/PlaygroundCalculatorShell';
+import { KpiCheckinControl } from '@/components/playground/KpiCheckinControl';
 
 const CALCULATOR_ID = 'marketing-roi';
 
@@ -120,6 +121,10 @@ export default function MarketingRoiPage() {
             step={50}
             value={shared.avgGrossProfitPerUnit}
             onChange={(e) => handleSharedChange('avgGrossProfitPerUnit', e.target.value)}
+          />
+          <KpiCheckinControl
+            kpiKey="nvs_gross_profit_per_unit"
+            value={shared.avgGrossProfitPerUnit}
           />
           {prefillChipText && (
             <p className="inline-flex items-center rounded-full bg-primary/10 text-primary px-2.5 py-1 text-xs">
