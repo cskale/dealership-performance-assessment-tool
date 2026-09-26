@@ -24,6 +24,8 @@ import { calculateWeightedScore } from "@/lib/scoringEngine";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { getAssessmentFreshness } from "@/lib/assessmentFreshness";
 import { useAssessmentNotes } from "@/hooks/useAssessmentNotes";
+import { ResultsHeroBand, type HeroAction } from "@/components/results/ResultsHeroBand";
+import { fetchModuleBenchmarks } from "@/lib/benchmarkUtils";
 
 interface ResultsData {
   assessmentId: string;
@@ -37,6 +39,8 @@ interface ResultsQueryResult {
   data: ResultsData | null;
   notFound: boolean;
 }
+
+type ResultsAction = PDFExportData['actions'][number] & HeroAction;
 
 async function fetchResultsData(userId: string | undefined, routeAssessmentId: string | undefined): Promise<ResultsQueryResult> {
   await new Promise(resolve => setTimeout(resolve, 300));
@@ -99,17 +103,14 @@ async function fetchResultsData(userId: string | undefined, routeAssessmentId: s
   return { data: null, notFound: false };
 }
 
-async function fetchPdfActions(assessmentId: string, organizationId: string | undefined): Promise<PDFExportData['actions']> {
+async function fetchPdfActions(assessmentId: string): Promise<ResultsAction[]> {
   try {
-    let query = supabase
+    const query = supabase
       .from('improvement_actions')
-      .select('action_title, action_description, priority, status, responsible_person, target_completion_date, department')
+      .select('id, action_title, action_description, priority, status, responsible_person, target_completion_date, department')
       .eq('assessment_id', assessmentId);
-    if (organizationId) {
-      query = query.eq('organization_id', organizationId);
-    }
     const { data } = await query;
-    return (data as any) || [];
+    return (data as ResultsAction[] | null) ?? [];
   } catch {
     return [];
   }
@@ -179,13 +180,19 @@ export default function Results() {
   };
 
   const { data: pdfActions = [] } = useQuery({
-    queryKey: ['pdf-actions', resultsData?.assessmentId, currentOrganization?.id],
-    queryFn: () => fetchPdfActions(resultsData!.assessmentId, currentOrganization?.id),
+    queryKey: ['pdf-actions', resultsData?.assessmentId],
+    queryFn: () => fetchPdfActions(resultsData!.assessmentId),
     enabled: !!user && !!resultsData?.assessmentId,
   });
 
+  const { data: moduleBenchmarks = {} } = useQuery({
+    queryKey: ['results-module-benchmarks'],
+    queryFn: () => fetchModuleBenchmarks(null, null),
+    staleTime: 5 * 60 * 1000,
+  });
+
   useEffect(() => {
-    if (actorType !== 'oem' || !(resultsData as any)?.dealershipId) return;
+    if ((actorType !== 'oem' && actorType !== 'coach') || !(resultsData as any)?.dealershipId) return;
     const dealershipId = (resultsData as any).dealershipId;
     supabase
       .from('dealerships')
@@ -245,6 +252,13 @@ export default function Results() {
 
   const handleAssessmentChange = (assessmentId: string) => {
     navigate(`/app/results/${assessmentId}?${searchParams.toString()}`);
+  };
+
+  const handleOpenLeverAction = (actionId: string) => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('tab', 'action-plan');
+    nextParams.set('action', actionId);
+    setSearchParams(nextParams);
   };
 
   // Loading state
@@ -424,12 +438,20 @@ export default function Results() {
           </TabsList>
 
           <TabsContent value="diagnosis" className="animate-fade-in">
-            <div data-results-hero-placeholder />
+            <ResultsHeroBand
+              overallScore={overallScore}
+              scores={resultsData.scores}
+              answers={resultsData.answers}
+              benchmarks={moduleBenchmarks}
+              actions={pdfActions}
+              dealerName={oemDealerContext?.name || currentOrganization?.name || t('results.title')}
+              onOpenAction={handleOpenLeverAction}
+            />
           </TabsContent>
 
           <TabsContent value="action-plan" className="space-y-6 animate-fade-in">
             <ErrorBoundary fallbackTitle={language === 'de' ? 'Maßnahmenplan nicht verfügbar' : 'Action Plan unavailable'}>
-              <ActionPlan assessmentId={resultsData.assessmentId} notes={notes} />
+              <ActionPlan assessmentId={resultsData.assessmentId} notes={notes} focusActionId={searchParams.get('action')} />
             </ErrorBoundary>
           </TabsContent>
 

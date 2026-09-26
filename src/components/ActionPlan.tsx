@@ -108,7 +108,7 @@ const STATUS_STRIPE: Record<string, string> = {
   'Completed': 'bg-success',
 };
 
-export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; notes?: Record<string, string> }) {
+export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentId?: string; notes?: Record<string, string>; focusActionId?: string | null }) {
   const { user } = useAuth();
   const { currentOrganization, canPerformAction } = useMultiTenant();
   const { t, language } = useLanguage();
@@ -160,12 +160,13 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
     setLoading(true);
     try {
       let query = supabase.from('improvement_actions').select('*').order('rank', { ascending: true, nullsFirst: false }).order('created_at', { ascending: false });
-      if (currentOrganization?.id) {
+      if (assessmentId) {
+        query = query.eq('assessment_id', assessmentId);
+      } else if (currentOrganization?.id) {
         query = query.eq('organization_id', currentOrganization.id);
       } else {
         query = query.eq('user_id', user.id);
       }
-      if (assessmentId) query = query.eq('assessment_id', assessmentId);
       query = query.range(0, (actionPage + 1) * PAGE_SIZE - 1);
       const { data, error } = await query;
       if (error) throw error;
@@ -179,6 +180,21 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
   }, [user, assessmentId, currentOrganization, actionPage]);
 
   useEffect(() => { loadActions(); }, [loadActions]);
+
+  useEffect(() => {
+    if (loading || !focusActionId) return;
+    const action = actions.find((candidate) => candidate.id === focusActionId);
+    if (!action) return;
+    setStatusFilter('all');
+    setFilterPriority('all');
+    setFilterDepartment('all');
+    setSearchQuery('');
+    setViewMode('list');
+    const frame = requestAnimationFrame(() => {
+      document.getElementById(`action-${focusActionId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [actions, focusActionId, loading]);
 
   // Real-time: re-fetch when any action is updated (e.g. coach changes status)
   useEffect(() => {
@@ -792,10 +808,12 @@ export function ActionPlan({ assessmentId, notes }: { assessmentId?: string; not
                 return (
                   <div
                     key={action.id}
+                    id={`action-${action.id}`}
                     onClick={() => openEditPanel(action)}
                     className={cn(
                       "group bg-white rounded-xl border border-neutral-200 border-l-4 border-l-brand-500 shadow-sm hover:shadow-md transition-shadow cursor-pointer",
-                      isCompleted && "opacity-70"
+                      isCompleted && "opacity-70",
+                      focusActionId === action.id && "ring-2 ring-primary ring-offset-2"
                     )}
                   >
                     <div className="flex-1 min-w-0 p-4">
