@@ -23,7 +23,7 @@ import { questionnaire } from '@/data/questionnaire';
 import { getScoredQuestions } from '@/lib/scoringEngine';
 import { generateActionsFromAssessment, formatActionsForDatabaseInsert, SignalEngineConfig } from '@/lib/signalEngine';
 import { loadBenchmarks, type KpiBenchmark } from '@/lib/kpiBenchmarks';
-import { cleanActionTitle, priorityDisplay, resetPatternUsage } from '@/lib/actionRationaleMap';
+import { cleanActionTitle, resetPatternUsage } from '@/lib/actionRationaleMap';
 import { cleanDescription } from '@/lib/cleanDescription';
 import { buildQuestionSectionMap, DEPT_LABEL_TO_SECTION_ID } from '@/lib/coachVisitUtils';
 import { ActionSheet } from './ActionSheet';
@@ -74,14 +74,6 @@ function computeTriageScore(action: ActionRecord): number | null {
   return (action.impact_score * 2) + (action.urgency_score * 2) - action.effort_score;
 }
 
-function getTriageBadge(score: number | null): { label: string; className: string } | null {
-  if (score == null) return null;
-  if (score >= 14) return { label: 'Act Now', className: 'bg-destructive/10 text-destructive border-destructive/20' };
-  if (score >= 10) return { label: 'Priority', className: 'bg-warning/10 text-warning border-warning/20' };
-  if (score >= 6) return { label: 'Plan', className: 'bg-info/10 text-info border-info/20' };
-  return { label: 'Backlog', className: 'bg-muted text-muted-foreground border-border' };
-}
-
 function isOverdue(action: ActionRecord): boolean {
   if (!action.target_completion_date || action.status === 'Completed') return false;
   return new Date(action.target_completion_date) < new Date(new Date().toDateString());
@@ -94,16 +86,10 @@ function getPriorityBorderClass(priority: ActionRecord['priority']): string {
   return 'border-l-neutral-400';
 }
 
-const STATUS_STRIPE: Record<string, string> = {
-  'Open': 'bg-muted-foreground',
-  'In Progress': 'bg-warning',
-  'Completed': 'bg-success',
-};
-
 const DEPARTMENT_KEYS: Record<string, DepartmentKey> = {
   'New Vehicle Sales': 'nvs',
   'Used Vehicle Sales': 'uvs',
-  'Service Performance': 'svc',
+  'Service': 'svc',
   'Parts & Inventory': 'prt',
   'Financial Operations': 'fin',
 };

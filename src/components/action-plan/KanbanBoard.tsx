@@ -33,7 +33,7 @@ const PRIORITY_BORDER: Record<ActionRecord['priority'], string> = {
 };
 
 const DEPARTMENT_KEYS: Record<string, DepartmentKey> = {
-  'New Vehicle Sales': 'nvs', 'Used Vehicle Sales': 'uvs', 'Service Performance': 'svc',
+  'New Vehicle Sales': 'nvs', 'Used Vehicle Sales': 'uvs', 'Service': 'svc',
   'Parts & Inventory': 'prt', 'Financial Operations': 'fin',
 };
 
