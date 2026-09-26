@@ -143,12 +143,12 @@ export function ActionPlan({ assessmentId, dealershipId, notes, focusActionId }:
   const currentMilestone = useMemo(() => {
     if (totalCount === 0) return null;
     const pct = progressPercent;
-    if (pct >= 100) return { pct: 100, message: 'All actions complete — ready for your next assessment.', cta: true };
-    if (pct >= 75) return { pct: 75, message: '75% complete — excellent pace. Time to reassess which remaining actions have highest impact.', cta: false };
-    if (pct >= 50) return { pct: 50, message: 'Halfway there. Keep the momentum — the second half drives the score improvement.', cta: false };
-    if (pct >= 25) return { pct: 25, message: 'Good start — 25% complete. Consistency now will compound into score gains.', cta: false };
+    if (pct >= 100) return { pct: 100, message: t('actionPlan.milestone100'), cta: true };
+    if (pct >= 75) return { pct: 75, message: t('actionPlan.milestone75'), cta: false };
+    if (pct >= 50) return { pct: 50, message: t('actionPlan.milestone50'), cta: false };
+    if (pct >= 25) return { pct: 25, message: t('actionPlan.milestone25'), cta: false };
     return null;
-  }, [progressPercent, totalCount]);
+  }, [progressPercent, t, totalCount]);
 
   const showMilestoneBanner = currentMilestone !== null && currentMilestone.pct !== dismissedMilestone;
 
@@ -533,8 +533,12 @@ export function ActionPlan({ assessmentId, dealershipId, notes, focusActionId }:
 
       {/* Header bar */}
       <div className="flex flex-wrap items-center gap-3 border-b border-border pb-4">
-        <div className="relative grid h-16 w-16 shrink-0 place-items-center rounded-full" style={{ background: `conic-gradient(hsl(var(--brand-600)) ${progressPercent * 3.6}deg, hsl(var(--neutral-200)) 0deg)` }}>
-          <div className="grid h-12 w-12 place-items-center rounded-full bg-background text-center">
+        <div className="relative grid h-16 w-16 shrink-0 place-items-center">
+          <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 64 64" aria-hidden="true">
+            <circle cx="32" cy="32" r="27" fill="none" className="stroke-neutral-200" strokeWidth="5" />
+            <circle cx="32" cy="32" r="27" fill="none" className="stroke-brand-600 transition-[stroke-dashoffset] duration-300" strokeWidth="5" strokeLinecap="round" strokeDasharray={169.65} strokeDashoffset={169.65 * (1 - progressPercent / 100)} />
+          </svg>
+          <div className="z-10 grid place-items-center text-center">
             <span className="text-sm font-semibold text-foreground leading-none">{completedCount}/{totalCount}</span>
             <span className="text-[10px] text-muted-foreground">{progressPercent}%</span>
           </div>
@@ -699,12 +703,12 @@ export function ActionPlan({ assessmentId, dealershipId, notes, focusActionId }:
                 onClick={() => window.location.assign('/app/assessment')}
                 className="text-xs text-brand-700 border border-brand-700 bg-transparent px-2.5 py-1 rounded-md cursor-pointer font-medium hover:bg-brand-50 transition-colors"
               >
-                Schedule Reassessment
+                {t('actionPlan.scheduleReassessment')}
               </button>
             )}
             <button
               type="button"
-              aria-label="Dismiss milestone"
+              aria-label={t('actionPlan.dismissMilestone')}
               onClick={() => setDismissedMilestone(currentMilestone.pct)}
               className="bg-transparent border-none p-1 cursor-pointer text-neutral-500 inline-flex hover:text-neutral-700 transition-colors"
             >

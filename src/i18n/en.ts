@@ -351,6 +351,12 @@ const en: Record<string, string> = {
   'actionPlan.fromCoachingVisit': 'From coaching visit',
   'actionPlan.fieldNotes': 'Field notes available for this department',
   'actionPlan.viewKpi': 'View KPI',
+  'actionPlan.milestone25': 'Good start — 25% complete. Consistency now will compound into score gains.',
+  'actionPlan.milestone50': 'Halfway there. Keep the momentum — the second half drives the score improvement.',
+  'actionPlan.milestone75': '75% complete — excellent pace. Reassess which remaining actions have highest impact.',
+  'actionPlan.milestone100': 'All actions complete — ready for your next assessment.',
+  'actionPlan.scheduleReassessment': 'Schedule reassessment',
+  'actionPlan.dismissMilestone': 'Dismiss milestone',
   
   // Useful Resources
   'resources.title': 'Useful Resources & Learning Materials',

@@ -351,6 +351,12 @@ const it: Record<string, string> = {
   'actionPlan.fromCoachingVisit': 'Da una visita di coaching',
   'actionPlan.fieldNotes': 'Note sul campo disponibili per questo reparto',
   'actionPlan.viewKpi': 'Visualizza KPI',
+  'actionPlan.milestone25': 'Buon inizio: 25% completato. La costanza consoliderà i miglioramenti.',
+  'actionPlan.milestone50': 'A metà percorso. Mantenga lo slancio per migliorare il punteggio.',
+  'actionPlan.milestone75': '75% completato: ritmo eccellente. Rivaluti le azioni rimanenti di maggiore impatto.',
+  'actionPlan.milestone100': 'Tutte le azioni sono completate: pronti per la prossima valutazione.',
+  'actionPlan.scheduleReassessment': 'Pianifica rivalutazione',
+  'actionPlan.dismissMilestone': 'Chiudi messaggio',
 
   // Useful Resources
   'resources.title': 'Risorse Utili e Materiale Formativo',
