@@ -19,20 +19,30 @@ env = dict(
     if "=" in line and not line.startswith("#")
 )
 PASSWORD = env["QA_PASSWORD"]
+# Optional: a dealer assessment the QA coach/OEM can view, so their Results screens get checked too.
+RESULTS_ID = env.get("QA_RESULTS_ID")
+VIEWED_RESULTS = [
+    ("results", f"/app/results/{RESULTS_ID}", None),
+    ("results-action-plan", f"/app/results/{RESULTS_ID}?tab=action-plan", None),
+] if RESULTS_ID else []
 
 # role -> (email key, [(label, path, optional text to click after load)])
 ROLES = {
     "dealer": ("QA_DEALER_EMAIL", [
         ("dashboard", "/app/dashboard", None),
         ("coaching-visits", "/app/dashboard#coaching-visits", None),
+        ("results", "/app/results", None),
+        ("results-action-plan", "/app/results?tab=action-plan", None),
     ]),
     "coach": ("QA_COACH_EMAIL", [
         ("coach-dashboard", "/app/coach-dashboard", None),
         ("dealer-panel", "/app/coach-dashboard", "Open Briefing"),
+        *VIEWED_RESULTS,
     ]),
     "oem": ("QA_OEM_EMAIL", [
         ("oem-dashboard", "/app/oem-dashboard", None),
         ("oem-coverage", "/app/oem-dashboard", "Leaderboard"),
+        *VIEWED_RESULTS,
     ]),
 }
 
