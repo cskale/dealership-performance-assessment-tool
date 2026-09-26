@@ -357,6 +357,11 @@ const de: Record<string, string> = {
   'actionPlan.milestone100': 'Alle Maßnahmen erledigt — bereit für Ihre nächste Bewertung.',
   'actionPlan.scheduleReassessment': 'Neubewertung planen',
   'actionPlan.dismissMilestone': 'Hinweis schließen',
+  'actionPlan.markedComplete': 'Maßnahme als erledigt markiert',
+  'actionPlan.updateStatusFailed': 'Status konnte nicht aktualisiert werden',
+  'actionPlan.roadmapQuick': 'Schnelle Erfolge (0–30 Tage)',
+  'actionPlan.roadmapProcess': 'Prozessänderungen (31–60 Tage)',
+  'actionPlan.roadmapGovernance': 'Steuerung & Systeme (61–90 Tage)',
   
   // Useful Resources
   'resources.title': 'Nützliche Ressourcen & Lernmaterialien',

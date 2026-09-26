@@ -357,6 +357,11 @@ const en: Record<string, string> = {
   'actionPlan.milestone100': 'All actions complete — ready for your next assessment.',
   'actionPlan.scheduleReassessment': 'Schedule reassessment',
   'actionPlan.dismissMilestone': 'Dismiss milestone',
+  'actionPlan.markedComplete': 'Action marked complete',
+  'actionPlan.updateStatusFailed': 'Failed to update status',
+  'actionPlan.roadmapQuick': 'Quick Wins (0–30 days)',
+  'actionPlan.roadmapProcess': 'Process Changes (31–60 days)',
+  'actionPlan.roadmapGovernance': 'Governance & Systems (61–90 days)',
   
   // Useful Resources
   'resources.title': 'Useful Resources & Learning Materials',

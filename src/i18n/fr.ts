@@ -357,6 +357,11 @@ const fr: Record<string, string> = {
   'actionPlan.milestone100': 'Toutes les actions sont terminées — prêt pour votre prochaine évaluation.',
   'actionPlan.scheduleReassessment': 'Planifier une réévaluation',
   'actionPlan.dismissMilestone': 'Fermer le message',
+  'actionPlan.markedComplete': 'Action marquée comme terminée',
+  'actionPlan.updateStatusFailed': 'Échec de la mise à jour du statut',
+  'actionPlan.roadmapQuick': 'Gains rapides (0–30 jours)',
+  'actionPlan.roadmapProcess': 'Évolutions de processus (31–60 jours)',
+  'actionPlan.roadmapGovernance': 'Gouvernance et systèmes (61–90 jours)',
 
   // Useful Resources
   'resources.title': 'Ressources utiles et supports de formation',

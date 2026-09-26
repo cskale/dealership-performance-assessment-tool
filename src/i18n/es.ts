@@ -357,6 +357,11 @@ const es: Record<string, string> = {
   'actionPlan.milestone100': 'Todas las acciones están completas: listo para la próxima evaluación.',
   'actionPlan.scheduleReassessment': 'Programar reevaluación',
   'actionPlan.dismissMilestone': 'Cerrar mensaje',
+  'actionPlan.markedComplete': 'Acción marcada como completada',
+  'actionPlan.updateStatusFailed': 'No se pudo actualizar el estado',
+  'actionPlan.roadmapQuick': 'Victorias rápidas (0–30 días)',
+  'actionPlan.roadmapProcess': 'Cambios de proceso (31–60 días)',
+  'actionPlan.roadmapGovernance': 'Gobernanza y sistemas (61–90 días)',
 
   // Recursos utiles
   'resources.title': 'Recursos utiles y materiales de formacion',

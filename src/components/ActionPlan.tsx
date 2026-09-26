@@ -479,9 +479,9 @@ export function ActionPlan({ assessmentId, dealershipId, notes, focusActionId }:
 
   const roadmapColumns = useMemo(() => {
     const columns = [
-      { key: 'quick', title: 'Quick Wins (0–30 days)', actions: [] as ActionRecord[] },
-      { key: 'process', title: 'Process Changes (31–60 days)', actions: [] as ActionRecord[] },
-      { key: 'governance', title: 'Governance & Systems (61–90 days)', actions: [] as ActionRecord[] },
+      { key: 'quick', title: t('actionPlan.roadmapQuick'), actions: [] as ActionRecord[] },
+      { key: 'process', title: t('actionPlan.roadmapProcess'), actions: [] as ActionRecord[] },
+      { key: 'governance', title: t('actionPlan.roadmapGovernance'), actions: [] as ActionRecord[] },
     ];
 
     filteredActions.forEach((action) => {
@@ -494,7 +494,7 @@ export function ActionPlan({ assessmentId, dealershipId, notes, focusActionId }:
     });
 
     return columns;
-  }, [filteredActions]);
+  }, [filteredActions, t]);
 
   const statusTabs = [
     { key: 'all', label: t('actionPlan.all'), count: statusCounts.all },
@@ -790,8 +790,8 @@ export function ActionPlan({ assessmentId, dealershipId, notes, focusActionId }:
           {filteredActions.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
               <Target className="h-12 w-12 mx-auto mb-4 opacity-20" />
-              <p className="font-medium">No actions found</p>
-              <p className="text-sm mt-1">Generate actions from your assessment or add them manually.</p>
+              <p className="font-medium">{t('actionPlan.noActionsShort')}</p>
+              <p className="text-sm mt-1">{t('actionPlan.noActionsHelp')}</p>
             </div>
           ) : (
             <div className="space-y-2">

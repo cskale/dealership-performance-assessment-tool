@@ -19,11 +19,7 @@ interface KanbanBoardProps {
 
 type ColumnStatus = 'Open' | 'In Progress' | 'Completed';
 
-const COLUMNS: { key: ColumnStatus; label: string }[] = [
-  { key: 'Open', label: 'Open' },
-  { key: 'In Progress', label: 'In Progress' },
-  { key: 'Completed', label: 'Done' },
-];
+const COLUMNS: ColumnStatus[] = ['Open', 'In Progress', 'Completed'];
 
 const PRIORITY_BORDER: Record<ActionRecord['priority'], string> = {
   critical: 'border-l-destructive',
@@ -83,31 +79,32 @@ export function KanbanBoard({ actions, onStatusChange, onActionClick, dealership
     try {
       await onStatusChange(id, columnKey);
       if (columnKey === 'Completed') {
-        toast.success('Action marked complete');
+        toast.success(t('actionPlan.markedComplete'));
       }
     } catch {
-      toast.error('Failed to update status');
+      toast.error(t('actionPlan.updateStatusFailed'));
     }
   };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 min-h-[400px] overflow-x-auto">
-      {COLUMNS.map(col => {
-        const colActions = actions.filter(a => a.status === col.key);
-        const isHover = hoverColumn === col.key;
+      {COLUMNS.map(column => {
+        const colActions = actions.filter(a => a.status === column);
+        const isHover = hoverColumn === column;
+        const label = column === 'Open' ? t('actionPlan.open') : column === 'In Progress' ? t('actionPlan.inProgress') : t('actionPlan.done');
         return (
           <div
-            key={col.key}
-            onDragOver={(e) => handleDragOver(e, col.key)}
-            onDragLeave={() => setHoverColumn(prev => (prev === col.key ? null : prev))}
-            onDrop={(e) => handleDrop(e, col.key)}
+            key={column}
+            onDragOver={(e) => handleDragOver(e, column)}
+            onDragLeave={() => setHoverColumn(prev => (prev === column ? null : prev))}
+            onDrop={(e) => handleDrop(e, column)}
             className={cn('rounded-lg border border-border bg-muted/40 p-3 transition-colors', isHover && 'border-brand-300 bg-brand-50')}
           >
             <div className="flex items-center justify-between mb-3 px-1">
               <span
                 className="text-xs font-semibold uppercase text-muted-foreground"
               >
-                {col.label}
+                {label}
               </span>
               <span
                 className="rounded-full border border-border bg-card px-2 py-0.5 text-[11px] text-muted-foreground"
