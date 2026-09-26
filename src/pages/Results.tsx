@@ -40,6 +40,8 @@ interface ResultsQueryResult {
   notFound: boolean;
 }
 
+type ResultsAction = PDFExportData['actions'][number] & HeroAction;
+
 async function fetchResultsData(userId: string | undefined, routeAssessmentId: string | undefined): Promise<ResultsQueryResult> {
   await new Promise(resolve => setTimeout(resolve, 300));
 
@@ -101,14 +103,14 @@ async function fetchResultsData(userId: string | undefined, routeAssessmentId: s
   return { data: null, notFound: false };
 }
 
-async function fetchPdfActions(assessmentId: string): Promise<PDFExportData['actions']> {
+async function fetchPdfActions(assessmentId: string): Promise<ResultsAction[]> {
   try {
     const query = supabase
       .from('improvement_actions')
       .select('id, action_title, action_description, priority, status, responsible_person, target_completion_date, department')
       .eq('assessment_id', assessmentId);
     const { data } = await query;
-    return (data as any) || [];
+    return (data as ResultsAction[] | null) ?? [];
   } catch {
     return [];
   }
@@ -441,7 +443,7 @@ export default function Results() {
               scores={resultsData.scores}
               answers={resultsData.answers}
               benchmarks={moduleBenchmarks}
-              actions={pdfActions as HeroAction[]}
+              actions={pdfActions}
               dealerName={oemDealerContext?.name || currentOrganization?.name || t('results.title')}
               onOpenAction={handleOpenLeverAction}
             />
