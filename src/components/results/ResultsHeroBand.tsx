@@ -213,6 +213,11 @@ export function ResultsHeroBand({ overallScore, scores, answers, benchmarks, act
                 <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
               </Button>
             )}
+            {biggestLever && !leverAction && (
+              <p className="mt-2 text-body-sm text-muted-foreground">
+                {Math.abs(Math.round(biggestLever.gap))} pts
+              </p>
+            )}
           </div>
           <p className="border-t border-border pt-4 text-caption leading-relaxed text-muted-foreground">{coverage}</p>
         </div>
