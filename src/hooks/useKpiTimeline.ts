@@ -5,6 +5,21 @@ import { mergeTimeline, type CheckinRow, type SnapshotRow, type TimelinePoint } 
 
 const KEYS = TRACKED_KPIS.map((k) => k.kpiKey);
 
+interface SnapshotQueryRow {
+  kpi_key: string;
+  value: number | string | null;
+  skipped: boolean;
+  assessments: { created_at: string };
+}
+
+interface CheckinQueryRow {
+  kpi_key: string;
+  period_month: string;
+  value: number;
+  entered_by_role: string;
+  updated_at: string;
+}
+
 export function useKpiTimelines(dealershipId: string | null | undefined) {
   return useQuery({
     queryKey: ['kpi-timelines', dealershipId],
@@ -21,12 +36,21 @@ export function useKpiTimelines(dealershipId: string | null | undefined) {
       ]);
       if (checkins.error) throw checkins.error;
       if (snaps.error) throw snaps.error;
-      const snapshots: SnapshotRow[] = (snaps.data ?? []).map((r: any) => ({
-        kpi_key: r.kpi_key, value: r.value, skipped: r.skipped,
+      const snapshots: SnapshotRow[] = (snaps.data ?? []).map((r: SnapshotQueryRow) => ({
+        kpi_key: r.kpi_key,
+        value: r.value === null ? null : Number(r.value),
+        skipped: r.skipped,
         assessment_created_at: r.assessments.created_at,
       }));
+      const checkinRows: CheckinRow[] = (checkins.data ?? []).map((r: CheckinQueryRow) => ({
+        kpi_key: r.kpi_key,
+        period_month: r.period_month,
+        value: r.value,
+        entered_by_role: r.entered_by_role === 'coach' ? 'coach' : 'dealer',
+        updated_at: r.updated_at,
+      }));
       return Object.fromEntries(
-        KEYS.map((k) => [k, mergeTimeline(k, (checkins.data ?? []) as CheckinRow[], snapshots)]),
+        KEYS.map((k) => [k, mergeTimeline(k, checkinRows, snapshots)]),
       );
     },
   });
