@@ -24,13 +24,14 @@ export const DEPT_ORDER = [
 
 /**
  * Returns a Tailwind text colour class based on maturity level.
- * Leading (≥85) → green. Advanced + Developing (≥45) → brand blue. Foundational (<45) → red.
- * No yellow/amber anywhere — per design system rules.
+ * Advanced (≥85) → green. Performing + Developing (≥46) → brand blue. Foundational (≤45) → red.
+ * No yellow/amber here — per this component's own design rule (DESIGN.md §2.3 specifies
+ * amber-600 for Developing; this function intentionally deviates — see maturity-fix-report.md).
  */
 export function deptScoreColour(score: number): string {
   const level = getMaturityLevel(score);
-  if (level === 'leading')      return 'text-[#22c55e]';
-  if (level === 'advanced')     return 'text-[#1D7AFC]';
+  if (level === 'advanced')     return 'text-[#22c55e]';
+  if (level === 'performing')   return 'text-[#1D7AFC]';
   if (level === 'developing')   return 'text-[#1D7AFC]';
   return 'text-[#ef4444]'; // foundational
 }
@@ -115,32 +116,32 @@ export function deptFindingText(deptKey: string, score: number): string {
 
   const texts: Record<string, Record<string, string>> = {
     'new-vehicle-sales': {
-      leading:     'Lead capture, test-drive conversion, and prospecting cadence are all performing above the network benchmark. The department represents a model for other outlets.',
-      advanced:    'Core sales processes are consistently executed. Lead conversion and customer journey scores are above benchmark — prospecting cadence has room for further improvement.',
+      advanced:    'Lead capture, test-drive conversion, and prospecting cadence are all performing above the network benchmark. The department represents a model for other outlets.',
+      performing:  'Core sales processes are consistently executed. Lead conversion and customer journey scores are above benchmark — prospecting cadence has room for further improvement.',
       developing:  'Sales processes are in place but execution is inconsistent. Prospecting cadence and CRM discipline need reinforcement across the team.',
       foundational:'Fundamental sales process gaps identified. Prospecting, lead management, and customer journey processes require immediate definition and implementation.',
     },
     'used-vehicle-sales': {
-      leading:     'Stock management and margin control are operating at benchmark-leading levels. Disposition process and pricing discipline are both strong.',
-      advanced:    'Stock ageing and margin management are broadly sound. Monitor vehicle age profile and wholesale margin floor to maintain current performance.',
+      advanced:    'Stock management and margin control are operating at benchmark-leading levels. Disposition process and pricing discipline are both strong.',
+      performing:  'Stock ageing and margin management are broadly sound. Monitor vehicle age profile and wholesale margin floor to maintain current performance.',
       developing:  'Stock ageing is above the 45-day benchmark and margin compression is evident. A formal disposition protocol and pricing review are the recommended interventions.',
       foundational:'Critical gaps in stock management — no formal disposition gate, ageing well above benchmark, and margin below acceptable floor across all used lines.',
     },
     'service-performance': {
-      leading:     'Labour utilisation and fixed-first-visit rate are both leading the network benchmark. Retention and upsell processes are functioning at the highest level.',
-      advanced:    'Labour utilisation is above benchmark. Fixed-first-visit performance and customer retention are strong — minor efficiency gains available in upsell processes.',
+      advanced:    'Labour utilisation and fixed-first-visit rate are both leading the network benchmark. Retention and upsell processes are functioning at the highest level.',
+      performing:  'Labour utilisation is above benchmark. Fixed-first-visit performance and customer retention are strong — minor efficiency gains available in upsell processes.',
       developing:  'Labour utilisation is below benchmark. Fixed-first-visit rate and service advisor upsell process need structured improvement.',
       foundational:'Core service delivery processes are inconsistently applied. Labour efficiency, technician productivity, and customer retention all require immediate attention.',
     },
     'parts-inventory': {
-      leading:     'Fill rate on all key lines is at benchmark-leading levels. Obsolete stock is actively managed and the purchasing process is efficient.',
-      advanced:    'Fill rate on fast-moving lines is strong. Obsolete stock management is adequate — a structured write-down cycle would improve the score further.',
+      advanced:    'Fill rate on all key lines is at benchmark-leading levels. Obsolete stock is actively managed and the purchasing process is efficient.',
+      performing:  'Fill rate on fast-moving lines is strong. Obsolete stock management is adequate — a structured write-down cycle would improve the score further.',
       developing:  'Fill rate is adequate but obsolete stock is accumulating without a structured write-down cycle. This is the primary drag on the department score.',
       foundational:'Significant inventory management gaps. Fill rate, obsolete stock accumulation, and purchasing process all require immediate structured intervention.',
     },
     'financial-operations': {
-      leading:     'Finance and Insurance penetration, cash cycle management, and reporting processes are all performing above the network benchmark.',
-      advanced:    'Core cash management and reporting processes are well-documented. F&I penetration on primary lines is strong — ancillary product penetration has scope for improvement.',
+      advanced:    'Finance and Insurance penetration, cash cycle management, and reporting processes are all performing above the network benchmark.',
+      performing:  'Core cash management and reporting processes are well-documented. F&I penetration on primary lines is strong — ancillary product penetration has scope for improvement.',
       developing:  'F&I product penetration on ancillary lines is below standard. Core cash management processes are documented but inconsistently followed.',
       foundational:'Fundamental financial operations gaps. F&I penetration, cash cycle management, and reporting processes all require immediate definition and enforcement.',
     },
@@ -163,9 +164,9 @@ export function focusDepartment(scores: Record<string, number>): string {
 
 // ─── Critical gap count ─────────────────────────────────────────────────────
 
-/** Count of departments with score below 45 (foundational). */
+/** Count of departments in the Foundational band (score ≤ 45, per DESIGN.md §2.3). */
 export function criticalGapCount(scores: Record<string, number>): number {
-  return Object.values(scores).filter(s => s < 45).length;
+  return Object.values(scores).filter(s => s < 46).length;
 }
 
 // ─── Hero narrative ─────────────────────────────────────────────────────────
@@ -179,12 +180,14 @@ export function heroNarrative(
   overallScore: number
 ): string {
   const level = getMaturityLevel(overallScore);
-  const aboveBenchmark = DEPT_ORDER.filter(k => (scores[k] ?? 0) >= 65).map(
+  // "Above benchmark" aligned to the canonical Performing threshold (DESIGN.md §2.3: score >= 70),
+  // not the old >= 65 cutoff (a stale value from the pre-fix maturity scale).
+  const aboveBenchmark = DEPT_ORDER.filter(k => (scores[k] ?? 0) >= 70).map(
     k => DEPT_DISPLAY_NAMES[k]
   );
   const focusDept = DEPT_DISPLAY_NAMES[focusDepartment(scores)] ?? 'one department';
 
-  if (level === 'leading') {
+  if (level === 'advanced') {
     return `All departments are performing above benchmark — ${focusDept} has the most room for further improvement.`;
   }
   if (aboveBenchmark.length >= 3) {
