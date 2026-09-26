@@ -75,3 +75,27 @@ export function prefillKpiAnswers(
   }
   return out;
 }
+
+/**
+ * Resolves the next KpiAnswerState for a field change from KpiQuestionInput.
+ *
+ * Clearing a field (value: null, skipped: false) happens both via the explicit
+ * "undo" link after Skip, and by the dealer blanking the text input directly —
+ * in either case, if that field had a prior known value, restore the
+ * "Last value" hint (prefilled: true) instead of leaving it plain empty.
+ * An explicit skip, or a real typed value, is passed through unchanged.
+ */
+export function resolveKpiAnswerChange(
+  kpiKey: string,
+  value: number | null,
+  skipped: boolean,
+  prefillValues: Record<string, number | null>,
+): KpiAnswerState {
+  if (value === null && !skipped) {
+    const prefill = prefillValues[kpiKey];
+    if (prefill !== null && prefill !== undefined) {
+      return { value: prefill, skipped: false, prefilled: true };
+    }
+  }
+  return { value, skipped };
+}

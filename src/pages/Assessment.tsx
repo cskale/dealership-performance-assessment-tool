@@ -14,7 +14,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { useMultiTenant } from "@/hooks/useMultiTenant";
 import { getActiveSections, getSuppressedSectionCount } from "@/lib/moduleGating";
 import { getScoredQuestionCount, isSectionComplete } from "@/lib/assessmentUtils";
-import { prefillKpiAnswers, type KpiAnswerState } from "@/lib/kpiAnswerPersistence";
+import { prefillKpiAnswers, resolveKpiAnswerChange, type KpiAnswerState } from "@/lib/kpiAnswerPersistence";
 import { fetchLatestKpiValue } from "@/hooks/useKpiValues";
 
 type CompletionState = 'idle' | 'saving' | 'generating_actions' | 'complete' | 'error';
@@ -24,6 +24,9 @@ export default function Assessment() {
   const [currentSection, setCurrentSection] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [kpiAnswers, setKpiAnswers] = useState<Record<string, KpiAnswerState>>({});
+  // Latest known value per KPI key, kept around after the prefill fetch so an
+  // "undo" (or clearing the field) can restore the "Last value" hint.
+  const [prefillValues, setPrefillValues] = useState<Record<string, number | null>>({});
   const [completionState, setCompletionState] = useState<CompletionState>('idle');
 
   const { toast } = useToast();
@@ -71,14 +74,24 @@ export default function Assessment() {
   // restored draft has already set.
   const prefilledRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!dealershipId || allDataQuestions.length === 0 || prefilledRef.current === dealershipId) return;
-    prefilledRef.current = dealershipId;
+    if (!dealershipId || allDataQuestions.length === 0) return;
     const keys = allDataQuestions.map((q) => q.kpiKey);
+    // Keyed by dealership + the exact set of KPI keys, not just dealership: if
+    // the active question set changes (e.g. business model resolves) while a
+    // fetch for the old key set is still in flight, this must re-run rather
+    // than being marked done prematurely.
+    const requestKey = `${dealershipId}:${keys.join(',')}`;
+    if (prefilledRef.current === requestKey) return;
+    let cancelled = false;
     Promise.all(keys.map((k) => fetchLatestKpiValue(dealershipId, k).catch(() => null)))
       .then((res) => {
+        if (cancelled) return;
         const latest = Object.fromEntries(keys.map((k, i) => [k, res[i]?.row.value ?? null]));
+        setPrefillValues((prev) => ({ ...prev, ...latest }));
         setKpiAnswers((prev) => prefillKpiAnswers(prev, latest));
+        prefilledRef.current = requestKey;
       });
+    return () => { cancelled = true; };
   }, [dealershipId, allDataQuestions]);
 
   // Calculate real-time scores using question weights
@@ -126,7 +139,7 @@ export default function Assessment() {
   };
 
   const handleKpiAnswer = async (kpiKey: string, value: number | null, skipped: boolean) => {
-    const newKpiAnswers = { ...kpiAnswers, [kpiKey]: { value, skipped } };
+    const newKpiAnswers = { ...kpiAnswers, [kpiKey]: resolveKpiAnswerChange(kpiKey, value, skipped, prefillValues) };
     setKpiAnswers(newKpiAnswers);
 
     const assessmentId = assessment?.id;
