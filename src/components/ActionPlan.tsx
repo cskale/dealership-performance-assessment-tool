@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 // Tabs no longer used after view-toggle redesign
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -13,7 +12,7 @@ import {
 import {
   Plus, Loader2, Pencil, ChevronDown,
   AlertTriangle, Target, Eye, Search, Filter, LayoutGrid, List as ListIcon,
-  CheckCircle2, X, StickyNote
+  Info, X, StickyNote, Clock
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { sanitizeText } from '@/lib/sanitize';
@@ -24,7 +23,7 @@ import { questionnaire } from '@/data/questionnaire';
 import { getScoredQuestions } from '@/lib/scoringEngine';
 import { generateActionsFromAssessment, formatActionsForDatabaseInsert, SignalEngineConfig } from '@/lib/signalEngine';
 import { loadBenchmarks, type KpiBenchmark } from '@/lib/kpiBenchmarks';
-import { cleanActionTitle, priorityDisplay, resetPatternUsage } from '@/lib/actionRationaleMap';
+import { cleanActionTitle, resetPatternUsage } from '@/lib/actionRationaleMap';
 import { cleanDescription } from '@/lib/cleanDescription';
 import { buildQuestionSectionMap, DEPT_LABEL_TO_SECTION_ID } from '@/lib/coachVisitUtils';
 import { ActionSheet } from './ActionSheet';
@@ -32,6 +31,9 @@ import { KanbanBoard } from './action-plan/KanbanBoard';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { useKpiTimelines } from '@/hooks/useKpiTimeline';
+import { isTrackedKpi, trackedKpisFor, type DepartmentKey } from '@/data/trackedKpis';
+import { LinkedKpiChip } from './action-plan/LinkedKpiChip';
 
 export interface ActionRecord {
   id: string;
@@ -72,46 +74,38 @@ function computeTriageScore(action: ActionRecord): number | null {
   return (action.impact_score * 2) + (action.urgency_score * 2) - action.effort_score;
 }
 
-function getTriageBadge(score: number | null): { label: string; className: string } | null {
-  if (score == null) return null;
-  if (score >= 14) return { label: 'Act Now', className: 'bg-destructive/10 text-destructive border-destructive/20' };
-  if (score >= 10) return { label: 'Priority', className: 'bg-warning/10 text-warning border-warning/20' };
-  if (score >= 6) return { label: 'Plan', className: 'bg-info/10 text-info border-info/20' };
-  return { label: 'Backlog', className: 'bg-muted text-muted-foreground border-border' };
-}
-
 function isOverdue(action: ActionRecord): boolean {
   if (!action.target_completion_date || action.status === 'Completed') return false;
   return new Date(action.target_completion_date) < new Date(new Date().toDateString());
 }
 
-function getDueBadge(action: ActionRecord): { label: string; style: string } | null {
-  if (!action.target_completion_date) return null;
-  const days = Math.ceil((new Date(action.target_completion_date).getTime() - Date.now()) / 86400000);
-  if (days < 0) return { label: 'Overdue', style: 'bg-red-50 text-red-600' };
-  if (days <= 30) return { label: '30 Days', style: 'bg-neutral-100 text-neutral-600' };
-  if (days <= 60) return { label: '60 Days', style: 'bg-neutral-100 text-neutral-600' };
-  if (days <= 90) return { label: '90 Days', style: 'bg-neutral-100 text-neutral-600' };
-  return null;
+function getPriorityBorderClass(priority: ActionRecord['priority']): string {
+  if (priority === 'critical') return 'border-l-destructive';
+  if (priority === 'high') return 'border-l-warning';
+  if (priority === 'medium') return 'border-l-info';
+  return 'border-l-neutral-400';
 }
 
-function getPriorityPillClass(priority: ActionRecord['priority']): string {
-  if (priority === 'critical') return 'bg-red-50 border-red-200 text-red-700';
-  if (priority === 'high') return 'bg-orange-50 border-orange-200 text-orange-700';
-  if (priority === 'medium') return 'bg-yellow-50 border-yellow-200 text-yellow-700';
-  return 'bg-neutral-50 border-neutral-200 text-neutral-500';
-}
-
-const STATUS_STRIPE: Record<string, string> = {
-  'Open': 'bg-muted-foreground',
-  'In Progress': 'bg-warning',
-  'Completed': 'bg-success',
+const DEPARTMENT_KEYS: Record<string, DepartmentKey> = {
+  'New Vehicle Sales': 'nvs',
+  'Used Vehicle Sales': 'uvs',
+  'Service': 'svc',
+  'Parts & Inventory': 'prt',
+  'Financial Operations': 'fin',
 };
 
-export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentId?: string; notes?: Record<string, string>; focusActionId?: string | null }) {
+function linkedTrackedKpi(action: ActionRecord): string | undefined {
+  const departmentKey = DEPARTMENT_KEYS[action.department];
+  if (!departmentKey) return undefined;
+  const departmentKpis = trackedKpisFor(departmentKey);
+  return action.kpis_linked_to?.find((key) => isTrackedKpi(key) && departmentKpis.includes(key));
+}
+
+export function ActionPlan({ assessmentId, dealershipId, notes, focusActionId }: { assessmentId?: string; dealershipId?: string | null; notes?: Record<string, string>; focusActionId?: string | null }) {
   const { user } = useAuth();
   const { currentOrganization, canPerformAction } = useMultiTenant();
   const { t, language } = useLanguage();
+  const { data: kpiTimelines = {} } = useKpiTimelines(dealershipId);
   const [actions, setActions] = useState<ActionRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -143,16 +137,18 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
   const totalCount = actions.length;
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
   const overdueCount = actions.filter(a => isOverdue(a)).length;
+  const openCount = actions.filter(a => a.status === 'Open').length;
+  const inProgressCount = actions.filter(a => a.status === 'In Progress').length;
 
   const currentMilestone = useMemo(() => {
     if (totalCount === 0) return null;
     const pct = progressPercent;
-    if (pct >= 100) return { pct: 100, message: 'All actions complete — ready for your next assessment.', cta: true };
-    if (pct >= 75) return { pct: 75, message: '75% complete — excellent pace. Time to reassess which remaining actions have highest impact.', cta: false };
-    if (pct >= 50) return { pct: 50, message: 'Halfway there. Keep the momentum — the second half drives the score improvement.', cta: false };
-    if (pct >= 25) return { pct: 25, message: 'Good start — 25% complete. Consistency now will compound into score gains.', cta: false };
+    if (pct >= 100) return { pct: 100, message: t('actionPlan.milestone100'), cta: true };
+    if (pct >= 75) return { pct: 75, message: t('actionPlan.milestone75'), cta: false };
+    if (pct >= 50) return { pct: 50, message: t('actionPlan.milestone50'), cta: false };
+    if (pct >= 25) return { pct: 25, message: t('actionPlan.milestone25'), cta: false };
     return null;
-  }, [progressPercent, totalCount]);
+  }, [progressPercent, t, totalCount]);
 
   const showMilestoneBanner = currentMilestone !== null && currentMilestone.pct !== dismissedMilestone;
 
@@ -483,9 +479,9 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
 
   const roadmapColumns = useMemo(() => {
     const columns = [
-      { key: 'quick', title: 'Quick Wins (0–30 days)', actions: [] as ActionRecord[] },
-      { key: 'process', title: 'Process Changes (31–60 days)', actions: [] as ActionRecord[] },
-      { key: 'governance', title: 'Governance & Systems (61–90 days)', actions: [] as ActionRecord[] },
+      { key: 'quick', title: t('actionPlan.roadmapQuick'), actions: [] as ActionRecord[] },
+      { key: 'process', title: t('actionPlan.roadmapProcess'), actions: [] as ActionRecord[] },
+      { key: 'governance', title: t('actionPlan.roadmapGovernance'), actions: [] as ActionRecord[] },
     ];
 
     filteredActions.forEach((action) => {
@@ -498,14 +494,14 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
     });
 
     return columns;
-  }, [filteredActions]);
+  }, [filteredActions, t]);
 
   const statusTabs = [
-    { key: 'all', label: 'All', count: statusCounts.all },
-    { key: 'Open', label: 'Open', count: statusCounts.Open },
-    { key: 'In Progress', label: 'In Progress', count: statusCounts['In Progress'] },
-    { key: 'Completed', label: 'Completed', count: statusCounts.Completed },
-    { key: 'Overdue', label: 'Overdue', count: statusCounts.Overdue },
+    { key: 'all', label: t('actionPlan.all'), count: statusCounts.all },
+    { key: 'Open', label: t('actionPlan.open'), count: statusCounts.Open },
+    { key: 'In Progress', label: t('actionPlan.inProgress'), count: statusCounts['In Progress'] },
+    { key: 'Completed', label: t('actionPlan.completed'), count: statusCounts.Completed },
+    { key: 'Overdue', label: t('actionPlan.overdue'), count: statusCounts.Overdue },
   ];
 
   if (loading) {
@@ -514,7 +510,7 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
         <CardContent className="flex items-center justify-center py-12">
           <div className="text-center space-y-4">
             <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-            <p className="text-muted-foreground">Loading action plan...</p>
+            <p className="text-muted-foreground">{t('actionPlan.loading')}</p>
           </div>
         </CardContent>
       </Card>
@@ -529,32 +525,40 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
           <CardContent className="py-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Eye className="h-4 w-4" />
-              <span>Showing actions in view-only mode.</span>
+              <span>{t('actionPlan.viewOnly')}</span>
             </div>
           </CardContent>
         </Card>
       )}
 
       {/* Header bar */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3 flex-wrap">
-          <h2 className="text-lg font-semibold text-foreground">Action Plan</h2>
-          {totalCount > 0 && (
-            <div className="flex items-center gap-3">
-              <div className="flex flex-col gap-1 min-w-[220px]">
-                <span className="text-[11px] text-neutral-600">
-                  {completedCount} of {totalCount} actions complete — {progressPercent}%
-                </span>
-                <Progress value={progressPercent} className="h-2" />
-              </div>
-              {overdueCount > 0 && (
-                <Badge variant="destructive" className="text-xs flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3" />
-                  {overdueCount} overdue
-                </Badge>
-              )}
+      <div className="flex flex-wrap items-center gap-3 border-b border-border pb-4">
+        <div className="relative grid h-16 w-16 shrink-0 place-items-center">
+          <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 64 64" aria-hidden="true">
+            <circle cx="32" cy="32" r="27" fill="none" className="stroke-neutral-200" strokeWidth="5" />
+            <circle cx="32" cy="32" r="27" fill="none" className="stroke-brand-600 transition-[stroke-dashoffset] duration-300" strokeWidth="5" strokeLinecap="round" strokeDasharray={169.65} strokeDashoffset={169.65 * (1 - progressPercent / 100)} />
+          </svg>
+          <div className="z-10 grid place-items-center text-center">
+            <span className="text-sm font-semibold text-foreground leading-none">{completedCount}/{totalCount}</span>
+            <span className="text-[10px] text-muted-foreground">{progressPercent}%</span>
+          </div>
+        </div>
+        <div className="min-w-0 flex-1">
+          <h2 className="text-lg font-semibold text-foreground">{t('actionPlan.title')}</h2>
+          <p className="text-xs text-muted-foreground">{t('actionPlan.actionsComplete').replace('{completed}', String(completedCount)).replace('{total}', String(totalCount))}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { label: t('actionPlan.open'), value: openCount },
+            { label: t('actionPlan.inProgress'), value: inProgressCount },
+            { label: t('actionPlan.done'), value: completedCount },
+            { label: t('actionPlan.overdue'), value: overdueCount, overdue: true },
+          ].map((stat) => (
+            <div key={stat.label} className={cn('rounded-md border border-border bg-muted/40 px-3 py-2', stat.overdue && 'border-destructive/30 bg-destructive/5')}>
+              <span className={cn('text-[11px] text-muted-foreground', stat.overdue && 'text-destructive')}>{stat.label}</span>
+              <span className={cn('ml-2 text-sm font-semibold text-foreground', stat.overdue && 'text-destructive')}>{stat.value}</span>
             </div>
-          )}
+          ))}
         </div>
       </div>
 
@@ -563,7 +567,7 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
         <div className="relative flex-shrink-0 w-full max-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search actions..."
+            placeholder={t('actionPlan.search')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 h-9 text-sm"
@@ -591,9 +595,9 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
         <div className="flex items-center gap-2 ml-auto flex-shrink-0">
           <div className="inline-flex h-9 items-center rounded-xl bg-card border p-0.5">
             {([
-              { key: 'list', label: 'List', Icon: ListIcon },
-              { key: 'kanban', label: 'Kanban', Icon: LayoutGrid },
-              { key: 'roadmap', label: 'Roadmap', Icon: Target },
+              { key: 'list', label: t('actionPlan.list'), Icon: ListIcon },
+              { key: 'kanban', label: t('actionPlan.kanban'), Icon: LayoutGrid },
+              { key: 'roadmap', label: t('actionPlan.roadmap'), Icon: Target },
             ] as const).map(({ key, label, Icon }) => (
               <button
                 key={key}
@@ -613,7 +617,7 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
           </div>
           {canCreate && (
             <Button onClick={openCreatePanel} variant="outline" size="sm">
-              <Plus className="mr-2 h-4 w-4" /> Add Action
+              <Plus className="mr-2 h-4 w-4" /> {t('actionPlan.addAction')}
             </Button>
           )}
 
@@ -621,13 +625,13 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
           <Popover open={filterOpen} onOpenChange={setFilterOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="gap-1.5">
-                <Filter className="h-3.5 w-3.5" /> Filter
+                <Filter className="h-3.5 w-3.5" /> {t('actionPlan.filter')}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-56 p-2 space-y-1" align="end">
             <details className="group">
               <summary className="flex items-center justify-between cursor-pointer list-none px-2 py-1.5 rounded hover:bg-muted transition-colors">
-                <span className="text-xs font-medium text-foreground">Priority</span>
+                <span className="text-xs font-medium text-foreground">{t('actionPlan.priority')}</span>
                 <ChevronDown className="h-3 w-3 text-muted-foreground transition-transform group-open:rotate-180" />
               </summary>
               <div className="flex flex-wrap gap-1 px-2 py-1.5">
@@ -636,21 +640,21 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
                     className={cn("px-2 py-1 rounded text-xs border transition-colors",
                       filterPriority === p ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"
                     )}>
-                    {p === 'all' ? 'All' : p.charAt(0).toUpperCase() + p.slice(1)}
+                    {p === 'all' ? t('actionPlan.all') : t(`actionPlan.${p}`)}
                   </button>
                 ))}
               </div>
             </details>
             <details className="group">
               <summary className="flex items-center justify-between cursor-pointer list-none px-2 py-1.5 rounded hover:bg-muted transition-colors">
-                <span className="text-xs font-medium text-foreground">Department</span>
+                <span className="text-xs font-medium text-foreground">{t('actionPlan.department')}</span>
                 <ChevronDown className="h-3 w-3 text-muted-foreground transition-transform group-open:rotate-180" />
               </summary>
               <div className="flex flex-wrap gap-1 px-2 py-1.5">
                 <button onClick={() => setFilterDepartment('all')}
                   className={cn("px-2 py-1 rounded text-xs border transition-colors",
                     filterDepartment === 'all' ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"
-                  )}>All</button>
+                  )}>{t('actionPlan.all')}</button>
                 {departments.map(d => (
                   <button key={d} onClick={() => setFilterDepartment(d)}
                     className={cn("px-2 py-1 rounded text-xs border transition-colors",
@@ -661,15 +665,15 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
             </details>
             <details className="group">
               <summary className="flex items-center justify-between cursor-pointer list-none px-2 py-1.5 rounded hover:bg-muted transition-colors">
-                <span className="text-xs font-medium text-foreground">Sort</span>
+                <span className="text-xs font-medium text-foreground">{t('actionPlan.sort')}</span>
                 <ChevronDown className="h-3 w-3 text-muted-foreground transition-transform group-open:rotate-180" />
               </summary>
               <div className="flex flex-wrap gap-1 px-2 py-1.5">
                 {[
-                  { key: 'priority', label: 'Priority' },
-                  { key: 'date_asc', label: 'Due Date ↑' },
-                  { key: 'date_desc', label: 'Due Date ↓' },
-                  { key: 'triage', label: 'Triage Score' },
+                   { key: 'priority', label: t('actionPlan.priority') },
+                   { key: 'date_asc', label: `${t('actionPlan.dueDate')} ↑` },
+                   { key: 'date_desc', label: `${t('actionPlan.dueDate')} ↓` },
+                   { key: 'triage', label: t('actionPlan.triageScore') },
                 ].map(s => (
                   <button key={s.key} onClick={() => setSortBy(s.key)}
                     className={cn("px-2 py-1 rounded text-xs border transition-colors",
@@ -685,10 +689,10 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
 
       {/* Milestone Banner */}
       {showMilestoneBanner && currentMilestone && (
-        <div className="flex items-center justify-between gap-3 bg-emerald-50 border border-emerald-200 border-l-[3px] border-l-emerald-600 rounded-lg px-4 py-3 mb-3">
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/40 px-4 py-3 mb-3">
           <div className="flex items-center">
-            <CheckCircle2 size={16} className="text-emerald-600" />
-            <span className="text-[13px] text-emerald-800 font-medium ml-2.5">
+            <Info size={16} className="text-info" />
+            <span className="text-[13px] text-foreground font-medium ml-2.5">
               {currentMilestone.message}
             </span>
           </div>
@@ -699,12 +703,12 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
                 onClick={() => window.location.assign('/app/assessment')}
                 className="text-xs text-brand-700 border border-brand-700 bg-transparent px-2.5 py-1 rounded-md cursor-pointer font-medium hover:bg-brand-50 transition-colors"
               >
-                Schedule Reassessment
+                {t('actionPlan.scheduleReassessment')}
               </button>
             )}
             <button
               type="button"
-              aria-label="Dismiss milestone"
+              aria-label={t('actionPlan.dismissMilestone')}
               onClick={() => setDismissedMilestone(currentMilestone.pct)}
               className="bg-transparent border-none p-1 cursor-pointer text-neutral-500 inline-flex hover:text-neutral-700 transition-colors"
             >
@@ -727,9 +731,9 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
               </div>
               <div className="space-y-2">
                 {column.actions.length === 0 ? (
-                  <p className="text-xs text-[hsl(var(--neutral-500))] text-center py-4">No actions in this phase yet</p>
+                  <p className="text-xs text-[hsl(var(--neutral-500))] text-center py-4">{t('actionPlan.noPhaseActions')}</p>
                 ) : column.actions.map((action) => {
-                  const priorityConfig = priorityDisplay[action.priority as keyof typeof priorityDisplay] || priorityDisplay.medium;
+                  const linkedKpi = dealershipId ? linkedTrackedKpi(action) : undefined;
                   const roadmapHasDeptNotes = notes && action.department
                     ? Object.entries(notes).some(([qId, text]) =>
                         text.trim() && questionSectionMap[qId] === DEPT_LABEL_TO_SECTION_ID[action.department]
@@ -739,37 +743,33 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
                     <div
                       key={action.id}
                       onClick={() => openEditPanel(action)}
-                      className="bg-card rounded-lg p-3 cursor-pointer transition-all shadow-card hover:shadow-elevated border-l-[3px] border-l-brand-500 space-y-2"
+                      className={cn('rounded-lg border border-border border-l-[3px] bg-card p-3 cursor-pointer transition-all shadow-card hover:shadow-elevated space-y-2', getPriorityBorderClass(action.priority))}
                     >
                       <h4 className="text-body-md font-medium text-[hsl(var(--neutral-900))] line-clamp-2">
                         {cleanActionTitle(action.action_title)}
                       </h4>
-                      <div className="flex flex-wrap gap-1.5 items-center">
-                        <span className="text-xs px-2 py-0.5 rounded-full border border-[hsl(var(--neutral-200))] bg-[hsl(var(--neutral-050))] text-[hsl(var(--neutral-600))]">
-                          {action.department}
-                        </span>
-                        <span className={cn("text-xs px-2 py-0.5 rounded-full border", getPriorityPillClass(action.priority))}>
-                          {priorityConfig.label}
-                        </span>
-                        <span className="text-xs px-2 py-0.5 rounded-full border border-[hsl(var(--neutral-200))] bg-[hsl(var(--neutral-050))] text-[hsl(var(--neutral-600))]">
-                          {action.status}
-                        </span>
+                      <div className="flex flex-wrap gap-1.5 items-center text-[11px] text-muted-foreground">
+                        <span>{action.department}</span>
+                        {action.responsible_person && <><span aria-hidden="true">·</span><span>{action.responsible_person}</span></>}
+                        {action.target_completion_date && <><span aria-hidden="true">·</span><span>{new Date(action.target_completion_date).toLocaleDateString(language)}</span></>}
+                        {isOverdue(action) && <span className="inline-flex items-center gap-1 text-destructive"><Clock className="h-3 w-3" />{t('actionPlan.overdue')}</span>}
                         {action.is_quick_win && (
                           <Badge variant="secondary" className="text-[10px]">
-                            Quick win
+                            {t('actionPlan.quickWin')}
                           </Badge>
                         )}
                         {action.source_visit_id && (
-                          <Badge variant="outline" className="text-[10px] text-violet-700 border-violet-200 bg-violet-50">
-                            From coaching visit
+                          <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                            {t('actionPlan.fromCoachingVisit')}
                           </Badge>
                         )}
                         {roadmapHasDeptNotes && (
-                          <span title="Field notes available for this department">
-                            <StickyNote className="h-3 w-3 text-amber-500" />
+                          <span title={t('actionPlan.fieldNotes')}>
+                            <StickyNote className="h-3 w-3 text-warning" />
                           </span>
                         )}
                       </div>
+                      <LinkedKpiChip kpiKey={linkedKpi} history={linkedKpi ? kpiTimelines[linkedKpi] : undefined} />
                     </div>
                   );
                 })}
@@ -782,24 +782,24 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
           actions={filteredActions}
           onStatusChange={handleKanbanStatusChange}
           onActionClick={openEditPanel}
+          dealershipId={dealershipId}
+          kpiTimelines={kpiTimelines}
         />
       ) : (
         <>
           {filteredActions.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
               <Target className="h-12 w-12 mx-auto mb-4 opacity-20" />
-              <p className="font-medium">No actions found</p>
-              <p className="text-sm mt-1">Generate actions from your assessment or add them manually.</p>
+              <p className="font-medium">{t('actionPlan.noActionsShort')}</p>
+              <p className="text-sm mt-1">{t('actionPlan.noActionsHelp')}</p>
             </div>
           ) : (
             <div className="space-y-2">
               {filteredActions.map((action) => {
-                const priorityConfig = priorityDisplay[action.priority as keyof typeof priorityDisplay] || priorityDisplay.medium;
                 const displayTitle = cleanActionTitle(action.action_title);
                 const displayDesc = cleanDescription(action.action_description);
                 const isCompleted = action.status === 'Completed';
-                const dueBadge = getDueBadge(action);
-                const topicHint = displayDesc.trim().split(/\s+/)[0] || '';
+                const linkedKpi = dealershipId ? linkedTrackedKpi(action) : undefined;
 
                 const hasDeptNotes = notes && action.department
                   ? Object.entries(notes).some(([qId, text]) =>
@@ -813,7 +813,8 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
                     id={`action-${action.id}`}
                     onClick={() => openEditPanel(action)}
                     className={cn(
-                      "group bg-white rounded-xl border border-neutral-200 border-l-4 border-l-brand-500 shadow-sm hover:shadow-md transition-shadow cursor-pointer",
+                      'group rounded-lg border border-border border-l-[3px] bg-card shadow-card hover:shadow-elevated transition-shadow cursor-pointer',
+                      getPriorityBorderClass(action.priority),
                       isCompleted && "opacity-70",
                       focusActionId === action.id && "ring-2 ring-primary ring-offset-2"
                     )}
@@ -822,11 +823,6 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
                       <div className="flex items-start justify-between gap-3">
                         <h3 className="text-sm font-semibold text-neutral-900 line-clamp-2 flex-1">{displayTitle}</h3>
                         <div className="flex items-center gap-1.5 flex-shrink-0">
-                          {dueBadge && (
-                            <span className={cn("text-[11px] font-medium px-2 py-0.5 rounded-md whitespace-nowrap", dueBadge.style)}>
-                              {dueBadge.label}
-                            </span>
-                          )}
                           {canEdit && (
                             <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                               onClick={(e) => { e.stopPropagation(); openEditPanel(action); }}>
@@ -838,38 +834,27 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
                       {displayDesc && (
                         <p className="text-xs text-neutral-500 leading-relaxed line-clamp-2 mt-1">{displayDesc}</p>
                       )}
-                      <div className="flex flex-wrap gap-1.5 mt-2 items-center">
-                        <span className="text-[11px] px-2 py-0.5 rounded-full border border-neutral-200 bg-neutral-50 text-neutral-600">
-                          {action.department}
-                        </span>
-                        {action.responsible_person && (
-                          <span className="text-[11px] px-2 py-0.5 rounded-full border border-neutral-200 bg-neutral-50 text-neutral-600">
-                            {action.responsible_person}
-                          </span>
-                        )}
-                        {topicHint && (
-                          <span className="text-[11px] px-2 py-0.5 rounded-full border border-neutral-200 bg-neutral-50 text-neutral-600">
-                            {topicHint}
-                          </span>
-                        )}
-                        <span className={cn("text-[11px] px-2 py-0.5 rounded-full border", getPriorityPillClass(action.priority))}>
-                          {priorityConfig.label}
-                        </span>
+                      <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+                        <span>{action.department}</span>
+                        {action.responsible_person && <><span aria-hidden="true">·</span><span>{action.responsible_person}</span></>}
+                        {action.target_completion_date && <><span aria-hidden="true">·</span><span>{new Date(action.target_completion_date).toLocaleDateString(language)}</span></>}
+                        {isOverdue(action) && <span className="inline-flex items-center gap-1 text-destructive"><Clock className="h-3 w-3" />{t('actionPlan.overdue')}</span>}
                         {action.is_quick_win && (
                           <Badge variant="secondary" className="text-[10px]">
-                            Quick win
+                            {t('actionPlan.quickWin')}
                           </Badge>
                         )}
                         {action.source_visit_id && (
-                          <Badge variant="outline" className="text-[10px] text-violet-700 border-violet-200 bg-violet-50">
-                            From coaching visit
+                          <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                            {t('actionPlan.fromCoachingVisit')}
                           </Badge>
                         )}
                         {hasDeptNotes && (
-                          <span title="Field notes available for this department">
-                            <StickyNote className="h-3 w-3 text-amber-500" />
+                          <span title={t('actionPlan.fieldNotes')}>
+                            <StickyNote className="h-3 w-3 text-warning" />
                           </span>
                         )}
+                        <LinkedKpiChip kpiKey={linkedKpi} history={linkedKpi ? kpiTimelines[linkedKpi] : undefined} />
                       </div>
                     </div>
                   </div>
@@ -883,7 +868,7 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
               onClick={() => setActionPage(p => p + 1)}
               className="w-full mt-4"
             >
-              Load More Actions
+              {t('actionPlan.loadMore')}
             </Button>
           )}
         </>

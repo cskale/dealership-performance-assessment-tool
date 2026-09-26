@@ -514,7 +514,7 @@ export default function Results() {
 
           <TabsContent value="action-plan" className="space-y-6 animate-fade-in">
             <ErrorBoundary fallbackTitle={language === 'de' ? 'Maßnahmenplan nicht verfügbar' : 'Action Plan unavailable'}>
-              <ActionPlan assessmentId={resultsData.assessmentId} notes={notes} focusActionId={searchParams.get('action')} />
+              <ActionPlan assessmentId={resultsData.assessmentId} dealershipId={resultsData.dealershipId} notes={notes} focusActionId={searchParams.get('action')} />
             </ErrorBoundary>
           </TabsContent>
 
