@@ -4,6 +4,20 @@ Quick-reference log of incremental enhancements, UI fixes, and small quality-of-
 
 ---
 
+## 2026-09-26 — Results redesign + KPI check-ins (Task 10 cleanup)
+
+Lovable rebuilt the Results page around a 2-tab layout (Diagnosis / Action Plan) with a hero band and per-department rows, replacing DepartmentHeatmap, CausalChainDiagram, ScoreDecomposition, ExecutiveSummary and MaturityScoring. Monthly KPI check-ins (between assessments) shipped alongside. This entry covers the post-Lovable cleanup and verification pass.
+
+| # | Enhancement | Details | Commit |
+|---|-------------|---------|--------|
+| 1 | Dead component removal | Deleted `PerformanceDataPanel.tsx` and `KpiInsightPanel.tsx` (zero importers after the Results rebuild). `RadarBenchmarkChart.tsx` is also unused but is Lovable-owned — left in place, flagged for Lovable to remove. | `chore: remove dead results components` |
+| 2 | Data-layer integrity check | Verified Lovable made no changes to Claude-owned data-layer files (`questionnaire.ts`, `signalEngine.ts`, `useKpiTimeline.ts`, `kpiForecast.ts`, `kpiTimeline.ts`, `useKpiValues.ts`, `usePlaygroundPrefill.ts`, `playgroundCalculators.ts`, `playgroundKpiMappings.ts`) since the data-layer merge — diff was empty. | — |
+| 3 | Resumed KPI check-in reminder | The monthly `kpi-checkin-reminder` cron job (1st of month, 07:00) had been paused; resumed via `cron.alter_job(..., active := true)`. | `fix(db): resume KPI check-in reminder` |
+| 4 | Notification bell routing | Clicking a `kpi_checkin_reminder` notification fell through to the generic "action plan" branch. Now routes to `/app/results` (latest assessment, Diagnosis tab). | `fix: route KPI reminder notifications to Results` |
+| 5 | Verification | `npx vitest run` (44 files / 376 tests) pass, `npm run lint` 0 errors (117 pre-existing warnings), `npm run build` succeeds. Signed-in QA click-through (dealer/coach/OEM) against local dev build: no page errors or failed requests; dashboards render cleanly. The QA script does not currently visit `/app/results` for any role, so the 2-tab Results layout wasn't screenshotted end-to-end this pass. | — |
+
+---
+
 ## 2026-09-24/25 — Security audit and fixes
 
 Full security audit (Cloudflare `security-audit` skill, standard profile) of the repo and the live Supabase policies/functions. 16 leads verified independently: 10 confirmed, 3 unresolved (fixed anyway), 3 rejected. No evidence any hole was used (data checked before fixing). All fixes live in DB, edge functions and Vercel. Report: `~/security-audit-skill/dealership-performance-assessment-tool/run-1/REPORT.md`.
