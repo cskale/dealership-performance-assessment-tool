@@ -399,7 +399,6 @@ const de: Record<string, string> = {
   'nav.oemDashboard': 'OEM-Dashboard',
   'nav.coachDashboard': 'Coach-Dashboard',
   'nav.newAssessment': 'Neue Bewertung',
-  'nav.history': 'Verlauf',
   'nav.actionPlans': 'Maßnahmenpläne',
   'nav.knowledge': 'Wissen',
   'nav.playground': 'Playground',
