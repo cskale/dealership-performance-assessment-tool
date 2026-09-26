@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -134,6 +134,7 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
   const [conflictAction, setConflictAction] = useState<ActionRecord | null>(null);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
   const [dismissedMilestone, setDismissedMilestone] = useState<number | null>(null);
+  const lastFocusedId = useRef<string | null>(null);
 
   const canEdit = canPerformAction('update');
   const canCreate = canPerformAction('create');
@@ -182,9 +183,10 @@ export function ActionPlan({ assessmentId, notes, focusActionId }: { assessmentI
   useEffect(() => { loadActions(); }, [loadActions]);
 
   useEffect(() => {
-    if (loading || !focusActionId) return;
+    if (loading || !focusActionId || lastFocusedId.current === focusActionId) return;
     const action = actions.find((candidate) => candidate.id === focusActionId);
     if (!action) return;
+    lastFocusedId.current = focusActionId;
     setStatusFilter('all');
     setFilterPriority('all');
     setFilterDepartment('all');

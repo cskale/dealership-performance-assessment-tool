@@ -454,6 +454,7 @@ const de: Record<string, string> = {
   'kpi.enteredByCoach': 'Vom Coach erfasst',
   'kpi.saveAsCheckin': 'Als Erfassung für {month} speichern',
   'kpi.saved': 'KPI gespeichert',
+  'kpi.invalidRange': 'Geben Sie eine Zahl zwischen {min} und {max} ein.',
 };
 
 export default de;
