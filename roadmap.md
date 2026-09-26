@@ -13,3 +13,4 @@
 - [x] Verify Prompt 3 with typecheck, lint, tests, and the automatic production build.
 - [ ] Verify authenticated desktop and mobile Results layouts (blocked: this external Supabase preview cannot provide an automated session).
 - [x] Implement Prompt 4 Action Plan visual restyle, with KPI chips suppressed when dealership context is unavailable.
+- [x] Implement Prompt 5 Playground check-in controls for the five approved KPI values.

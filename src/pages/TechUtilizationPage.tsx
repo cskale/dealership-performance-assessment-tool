@@ -12,6 +12,7 @@ import { formatEuro } from '@/utils/euroFormatter';
 import { PlaygroundCalculatorShell } from '@/components/playground/PlaygroundCalculatorShell';
 import { ScaleGauge } from '@/components/playground/ScaleGauge';
 import { AnimatedNumber } from '@/components/playground/AnimatedNumber';
+import { KpiCheckinControl } from '@/components/playground/KpiCheckinControl';
 
 const DEFAULTS: TechUtilizationInputs = {
   numberOfTechnicians: 5,
@@ -55,10 +56,12 @@ function utilizationColor(rate: number | null): string {
 
 export default function TechUtilizationPage() {
   const [inputs, setInputs] = useState<TechUtilizationInputs>(DEFAULTS);
+  const [emptyFields, setEmptyFields] = useState<Record<string, boolean>>({});
 
   const outputs = useMemo(() => calculateTechUtilization(inputs), [inputs]);
 
   const handleChange = (id: FieldId, raw: string) => {
+    setEmptyFields((prev) => ({ ...prev, [id]: raw === '' }));
     const num = raw === '' ? 0 : Number(raw);
     if (Number.isNaN(num)) return;
     setInputs((prev) => ({ ...prev, [id]: num }));
@@ -90,6 +93,13 @@ export default function TechUtilizationPage() {
         value={inputs[field.id]}
         onChange={(e) => handleChange(field.id, e.target.value)}
       />
+      {field.id === 'effectiveLabourRate' && (
+        <KpiCheckinControl
+          kpiKey="svc_effective_labour_rate"
+          value={inputs.effectiveLabourRate}
+          empty={emptyFields.effectiveLabourRate}
+        />
+      )}
     </div>
   );
 
@@ -126,15 +136,21 @@ export default function TechUtilizationPage() {
 
       {/* Utilization gauge */}
       <div className="mb-5">
-        <div className="flex items-baseline justify-between mb-2">
+        <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <span className="text-xs text-muted-foreground">Utilization Rate</span>
-          <AnimatedNumber value={formatPct(outputs.utilizationPct)} className={`text-2xl font-bold numeric ${
-            outputs.utilizationPct !== null && outputs.utilizationPct >= 85
-              ? 'text-green-600'
-              : outputs.utilizationPct !== null && outputs.utilizationPct >= 70
-                ? 'text-amber-600'
-                : 'text-red-600'
-          }`} />
+          <div className="flex min-w-0 flex-col items-start gap-2 sm:items-end">
+            <AnimatedNumber value={formatPct(outputs.utilizationPct)} className={`text-2xl font-bold numeric ${
+              outputs.utilizationPct !== null && outputs.utilizationPct >= 85
+                ? 'text-green-600'
+                : outputs.utilizationPct !== null && outputs.utilizationPct >= 70
+                  ? 'text-amber-600'
+                  : 'text-red-600'
+            }`} />
+            <KpiCheckinControl
+              kpiKey="svc_workshop_loading_pct"
+              value={outputs.utilizationPct}
+            />
+          </div>
         </div>
         <ScaleGauge
           value={outputs.utilizationPct}

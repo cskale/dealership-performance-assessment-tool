@@ -13,6 +13,7 @@ import { useActiveRole } from '@/hooks/useActiveRole';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatEuro } from '@/utils/euroFormatter';
 import { PlaygroundCalculatorShell } from '@/components/playground/PlaygroundCalculatorShell';
+import { KpiCheckinControl } from '@/components/playground/KpiCheckinControl';
 
 const CALCULATOR_ID = 'reverse-sales-funnel';
 
@@ -74,6 +75,7 @@ export default function ReverseSalesFunnelPage() {
   const [inputs, setInputs] = useState<ReverseSalesFunnelInputs>(DEFAULTS);
   const [dismissedChips, setDismissedChips] = useState<Record<string, boolean>>({});
   const [hydratedFromPrefill, setHydratedFromPrefill] = useState(false);
+  const [emptyFields, setEmptyFields] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (hydratedFromPrefill || prefillLoading) return;
@@ -95,6 +97,7 @@ export default function ReverseSalesFunnelPage() {
   const outputs = useMemo(() => calculateReverseSalesFunnel(inputs), [inputs]);
 
   const handleChange = (id: FieldId, raw: string) => {
+    setEmptyFields((prev) => ({ ...prev, [id]: raw === '' }));
     const num = raw === '' ? 0 : Number(raw);
     if (Number.isNaN(num)) return;
     setInputs((prev) => ({ ...prev, [id]: num }));
@@ -139,6 +142,13 @@ export default function ReverseSalesFunnelPage() {
           value={inputs[field.id]}
           onChange={(e) => handleChange(field.id, e.target.value)}
         />
+        {field.id === 'avgGrossProfitPerUnit' && (
+          <KpiCheckinControl
+            kpiKey="nvs_gross_profit_per_unit"
+            value={inputs.avgGrossProfitPerUnit}
+            empty={emptyFields.avgGrossProfitPerUnit}
+          />
+        )}
         {showChip && (
           <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary px-2.5 py-1 text-xs">
             <span>{chipText}</span>

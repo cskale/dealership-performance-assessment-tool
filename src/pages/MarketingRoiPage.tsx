@@ -13,6 +13,7 @@ import { useActiveRole } from '@/hooks/useActiveRole';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatEuro } from '@/utils/euroFormatter';
 import { PlaygroundCalculatorShell } from '@/components/playground/PlaygroundCalculatorShell';
+import { KpiCheckinControl } from '@/components/playground/KpiCheckinControl';
 
 const CALCULATOR_ID = 'marketing-roi';
 
@@ -51,6 +52,7 @@ export default function MarketingRoiPage() {
   const [shared, setShared] = useState<SharedInputs>(DEFAULT_SHARED);
   const [channels, setChannels] = useState<MarketingChannel[]>(DEFAULT_CHANNELS);
   const [hydratedFromPrefill, setHydratedFromPrefill] = useState(false);
+  const [avgGrossProfitEmpty, setAvgGrossProfitEmpty] = useState(false);
 
   useEffect(() => {
     if (hydratedFromPrefill || prefillLoading) return;
@@ -72,6 +74,7 @@ export default function MarketingRoiPage() {
   const outputs = useMemo(() => calculateMarketingRoi(inputs), [inputs]);
 
   const handleSharedChange = (field: keyof SharedInputs, raw: string) => {
+    if (field === 'avgGrossProfitPerUnit') setAvgGrossProfitEmpty(raw === '');
     const num = raw === '' ? 0 : Number(raw);
     if (Number.isNaN(num)) return;
     setShared((prev) => ({ ...prev, [field]: num }));
@@ -120,6 +123,11 @@ export default function MarketingRoiPage() {
             step={50}
             value={shared.avgGrossProfitPerUnit}
             onChange={(e) => handleSharedChange('avgGrossProfitPerUnit', e.target.value)}
+          />
+          <KpiCheckinControl
+            kpiKey="nvs_gross_profit_per_unit"
+            value={shared.avgGrossProfitPerUnit}
+            empty={avgGrossProfitEmpty}
           />
           {prefillChipText && (
             <p className="inline-flex items-center rounded-full bg-primary/10 text-primary px-2.5 py-1 text-xs">

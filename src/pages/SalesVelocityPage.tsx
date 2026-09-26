@@ -10,6 +10,7 @@ import {
 } from '@/lib/playgroundCalculators';
 import { formatEuro, formatNumber } from '@/utils/euroFormatter';
 import { PlaygroundCalculatorShell } from '@/components/playground/PlaygroundCalculatorShell';
+import { KpiCheckinControl } from '@/components/playground/KpiCheckinControl';
 
 const DEFAULT_INPUTS: SalesVelocityInputs = {
   monthlyLeads: 220,
@@ -37,9 +38,11 @@ const STAGE_FIELDS: { key: keyof SalesVelocityInputs; label: string }[] = [
 
 export default function SalesVelocityPage() {
   const [inputs, setInputs] = useState<SalesVelocityInputs>(DEFAULT_INPUTS);
+  const [emptyFields, setEmptyFields] = useState<Record<string, boolean>>({});
   const outputs = useMemo(() => calculateSalesVelocity(inputs), [inputs]);
 
   const handleChange = (field: keyof SalesVelocityInputs, raw: string) => {
+    setEmptyFields((prev) => ({ ...prev, [field]: raw === '' }));
     const num = raw === '' ? 0 : Number(raw);
     if (Number.isNaN(num)) return;
     setInputs((prev) => ({ ...prev, [field]: num }));
@@ -76,6 +79,13 @@ export default function SalesVelocityPage() {
               value={inputs[f.key]}
               onChange={(e) => handleChange(f.key, e.target.value)}
             />
+            {f.key === 'avgGrossProfitPerUnit' && (
+              <KpiCheckinControl
+                kpiKey="nvs_gross_profit_per_unit"
+                value={inputs.avgGrossProfitPerUnit}
+                empty={emptyFields.avgGrossProfitPerUnit}
+              />
+            )}
           </div>
         ))}
       </div>

@@ -11,6 +11,7 @@ import {
 import { formatEuro } from '@/utils/euroFormatter';
 import { PlaygroundCalculatorShell } from '@/components/playground/PlaygroundCalculatorShell';
 import { AnimatedNumber } from '@/components/playground/AnimatedNumber';
+import { KpiCheckinControl } from '@/components/playground/KpiCheckinControl';
 
 const DEFAULTS: VehicleStockTurnInputs = {
   averageInventoryCount: 60,
@@ -140,6 +141,12 @@ export default function VehicleStockTurnPage() {
         <p className="text-[10px] text-muted-foreground mt-1">
           Target: &lt; 45 days
         </p>
+        <div className="mt-3 flex justify-center px-3 text-left">
+          <KpiCheckinControl
+            kpiKey="uvs_days_to_sale"
+            value={outputs.avgDaysInStock}
+          />
+        </div>
       </div>
 
       {/* Stat rows */}
