@@ -1306,6 +1306,8 @@ export type Database = {
           kpi_key: string
           period_month: string
           updated_at: string
+          updated_by: string | null
+          updated_by_role: string | null
           value: number
         }
         Insert: {
@@ -1317,6 +1319,8 @@ export type Database = {
           kpi_key: string
           period_month: string
           updated_at?: string
+          updated_by?: string | null
+          updated_by_role?: string | null
           value: number
         }
         Update: {
@@ -1328,6 +1332,8 @@ export type Database = {
           kpi_key?: string
           period_month?: string
           updated_at?: string
+          updated_by?: string | null
+          updated_by_role?: string | null
           value?: number
         }
         Relationships: [
