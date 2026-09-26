@@ -741,9 +741,9 @@ export function ActionPlan({ assessmentId, dealershipId, notes, focusActionId }:
               </div>
               <div className="space-y-2">
                 {column.actions.length === 0 ? (
-                  <p className="text-xs text-[hsl(var(--neutral-500))] text-center py-4">No actions in this phase yet</p>
+                  <p className="text-xs text-[hsl(var(--neutral-500))] text-center py-4">{t('actionPlan.noPhaseActions')}</p>
                 ) : column.actions.map((action) => {
-                  const priorityConfig = priorityDisplay[action.priority as keyof typeof priorityDisplay] || priorityDisplay.medium;
+                  const linkedKpi = dealershipId ? linkedTrackedKpi(action) : undefined;
                   const roadmapHasDeptNotes = notes && action.department
                     ? Object.entries(notes).some(([qId, text]) =>
                         text.trim() && questionSectionMap[qId] === DEPT_LABEL_TO_SECTION_ID[action.department]
@@ -753,37 +753,33 @@ export function ActionPlan({ assessmentId, dealershipId, notes, focusActionId }:
                     <div
                       key={action.id}
                       onClick={() => openEditPanel(action)}
-                      className="bg-card rounded-lg p-3 cursor-pointer transition-all shadow-card hover:shadow-elevated border-l-[3px] border-l-brand-500 space-y-2"
+                      className={cn('rounded-lg border border-border border-l-[3px] bg-card p-3 cursor-pointer transition-all shadow-card hover:shadow-elevated space-y-2', getPriorityBorderClass(action.priority))}
                     >
                       <h4 className="text-body-md font-medium text-[hsl(var(--neutral-900))] line-clamp-2">
                         {cleanActionTitle(action.action_title)}
                       </h4>
-                      <div className="flex flex-wrap gap-1.5 items-center">
-                        <span className="text-xs px-2 py-0.5 rounded-full border border-[hsl(var(--neutral-200))] bg-[hsl(var(--neutral-050))] text-[hsl(var(--neutral-600))]">
-                          {action.department}
-                        </span>
-                        <span className={cn("text-xs px-2 py-0.5 rounded-full border", getPriorityPillClass(action.priority))}>
-                          {priorityConfig.label}
-                        </span>
-                        <span className="text-xs px-2 py-0.5 rounded-full border border-[hsl(var(--neutral-200))] bg-[hsl(var(--neutral-050))] text-[hsl(var(--neutral-600))]">
-                          {action.status}
-                        </span>
+                      <div className="flex flex-wrap gap-1.5 items-center text-[11px] text-muted-foreground">
+                        <span>{action.department}</span>
+                        {action.responsible_person && <><span aria-hidden="true">·</span><span>{action.responsible_person}</span></>}
+                        {action.target_completion_date && <><span aria-hidden="true">·</span><span>{new Date(action.target_completion_date).toLocaleDateString(language)}</span></>}
+                        {isOverdue(action) && <span className="inline-flex items-center gap-1 text-destructive"><Clock className="h-3 w-3" />{t('actionPlan.overdue')}</span>}
                         {action.is_quick_win && (
                           <Badge variant="secondary" className="text-[10px]">
-                            Quick win
+                            {t('actionPlan.quickWin')}
                           </Badge>
                         )}
                         {action.source_visit_id && (
-                          <Badge variant="outline" className="text-[10px] text-violet-700 border-violet-200 bg-violet-50">
-                            From coaching visit
+                          <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                            {t('actionPlan.fromCoachingVisit')}
                           </Badge>
                         )}
                         {roadmapHasDeptNotes && (
-                          <span title="Field notes available for this department">
-                            <StickyNote className="h-3 w-3 text-amber-500" />
+                          <span title={t('actionPlan.fieldNotes')}>
+                            <StickyNote className="h-3 w-3 text-warning" />
                           </span>
                         )}
                       </div>
+                      <LinkedKpiChip kpiKey={linkedKpi} history={linkedKpi ? kpiTimelines[linkedKpi] : undefined} />
                     </div>
                   );
                 })}
@@ -796,6 +792,8 @@ export function ActionPlan({ assessmentId, dealershipId, notes, focusActionId }:
           actions={filteredActions}
           onStatusChange={handleKanbanStatusChange}
           onActionClick={openEditPanel}
+          dealershipId={dealershipId}
+          kpiTimelines={kpiTimelines}
         />
       ) : (
         <>
@@ -808,12 +806,10 @@ export function ActionPlan({ assessmentId, dealershipId, notes, focusActionId }:
           ) : (
             <div className="space-y-2">
               {filteredActions.map((action) => {
-                const priorityConfig = priorityDisplay[action.priority as keyof typeof priorityDisplay] || priorityDisplay.medium;
                 const displayTitle = cleanActionTitle(action.action_title);
                 const displayDesc = cleanDescription(action.action_description);
                 const isCompleted = action.status === 'Completed';
-                const dueBadge = getDueBadge(action);
-                const topicHint = displayDesc.trim().split(/\s+/)[0] || '';
+                const linkedKpi = dealershipId ? linkedTrackedKpi(action) : undefined;
 
                 const hasDeptNotes = notes && action.department
                   ? Object.entries(notes).some(([qId, text]) =>
@@ -827,7 +823,8 @@ export function ActionPlan({ assessmentId, dealershipId, notes, focusActionId }:
                     id={`action-${action.id}`}
                     onClick={() => openEditPanel(action)}
                     className={cn(
-                      "group bg-white rounded-xl border border-neutral-200 border-l-4 border-l-brand-500 shadow-sm hover:shadow-md transition-shadow cursor-pointer",
+                      'group rounded-lg border border-border border-l-[3px] bg-card shadow-card hover:shadow-elevated transition-shadow cursor-pointer',
+                      getPriorityBorderClass(action.priority),
                       isCompleted && "opacity-70",
                       focusActionId === action.id && "ring-2 ring-primary ring-offset-2"
                     )}
@@ -836,11 +833,6 @@ export function ActionPlan({ assessmentId, dealershipId, notes, focusActionId }:
                       <div className="flex items-start justify-between gap-3">
                         <h3 className="text-sm font-semibold text-neutral-900 line-clamp-2 flex-1">{displayTitle}</h3>
                         <div className="flex items-center gap-1.5 flex-shrink-0">
-                          {dueBadge && (
-                            <span className={cn("text-[11px] font-medium px-2 py-0.5 rounded-md whitespace-nowrap", dueBadge.style)}>
-                              {dueBadge.label}
-                            </span>
-                          )}
                           {canEdit && (
                             <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                               onClick={(e) => { e.stopPropagation(); openEditPanel(action); }}>
@@ -852,38 +844,27 @@ export function ActionPlan({ assessmentId, dealershipId, notes, focusActionId }:
                       {displayDesc && (
                         <p className="text-xs text-neutral-500 leading-relaxed line-clamp-2 mt-1">{displayDesc}</p>
                       )}
-                      <div className="flex flex-wrap gap-1.5 mt-2 items-center">
-                        <span className="text-[11px] px-2 py-0.5 rounded-full border border-neutral-200 bg-neutral-50 text-neutral-600">
-                          {action.department}
-                        </span>
-                        {action.responsible_person && (
-                          <span className="text-[11px] px-2 py-0.5 rounded-full border border-neutral-200 bg-neutral-50 text-neutral-600">
-                            {action.responsible_person}
-                          </span>
-                        )}
-                        {topicHint && (
-                          <span className="text-[11px] px-2 py-0.5 rounded-full border border-neutral-200 bg-neutral-50 text-neutral-600">
-                            {topicHint}
-                          </span>
-                        )}
-                        <span className={cn("text-[11px] px-2 py-0.5 rounded-full border", getPriorityPillClass(action.priority))}>
-                          {priorityConfig.label}
-                        </span>
+                      <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+                        <span>{action.department}</span>
+                        {action.responsible_person && <><span aria-hidden="true">·</span><span>{action.responsible_person}</span></>}
+                        {action.target_completion_date && <><span aria-hidden="true">·</span><span>{new Date(action.target_completion_date).toLocaleDateString(language)}</span></>}
+                        {isOverdue(action) && <span className="inline-flex items-center gap-1 text-destructive"><Clock className="h-3 w-3" />{t('actionPlan.overdue')}</span>}
                         {action.is_quick_win && (
                           <Badge variant="secondary" className="text-[10px]">
-                            Quick win
+                            {t('actionPlan.quickWin')}
                           </Badge>
                         )}
                         {action.source_visit_id && (
-                          <Badge variant="outline" className="text-[10px] text-violet-700 border-violet-200 bg-violet-50">
-                            From coaching visit
+                          <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                            {t('actionPlan.fromCoachingVisit')}
                           </Badge>
                         )}
                         {hasDeptNotes && (
-                          <span title="Field notes available for this department">
-                            <StickyNote className="h-3 w-3 text-amber-500" />
+                          <span title={t('actionPlan.fieldNotes')}>
+                            <StickyNote className="h-3 w-3 text-warning" />
                           </span>
                         )}
+                        <LinkedKpiChip kpiKey={linkedKpi} history={linkedKpi ? kpiTimelines[linkedKpi] : undefined} />
                       </div>
                     </div>
                   </div>
@@ -897,7 +878,7 @@ export function ActionPlan({ assessmentId, dealershipId, notes, focusActionId }:
               onClick={() => setActionPage(p => p + 1)}
               className="w-full mt-4"
             >
-              Load More Actions
+              {t('actionPlan.loadMore')}
             </Button>
           )}
         </>

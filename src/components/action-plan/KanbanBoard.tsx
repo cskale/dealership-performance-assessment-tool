@@ -3,11 +3,18 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { cleanActionTitle } from '@/lib/actionRationaleMap';
 import type { ActionRecord } from '../ActionPlan';
+import type { TimelinePoint } from '@/lib/kpiTimeline';
+import { isTrackedKpi, trackedKpisFor, type DepartmentKey } from '@/data/trackedKpis';
+import { LinkedKpiChip } from './LinkedKpiChip';
+import { Clock } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface KanbanBoardProps {
   actions: ActionRecord[];
   onStatusChange: (actionId: string, newStatus: 'Open' | 'In Progress' | 'Completed') => Promise<void>;
   onActionClick: (action: ActionRecord) => void;
+  dealershipId?: string | null;
+  kpiTimelines?: Record<string, TimelinePoint[]>;
 }
 
 type ColumnStatus = 'Open' | 'In Progress' | 'Completed';
@@ -18,14 +25,30 @@ const COLUMNS: { key: ColumnStatus; label: string }[] = [
   { key: 'Completed', label: 'Done' },
 ];
 
-const PRIORITY_DOT: Record<ActionRecord['priority'], string> = {
-  critical: '#378ADD',
-  high: '#378ADD',
-  medium: '#378ADD',
-  low: '#378ADD',
+const PRIORITY_BORDER: Record<ActionRecord['priority'], string> = {
+  critical: 'border-l-destructive',
+  high: 'border-l-warning',
+  medium: 'border-l-info',
+  low: 'border-l-neutral-400',
 };
 
-export function KanbanBoard({ actions, onStatusChange, onActionClick }: KanbanBoardProps) {
+const DEPARTMENT_KEYS: Record<string, DepartmentKey> = {
+  'New Vehicle Sales': 'nvs', 'Used Vehicle Sales': 'uvs', 'Service Performance': 'svc',
+  'Parts & Inventory': 'prt', 'Financial Operations': 'fin',
+};
+
+function linkedTrackedKpi(action: ActionRecord): string | undefined {
+  const department = DEPARTMENT_KEYS[action.department];
+  if (!department) return undefined;
+  return action.kpis_linked_to?.find((key) => isTrackedKpi(key) && trackedKpisFor(department).includes(key));
+}
+
+function isOverdue(action: ActionRecord): boolean {
+  return Boolean(action.target_completion_date && action.status !== 'Completed' && new Date(action.target_completion_date) < new Date(new Date().toDateString()));
+}
+
+export function KanbanBoard({ actions, onStatusChange, onActionClick, dealershipId, kpiTimelines = {} }: KanbanBoardProps) {
+  const { t, language } = useLanguage();
   const draggingIdRef = useRef<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [hoverColumn, setHoverColumn] = useState<ColumnStatus | null>(null);
@@ -78,19 +101,16 @@ export function KanbanBoard({ actions, onStatusChange, onActionClick }: KanbanBo
             onDragOver={(e) => handleDragOver(e, col.key)}
             onDragLeave={() => setHoverColumn(prev => (prev === col.key ? null : prev))}
             onDrop={(e) => handleDrop(e, col.key)}
-            className="rounded-lg p-3 transition-colors"
-            style={{ backgroundColor: isHover ? '#e8f5ee' : '#f8f7f3' }}
+            className={cn('rounded-lg border border-border bg-muted/40 p-3 transition-colors', isHover && 'border-brand-300 bg-brand-50')}
           >
             <div className="flex items-center justify-between mb-3 px-1">
               <span
-                className="uppercase"
-                style={{ fontSize: '12px', color: '#96948e', letterSpacing: '0.04em', fontWeight: 600 }}
+                className="text-xs font-semibold uppercase text-muted-foreground"
               >
                 {col.label}
               </span>
               <span
-                className="rounded-full px-2 py-0.5 bg-white"
-                style={{ fontSize: '11px', color: '#5c5a54', border: '1px solid #e2e0d8' }}
+                className="rounded-full border border-border bg-card px-2 py-0.5 text-[11px] text-muted-foreground"
               >
                 {colActions.length}
               </span>
@@ -99,14 +119,14 @@ export function KanbanBoard({ actions, onStatusChange, onActionClick }: KanbanBo
             <div className="space-y-2">
               {colActions.length === 0 && (
                 <div
-                  className="text-center py-6"
-                  style={{ fontSize: '11px', color: '#96948e' }}
+                  className="py-6 text-center text-[11px] text-muted-foreground"
                 >
-                  No actions
+                  {t('actionPlan.noActionsShort')}
                 </div>
               )}
               {colActions.map(action => {
                 const isDragging = draggingId === action.id;
+                const kpiKey = dealershipId ? linkedTrackedKpi(action) : undefined;
                 return (
                   <div
                     key={action.id}
@@ -115,54 +135,24 @@ export function KanbanBoard({ actions, onStatusChange, onActionClick }: KanbanBo
                     onDragEnd={handleDragEnd}
                     onClick={() => onActionClick(action)}
                     className={cn(
-                      'bg-white cursor-pointer transition-all hover:shadow-md',
+                      'cursor-pointer rounded-lg border border-border border-l-[3px] bg-card p-3 shadow-card transition-all hover:shadow-elevated',
+                      PRIORITY_BORDER[action.priority],
                       action.status === 'Completed' && 'opacity-80',
+                      isDragging && 'opacity-40',
                     )}
-                    style={{
-                      border: '1px solid #e2e0d8',
-                      borderRadius: 8,
-                      padding: '10px 12px',
-                      marginBottom: 8,
-                      opacity: isDragging ? 0.4 : undefined,
-                    }}
                   >
                     <div className="flex items-start gap-2">
-                      <span
-                        className="mt-1.5 flex-shrink-0 rounded-full"
-                        style={{
-                          width: 8,
-                          height: 8,
-                          backgroundColor: PRIORITY_DOT[action.priority] ?? PRIORITY_DOT.medium,
-                        }}
-                      />
-                      <h4
-                        className="flex-1 line-clamp-2"
-                        style={{ fontSize: '13px', fontWeight: 500, color: '#1a1a1a' }}
-                      >
+                      <h4 className="flex-1 line-clamp-2 text-[13px] font-medium text-foreground">
                         {cleanActionTitle(action.action_title)}
                       </h4>
                     </div>
-                    <div className="flex items-center justify-between mt-2 gap-2">
-                      <span
-                        className="rounded-full px-2 py-0.5"
-                        style={{
-                          fontSize: '10px',
-                          color: '#5c5a54',
-                          backgroundColor: '#f8f7f3',
-                          border: '1px solid #e2e0d8',
-                        }}
-                      >
-                        {action.department}
-                      </span>
-                      {action.responsible_person && (
-                        <span
-                          className="truncate text-right"
-                          style={{ fontSize: '10px', color: '#96948e' }}
-                        >
-                          {action.responsible_person}
-                        </span>
-                      )}
+                    <div className="mt-2 flex flex-wrap items-center gap-1 text-[10px] text-muted-foreground">
+                      <span>{action.department}</span>
+                      {action.responsible_person && <><span aria-hidden="true">·</span><span>{action.responsible_person}</span></>}
+                      {action.target_completion_date && <><span aria-hidden="true">·</span><span>{new Date(action.target_completion_date).toLocaleDateString(language)}</span></>}
+                      {isOverdue(action) && <span className="inline-flex items-center gap-1 text-destructive"><Clock className="h-3 w-3" />{t('actionPlan.overdue')}</span>}
                     </div>
+                    <div className="mt-2"><LinkedKpiChip kpiKey={kpiKey} history={kpiKey ? kpiTimelines[kpiKey] : undefined} /></div>
                   </div>
                 );
               })}
