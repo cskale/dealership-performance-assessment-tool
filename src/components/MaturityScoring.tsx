@@ -81,8 +81,9 @@ export function MaturityScoring({ scores, answers, benchmarks, notes }: Maturity
       ]
     },
     {
+      // DESIGN.md §2.3: "Performing" band (70–84), blue-600.
       level: 3,
-      name: language === 'de' ? 'Fortgeschritten' : 'Advanced',
+      name: language === 'de' ? 'Leistungsstark' : 'Performing',
       icon: <CheckCircle className="h-5 w-5 text-blue-600" />,
       color: 'bg-blue-50 text-blue-800 border-blue-200',
       description: language === 'de' ? 'Konsistente Ausführung mit datengesteuertem Management' : 'Consistent execution with data-driven management',
@@ -94,8 +95,9 @@ export function MaturityScoring({ scores, answers, benchmarks, notes }: Maturity
       ]
     },
     {
+      // DESIGN.md §2.3: "Advanced" band (85–100), green-600.
       level: 4,
-      name: language === 'de' ? 'Führend' : 'Leading',
+      name: language === 'de' ? 'Fortgeschritten' : 'Advanced',
       icon: <Award className="h-5 w-5 text-success" />,
       color: 'bg-success/10 text-success border-success/20',
       description: language === 'de' ? 'Marktdifferenzierende Leistung und kontinuierliche Verbesserung' : 'Market-differentiating performance and continuous improvement',
@@ -115,6 +117,10 @@ export function MaturityScoring({ scores, answers, benchmarks, notes }: Maturity
       const conf = confidenceData[dept] || { standardDeviation: 0, consistencyScore: 100, confidence: 'high' as const, reviewRecommended: false };
       const enhanced = calculateEnhancedMaturity(score, subCats, conf);
 
+      // calculateEnhancedMaturity (scoringEngine.ts) is an intentionally separate,
+      // sub-category-aware model with its own thresholds and names
+      // ('Foundational' | 'Developing' | 'Advanced' | 'Leading'). Its 'Advanced' and
+      // 'Leading' outputs correspond to this card set's "Performing" and "Advanced" tiers.
       const levelMap: Record<string, MaturityLevel> = {
         'Foundational': maturityLevels[0],
         'Developing':   maturityLevels[1],
@@ -140,8 +146,8 @@ export function MaturityScoring({ scores, answers, benchmarks, notes }: Maturity
     const levelLabelMap: Record<string, string> = {
       foundational: 'Foundational',
       developing:   'Developing',
+      performing:   'Performing',
       advanced:     'Advanced',
-      leading:      'Leading',
     };
     const label = levelLabelMap[key] || 'Foundational';
     const reason = language === 'de'
@@ -154,8 +160,8 @@ export function MaturityScoring({ scores, answers, benchmarks, notes }: Maturity
     const m: Record<string, MaturityLevel> = {
       'Foundational': maturityLevels[0],
       'Developing':   maturityLevels[1],
-      'Advanced':     maturityLevels[2],
-      'Leading':      maturityLevels[3],
+      'Performing':   maturityLevels[2],
+      'Advanced':     maturityLevels[3],
     };
     return m[overallMaturity.level] || maturityLevels[0];
   }, [overallMaturity, maturityLevels]);
