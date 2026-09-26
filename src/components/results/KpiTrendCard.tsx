@@ -24,6 +24,7 @@ import type { DataQuestion } from '@/data/questionnaire';
 import type { TimelinePoint } from '@/lib/kpiTimeline';
 import { forecastKpi } from '@/lib/kpiForecast';
 import type { KpiBenchmark } from '@/lib/kpiBenchmarks';
+import { KPI_LABELS } from '@/lib/kpiDefinitions';
 import { cn } from '@/lib/utils';
 
 interface KpiTrendCardProps {
@@ -96,6 +97,8 @@ export function KpiTrendCard({ question, history, benchmark, canLog, saving, onS
   const gap = current == null ? null : current - benchmark.target;
   const twoPointDelta = history.length === 2 ? history[1].value - history[0].value : null;
   const title = question.translations?.[language]?.text ?? question.text;
+  const kpiLabel = KPI_LABELS[question.kpiKey];
+  const shortTitle = kpiLabel ? (kpiLabel[language as 'en' | 'de'] ?? kpiLabel.en) : title;
   const maxMonth = currentMonthValue();
 
   const chartData = useMemo(() => {
@@ -140,7 +143,7 @@ export function KpiTrendCard({ question, history, benchmark, canLog, saving, onS
     <article className="min-w-0 rounded-md border border-border bg-card p-4 shadow-sm">
       <div className="flex min-w-0 items-start justify-between gap-3">
         <div className="min-w-0">
-          <h4 className="line-clamp-2 text-body-sm font-semibold text-foreground">{title}</h4>
+          <h4 className="line-clamp-2 text-body-sm font-semibold text-foreground" title={title}>{shortTitle}</h4>
           <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <span className="font-mono text-xl font-semibold tabular-nums text-foreground">
               {current == null ? '—' : formatValue(current, benchmark.unit, locale)}
@@ -217,8 +220,8 @@ export function KpiTrendCard({ question, history, benchmark, canLog, saving, onS
           </ResponsiveContainer>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={[{ label: t('kpi.benchmark'), value: benchmark.target }, { label: title, value: current ?? 0 }]} margin={{ top: 12, right: 10, bottom: 0, left: 10 }}>
-              <XAxis dataKey="label" hide />
+            <BarChart data={[{ label: t('kpi.benchmark'), value: benchmark.target }, { label: t('kpi.yourValue'), value: current ?? 0 }]} margin={{ top: 12, right: 10, bottom: 16, left: 10 }}>
+              <XAxis dataKey="label" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis hide domain={[0, 'dataMax']} />
               <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                 <Cell fill="hsl(var(--neutral-200))" />
@@ -229,6 +232,12 @@ export function KpiTrendCard({ question, history, benchmark, canLog, saving, onS
           </ResponsiveContainer>
         )}
       </div>
+      {!forecast && history.length !== 2 && (
+        <div className="mt-1 flex items-center justify-center gap-4 text-caption text-muted-foreground">
+          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[hsl(var(--neutral-200))]" aria-hidden="true" />{t('kpi.benchmark')}</span>
+          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[hsl(var(--brand-600))]" aria-hidden="true" />{t('kpi.yourValue')}</span>
+        </div>
+      )}
 
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-caption text-muted-foreground">
         {forecast ? (

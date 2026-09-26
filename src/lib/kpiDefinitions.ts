@@ -4602,6 +4602,18 @@ export const KPI_LABELS: Record<string, { en: string; de: string }> = {
   cashFlowDays: { en: 'Cash Flow Days', de: 'Cashflow-Tage' },
   roiMarketing: { en: 'Marketing ROI', de: 'Marketing-ROI' },
   operationalEfficiency: { en: 'Operational Efficiency', de: 'Betriebseffizienz' },
+
+  // Tracked KPI check-in set (src/data/trackedKpis.ts) — short titles for KpiTrendCard
+  nvs_lead_response_1h_pct: { en: 'Lead Response (1h)', de: 'Lead-Reaktion (1 Std.)' },
+  nvs_gross_profit_per_unit: { en: 'Gross Profit / Unit', de: 'Rohertrag / Einheit' },
+  uvs_days_to_sale: { en: 'Days to Sale', de: 'Tage bis Verkauf' },
+  uvs_gross_profit_per_unit: { en: 'Gross Profit / Unit', de: 'Rohertrag / Einheit' },
+  svc_workshop_loading_pct: { en: 'Workshop Loading', de: 'Werkstattauslastung' },
+  svc_effective_labour_rate: { en: 'Effective Labour Rate', de: 'Effektiver Stundensatz' },
+  prt_inventory_turns: { en: 'Inventory Turns', de: 'Lagerumschlag' },
+  prt_gross_margin_pct: { en: 'Gross Margin', de: 'Bruttomarge' },
+  fin_net_profit_pct: { en: 'Net Profit', de: 'Nettogewinn' },
+  fin_aftersales_gp_share_pct: { en: 'Aftersales GP Share', de: 'Aftersales-Rohertragsanteil' },
 };
 
 /**
