@@ -1,41 +1,61 @@
-# Prompt 2 plan: Results hero band
+# Prompt 3 implementation plan
 
-## Scope and files
+## Scope
 
-- Update `src/pages/Results.tsx` to replace the Diagnosis placeholder with one responsive three-zone hero card.
-- Make the smallest targeted update to `src/components/ActionPlan.tsx` needed for a hero link to focus/open the selected action; preserve all existing loading, filtering, editing, Kanban, and status-update behavior.
-- Preserve the restored `prefer-const` suppression in `src/integrations/supabase/previewAuthStorage.ts`. The current workspace includes `6f0905d`, but its working copy has dropped that comment, so restore the exact comment before verification.
-- Do not edit the protected files listed in the handoff, translations, migrations, department rows, or KPI cards.
+Implement only the requested Action Plan focus safeguard and Prompt 3 department/KPI experience. Prompt 4 and later work remain untouched.
 
-## Hero data and behavior
+## Files to change
 
-### 1. Score ring
-- Reuse the previous 120px SVG ring pattern with an 8px `neutral-200` track, tonal status arc, boundary ticks, count-up animation, and one-time terminus glow.
-- Drive the ring only from `overallScore` for the currently selected assessment.
-- Respect reduced-motion settings and keep status colour confined to the ring’s score encoding.
+- `src/components/ActionPlan.tsx`
+  - Add a ref holding the last successfully focused action ID.
+  - Let the existing focus effect reset filters, select List view, and scroll only when a new `focusActionId` is first found.
+  - Do not mark an ID handled until its action exists, preserving pagination/loading behavior.
 
-### 2. Maturity ladder and narrative
-- Derive the current maturity through `getMaturityLevel`, keeping the helper call and all related memos above early returns and after `overallScore`.
-- Render four ordered steps, with only the active label/marker using the maturity status colour; tracks, dividers, and inactive steps use neutral tokens.
-- Recreate the existing real narrative pipeline from the selected assessment: questionnaire weights + `generateSignals(answers, weights)` + `detectSystemicPatterns(...)` feed `buildExecutiveNarrative(...)`.
-- Show a two-line collapsed preview, then expand the full generated situation, diagnosis, and priority inline using `t('results.hero.readNarrative')`; no navigation and no fabricated summary copy.
+- `src/pages/Results.tsx`
+  - Add `useKpiTimelines(resultsData?.dealershipId)` and `useSaveKpiCheckin(resultsData?.dealershipId)` with all hooks above early returns.
+  - Derive confidence, cross-validation findings, and ceiling insights with ordered `useMemo`s after their inputs.
+  - Load DB-overridden KPI benchmarks with static defaults as the immediate fallback.
+  - Render the new department rows below the existing hero and pass the viewed assessment’s dealership ID, permissions, timelines, findings, and insights.
 
-### 3. Biggest lever and coverage
-- Load module benchmarks with the existing `fetchModuleBenchmarks` fallback pattern and use the displayed assessment’s `scores`.
-- For every assessed department, map its section ID with `sectionToModuleCode`, calculate `score - benchmark.meanScore`, filter to negative gaps, and choose the most negative value. If no department is below benchmark, do not invent a lever.
-- Extend the existing assessment-action read to include action ID/title/department/status/priority. For the lever department, select the highest-priority non-completed action using `critical → high → medium → low`, with stable database order as the tie-breaker.
-- Link that real action to `?tab=action-plan&action=<id>`. `ActionPlan` will consume only this optional parameter after its existing action load, reveal/open that matching action, and otherwise behave exactly as before.
-- Build coverage from `Object.keys(scores).length`, `Object.keys(answers).length`, and `TOTAL_QUESTIONS`, replacing the three placeholders in `t('results.hero.coverage')`.
-- Keep selected-assessment identity throughout: scores, answers, actions, benchmarks, coverage, and narrative all derive from `resultsData`, so dealer, coach, and OEM views use the dealership result currently on screen.
+- `src/components/results/DepartmentResultsRows.tsx` (new)
+  - Render all five departments in the fixed NVS → UVS → Service → Parts → Financial order.
+  - Assessed rows show the neutral 0–100 scale, score dot, benchmark tick, shaded gap, canonical maturity chip, and consistency-based confidence percentage.
+  - Unassessed rows remain muted and show `results.dept.notAssessed` without charts.
+  - Expanded rows show only that department’s tracked KPI cards, questionnaire cross-validation findings, and ceiling insights.
 
-## Verified translation constraint
+- `src/components/results/KpiTrendCard.tsx` (new)
+  - Show localized KPI label, current value, benchmark, and directional gap with European number/currency formatting.
+  - Use Recharts for all three history states: benchmark bar for 0–1 points, sparkline and month-over-month delta for 2 points, and actual plus forecast line/band for 3+ valid points.
+  - Use brand-600 for actuals, neutral-200 for the benchmark, and dashed brand-400 with a shaded band for projections.
+  - Distinguish coach-entered points and include source/date details in the tooltip.
+  - Add the inline monthly check-in popover, hidden for OEMs and viewer members; submit through the existing mutation and show the existing localized success toast.
 
-The existing dictionaries contain `results.hero.*` and `maturity.foundational/developing/advanced/leading`, but no `maturity.performing` key. To honor “existing keys only,” the ladder will use the repository’s translated four-level names returned by the mandated helper: Foundational, Developing, Advanced, Leading. No hard-coded or newly added user-facing translation text will be introduced.
+- `src/components/results/CeilingInsightsPanel.tsx`
+  - Keep its insight logic unchanged, but align its presentation to brand/neutral tokens for use inside expanded departments.
+  - It will only be mounted for non-empty department insight slices, so the old empty placeholder will not appear.
 
-## Validation
+No protected hook, calculation, questionnaire, KPI data, Supabase type, or migration file will be edited. If the latest main changes these integration points during synchronization, the implementation will adapt to the synced contracts rather than modifying them.
 
-- Confirm the hero updates when selecting another assessment.
-- Confirm narrative expansion stays inline.
-- Confirm a lever action link opens the matching non-completed action in Action Plan and a missing eligible action does not produce a false link.
-- Check desktop and 390px layouts for stacking and overflow.
-- Run focused type checking, lint, production build, and relevant tests; confirm the `prefer-const` suppression remains present.
+## Data mapping and calculations
+
+- Department scores and assessed state: the selected assessment’s `resultsData.scores`.
+- Department labels: translated questionnaire section labels.
+- Department benchmark tick/gap: existing module benchmarks keyed through `sectionToModuleCode`.
+- Maturity: `getMaturityLevel` and the four existing `maturity.*` keys only.
+- Confidence: `calculateAllConfidenceMetrics(...).consistencyScore` for each questionnaire section.
+- KPI set: `trackedKpisFor(dept)`; history: `useKpiTimelines(resultsData.dealershipId)`.
+- KPI benchmarks: `loadBenchmarks()` merged over `STATIC_BENCHMARKS`; forecasts: `forecastKpi`.
+- Questionnaire cross-validation: `evaluateCrossValidations(resultsData.answers)`, grouped by the finding’s question-prefix department.
+- Ceiling insights: `generateCeilingInsights(resultsData.answers, resultsData.scores)`, grouped by question-prefix department.
+- Money-impact copy will be omitted because Prompt 3 does not provide all calculator inputs needed to apply those formulas safely.
+
+## Current-state removal handling
+
+The current Diagnosis tab contains the Prompt 2 hero but does not mount the former department heatmap, department performance cards, standalone KPI tab, maturity tab, or old executive sections. Prompt 3 will add the replacement rows below the hero without reintroducing those removed sections. Legacy component files will only be deleted if a post-sync repository-wide import check proves they have no remaining consumers.
+
+## Verification
+
+- Confirm latest `main` is synchronized first and preserve the `prefer-const` safeguard in `previewAuthStorage.ts`.
+- Add focused tests for the Action Plan one-time focus behavior and KPI chart-tier/permission helpers where practical.
+- Verify all five departments, unassessed rows, expansion, forecast fallback, coach markers/tooltips, and check-in visibility at desktop and 390px width.
+- Run TypeScript validation, full tests, lint with 0 errors, production build, and inspect the latest preview build log.
