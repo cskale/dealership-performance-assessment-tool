@@ -56,10 +56,12 @@ function utilizationColor(rate: number | null): string {
 
 export default function TechUtilizationPage() {
   const [inputs, setInputs] = useState<TechUtilizationInputs>(DEFAULTS);
+  const [emptyFields, setEmptyFields] = useState<Record<string, boolean>>({});
 
   const outputs = useMemo(() => calculateTechUtilization(inputs), [inputs]);
 
   const handleChange = (id: FieldId, raw: string) => {
+    setEmptyFields((prev) => ({ ...prev, [id]: raw === '' }));
     const num = raw === '' ? 0 : Number(raw);
     if (Number.isNaN(num)) return;
     setInputs((prev) => ({ ...prev, [id]: num }));
@@ -95,6 +97,7 @@ export default function TechUtilizationPage() {
         <KpiCheckinControl
           kpiKey="svc_effective_labour_rate"
           value={inputs.effectiveLabourRate}
+          empty={emptyFields.effectiveLabourRate}
         />
       )}
     </div>

@@ -13,6 +13,7 @@ import { useSaveKpiCheckin } from '@/hooks/useKpiTimeline';
 interface KpiCheckinControlProps {
   kpiKey: string;
   value: number | null;
+  empty?: boolean;
 }
 
 const LOCALES: Record<Language, string> = {
@@ -47,7 +48,7 @@ function formatMonth(month: string, locale: string): string {
   });
 }
 
-export function KpiCheckinControl({ kpiKey, value }: KpiCheckinControlProps) {
+export function KpiCheckinControl({ kpiKey, value, empty = false }: KpiCheckinControlProps) {
   const { t, language } = useLanguage();
   const { actorType, membershipRole, dealerId } = useActiveRole();
   const saveCheckin = useSaveKpiCheckin(dealerId);
@@ -71,7 +72,7 @@ export function KpiCheckinControl({ kpiKey, value }: KpiCheckinControlProps) {
 
   const min = question.validRange?.min ?? 0;
   const max = question.validRange?.max ?? Number.MAX_SAFE_INTEGER;
-  const rangeError = value !== null && !validation.success
+  const rangeError = !empty && value !== null && !validation.success
     ? t('kpi.invalidRange').replace('{min}', String(min)).replace('{max}', String(max))
     : '';
 
@@ -109,7 +110,7 @@ export function KpiCheckinControl({ kpiKey, value }: KpiCheckinControlProps) {
           variant="outline"
           size="sm"
           className="min-w-0 gap-1.5 text-xs"
-          disabled={!validation.success || !month || month > maxMonth || saveCheckin.isPending}
+          disabled={empty || !validation.success || !month || month > maxMonth || saveCheckin.isPending}
           onClick={save}
         >
           <CalendarPlus className="h-3.5 w-3.5" aria-hidden="true" />

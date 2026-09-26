@@ -75,6 +75,7 @@ export default function ReverseSalesFunnelPage() {
   const [inputs, setInputs] = useState<ReverseSalesFunnelInputs>(DEFAULTS);
   const [dismissedChips, setDismissedChips] = useState<Record<string, boolean>>({});
   const [hydratedFromPrefill, setHydratedFromPrefill] = useState(false);
+  const [emptyFields, setEmptyFields] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (hydratedFromPrefill || prefillLoading) return;
@@ -96,6 +97,7 @@ export default function ReverseSalesFunnelPage() {
   const outputs = useMemo(() => calculateReverseSalesFunnel(inputs), [inputs]);
 
   const handleChange = (id: FieldId, raw: string) => {
+    setEmptyFields((prev) => ({ ...prev, [id]: raw === '' }));
     const num = raw === '' ? 0 : Number(raw);
     if (Number.isNaN(num)) return;
     setInputs((prev) => ({ ...prev, [id]: num }));
@@ -144,6 +146,7 @@ export default function ReverseSalesFunnelPage() {
           <KpiCheckinControl
             kpiKey="nvs_gross_profit_per_unit"
             value={inputs.avgGrossProfitPerUnit}
+            empty={emptyFields.avgGrossProfitPerUnit}
           />
         )}
         {showChip && (
