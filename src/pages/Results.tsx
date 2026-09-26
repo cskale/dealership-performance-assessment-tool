@@ -192,7 +192,7 @@ export default function Results() {
   });
 
   useEffect(() => {
-    if (actorType !== 'oem' || !(resultsData as any)?.dealershipId) return;
+    if ((actorType !== 'oem' && actorType !== 'coach') || !(resultsData as any)?.dealershipId) return;
     const dealershipId = (resultsData as any).dealershipId;
     supabase
       .from('dealerships')
