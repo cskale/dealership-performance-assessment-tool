@@ -27,9 +27,9 @@ describe('deptScoreColour', () => {
     expect(deptScoreColour(70)).toBe('text-[#1D7AFC]');
     expect(deptScoreColour(84)).toBe('text-[#1D7AFC]');
   });
-  it('returns brand blue for developing score (46–69)', () => {
-    expect(deptScoreColour(46)).toBe('text-[#1D7AFC]');
-    expect(deptScoreColour(69)).toBe('text-[#1D7AFC]');
+  it('returns amber for developing score (46–69)', () => {
+    expect(deptScoreColour(46)).toBe('text-[#d97706]');
+    expect(deptScoreColour(69)).toBe('text-[#d97706]');
   });
   it('returns red for foundational score (≤45)', () => {
     expect(deptScoreColour(45)).toBe('text-[#ef4444]');
@@ -46,9 +46,9 @@ describe('deptMaturityColour', () => {
     expect(deptMaturityColour(70)).toBe('text-[#1D7AFC]');
     expect(deptMaturityColour(84)).toBe('text-[#1D7AFC]');
   });
-  it('returns brand blue for developing score (46–69)', () => {
-    expect(deptMaturityColour(46)).toBe('text-[#1D7AFC]');
-    expect(deptMaturityColour(69)).toBe('text-[#1D7AFC]');
+  it('returns amber for developing score (46–69)', () => {
+    expect(deptMaturityColour(46)).toBe('text-[#d97706]');
+    expect(deptMaturityColour(69)).toBe('text-[#d97706]');
   });
   it('returns red for foundational score (≤45)', () => {
     expect(deptMaturityColour(45)).toBe('text-[#ef4444]');

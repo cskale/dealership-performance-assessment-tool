@@ -23,16 +23,15 @@ export const DEPT_ORDER = [
 // ─── Score colour class ─────────────────────────────────────────────────────
 
 /**
- * Returns a Tailwind text colour class based on maturity level.
- * Advanced (≥85) → green. Performing + Developing (≥46) → brand blue. Foundational (≤45) → red.
- * No yellow/amber here — per this component's own design rule (DESIGN.md §2.3 specifies
- * amber-600 for Developing; this function intentionally deviates — see maturity-fix-report.md).
+ * Returns a Tailwind text colour class based on maturity level, per DESIGN.md §2.3:
+ * Advanced (≥85) → green-600. Performing (70–84) → blue-600. Developing (46–69) → amber-600.
+ * Foundational (≤45) → red-600.
  */
 export function deptScoreColour(score: number): string {
   const level = getMaturityLevel(score);
   if (level === 'advanced')     return 'text-[#22c55e]';
   if (level === 'performing')   return 'text-[#1D7AFC]';
-  if (level === 'developing')   return 'text-[#1D7AFC]';
+  if (level === 'developing')   return 'text-[#d97706]';
   return 'text-[#ef4444]'; // foundational
 }
 
