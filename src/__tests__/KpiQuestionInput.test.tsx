@@ -155,6 +155,14 @@ describe('KpiQuestionInput', () => {
     expect(input.value).toBe('');
   });
 
+  it('formats a large prefilled number with locale grouping in the placeholder', () => {
+    renderInput(currencyQuestion, { value: 12345.6, skipped: false, prefilled: true });
+
+    // en-GB Intl.NumberFormat: "12,345.6" — not the raw "12345.6" string.
+    const input = screen.getByPlaceholderText(/Last value: 12,345\.6 €/) as HTMLInputElement;
+    expect(input.value).toBe('');
+  });
+
   it('renders a non-prefilled value normally, unchanged from existing behaviour', () => {
     renderInput(percentageQuestion, { value: 67, skipped: false });
 

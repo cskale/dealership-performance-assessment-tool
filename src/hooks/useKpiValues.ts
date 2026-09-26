@@ -16,6 +16,14 @@ export interface AssessmentKpiValue {
   updated_at: string;
 }
 
+/** Strips the joined `assessments` field off a snapshot row, keeping just the KPI value columns. */
+function omitAssessments(
+  row: AssessmentKpiValue & { assessments: { created_at: string } },
+): AssessmentKpiValue {
+  const { assessments: _assessments, ...rest } = row;
+  return rest;
+}
+
 /**
  * All KPI value rows recorded for a single assessment.
  */
@@ -83,7 +91,7 @@ export async function fetchLatestKpiValue(
 
   if (c && c.period_month.slice(0, 7) >= snapMonth) {
     const base = s
-      ? (({ assessments, ...r }) => r)(s)
+      ? omitAssessments(s)
       : ({ kpi_key: kpiKey, dealership_id: dealershipId } as AssessmentKpiValue);
     return {
       row: { ...base, value: Number(c.value) } as AssessmentKpiValue,
@@ -93,8 +101,7 @@ export async function fetchLatestKpiValue(
   }
 
   if (!s) return null;
-  const { assessments, ...row } = s;
-  return { row: row as AssessmentKpiValue, assessmentCreatedAt: assessments.created_at, source: 'assessment' };
+  return { row: omitAssessments(s), assessmentCreatedAt: s.assessments.created_at, source: 'assessment' };
 }
 
 /**

@@ -205,6 +205,30 @@ describe('calculateAllConfidenceMetrics', () => {
       expect(conf.confidence).toBe('high'); // uniform = perfect consistency
     }
   });
+
+  it('gives different departments different consistency scores when answer spread differs', () => {
+    // Uniform data (as produced by clicking the same rating repeatedly) is the one
+    // case where 100% consistency is correct — it is not a bug. Real, mixed answers
+    // must not all collapse to 100.
+    const answers = uniformAnswers(3);
+    const nvsSection = questionnaire.sections.find((s) => s.id === 'new-vehicle-sales')!;
+    const uvsSection = questionnaire.sections.find((s) => s.id === 'used-vehicle-sales')!;
+
+    // NVS: alternate high/low ratings → high spread, low consistency
+    nvsSection.questions.forEach((q, i) => {
+      answers[q.id] = i % 2 === 0 ? 1 : 5;
+    });
+    // UVS: everything a solid 4 → low spread, high consistency
+    uvsSection.questions.forEach((q) => {
+      answers[q.id] = 4;
+    });
+
+    const result = calculateAllConfidenceMetrics(questionnaire.sections, answers);
+
+    expect(result['new-vehicle-sales'].consistencyScore).toBeLessThan(50);
+    expect(result['used-vehicle-sales'].consistencyScore).toBe(100);
+    expect(result['new-vehicle-sales'].consistencyScore).not.toBe(result['used-vehicle-sales'].consistencyScore);
+  });
 });
 
 // ─── D. Cross-Department Correlation ──────────────────────────────────

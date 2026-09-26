@@ -3,8 +3,12 @@ import { ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DataQuestion } from "@/data/questionnaire";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, type Language } from "@/contexts/LanguageContext";
 import type { KpiAnswerState } from "@/lib/kpiAnswerPersistence";
+
+const LOCALES: Record<Language, string> = {
+  en: 'en-GB', de: 'de-DE', fr: 'fr-FR', es: 'es-ES', it: 'it-IT',
+};
 
 interface KpiQuestionInputProps {
   question: DataQuestion;
@@ -20,16 +24,20 @@ export function getUnitLabel(question: DataQuestion): string {
 }
 
 export function KpiQuestionInput({ question, value, onChange }: KpiQuestionInputProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [rawInput, setRawInput] = useState<string>(
     value.value !== null && !value.prefilled ? String(value.value) : ""
   );
 
   const unitLabel = getUnitLabel(question);
+  const locale = LOCALES[language];
 
   const placeholder =
     value.prefilled && value.value !== null
-      ? t("kpi.lastValueHint").replace("{value}", `${value.value}${unitLabel ? ` ${unitLabel}` : ""}`)
+      ? t("kpi.lastValueHint").replace(
+          "{value}",
+          `${new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(value.value)}${unitLabel ? ` ${unitLabel}` : ""}`,
+        )
       : t("assessment.kpiInputPlaceholder");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

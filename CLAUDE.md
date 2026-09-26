@@ -81,7 +81,7 @@ Base components come from shadcn/ui (`src/components/ui/`) — don't edit these 
 
 ## Testing
 
-**Signed-in click-through (all roles):** `python scripts/qa_click_through.py [base_url] [out_dir]` signs in as the QA dealer, coach and OEM accounts (credentials in git-ignored `.env.test`), screenshots each role's key screens, and reports page errors and failed HTTP requests. Read-only. Defaults to production; pass `http://localhost:8080` to test a local `npm run dev`.
+**Signed-in click-through (all roles):** `python scripts/qa_click_through.py [base_url] [out_dir]` signs in as the QA dealer, coach and OEM accounts (credentials in git-ignored `.env.test`), screenshots each role's key screens (incl. Results; set optional `QA_RESULTS_ID` in `.env.test` for coach/OEM Results), and reports page errors and failed HTTP requests. Read-only. Defaults to production; pass `http://localhost:8080` to test a local `npm run dev`.
 
 Tests live in `src/__tests__/`. The test setup is in `src/test-setup.ts`. Coverage thresholds are 80% for branches, functions, lines, and statements. Vitest uses jsdom environment.
 
@@ -245,7 +245,7 @@ OEM admins manage their network at `/app/oem-settings` (Network Settings in side
 - **Vercel MCP**: use for deployments and environment variable management
 - **Supabase types**: regenerate via `mcp__claude_ai_Supabase__generate_typescript_types` (project_id: `xrypgosuyfdkkqafftae`) after any schema change — write output to `src/integrations/supabase/types.ts`
 - **actor_type gating**: always use `actorType` from `useActiveRole()`, not `uxRole` — `uxRole` is null when `active_organization_id` is null (valid for coaches)
-- **Claude Code owned files** (Lovable must not edit): `src/data/questionnaire.ts`, `src/data/signalTypes.ts`, `src/data/signalMappings.ts`, `src/lib/signalEngine.ts`, `src/components/assessment/KpiQuestionInput.tsx`, `src/components/results/PerformanceDataPanel.tsx`, `src/lib/kpiCrossValidation.ts`, `src/hooks/useKpiValues.ts`, `src/lib/playgroundCalculators.ts`, `src/data/playgroundKpiMappings.ts`, `src/hooks/usePlaygroundPrefill.ts`, `src/hooks/useCoachVisitLoop.ts` — any changes require TypeScript validation and signal mapping consistency check
+- **Claude Code owned files** (Lovable must not edit): `src/data/questionnaire.ts`, `src/data/signalTypes.ts`, `src/data/signalMappings.ts`, `src/lib/signalEngine.ts`, `src/components/assessment/KpiQuestionInput.tsx`, `src/lib/kpiCrossValidation.ts`, `src/hooks/useKpiValues.ts`, `src/lib/playgroundCalculators.ts`, `src/data/playgroundKpiMappings.ts`, `src/hooks/usePlaygroundPrefill.ts`, `src/hooks/useCoachVisitLoop.ts` — any changes require TypeScript validation and signal mapping consistency check
 - **Lovable owned files** (Claude Code must not edit): `src/components/results/RadarBenchmarkChart.tsx` (radar chart with benchmark ring), `src/components/action-plan/KanbanBoard.tsx` (kanban drag-and-drop board), `src/components/ui/FreshnessBadge.tsx` (assessment freshness pill), `src/lib/assessmentFreshness.ts` (freshness utility, no scoring logic)
 
 ## Known Pitfalls

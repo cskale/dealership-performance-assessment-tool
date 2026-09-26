@@ -46,6 +46,16 @@ describe('forecastKpi', () => {
     const f = forecastKpi(pts('2026-01-01', [0, 0, 0, 10, 20, 30, 40, 50, 60]), lead)!;
     expect(f.basedOnMonths).toBe(6);
   });
+  it('still forecasts when an old >3-month gap falls outside the last-6 window', () => {
+    // A stale point far in the past has a large gap to the recent run, but
+    // slice(-6) drops it before the gap check runs — the recent 6 are
+    // contiguous, so this must still forecast.
+    const stale = { month: '2025-01-01', value: 10 };
+    const recent = pts('2026-01-01', [20, 22, 24, 26, 28, 30]); // 6 consecutive months
+    const f = forecastKpi([stale, ...recent], lead);
+    expect(f).not.toBeNull();
+    expect(f!.basedOnMonths).toBe(6);
+  });
   it('non-percentage values are clamped at 0', () => {
     const f = forecastKpi(pts('2026-01-01', [3, 2, 1]), STATIC_BENCHMARKS.prt_inventory_turns)!;
     for (const p of f.points) expect(p.low).toBeGreaterThanOrEqual(0);
