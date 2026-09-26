@@ -109,6 +109,8 @@ export function NotificationBell({ collapsed = false, headerMode = false }: Noti
     } else if (n.type === 'visit_recap') {
       navigate('/app/dashboard#coaching-visits');
       scrollToCoachingVisits();
+    } else if (n.type === 'kpi_checkin_reminder') {
+      navigate('/app/results');
     } else {
       // digest, milestone, stale_action — all land on action plan
       navigate('/app/actions');
