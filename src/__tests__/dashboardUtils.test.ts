@@ -19,39 +19,39 @@ import {
 } from '@/lib/dashboardUtils';
 
 describe('deptScoreColour', () => {
-  it('returns green for leading score (≥85)', () => {
+  it('returns green for advanced score (≥85)', () => {
     expect(deptScoreColour(85)).toBe('text-[#22c55e]');
     expect(deptScoreColour(100)).toBe('text-[#22c55e]');
   });
-  it('returns brand blue for advanced score (65–84)', () => {
-    expect(deptScoreColour(65)).toBe('text-[#1D7AFC]');
+  it('returns brand blue for performing score (70–84)', () => {
+    expect(deptScoreColour(70)).toBe('text-[#1D7AFC]');
     expect(deptScoreColour(84)).toBe('text-[#1D7AFC]');
   });
-  it('returns brand blue for developing score (45–64)', () => {
-    expect(deptScoreColour(45)).toBe('text-[#1D7AFC]');
-    expect(deptScoreColour(64)).toBe('text-[#1D7AFC]');
+  it('returns brand blue for developing score (46–69)', () => {
+    expect(deptScoreColour(46)).toBe('text-[#1D7AFC]');
+    expect(deptScoreColour(69)).toBe('text-[#1D7AFC]');
   });
-  it('returns red for foundational score (<45)', () => {
-    expect(deptScoreColour(44)).toBe('text-[#ef4444]');
+  it('returns red for foundational score (≤45)', () => {
+    expect(deptScoreColour(45)).toBe('text-[#ef4444]');
     expect(deptScoreColour(0)).toBe('text-[#ef4444]');
   });
 });
 
 describe('deptMaturityColour', () => {
-  it('returns green for leading score (≥85)', () => {
+  it('returns green for advanced score (≥85)', () => {
     expect(deptMaturityColour(85)).toBe('text-[#22c55e]');
     expect(deptMaturityColour(100)).toBe('text-[#22c55e]');
   });
-  it('returns brand blue for advanced score (65–84)', () => {
-    expect(deptMaturityColour(65)).toBe('text-[#1D7AFC]');
+  it('returns brand blue for performing score (70–84)', () => {
+    expect(deptMaturityColour(70)).toBe('text-[#1D7AFC]');
     expect(deptMaturityColour(84)).toBe('text-[#1D7AFC]');
   });
-  it('returns brand blue for developing score (45–64)', () => {
-    expect(deptMaturityColour(45)).toBe('text-[#1D7AFC]');
-    expect(deptMaturityColour(64)).toBe('text-[#1D7AFC]');
+  it('returns brand blue for developing score (46–69)', () => {
+    expect(deptMaturityColour(46)).toBe('text-[#1D7AFC]');
+    expect(deptMaturityColour(69)).toBe('text-[#1D7AFC]');
   });
-  it('returns red for foundational score (<45)', () => {
-    expect(deptMaturityColour(44)).toBe('text-[#ef4444]');
+  it('returns red for foundational score (≤45)', () => {
+    expect(deptMaturityColour(45)).toBe('text-[#ef4444]');
     expect(deptMaturityColour(0)).toBe('text-[#ef4444]');
   });
 });
@@ -198,8 +198,8 @@ describe('focusDepartment', () => {
 });
 
 describe('criticalGapCount', () => {
-  it('counts depts below 45', () => {
-    expect(criticalGapCount({ a: 44, b: 45, c: 20 })).toBe(2);
+  it('counts depts in the Foundational band (≤45)', () => {
+    expect(criticalGapCount({ a: 44, b: 45, c: 20 })).toBe(3);
   });
   it('returns 0 when all depts above threshold', () => {
     expect(criticalGapCount({ a: 65, b: 80 })).toBe(0);
@@ -219,14 +219,14 @@ describe('heroNarrative', () => {
     expect(typeof text).toBe('string');
     expect(text.length).toBeGreaterThan(20);
   });
-  it('mentions "All departments" when score is leading', () => {
+  it('mentions "All departments" when score is advanced', () => {
     const scores = { 'new-vehicle-sales': 88, 'used-vehicle-sales': 90 };
     expect(heroNarrative(scores, 90)).toContain('All departments');
   });
   it('mentions first two department names when 3+ above benchmark', () => {
     const scores = {
       'new-vehicle-sales': 72,
-      'used-vehicle-sales': 68,
+      'used-vehicle-sales': 70,
       'service-performance': 81,
       'parts-inventory': 40,
       'financial-operations': 35,

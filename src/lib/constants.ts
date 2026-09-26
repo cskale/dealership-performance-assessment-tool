@@ -39,14 +39,14 @@ export const SCORE_THRESHOLDS = {
  */
 export { MATURITY_LEVELS } from "@/lib/maturityConfig";
 
-/** Returns the canonical maturity key ('leading' | 'advanced' | 'developing' | 'foundational'). */
+/** Returns the canonical maturity key ('advanced' | 'performing' | 'developing' | 'foundational'). */
 export function getMaturityLevelKey(score: number) {
   return _getMaturityKey(score);
 }
 
 const DE_LABELS: Record<string, string> = {
-  leading:      'Führend',
   advanced:     'Fortgeschritten',
+  performing:   'Leistungsstark',
   developing:   'Entwickelnd',
   foundational: 'Grundlegend',
 };
