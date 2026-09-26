@@ -15,7 +15,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { CalendarPlus, Circle } from 'lucide-react';
+import { CalendarPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -118,7 +118,7 @@ export function KpiTrendCard({ question, history, benchmark, canLog, saving, onS
     if (!parsed.success) {
       const min = question.validRange?.min ?? 0;
       const max = question.validRange?.max;
-      setError(max == null ? `Enter a number of at least ${min}.` : `Enter a number between ${min} and ${max}.`);
+      setError(t('kpi.invalidRange').replace('{min}', String(min)).replace('{max}', String(max ?? Number.MAX_SAFE_INTEGER)));
       return;
     }
     setError('');
@@ -189,7 +189,7 @@ export function KpiTrendCard({ question, history, benchmark, canLog, saving, onS
               <Area dataKey="band" stackId="forecast" stroke="none" fill="hsl(var(--brand-200))" fillOpacity={0.55} />
               <Line dataKey="actual" stroke="hsl(var(--brand-600))" strokeWidth={2} connectNulls={false} dot={(props) => {
                 const source = (props.payload as TimelinePoint | undefined)?.source;
-                return <Circle {...props} r={source === 'checkin-coach' ? 5 : 3.5} fill={source === 'checkin-coach' ? 'hsl(var(--card))' : 'hsl(var(--brand-600))'} stroke="hsl(var(--brand-600))" strokeWidth={source === 'checkin-coach' ? 3 : 1} />;
+                return <circle cx={props.cx} cy={props.cy} r={source === 'checkin-coach' ? 5 : 3.5} fill={source === 'checkin-coach' ? 'hsl(var(--card))' : 'hsl(var(--brand-600))'} stroke="hsl(var(--brand-600))" strokeWidth={source === 'checkin-coach' ? 3 : 1} />;
               }} />
               <Line dataKey="projection" stroke="hsl(var(--brand-400))" strokeWidth={2} strokeDasharray="5 4" dot={false} />
               <RechartsTooltip content={<KpiTooltip locale={locale} unit={benchmark.unit} enteredByCoach={t('kpi.enteredByCoach')} />} />
@@ -201,7 +201,7 @@ export function KpiTrendCard({ question, history, benchmark, canLog, saving, onS
               <ReferenceLine y={benchmark.target} stroke="hsl(var(--neutral-200))" strokeDasharray="3 3" />
               <Line dataKey="value" stroke="hsl(var(--brand-600))" strokeWidth={2} dot={(props) => {
                 const source = (props.payload as TimelinePoint | undefined)?.source;
-                return <Circle {...props} r={source === 'checkin-coach' ? 5 : 4} fill={source === 'checkin-coach' ? 'hsl(var(--card))' : 'hsl(var(--brand-600))'} stroke="hsl(var(--brand-600))" strokeWidth={source === 'checkin-coach' ? 3 : 1} />;
+                return <circle cx={props.cx} cy={props.cy} r={source === 'checkin-coach' ? 5 : 4} fill={source === 'checkin-coach' ? 'hsl(var(--card))' : 'hsl(var(--brand-600))'} stroke="hsl(var(--brand-600))" strokeWidth={source === 'checkin-coach' ? 3 : 1} />;
               }} />
               <XAxis dataKey="month" tickFormatter={(monthLabel) => formatMonth(monthLabel, locale)} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis hide domain={['auto', 'auto']} />

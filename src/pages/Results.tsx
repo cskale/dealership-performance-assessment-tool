@@ -20,12 +20,19 @@ import { useDealershipAssessments } from "@/hooks/useDealershipAssessments";
 import { TierBadge } from "@/components/shared/TierBadge";
 import { supabase } from "@/integrations/supabase/client";
 import type { PDFExportData } from "@/lib/pdfReportGenerator";
-import { calculateWeightedScore } from "@/lib/scoringEngine";
+import { calculateAllConfidenceMetrics, calculateWeightedScore } from "@/lib/scoringEngine";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { getAssessmentFreshness } from "@/lib/assessmentFreshness";
 import { useAssessmentNotes } from "@/hooks/useAssessmentNotes";
 import { ResultsHeroBand, type HeroAction } from "@/components/results/ResultsHeroBand";
 import { fetchModuleBenchmarks } from "@/lib/benchmarkUtils";
+import { questionnaire } from "@/data/questionnaire";
+import { evaluateCrossValidations } from "@/data/crossValidationRules";
+import { generateCeilingInsights } from "@/lib/ceilingAnalysis";
+import { loadBenchmarks, STATIC_BENCHMARKS as STATIC_KPI_BENCHMARKS } from "@/lib/kpiBenchmarks";
+import { useKpiTimelines, useSaveKpiCheckin } from "@/hooks/useKpiTimeline";
+import { DepartmentResultsRows } from "@/components/results/DepartmentResultsRows";
+import { CeilingInsightsPanel } from "@/components/results/CeilingInsightsPanel";
 
 interface ResultsData {
   assessmentId: string;
@@ -127,7 +134,7 @@ export default function Results() {
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const { currentOrganization, userMemberships } = useMultiTenant();
-  const { actorType } = useActiveRole();
+  const { actorType, membershipRole } = useActiveRole();
 
   // Load completed assessment results
   const { data: resultsQuery, isLoading } = useQuery({
@@ -146,6 +153,8 @@ export default function Results() {
   const { notes } = useAssessmentNotes(resultsData?.assessmentId);
   const { data: kpiValues = [] } = useKpiValues(resultsData?.assessmentId);
   const { data: dealershipAssessments = [], isLoading: assessmentsLoading } = useDealershipAssessments(resultsData?.dealershipId);
+  const { data: kpiTimelines = {}, isLoading: kpiTimelinesLoading } = useKpiTimelines(resultsData?.dealershipId);
+  const saveKpiCheckin = useSaveKpiCheckin(resultsData?.dealershipId);
   const [oemDealerContext, setOemDealerContext] = useState<{
     name: string;
     tier: string | null;
@@ -190,6 +199,42 @@ export default function Results() {
     queryFn: () => fetchModuleBenchmarks(null, null),
     staleTime: 5 * 60 * 1000,
   });
+
+  const { data: kpiBenchmarks = STATIC_KPI_BENCHMARKS } = useQuery({
+    queryKey: ['results-kpi-benchmarks'],
+    queryFn: loadBenchmarks,
+    initialData: STATIC_KPI_BENCHMARKS,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const confidenceMetrics = useMemo(
+    () => calculateAllConfidenceMetrics(questionnaire.sections, resultsData?.answers ?? {}),
+    [resultsData?.answers],
+  );
+
+  const crossValidationFindings = useMemo(
+    () => evaluateCrossValidations(resultsData?.answers ?? {}),
+    [resultsData?.answers],
+  );
+
+  const ceilingInsights = useMemo(() => {
+    if (!resultsData) return [];
+    const sectionScores = {
+      nvs: resultsData.scores['new-vehicle-sales'],
+      uvs: resultsData.scores['used-vehicle-sales'],
+      svc: resultsData.scores['service-performance'],
+      pts: resultsData.scores['parts-inventory'],
+      fin: resultsData.scores['financial-operations'],
+    };
+    return generateCeilingInsights(resultsData.answers, sectionScores);
+  }, [resultsData]);
+
+  const canLogKpi = actorType !== 'oem' && membershipRole !== 'viewer';
+
+  const handleSaveKpiCheckin = async (input: { kpiKey: string; month: string; value: number }) => {
+    await saveKpiCheckin.mutateAsync(input);
+    toast({ title: t('kpi.saved') });
+  };
 
   useEffect(() => {
     if ((actorType !== 'oem' && actorType !== 'coach') || !(resultsData as any)?.dealershipId) return;
@@ -438,15 +483,31 @@ export default function Results() {
           </TabsList>
 
           <TabsContent value="diagnosis" className="animate-fade-in">
-            <ResultsHeroBand
-              overallScore={overallScore}
-              scores={resultsData.scores}
-              answers={resultsData.answers}
-              benchmarks={moduleBenchmarks}
-              actions={pdfActions}
-              dealerName={oemDealerContext?.name || currentOrganization?.name || t('results.title')}
-              onOpenAction={handleOpenLeverAction}
-            />
+            <div className="space-y-6">
+              <ResultsHeroBand
+                overallScore={overallScore}
+                scores={resultsData.scores}
+                answers={resultsData.answers}
+                benchmarks={moduleBenchmarks}
+                actions={pdfActions}
+                dealerName={oemDealerContext?.name || currentOrganization?.name || t('results.title')}
+                onOpenAction={handleOpenLeverAction}
+              />
+              <DepartmentResultsRows
+                scores={resultsData.scores}
+                benchmarks={moduleBenchmarks}
+                confidence={confidenceMetrics}
+                timelines={kpiTimelines}
+                kpiBenchmarks={kpiBenchmarks}
+                findings={crossValidationFindings}
+                ceilingInsights={ceilingInsights}
+                canLog={canLogKpi}
+                loadingTimelines={kpiTimelinesLoading}
+                saving={saveKpiCheckin.isPending}
+                onSave={handleSaveKpiCheckin}
+              />
+              {ceilingInsights.length > 0 && <CeilingInsightsPanel insights={ceilingInsights} />}
+            </div>
           </TabsContent>
 
           <TabsContent value="action-plan" className="space-y-6 animate-fade-in">
