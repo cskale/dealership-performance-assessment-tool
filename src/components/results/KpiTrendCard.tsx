@@ -114,7 +114,10 @@ export function KpiTrendCard({ question, history, benchmark, canLog, saving, onS
   }, [forecast, history]);
 
   const submit = async () => {
-    const parsed = z.coerce.number().finite().min(question.validRange?.min ?? 0).max(question.validRange?.max ?? Number.MAX_SAFE_INTEGER).safeParse(value);
+    const parsed = z.preprocess(
+      (input) => typeof input === 'string' && input.trim() === '' ? undefined : Number(input),
+      z.number().finite().min(question.validRange?.min ?? 0).max(question.validRange?.max ?? Number.MAX_SAFE_INTEGER),
+    ).safeParse(value);
     if (!parsed.success) {
       const min = question.validRange?.min ?? 0;
       const max = question.validRange?.max;
@@ -122,9 +125,13 @@ export function KpiTrendCard({ question, history, benchmark, canLog, saving, onS
       return;
     }
     setError('');
-    await onSave({ kpiKey: question.kpiKey, month: `${month}-01`, value: parsed.data });
-    setOpen(false);
-    setValue('');
+    try {
+      await onSave({ kpiKey: question.kpiKey, month: `${month}-01`, value: parsed.data });
+      setOpen(false);
+      setValue('');
+    } catch {
+      setError(t('common.error'));
+    }
   };
 
   const labelEveryPoint = history.length <= 6 ? 0 : Math.ceil(history.length / 6);
@@ -177,7 +184,7 @@ export function KpiTrendCard({ question, history, benchmark, canLog, saving, onS
         )}
       </div>
 
-      <div className="mt-4 h-36 w-full" role="img" aria-label={`${title}: ${history.length} historical observations`}>
+      <div className="mt-4 h-36 w-full" role="img" aria-label={title}>
         {forecast ? (
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 8, right: 6, bottom: 0, left: -28 }}>

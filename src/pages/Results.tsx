@@ -229,7 +229,9 @@ export default function Results() {
     return generateCeilingInsights(resultsData.answers, sectionScores);
   }, [resultsData]);
 
-  const canLogKpi = actorType !== 'oem' && membershipRole !== 'viewer';
+  const canLogKpi = actorType === 'coach' || (
+    actorType === 'dealer' && membershipRole !== null && membershipRole !== 'viewer'
+  );
 
   const handleSaveKpiCheckin = async (input: { kpiKey: string; month: string; value: number }) => {
     await saveKpiCheckin.mutateAsync(input);
