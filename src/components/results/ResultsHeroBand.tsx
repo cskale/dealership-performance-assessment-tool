@@ -10,6 +10,7 @@ import { detectSystemicPatterns, getScoredQuestions } from "@/lib/scoringEngine"
 import { generateSignals } from "@/lib/signalEngine";
 import { buildExecutiveNarrative, type PrimarySignalCode } from "@/lib/narrativeTemplates";
 import { getMaturityLevel, type MaturityLevel } from "@/lib/maturityConfig";
+import { DEPT_LABEL_TO_SECTION_ID } from "@/lib/coachVisitUtils";
 import { cn } from "@/lib/utils";
 
 export interface HeroAction {
@@ -122,10 +123,10 @@ export function ResultsHeroBand({ overallScore, scores, answers, benchmarks, act
 
   const leverAction = useMemo(() => {
     if (!biggestLever) return null;
-    const departmentName = departmentNames[biggestLever.departmentId];
     return actions
       .filter((action) => action.status !== "Completed" && (
-        action.department === biggestLever.departmentId || action.department === departmentName
+        action.department === biggestLever.departmentId ||
+        DEPT_LABEL_TO_SECTION_ID[action.department] === biggestLever.departmentId
       ))
       .sort((a, b) => (PRIORITY_ORDER[a.priority.toLowerCase()] ?? 99) - (PRIORITY_ORDER[b.priority.toLowerCase()] ?? 99))[0] ?? null;
   }, [actions, biggestLever, departmentNames]);
