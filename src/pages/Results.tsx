@@ -435,10 +435,12 @@ export default function Results() {
                       <FileText className="h-4 w-4" />
                       {t('results.exportPDF')}
                     </Button>
-                    <Button variant="outline" size="sm" onClick={handleRetakeAssessment} className="gap-1.5">
-                      <RefreshCw className="h-4 w-4" />
-                      {t('results.retakeAssessment')}
-                    </Button>
+                    {actorType !== 'oem' && actorType !== 'coach' && (
+                      <Button variant="outline" size="sm" onClick={handleRetakeAssessment} className="gap-1.5">
+                        <RefreshCw className="h-4 w-4" />
+                        {t('results.retakeAssessment')}
+                      </Button>
+                    )}
                   </div>
               </div>
             </div>
@@ -453,13 +455,15 @@ export default function Results() {
                 <span>
                   This assessment is {freshness.daysSince} days old. Market conditions and team changes may mean your diagnostic no longer reflects current reality. Consider running a refresh assessment.
                 </span>
-                <button
-                  type="button"
-                  onClick={() => navigate('/app/assessment')}
-                  className="text-[11px] text-amber-800 border border-amber-600 bg-transparent px-2.5 py-1 rounded-md cursor-pointer font-medium whitespace-nowrap hover:bg-amber-100 transition-colors"
-                >
-                  Reassess
-                </button>
+                {actorType !== 'oem' && actorType !== 'coach' && (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/app/assessment')}
+                    className="text-[11px] text-amber-800 border border-amber-600 bg-transparent px-2.5 py-1 rounded-md cursor-pointer font-medium whitespace-nowrap hover:bg-amber-100 transition-colors"
+                  >
+                    Reassess
+                  </button>
+                )}
               </div>
             );
           })()}
