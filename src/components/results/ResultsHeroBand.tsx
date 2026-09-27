@@ -175,7 +175,8 @@ export function ResultsHeroBand({ overallScore, scores, answers, benchmarks, act
                 <div key={step} className="relative flex min-w-0 flex-col items-center text-center">
                   {active && <MapPin className={cn("absolute -top-5 h-4 w-4", statusStyle.text)} aria-hidden="true" />}
                   <span className={cn("z-10 h-3 w-3 rounded-full border-2 border-card", active ? statusStyle.bg : "bg-muted-foreground/30")} />
-                  <span className={cn("mt-2 text-caption", active ? cn("font-semibold", statusStyle.text) : "text-muted-foreground")}>
+                  {/* four labels overlap below ~480px; phones show only the current level */}
+                  <span className={cn("mt-2 max-w-full break-words text-caption", active ? cn("whitespace-nowrap font-semibold", statusStyle.text) : "hidden text-muted-foreground sm:block")}>
                     {t(`maturity.${step}`)}
                   </span>
                 </div>

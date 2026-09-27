@@ -534,7 +534,7 @@ export default function CoachDashboard() {
   return (
     <div className="space-y-0">
       {/* Dark stats bar — matches Sprint 3 dealer dashboard */}
-      <div className="h-9 bg-[#0b1f3a] flex items-center px-6 sticky top-0 z-10">
+      <div className="h-9 bg-[#0b1f3a] flex items-center px-6 sticky top-0 z-10 overflow-x-auto whitespace-nowrap">
         {(() => {
           const s = computeStatsBar(dealers);
           const chips = [

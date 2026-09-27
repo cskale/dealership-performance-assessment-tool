@@ -597,7 +597,7 @@ export default function OemDashboard() {
   return (
     <div className="flex flex-col">
       {/* ── Top stats bar ── */}
-      <div className="h-9 bg-[#0b1f3a] flex items-center px-6 sticky top-0 z-10">
+      <div className="h-9 bg-[#0b1f3a] flex items-center px-6 sticky top-0 z-10 overflow-x-auto whitespace-nowrap">
         {(() => {
           const brand = networks.find(n => n.id === selectedNetworkId)?.oem_brand ?? 'OEM Network';
           const chips = [

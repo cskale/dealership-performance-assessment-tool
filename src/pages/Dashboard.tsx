@@ -191,11 +191,11 @@ function HeroCard({
 
   return (
     <div
-      className="rounded-2xl overflow-hidden grid grid-cols-3"
+      className="rounded-2xl overflow-hidden grid grid-cols-1 md:grid-cols-3"
       style={{ background: 'hsl(var(--dd-midnight))' }}
     >
       {/* Col 1 — Overall score */}
-      <div className="p-7 border-r border-white/[0.07]">
+      <div className="p-7 border-b border-white/[0.07] md:border-b-0 md:border-r">
         <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-white/35 mb-4">
           Overall Diagnostic Score
         </p>
@@ -227,7 +227,7 @@ function HeroCard({
       </div>
 
       {/* Col 2 — Open actions */}
-      <div className="p-7 border-r border-white/[0.07]">
+      <div className="p-7 border-b border-white/[0.07] md:border-b-0 md:border-r">
         <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-white/35 mb-4">
           Open Actions
         </p>
@@ -858,7 +858,7 @@ export default function Dashboard() {
 
       {/* ── Dark stats bar ── */}
       <div
-        className="flex items-center h-9 px-6"
+        className="flex items-center h-9 px-6 overflow-x-auto whitespace-nowrap"
         style={{ background: 'hsl(var(--dd-midnight))' }}
       >
         <StatsBadge label="Overall Score" value={`${Math.round(overallScore)} / 100`} />

@@ -455,7 +455,7 @@ const Account = () => {
           </aside>
 
           {/* Content pane */}
-          <div className="flex-1 min-w-0 max-w-[1040px]">
+          <div className="w-full flex-1 min-w-0 max-w-[1040px]">
             {/* Identity banner */}
             <div className="mb-6 rounded-xl border border-[hsl(var(--dd-rule))] bg-[hsl(var(--dd-fog))] px-5 py-5">
               <div className="flex items-center gap-4 max-sm:flex-col max-sm:items-start">
@@ -476,7 +476,7 @@ const Account = () => {
                   <div className="text-[22px] font-semibold leading-tight text-foreground truncate">
                     {displayName || user.email}
                   </div>
-                  <div className="text-sm text-muted-foreground mt-0.5 truncate">
+                  <div className="text-sm text-muted-foreground mt-0.5 [overflow-wrap:anywhere]">
                     {roleLabelDisplay} · {user.email}
                   </div>
                 </div>

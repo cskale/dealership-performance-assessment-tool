@@ -593,7 +593,7 @@ export function ActionPlan({ assessmentId, dealershipId, notes, focusActionId }:
           ))}
         </div>
 
-        <div className="flex items-center gap-2 ml-auto flex-shrink-0">
+        <div className="flex flex-wrap items-center gap-2 ml-auto">
           <div className="inline-flex h-9 items-center rounded-xl bg-card border p-0.5">
             {([
               { key: 'list', label: t('actionPlan.list'), Icon: ListIcon },
