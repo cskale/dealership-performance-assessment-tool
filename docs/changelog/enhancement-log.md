@@ -4,6 +4,16 @@ Quick-reference log of incremental enhancements, UI fixes, and small quality-of-
 
 ---
 
+## 2026-09-27 — Coach visit workspace (Lovable Prompt 1) review fixes
+
+| # | Enhancement | Details | Commit |
+|---|-------------|---------|--------|
+| 1 | Visit save now completes the visit | `VisitDetail` save sets `status='completed'` when a summary is present, so the `send_visit_recap` trigger fires and the timeline shows the visit as done. | this commit |
+| 2 | Timeline review counts scoped | `CoachVisitWorkspace` fetched every `visit_action_reviews` row the coach could see; now filtered to the current dealership via inner join. | this commit |
+| 3 | `.lovable/` plan untracked | Lovable committed its plan file into a git-ignored folder; removed from the index. | this commit |
+
+---
+
 ## 2026-09-27 — Repo clean-up, docs structure and README refresh
 
 | # | Enhancement | Details | Commit |

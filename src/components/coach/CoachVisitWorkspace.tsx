@@ -38,7 +38,7 @@ export function CoachVisitWorkspace({ dealershipId, dealerName, location, latest
       const [visitsResult, notesResult, reviewsResult] = await Promise.all([
         supabase.from('coach_visits').select('*').eq('dealership_id', dealershipId).order('visit_date', { ascending: false }),
         supabase.from('coach_notes').select('visit_id').eq('dealership_id', dealershipId).not('visit_id', 'is', null),
-        supabase.from('visit_action_reviews').select('visit_id, id'),
+        supabase.from('visit_action_reviews').select('visit_id, id, coach_visits!inner(dealership_id)').eq('coach_visits.dealership_id', dealershipId),
       ]);
       if (visitsResult.error) throw visitsResult.error;
       if (notesResult.error) throw notesResult.error;

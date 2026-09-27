@@ -135,8 +135,11 @@ export function VisitDetail({ visitId, dealershipId, latestAssessmentId, onSaved
         return outcome ? [{ actionId: action.id, outcome, note: reviewNotes[action.id] }] : [];
       });
       await saveReviews.mutateAsync({ visitId, reviews });
+      const cleanSummary = sanitizeText(summary.trim()) || null;
       const { error } = await supabase.from('coach_visits').update({
-        summary: sanitizeText(summary.trim()) || null,
+        // a summary means the visit happened; 'completed' fires the send_visit_recap trigger
+        ...(cleanSummary && { status: 'completed' as const }),
+        summary: cleanSummary,
         next_visit_date: nextDate ? format(nextDate, 'yyyy-MM-dd') : null,
         agreed_action_ids: agreedIds,
         updated_at: new Date().toISOString(),
