@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { VisitHistoryItem } from '@/hooks/useCoachVisitLoop';
 import { VisitDetail } from '@/components/coach/VisitDetail';
@@ -8,12 +8,37 @@ interface CoachingVisitsSectionProps {
   dealershipId: string;
   visits: VisitHistoryItem[];
   loading: boolean;
+  upcomingVisit?: {
+    id: string;
+    coach_user_id: string;
+    visit_date: string;
+    status: 'proposed' | 'confirmed' | 'counter_proposed' | 'cancelled';
+    dealer_proposed_date: string | null;
+  } | null;
 }
 
-export function CoachingVisitsSection({ dealershipId, visits, loading }: CoachingVisitsSectionProps) {
+export function CoachingVisitsSection({ dealershipId, visits, loading, upcomingVisit }: CoachingVisitsSectionProps) {
   const { t } = useLanguage();
   const [selectedVisitId, setSelectedVisitId] = useState<string | null>(visits[0]?.id ?? null);
-  const timelineVisits = useMemo<TimelineVisit[]>(() => visits.map(visit => ({
+  const timelineVisits = useMemo<TimelineVisit[]>(() => [
+    ...(upcomingVisit ? [{
+      id: upcomingVisit.id,
+      coach_user_id: upcomingVisit.coach_user_id,
+      dealership_id: dealershipId,
+      visit_date: upcomingVisit.dealer_proposed_date ?? upcomingVisit.visit_date,
+      status: upcomingVisit.status,
+      visit_notes: null,
+      visit_type: null,
+      modules_reviewed: [],
+      summary: null,
+      next_visit_date: null,
+      agreed_action_ids: [],
+      created_at: null,
+      updated_at: null,
+      dealer_proposed_date: upcomingVisit.dealer_proposed_date,
+      declined_by: null,
+    } satisfies TimelineVisit] : []),
+    ...visits.map(visit => ({
     id: visit.id,
     coach_user_id: '',
     dealership_id: dealershipId,
@@ -30,7 +55,12 @@ export function CoachingVisitsSection({ dealershipId, visits, loading }: Coachin
     dealer_proposed_date: null,
     declined_by: null,
     reviewCount: visit.reviews.length,
-  })), [dealershipId, visits]);
+    })),
+  ], [dealershipId, upcomingVisit, visits]);
+
+  useEffect(() => {
+    if (!selectedVisitId && timelineVisits.length > 0) setSelectedVisitId(timelineVisits[0].id);
+  }, [selectedVisitId, timelineVisits]);
 
   return (
     <section id="coaching-visits" className="scroll-mt-6 space-y-4 rounded-lg border border-border bg-card p-5 shadow-card">

@@ -1009,6 +1009,7 @@ export default function Dashboard() {
             dealershipId={dealerId}
             visits={visitHistory ?? []}
             loading={visitHistoryLoading}
+            upcomingVisit={upcomingVisit}
           />
         )}
 
