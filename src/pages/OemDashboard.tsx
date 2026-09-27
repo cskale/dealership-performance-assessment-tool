@@ -92,11 +92,12 @@ function getQuarterLabel(): string {
   return `Q${q} ${now.getFullYear()}`;
 }
 
-function getHeroNarrative(avgScore: number, dealerCount: number, atRiskCount: number): string {
+// belowBenchmarkCount (< 70) matches the coach dashboard; atRiskCount is Foundational (< 46)
+function getHeroNarrative(avgScore: number, dealerCount: number, atRiskCount: number, belowBenchmarkCount: number): string {
   if (dealerCount === 0) return 'No dealers enrolled in the network yet.';
   if (avgScore >= 85) return 'Network performing above benchmark across all departments.';
-  if (avgScore >= 70) return `Most dealers performing well — ${atRiskCount} below Foundational threshold.`;
-  if (avgScore >= 46) return `${atRiskCount} dealer${atRiskCount !== 1 ? 's' : ''} require${atRiskCount === 1 ? 's' : ''} active intervention this quarter.`;
+  if (avgScore >= 70) return `Most dealers performing well — ${belowBenchmarkCount} below benchmark threshold.`;
+  if (avgScore >= 46) return `${belowBenchmarkCount} dealer${belowBenchmarkCount !== 1 ? 's' : ''} require${belowBenchmarkCount === 1 ? 's' : ''} active intervention this quarter.`;
   return `${atRiskCount} dealer${atRiskCount !== 1 ? 's' : ''} at Foundational level — priority coaching required.`;
 }
 
@@ -426,7 +427,7 @@ function CoachingCoverageCard({ rows, isLoading }: { rows: CoachingStatsRow[]; i
                         <TableCell className="font-medium text-foreground">{r.dealership_name}</TableCell>
                         <TableCell className="text-center">
                           {r.last_visit_date ? (
-                            <span className="text-sm">{format(new Date(r.last_visit_date), 'dd MMM yyyy')}</span>
+                            <span className="text-sm">{format(new Date(r.last_visit_date), 'd MMM yyyy')}</span>
                           ) : (
                             <Badge variant="outline" className="bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20 text-xs">
                               Never
@@ -684,7 +685,7 @@ export default function OemDashboard() {
                   </p>
                 )}
                 <p className="text-xs text-white/60 italic mt-1">
-                  "{getHeroNarrative(stats.avg, stats.total, atRiskDealers.length)}"
+                  "{getHeroNarrative(stats.avg, stats.total, atRiskDealers.length, sortedDealers.filter(d => (d.latestScore ?? 101) < 70).length)}"
                 </p>
               </>
             )}
@@ -909,7 +910,7 @@ export default function OemDashboard() {
                   <div className="flex items-center gap-3 p-4 bg-[#16a34a]/5 rounded-lg border border-[#16a34a]/20">
                     <CheckCircle className="h-5 w-5 text-[#16a34a] shrink-0" />
                     <p className="text-sm text-[#16a34a] font-medium">
-                      All {sortedDealers.length} dealers assessed within {STALE_THRESHOLD_DAYS} days
+                      {sortedDealers.length === 1 ? 'The only dealer was' : `All ${sortedDealers.length} dealers`} assessed within {STALE_THRESHOLD_DAYS} days
                     </p>
                   </div>
                 ) : (
@@ -1155,7 +1156,7 @@ export default function OemDashboard() {
                                 return (
                                   <div className="flex flex-col items-center gap-0.5">
                                     <span className="text-xs font-medium">
-                                      {format(new Date(visit.visit_date), 'dd MMM')}
+                                      {format(new Date(visit.visit_date), 'd MMM')}
                                     </span>
                                     <Badge
                                       variant="outline"

@@ -138,7 +138,7 @@ const PaneCard = ({
 /** Read-only field with a polished empty state. */
 const FieldValue = ({ value, muted = false }: { value?: string | null; muted?: boolean }) =>
   value
-    ? <div className={`text-[15px] mt-1.5 ${muted ? 'text-muted-foreground' : 'text-foreground'}`}>{value}</div>
+    ? <div className={`text-[15px] mt-1.5 break-words [overflow-wrap:anywhere] ${muted ? 'text-muted-foreground' : 'text-foreground'}`}>{value}</div>
     : <div className="text-[15px] mt-1.5 text-muted-foreground/60 italic">Not set</div>;
 
 const FieldLabel = ({ children }: { children: React.ReactNode }) => (
@@ -409,7 +409,7 @@ const Account = () => {
 
   const NAV_ITEMS = [
     { value: 'profile', label: t('account.nav.profile'), icon: User },
-    ...(actorType !== 'coach' ? [{ value: 'organization', label: t('account.nav.organization'), icon: Building2 }] : []),
+    ...(actorType !== 'coach' && actorType !== 'oem' ? [{ value: 'organization', label: t('account.nav.organization'), icon: Building2 }] : []),
     ...(canManageTeam || actorType === 'coach' ? [{ value: 'team', label: actorType === 'coach' ? t('account.nav.dealerships') : t('account.nav.team'), icon: Users }] : []),
     { value: 'security', label: t('account.nav.security'), icon: Shield },
     { value: 'privacy', label: t('account.nav.privacy'), icon: Globe },
@@ -597,7 +597,7 @@ const Account = () => {
                     </div>
                     <div className="pt-4 border-t border-[hsl(var(--dd-rule))]">
                       <FieldLabel>Account created</FieldLabel>
-                      <FieldValue muted value={user.created_at ? format(new Date(user.created_at), 'PPP') : undefined} />
+                      <FieldValue muted value={user.created_at ? format(new Date(user.created_at), 'd MMM yyyy') : undefined} />
                     </div>
                   </div>
                 </PaneCard>
@@ -684,13 +684,11 @@ const Account = () => {
                     <div>
                       <h2 className="text-lg font-semibold tracking-tight">Team management</h2>
                       <p className="text-sm text-muted-foreground mt-0.5">
-                        Invite colleagues, coaches, and OEM programme managers. Manage pending invites and revoke access at any time.
+                        {actorType === 'oem' ? 'Invite colleagues to your OEM network.' : 'Invite colleagues and coaches. Manage pending invites and revoke access at any time.'}
                       </p>
                     </div>
                   </div>
-                  <InviteTeamMembers />
-                  <InviteCoach />
-                  {actorType === 'oem' && <InviteOemUser />}
+                  {actorType === 'oem' ? <InviteOemUser /> : <><InviteTeamMembers /><InviteCoach /></>}
                 </div>
               )}
             </TabsContent>
@@ -714,11 +712,11 @@ const Account = () => {
                           </div>
                           <div className="flex-1">
                             <div className="text-sm font-medium">Completed Assessment</div>
-                            <div className="text-xs text-muted-foreground">{format(new Date(assessment.completed_at || assessment.created_at), 'PPP')}</div>
+                            <div className="text-xs text-muted-foreground">{format(new Date(assessment.completed_at || assessment.created_at), 'd MMM yyyy')}</div>
                           </div>
                           {assessment.overall_score != null && (
                             <div className="text-right">
-                              <div className="text-lg font-bold text-[hsl(var(--dd-accent))]">{Math.round(assessment.overall_score)}%</div>
+                              <div className="text-lg font-bold text-[hsl(var(--dd-accent))]">{Math.round(assessment.overall_score)}<span className="text-xs font-medium text-muted-foreground">/100</span></div>
                               {delta !== null && <div className="text-[11px] text-muted-foreground">{delta >= 0 ? '+' : ''}{delta} {t('account.activity.points')}</div>}
                               <div className="text-[11px] text-muted-foreground">Score</div>
                             </div>
@@ -815,9 +813,8 @@ const Account = () => {
                     <div className="text-sm font-medium text-foreground">Two-factor authentication is not set up</div>
                     <div className="text-xs text-muted-foreground mt-0.5">Add an authenticator app (Google Authenticator, Authy) to protect your account.</div>
                   </div>
-                  <Button size="sm" onClick={() => toast({ title: 'MFA setup', description: 'Configure via your authenticator app' })}>
-                    Set up
-                  </Button>
+                  {/* ponytail: MFA enrolment + sign-in challenge not built; the old button only showed a toast */}
+                  <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">Coming soon</span>
                 </div>
               </Section>
 
@@ -835,7 +832,7 @@ const Account = () => {
                         </div>
                         <div className="flex-1">
                           <div className="text-sm font-medium">{session.device_info?.browser} on {session.device_info?.os}</div>
-                          <div className="text-xs text-muted-foreground">{maskIP(session.ip_address)} · {format(new Date(session.last_seen), 'PPP')}</div>
+                          <div className="text-xs text-muted-foreground">{maskIP(session.ip_address)} · {format(new Date(session.last_seen), 'd MMM yyyy')}</div>
                         </div>
                         <Button variant="outline" size="sm" className="text-xs text-destructive border-destructive/30" onClick={() => handleRevokeSession(session.session_id)}>
                           Revoke

@@ -11,7 +11,7 @@ import {
 import { usePlaygroundPrefill, formatPlaygroundPeriod } from '@/hooks/usePlaygroundPrefill';
 import { useActiveRole } from '@/hooks/useActiveRole';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { formatEuro } from '@/utils/euroFormatter';
+import { formatEuro, numberLocale } from '@/utils/euroFormatter';
 import { PlaygroundCalculatorShell } from '@/components/playground/PlaygroundCalculatorShell';
 import { KpiCheckinControl } from '@/components/playground/KpiCheckinControl';
 
@@ -46,7 +46,7 @@ const FIELDS: FieldConfig[] = [
 ];
 
 const formatNumber = (n: number) =>
-  new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(Math.ceil(n));
+  new Intl.NumberFormat(numberLocale(), { maximumFractionDigits: 0 }).format(Math.ceil(n));
 
 const renderRequired = (val: number | null) => {
   if (val === null) {

@@ -8,7 +8,7 @@ import {
   calculateTechUtilization,
   type TechUtilizationInputs,
 } from '@/lib/playgroundCalculators';
-import { formatEuro } from '@/utils/euroFormatter';
+import { formatEuro, numberLocale } from '@/utils/euroFormatter';
 import { PlaygroundCalculatorShell } from '@/components/playground/PlaygroundCalculatorShell';
 import { ScaleGauge } from '@/components/playground/ScaleGauge';
 import { AnimatedNumber } from '@/components/playground/AnimatedNumber';
@@ -43,7 +43,7 @@ const FIELDS: FieldConfig[] = [
 ];
 
 const formatNum = (n: number) =>
-  new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(Math.round(n));
+  new Intl.NumberFormat(numberLocale(), { maximumFractionDigits: 0 }).format(Math.round(n));
 
 const formatPct = (n: number | null) => (n === null ? '—' : `${n.toFixed(1)}%`);
 

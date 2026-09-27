@@ -484,3 +484,7 @@ html { scroll-behavior: smooth; }
 
 }
 
+
+/* Edge/IE add a native password-reveal eye; our inputs ship their own toggle */
+input::-ms-reveal,
+input::-ms-clear { display: none; }

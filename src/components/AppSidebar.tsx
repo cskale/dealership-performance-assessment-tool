@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
@@ -18,7 +18,10 @@ export function AppSidebar() {
   const { actorType } = useActiveRole();
   const { t } = useLanguage();
   const location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
+  // phones get the icon rail: the 240px sidebar left ~150px for content at 390px wide
+  const isNarrow = () => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
+  const [collapsed, setCollapsed] = useState(isNarrow);
+  useEffect(() => { if (isNarrow()) setCollapsed(true); }, [location.pathname]);
 
   // Route guard — never render on public pages
   const publicRoutes = ['/', '/auth', '/methodology', '/invite'];
@@ -150,7 +153,7 @@ export function AppSidebar() {
         {sections.map((section) => (
           <div key={section.label}>
             {!collapsed && (
-              <p className="px-5 pt-4 pb-0.5 text-[9px] uppercase tracking-[0.12em] text-white/25 font-medium select-none">
+              <p className="px-5 pt-4 pb-0.5 text-[11px] uppercase tracking-[0.12em] text-white/40 font-medium select-none">
                 {section.label}
               </p>
             )}

@@ -8,7 +8,7 @@ import {
   calculateVehicleStockTurn,
   type VehicleStockTurnInputs,
 } from '@/lib/playgroundCalculators';
-import { formatEuro } from '@/utils/euroFormatter';
+import { formatEuro, numberLocale } from '@/utils/euroFormatter';
 import { PlaygroundCalculatorShell } from '@/components/playground/PlaygroundCalculatorShell';
 import { AnimatedNumber } from '@/components/playground/AnimatedNumber';
 import { KpiCheckinControl } from '@/components/playground/KpiCheckinControl';
@@ -41,10 +41,10 @@ const FIELDS: FieldConfig[] = [
 ];
 
 const formatNum = (n: number) =>
-  new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(Math.round(n));
+  new Intl.NumberFormat(numberLocale(), { maximumFractionDigits: 0 }).format(Math.round(n));
 
 const formatDecimal = (n: number | null) =>
-  n === null ? '—' : new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 }).format(n);
+  n === null ? '—' : new Intl.NumberFormat(numberLocale(), { maximumFractionDigits: 1 }).format(n);
 
 function daysColor(days: number | null): string {
   if (days === null) return 'text-muted-foreground';

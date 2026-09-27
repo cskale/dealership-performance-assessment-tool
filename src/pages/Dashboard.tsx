@@ -315,7 +315,7 @@ function TimelineSlot({ label, date, sub, status, badgeText }: TimelineSlotProps
       <p className="text-[10px] font-semibold text-neutral-500 mb-1">{label}</p>
       <p className="text-[13px] font-bold text-neutral-900 mb-0.5">{date}</p>
       <p className="text-[10px] text-neutral-500 mb-2">{sub}</p>
-      <span className={cn('inline-block text-[9px] font-bold px-2 py-0.5 rounded-full', badgeStyle)}>
+      <span className={cn('inline-block text-[10px] font-bold px-2 py-0.5 rounded-full', badgeStyle)}>
         {badgeText}
       </span>
     </div>
@@ -1004,15 +1004,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {dealerId && (
-          <CoachingVisitsSection
-            dealershipId={dealerId}
-            visits={visitHistory ?? []}
-            loading={visitHistoryLoading}
-            upcomingVisit={upcomingVisit}
-          />
-        )}
-
         {/* ── Hero card ── */}
         <HeroCard
           overallScore={overallScore}
@@ -1049,6 +1040,15 @@ export default function Dashboard() {
           actions={actions}
           onViewAll={() => navigate('/actions')}
         />
+
+        {dealerId && (
+          <CoachingVisitsSection
+            dealershipId={dealerId}
+            visits={visitHistory ?? []}
+            loading={visitHistoryLoading}
+            upcomingVisit={upcomingVisit}
+          />
+        )}
 
         {/* ── Coach Notes — visible to dealers when notes exist ── */}
         <CoachNotesPanel dealershipId={dealerId ?? null} />

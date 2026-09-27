@@ -1,3 +1,4 @@
+import { formatDisplayDate } from '@/lib/dashboardUtils';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -751,7 +752,7 @@ export function ActionPlan({ assessmentId, dealershipId, notes, focusActionId }:
                       <div className="flex flex-wrap gap-1.5 items-center text-[11px] text-muted-foreground">
                         <span>{action.department}</span>
                         {action.responsible_person && <><span aria-hidden="true">·</span><span>{action.responsible_person}</span></>}
-                        {action.target_completion_date && <><span aria-hidden="true">·</span><span>{new Date(action.target_completion_date).toLocaleDateString(language)}</span></>}
+                        {action.target_completion_date && <><span aria-hidden="true">·</span><span>{(language === 'en' ? formatDisplayDate(action.target_completion_date) : new Date(action.target_completion_date).toLocaleDateString(language, { day: 'numeric', month: 'short', year: 'numeric' }))}</span></>}
                         {isOverdue(action) && <span className="inline-flex items-center gap-1 text-destructive"><Clock className="h-3 w-3" />{t('actionPlan.overdue')}</span>}
                         {action.is_quick_win && (
                           <Badge variant="secondary" className="text-[10px]">
@@ -837,7 +838,7 @@ export function ActionPlan({ assessmentId, dealershipId, notes, focusActionId }:
                       <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
                         <span>{action.department}</span>
                         {action.responsible_person && <><span aria-hidden="true">·</span><span>{action.responsible_person}</span></>}
-                        {action.target_completion_date && <><span aria-hidden="true">·</span><span>{new Date(action.target_completion_date).toLocaleDateString(language)}</span></>}
+                        {action.target_completion_date && <><span aria-hidden="true">·</span><span>{(language === 'en' ? formatDisplayDate(action.target_completion_date) : new Date(action.target_completion_date).toLocaleDateString(language, { day: 'numeric', month: 'short', year: 'numeric' }))}</span></>}
                         {isOverdue(action) && <span className="inline-flex items-center gap-1 text-destructive"><Clock className="h-3 w-3" />{t('actionPlan.overdue')}</span>}
                         {action.is_quick_win && (
                           <Badge variant="secondary" className="text-[10px]">

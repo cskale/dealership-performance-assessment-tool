@@ -1,7 +1,18 @@
 // European number and currency formatting utilities
 
+const LOCALES: Record<string, string> = { en: 'en-IE', de: 'de-DE', fr: 'fr-FR', es: 'es-ES', it: 'it-IT' };
+
+/** Number locale for the current app language (en → en-IE: "€100,000"; de → "100.000 €"). */
+export const numberLocale = (): string => {
+  try {
+    return LOCALES[localStorage.getItem('app_language') ?? 'en'] ?? 'en-IE';
+  } catch {
+    return 'en-IE';
+  }
+};
+
 export const formatEuro = (amount: number): string => {
-  return new Intl.NumberFormat('de-DE', {
+  return new Intl.NumberFormat(numberLocale(), {
     style: 'currency',
     currency: 'EUR',
     minimumFractionDigits: 0,
@@ -10,16 +21,14 @@ export const formatEuro = (amount: number): string => {
 };
 
 export const formatEuroLarge = (amount: number): string => {
-  if (amount >= 1000000) {
-    return formatEuro(amount / 1000000) + 'M';
-  } else if (amount >= 1000) {
-    return formatEuro(amount / 1000) + 'K';
-  }
-  return formatEuro(amount);
+  // compact notation: the old formatEuro(n / 1000) + 'K' rendered "100 €K" in de-DE
+  return new Intl.NumberFormat(numberLocale(), {
+    style: 'currency', currency: 'EUR', notation: 'compact', maximumFractionDigits: 1,
+  }).format(amount);
 };
 
 export const formatPercentage = (value: number): string => {
-  return new Intl.NumberFormat('de-DE', {
+  return new Intl.NumberFormat(numberLocale(), {
     style: 'percent',
     minimumFractionDigits: 1,
     maximumFractionDigits: 2,
@@ -27,7 +36,7 @@ export const formatPercentage = (value: number): string => {
 };
 
 export const formatNumber = (value: number): string => {
-  return new Intl.NumberFormat('de-DE', {
+  return new Intl.NumberFormat(numberLocale(), {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(value);

@@ -431,7 +431,7 @@ export function OemNetworkSettings() {
                       <TableCell className="text-muted-foreground text-center">{entry.location}</TableCell>
                       <TableCell className="text-muted-foreground text-sm text-center">
                         {entry.enrolledAt
-                          ? format(new Date(entry.enrolledAt), 'dd MMM yyyy')
+                          ? format(new Date(entry.enrolledAt), 'd MMM yyyy')
                           : '—'}
                       </TableCell>
                       <TableCell>

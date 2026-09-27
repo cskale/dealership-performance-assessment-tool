@@ -53,7 +53,7 @@ function currentMonthValue(): string {
 }
 
 function formatMonth(month: string, locale: string): string {
-  return new Date(`${month.slice(0, 7)}-01T00:00:00Z`).toLocaleDateString(locale, { month: 'short', year: '2-digit', timeZone: 'UTC' });
+  return new Date(`${month.slice(0, 7)}-01T00:00:00Z`).toLocaleDateString(locale, { month: 'short', year: 'numeric', timeZone: 'UTC' });
 }
 
 function formatValue(value: number, unit: string, locale: string): string {
@@ -152,8 +152,8 @@ export function KpiTrendCard({ question, history, benchmark, canLog, saving, onS
               {t('kpi.benchmark')} {formatValue(benchmark.target, benchmark.unit, locale)}
             </span>
             {gap != null && (
-              <span className="font-mono text-caption tabular-nums text-muted-foreground">
-                {gap > 0 ? '+' : ''}{formatValue(gap, benchmark.unit, locale)}
+              <span className="text-caption tabular-nums text-muted-foreground">
+                {gap > 0 ? '+' : gap < 0 ? '−' : ''}{benchmark.unit === '%' ? `${new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(Math.abs(gap))} pp` : formatValue(Math.abs(gap), benchmark.unit, locale)}
               </span>
             )}
           </div>

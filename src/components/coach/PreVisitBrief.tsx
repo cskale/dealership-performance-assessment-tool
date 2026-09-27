@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { DATE_LOCALES } from '@/lib/dateLocale';
 import { AlertTriangle, ArrowDown, ArrowRight, ArrowUp, CheckCircle2, Play } from 'lucide-react';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -25,12 +26,12 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return <section className="border-t border-border pt-5"><h3 className="text-h5 text-foreground">{title}</h3><div className="mt-3">{children}</div></section>;
 }
 
-function actionMeta(action: BriefAction) {
-  return [action.responsible_person, action.target_completion_date ? `Due ${format(new Date(action.target_completion_date), 'dd MMM yyyy')}` : null].filter(Boolean).join(' · ');
+function actionMeta(action: BriefAction, t: (key: string) => string, language: string) {
+  return [action.responsible_person, action.target_completion_date ? t('visit.due').replace('{date}', format(new Date(action.target_completion_date), 'd MMM yyyy', { locale: DATE_LOCALES[language] })) : null].filter(Boolean).join(' · ');
 }
 
 export function PreVisitBrief({ dealerName, brief, loading, nextVisitDate, lastVisitNotes = [], onStartVisit }: PreVisitBriefProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const departments = useMemo(() => {
     const current = brief?.score.departments_current ?? {};
     const previous = brief?.score.departments_at_last_visit ?? {};
@@ -64,7 +65,7 @@ export function PreVisitBrief({ dealerName, brief, loading, nextVisitDate, lastV
         .replace('{dealer}', dealerName)
         .replace('{score}', String(Math.round(score)))
         .replace('{delta}', delta == null ? t('visit.brief.noDelta') : `${delta >= 0 ? '▲' : '▼'}${Math.abs(Math.round(delta))}`)
-        .replace('{date}', lastVisit ? format(new Date(lastVisit.visit_date), 'dd MMM') : t('visit.brief.noVisit'))
+        .replace('{date}', lastVisit ? format(new Date(lastVisit.visit_date), 'd MMM', { locale: DATE_LOCALES[language] }) : t('visit.brief.noVisit'))
         .replace('{overdue}', String(brief?.overdue_count ?? 0));
 
   return (
@@ -73,7 +74,7 @@ export function PreVisitBrief({ dealerName, brief, loading, nextVisitDate, lastV
         <div>
           <p className="text-label uppercase tracking-wider text-muted-foreground">{t('visit.brief.title')}</p>
           <h2 className="mt-2 text-h4 text-foreground">{headline}</h2>
-          {visitDate && <p className="mt-1 text-body-sm text-muted-foreground">{t('visit.brief.nextVisit').replace('{date}', format(new Date(visitDate), 'dd MMM yyyy'))}</p>}
+          {visitDate && <p className="mt-1 text-body-sm text-muted-foreground">{t('visit.brief.nextVisit').replace('{date}', format(new Date(visitDate), 'd MMM yyyy', { locale: DATE_LOCALES[language] }))}</p>}
         </div>
         {onStartVisit && <Button onClick={onStartVisit}><Play className="h-4 w-4" />{t('visit.start')}</Button>}
       </header>
@@ -81,7 +82,7 @@ export function PreVisitBrief({ dealerName, brief, loading, nextVisitDate, lastV
       <div className="mt-6 space-y-6">
         <Section title={t('visit.brief.sinceLast')}>
           {openActions.length === 0 ? <p className="text-body-sm text-muted-foreground">{t('visit.brief.noAgreed')}</p> : (
-            <div className="overflow-x-auto"><table className="w-full min-w-[620px] text-left text-body-sm"><thead className="border-b border-border text-caption uppercase tracking-wider text-muted-foreground"><tr><th className="pb-2 font-medium">{t('visit.action')}</th><th className="pb-2 font-medium">{t('visit.ownerDue')}</th><th className="pb-2 font-medium">{t('visit.status')}</th><th className="pb-2 font-medium">{t('visit.lastReview')}</th></tr></thead><tbody className="divide-y divide-border">{openActions.map(action => <tr key={action.id}><td className="py-3 pr-4 font-medium text-foreground">{action.title}</td><td className="py-3 pr-4 text-muted-foreground">{actionMeta(action) || '—'}</td><td className="py-3 pr-4"><Badge variant="outline">{action.status}</Badge></td><td className="py-3 text-muted-foreground">{action.last_review ? outcomeLabel[action.last_review.outcome] ?? action.last_review.outcome : '—'}</td></tr>)}</tbody></table></div>
+            <div className="overflow-x-auto"><table className="w-full min-w-[620px] text-left text-body-sm"><thead className="border-b border-border text-caption uppercase tracking-wider text-muted-foreground"><tr><th className="pb-2 font-medium">{t('visit.action')}</th><th className="pb-2 font-medium">{t('visit.ownerDue')}</th><th className="pb-2 font-medium">{t('visit.status')}</th><th className="pb-2 font-medium">{t('visit.lastReview')}</th></tr></thead><tbody className="divide-y divide-border">{openActions.map(action => <tr key={action.id}><td className="py-3 pr-4 font-medium text-foreground">{action.title}</td><td className="py-3 pr-4 text-muted-foreground">{actionMeta(action, t, language) || '—'}</td><td className="py-3 pr-4"><Badge variant="outline">{action.status}</Badge></td><td className="py-3 text-muted-foreground">{action.last_review ? outcomeLabel[action.last_review.outcome] ?? action.last_review.outcome : '—'}</td></tr>)}</tbody></table></div>
           )}
           {completedCount > 0 && <p className="mt-3 flex items-center gap-2 text-body-sm text-muted-foreground"><CheckCircle2 className="h-4 w-4 text-success" />{t('visit.brief.completedCollapsed').replace('{count}', String(completedCount))}</p>}
         </Section>

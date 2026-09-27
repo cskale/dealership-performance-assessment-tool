@@ -82,7 +82,7 @@ export const useSessionManager = () => {
         .select('id')
         .eq('session_id', sessionId)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle(); // no row yet is normal; .single() 406s
 
       if (existingSession) {
         // Update last seen

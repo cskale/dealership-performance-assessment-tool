@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { formatDisplayDate } from '@/lib/dashboardUtils';
 import { Copy, RefreshCw, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -107,7 +108,7 @@ export function PendingInviteRow({
               </Badge>
             ) : (
               <span className="text-[11px] text-muted-foreground">
-                Expires {new Date(expiresAt).toLocaleDateString()}
+                Expires {formatDisplayDate(expiresAt)}
               </span>
             )}
           </div>

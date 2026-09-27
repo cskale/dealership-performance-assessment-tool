@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { formatDisplayDate } from '@/lib/dashboardUtils';
 import { Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -295,7 +296,7 @@ export default function CoachActions() {
                 </SelectContent>
               </Select>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-40 h-9 text-sm border-border">
+                <SelectTrigger className="w-52 h-9 text-sm border-border">
                   <SelectValue placeholder="Open &amp; in progress" />
                 </SelectTrigger>
                 <SelectContent>
@@ -352,7 +353,7 @@ export default function CoachActions() {
                       {action.target_completion_date ? (
                         <div className="flex items-center justify-center gap-1.5 text-sm">
                           <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                          {new Date(action.target_completion_date).toLocaleDateString()}
+                          {formatDisplayDate(action.target_completion_date)}
                         </div>
                       ) : (
                         <span className="text-sm text-muted-foreground">—</span>

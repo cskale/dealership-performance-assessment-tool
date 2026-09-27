@@ -1,4 +1,4 @@
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { CoachVisitWorkspace } from '@/components/coach/CoachVisitWorkspace';
 import type { AssignedDealer } from '@/pages/CoachDashboard';
 
@@ -17,7 +17,8 @@ export interface DealerPanelProps {
 export function DealerPanel({ open, onOpenChange, dealer, latestAssessmentId, latestScore, onVisitSaved }: DealerPanelProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="h-screen w-screen max-w-none overflow-y-auto border-0 p-0 sm:rounded-none [&>button]:hidden">
+      <DialogContent className="block h-screen w-screen max-w-none overflow-y-auto border-0 bg-neutral-50 p-0 sm:rounded-none [&>button]:hidden" aria-describedby={undefined}>
+        <DialogTitle className="sr-only">{dealer.dealerName}</DialogTitle>
         <CoachVisitWorkspace
           dealershipId={dealer.dealershipId}
           dealerName={dealer.dealerName}
