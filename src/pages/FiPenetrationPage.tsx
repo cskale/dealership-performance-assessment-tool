@@ -184,6 +184,7 @@ export default function FiPenetrationPage() {
 
   return (
     <PlaygroundCalculatorShell
+      guideId="fi-penetration"
       breadcrumbLabel="F&I Penetration Calculator"
       icon={Sparkles}
       category="Operational Models"

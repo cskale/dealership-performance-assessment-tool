@@ -182,6 +182,7 @@ export default function LeadQualityAuditorPage() {
 
   return (
     <PlaygroundCalculatorShell
+      guideId="lead-quality"
       breadcrumbLabel="Lead Quality Auditor"
       icon={Target}
       category="Sales Optimization"

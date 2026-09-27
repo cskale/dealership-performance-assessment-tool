@@ -8,13 +8,14 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, Send, UserPlus } from 'lucide-react';
+import { List, Loader2, Network, Send, UserPlus } from 'lucide-react';
 import {
   TeamSubHeader,
   PendingInviteRow,
   MemberRow,
   InviteLinkBlock,
 } from '@/components/team/TeamPrimitives';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface PendingInvite {
   id: string;
@@ -31,6 +32,7 @@ interface OrgMember {
   role: string;
   displayName: string;
   initials: string;
+  actorType: string | null;
 }
 
 function getInitials(name: string): string {
@@ -48,6 +50,7 @@ const ROLE_OPTIONS = [
 ] as const;
 
 export function InviteTeamMembers() {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const { currentOrganization, userMemberships } = useMultiTenant();
   const [email, setEmail] = useState('');
@@ -57,6 +60,7 @@ export function InviteTeamMembers() {
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
   const [loadingInvites, setLoadingInvites] = useState(true);
   const [orgMembers, setOrgMembers] = useState<OrgMember[]>([]);
+  const [memberView, setMemberView] = useState<'list' | 'chart'>('list');
 
   // Check if current user has permission to invite
   const currentMembership = userMemberships.find(
@@ -104,7 +108,7 @@ export function InviteTeamMembers() {
     setOrgMembers(memberships.map(m => {
       const p = profileMap.get(m.user_id);
       const name = p?.display_name || `${m.user_id.slice(0, 8)}…`;
-      return { id: m.id, user_id: m.user_id, role: m.role, displayName: name, initials: getInitials(name) };
+      return { id: m.id, user_id: m.user_id, role: m.role, displayName: name, initials: getInitials(name), actorType: p?.actor_type ?? null };
     }));
   }, [currentOrganization]);
 
@@ -304,8 +308,13 @@ export function InviteTeamMembers() {
 
         {orgMembers.length > 0 && (
           <div className="space-y-2 pt-2 border-t border-[hsl(var(--dd-rule))]">
-            <TeamSubHeader title="Current members" count={orgMembers.length} />
-            <div>
+            <TeamSubHeader title="Current members" count={orgMembers.length} action={(
+              <div className="flex rounded-md border border-border bg-muted/30 p-0.5" role="group" aria-label={t('team.view')}>
+                <Button type="button" variant="ghost" size="sm" className={`h-7 rounded px-2 text-xs ${memberView === 'list' ? 'bg-background shadow-sm' : ''}`} onClick={() => setMemberView('list')}><List className="h-3.5 w-3.5" />{t('team.list')}</Button>
+                <Button type="button" variant="ghost" size="sm" className={`h-7 rounded px-2 text-xs ${memberView === 'chart' ? 'bg-background shadow-sm' : ''}`} onClick={() => setMemberView('chart')}><Network className="h-3.5 w-3.5" />{t('team.chart')}</Button>
+              </div>
+            )} />
+            {memberView === 'list' ? <div>
               {orgMembers.map((member) => (
                 <MemberRow
                   key={member.id}
@@ -314,7 +323,29 @@ export function InviteTeamMembers() {
                   roleLabel={member.role}
                 />
               ))}
-            </div>
+            </div> : (
+              <div className="overflow-x-auto rounded-lg border border-border bg-muted/20 p-5">
+                {[
+                  { label: t('team.owner'), members: orgMembers.filter(member => member.role === 'owner') },
+                  { label: t('team.leadership'), members: orgMembers.filter(member => ['admin', 'manager'].includes(member.role)) },
+                  { label: t('team.internal'), members: orgMembers.filter(member => ['member', 'viewer'].includes(member.role) && member.actorType !== 'coach') },
+                  { label: t('team.external'), members: orgMembers.filter(member => member.actorType === 'coach') },
+                ].filter(lane => lane.members.length > 0).map((lane, index, lanes) => (
+                  <div key={lane.label} className="relative pb-7 last:pb-0">
+                    {index < lanes.length - 1 && <span className="absolute left-1/2 top-full h-7 w-px -translate-y-7 bg-border" aria-hidden />}
+                    <p className="mb-2 text-center text-[10px] font-semibold uppercase text-muted-foreground">{lane.label}</p>
+                    <div className="flex min-w-max justify-center gap-3">
+                      {lane.members.map(member => (
+                        <div key={member.id} className="flex w-44 items-center gap-2 rounded-lg border border-border bg-background p-3 shadow-sm">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">{member.initials}</div>
+                          <div className="min-w-0"><p className="truncate text-xs font-semibold text-foreground">{member.displayName}</p><span className="mt-1 inline-flex rounded-full bg-muted px-1.5 py-0.5 text-[10px] capitalize text-muted-foreground">{member.actorType === 'coach' ? t('team.coach') : member.role}</span></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </CardContent>

@@ -214,6 +214,7 @@ export default function TechUtilizationPage() {
 
   return (
     <PlaygroundCalculatorShell
+      guideId="tech-utilization"
       breadcrumbLabel="Technician Utilization Calculator"
       icon={Wrench}
       category="Operational Models"

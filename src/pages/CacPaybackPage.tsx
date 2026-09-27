@@ -161,6 +161,7 @@ export default function CacPaybackPage() {
 
   return (
     <PlaygroundCalculatorShell
+      guideId="cac-payback"
       breadcrumbLabel="CAC Payback Calculator"
       icon={PiggyBank}
       category="Marketing Intelligence"
