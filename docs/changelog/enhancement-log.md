@@ -8,17 +8,24 @@ Quick-reference log of incremental enhancements, UI fixes, and small quality-of-
 
 | # | Enhancement | Details | Commit |
 |---|-------------|---------|--------|
-| 1 | Mobile sidebar | Sidebar collapses to the icon rail below 768px; it left ~150px for content on phones. | this commit |
-| 2 | Visit review list | `get_visit_detail` returns `review_actions` (agreed at the previous visit); UI reviewed the wrong set. Migration `20260927180000`. | this commit |
-| 3 | Read-only visit view | Dealer/OEM see agreed actions, next date and summary as text instead of the disabled edit form; no false review counts or brief link. | this commit |
-| 4 | Visit translations | 63 coach-visit strings were English in de/es/fr/it; translated. Visit dates use the app language. | this commit |
-| 5 | Action gap wording | KPI actions state the gap in the KPI unit ("35 percentage points", "€2,450") instead of relative % ("4900%"). 17 stored descriptions stripped of the old clause. | this commit |
-| 6 | Dates and numbers | One date format (d MMM yyyy); euro/number formatting follows the app language; compact `formatEuroLarge` (was "100 €K"). | this commit |
-| 7 | Coach dashboard | Real end-of-quarter date (was a past 30 Jun); single status bullet. | this commit |
-| 8 | OEM | Intervention count matches coach (< 70); plural fix; OEM Team tab shows only OEM invites; Organisation tab hidden. | this commit |
-| 9 | Org chart coaches | `get_org_member_profiles` also returns assigned coaches for the External lane. Migration `20260927181000`. | this commit |
-| 10 | Account | Fake 2FA button replaced by "Coming soon"; email wraps; /100 scores; team copy; model cards aligned; Privacy tab reachable. | this commit |
-| 11 | Small fixes | Edge double password eye, 8–9px text raised, short KPI chip labels, 406 on user_sessions, dialog a11y title, workspace background, tied-department narrative, dead `VisitLogSheet` removed. | this commit |
+| 1 | Mobile sidebar | Sidebar collapses to the icon rail below 768px; it left ~150px for content on phones. | `52198a8` |
+| 2 | Visit review list | `get_visit_detail` returns `review_actions` (agreed at the previous visit); UI reviewed the wrong set. Migration `20260927180000`. | `52198a8` |
+| 3 | Read-only visit view | Dealer/OEM see agreed actions, next date and summary as text instead of the disabled edit form; no false review counts or brief link. | `52198a8` |
+| 4 | Visit translations | 63 coach-visit strings were English in de/es/fr/it; translated. Visit dates use the app language. | `52198a8` |
+| 5 | Action gap wording | KPI actions state the gap in the KPI unit ("35 percentage points", "€2,450") instead of relative % ("4900%"). 17 stored descriptions stripped of the old clause. | `52198a8` |
+| 6 | Dates and numbers | One date format (d MMM yyyy); euro/number formatting follows the app language; compact `formatEuroLarge` (was "100 €K"). | `52198a8` |
+| 7 | Coach dashboard | Real end-of-quarter date (was a past 30 Jun); single status bullet. | `52198a8` |
+| 8 | OEM | Intervention count matches coach (< 70); plural fix; OEM Team tab shows only OEM invites; Organisation tab hidden. | `52198a8` |
+| 9 | Org chart coaches | `get_org_member_profiles` also returns assigned coaches for the External lane. Migration `20260927181000`. | `52198a8` |
+| 10 | Account | Fake 2FA button replaced by "Coming soon"; email wraps; /100 scores; team copy; model cards aligned; Privacy tab reachable. | `52198a8` |
+| 11 | Small fixes | Edge double password eye, 8–9px text raised, short KPI chip labels, 406 on user_sessions, dialog a11y title, workspace background, tied-department narrative, dead `VisitLogSheet` removed. | `52198a8` |
+
+| 12 | Mobile follow-ups | Dashboard hero stacks on phones; Action Plan toolbar wraps; coach/OEM stats bars scroll; Account pane and header email fit; Results maturity stepper shows only the current level on phones. | `c72e252` |
+| 13 | Kanban dates (Lovable) | `KanbanBoard.tsx` due dates switched from US format to "31 Aug 2026". | `af2ad71` |
+| 14 | Leftover coach membership | CSKale's 5 May viewer membership in the dealer org removed (production data). Coach access unaffected: it comes from `coach_dealership_assignments`. | — (DB) |
+
+Merged to main as PR #8 (`673671d`), deployed to production. Verified: tsc clean, lint 0 errors, 387/387 tests, second signed-in sweep of all three roles on desktop and mobile with no page errors or failed requests.
+Open: real two-factor sign-in (enrolment + sign-in challenge); older pages still hard-code English.
 
 ---
 
@@ -26,8 +33,8 @@ Quick-reference log of incremental enhancements, UI fixes, and small quality-of-
 
 | # | Enhancement | Details | Commit |
 |---|-------------|---------|--------|
-| 1 | Privacy + Integrations tabs restored | The new Account settings nav dropped both tabs, leaving their content unreachable (incl. data export/deletion). Re-added with i18n labels in all 5 languages. | this commit |
-| 2 | Sales-only / Service-only business models restored | The new 2S/3S/4S picker dropped these two values, which one live org uses and `actionTemplates` filters on. Picker now shows all 5. | this commit |
+| 1 | Privacy + Integrations tabs restored | The new Account settings nav dropped both tabs, leaving their content unreachable (incl. data export/deletion). Re-added with i18n labels in all 5 languages. | `ab39ea3` |
+| 2 | Sales-only / Service-only business models restored | The new 2S/3S/4S picker dropped these two values, which one live org uses and `actionTemplates` filters on. Picker now shows all 5. | `ab39ea3` |
 
 ---
 
@@ -35,9 +42,9 @@ Quick-reference log of incremental enhancements, UI fixes, and small quality-of-
 
 | # | Enhancement | Details | Commit |
 |---|-------------|---------|--------|
-| 1 | Visit save now completes the visit | `VisitDetail` save sets `status='completed'` when a summary is present, so the `send_visit_recap` trigger fires and the timeline shows the visit as done. | this commit |
-| 2 | Timeline review counts scoped | `CoachVisitWorkspace` fetched every `visit_action_reviews` row the coach could see; now filtered to the current dealership via inner join. | this commit |
-| 3 | `.lovable/` plan untracked | Lovable committed its plan file into a git-ignored folder; removed from the index. | this commit |
+| 1 | Visit save now completes the visit | `VisitDetail` save sets `status='completed'` when a summary is present, so the `send_visit_recap` trigger fires and the timeline shows the visit as done. | `cfc2e08` |
+| 2 | Timeline review counts scoped | `CoachVisitWorkspace` fetched every `visit_action_reviews` row the coach could see; now filtered to the current dealership via inner join. | `cfc2e08` |
+| 3 | `.lovable/` plan untracked | Lovable committed its plan file into a git-ignored folder; removed from the index. | `cfc2e08` |
 
 ---
 
