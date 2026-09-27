@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useVisitBrief } from '@/hooks/useCoachVisitLoop';
 import type { CoachVisit } from '@/lib/coachVisitUtils';
+import { sendVisitNotification } from '@/lib/notifications';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -62,7 +63,7 @@ export function CoachVisitWorkspace({ dealershipId, dealerName, location, latest
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const visits = timelineQuery.data ?? [];
+  const visits = useMemo(() => timelineQuery.data ?? [], [timelineQuery.data]);
   const selectedVisit = useMemo(() => visits.find(visit => visit.id === selectedVisitId) ?? null, [visits, selectedVisitId]);
   const nextVisit = visits.find(visit => ['proposed', 'confirmed', 'counter_proposed'].includes(visit.status));
   const completedCount = visits.filter(visit => visit.status === 'completed').length;
@@ -76,8 +77,13 @@ export function CoachVisitWorkspace({ dealershipId, dealerName, location, latest
     if (!scheduleDate || !user) return;
     setScheduling(true);
     try {
-      const { error } = await supabase.from('coach_visits').insert({ dealership_id: dealershipId, coach_user_id: user.id, visit_date: format(scheduleDate, 'yyyy-MM-dd'), status: 'proposed' });
+      const date = format(scheduleDate, 'yyyy-MM-dd');
+      const { data: inserted, error } = await supabase.from('coach_visits').insert({ dealership_id: dealershipId, coach_user_id: user.id, visit_date: date, status: 'proposed' }).select('id').single();
       if (error) throw error;
+      const { data: dealer } = await supabase.from('dealerships').select('user_id').eq('id', dealershipId).maybeSingle();
+      if (dealer?.user_id) {
+        void sendVisitNotification({ event: 'proposed', recipientUserId: dealer.user_id, dealershipId, visitId: inserted.id, visitDate: date, dealershipName: dealerName });
+      }
       toast.success(t('visit.scheduleSuccess'));
       setScheduleOpen(false);
       setScheduleDate(undefined);
