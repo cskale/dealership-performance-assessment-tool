@@ -60,6 +60,7 @@ export function InviteTeamMembers() {
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
   const [loadingInvites, setLoadingInvites] = useState(true);
   const [orgMembers, setOrgMembers] = useState<OrgMember[]>([]);
+  const [externalCoaches, setExternalCoaches] = useState<OrgMember[]>([]);
   const [memberView, setMemberView] = useState<'list' | 'chart'>('list');
 
   // Check if current user has permission to invite
@@ -110,6 +111,11 @@ export function InviteTeamMembers() {
       const name = p?.display_name || `${m.user_id.slice(0, 8)}…`;
       return { id: m.id, user_id: m.user_id, role: m.role, displayName: name, initials: getInitials(name), actorType: p?.actor_type ?? null };
     }));
+    // the RPC also returns assigned coaches, who aren't members; they only appear in the chart's External lane
+    const memberIds = new Set(memberships.map(m => m.user_id));
+    setExternalCoaches((profiles || []).filter(p => !memberIds.has(p.user_id)).map(p => ({
+      id: p.user_id, user_id: p.user_id, role: 'coach', displayName: p.display_name, initials: getInitials(p.display_name), actorType: p.actor_type,
+    })));
   }, [currentOrganization]);
 
   useEffect(() => {
@@ -329,7 +335,7 @@ export function InviteTeamMembers() {
                   { label: t('team.owner'), members: orgMembers.filter(member => member.role === 'owner') },
                   { label: t('team.leadership'), members: orgMembers.filter(member => ['admin', 'manager'].includes(member.role)) },
                   { label: t('team.internal'), members: orgMembers.filter(member => ['member', 'viewer'].includes(member.role) && member.actorType !== 'coach') },
-                  { label: t('team.external'), members: orgMembers.filter(member => member.actorType === 'coach') },
+                  { label: t('team.external'), members: [...orgMembers.filter(member => member.actorType === 'coach' && ['member', 'viewer'].includes(member.role)), ...externalCoaches] },
                 ].filter(lane => lane.members.length > 0).map((lane, index, lanes) => (
                   <div key={lane.label} className="relative pb-7 last:pb-0">
                     {index < lanes.length - 1 && <span className="absolute left-1/2 top-full h-7 w-px -translate-y-7 bg-border" aria-hidden />}

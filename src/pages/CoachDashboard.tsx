@@ -19,7 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { SharedLoadingState } from '@/components/shared/SharedLoadingState';
 import { SharedEmptyState } from '@/components/shared/SharedEmptyState';
-import { format } from 'date-fns';
+import { endOfQuarter, format } from 'date-fns';
 import { Calendar, Database, BookOpen, MapPin } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { computeStatsBar, daysSince, getScoreBand, isOverdue } from '@/lib/coachDashboardUtils';
@@ -52,7 +52,7 @@ function BrandLogo({ brand, size = 24 }: { brand: string; size?: number }) {
   if (!domain || failed) {
     return (
       <div
-        className="rounded-sm flex items-center justify-center text-[9px] font-bold shrink-0"
+        className="rounded-sm flex items-center justify-center text-[10px] font-bold shrink-0"
         style={{
           width: size, height: size,
           backgroundColor: accent + '26',
@@ -420,7 +420,7 @@ async function fetchCoachDashboardData(coachUserId: string): Promise<CoachDashbo
     .order('visit_date', { ascending: true });
   const activeVisitsByDealer = new Map<string, string>();
   (visitData ?? []).forEach((v: any) => {
-    activeVisitsByDealer.set(v.dealership_id, `${format(new Date(v.visit_date), 'dd MMM')} · ${v.status}`);
+    activeVisitsByDealer.set(v.dealership_id, `${format(new Date(v.visit_date), 'd MMM')} · ${v.status}`);
   });
 
   // Fetch most recent completed visit for timeline strip
@@ -534,7 +534,7 @@ export default function CoachDashboard() {
   return (
     <div className="space-y-0">
       {/* Dark stats bar — matches Sprint 3 dealer dashboard */}
-      <div className="h-9 bg-[#0b1f3a] flex items-center px-6 sticky top-0 z-10">
+      <div className="h-9 bg-[#0b1f3a] flex items-center px-6 sticky top-0 z-10 overflow-x-auto whitespace-nowrap">
         {(() => {
           const s = computeStatsBar(dealers);
           const chips = [
@@ -649,7 +649,7 @@ export default function CoachDashboard() {
                     {a.action_title}
                     {a.target_completion_date && (
                       <span className="text-[#dc2626] ml-1">
-                        — due {format(new Date(a.target_completion_date), 'dd MMM')}
+                        — due {format(new Date(a.target_completion_date), 'd MMM')}
                       </span>
                     )}
                   </p>
@@ -696,7 +696,7 @@ export default function CoachDashboard() {
           {
             label: 'Last Visit',
             value: lastCompletedVisit
-              ? format(new Date(lastCompletedVisit.date), 'dd MMM yyyy')
+              ? format(new Date(lastCompletedVisit.date), 'd MMM yyyy')
               : 'Not scheduled',
             sub: lastCompletedVisit?.dealerName ?? 'No visits recorded',
             status: lastCompletedVisit ? 'completed' : 'none',
@@ -712,7 +712,7 @@ export default function CoachDashboard() {
           {
             label: 'Assessments Due',
             value: assessmentsDue > 0 ? String(assessmentsDue) : 'All current',
-            sub: assessmentsDue > 0 ? 'dealers need assessment' : '✓ Up to date',
+            sub: assessmentsDue > 0 ? 'dealers need assessment' : 'Up to date',
             status: assessmentsDue > 0 ? 'attention' : 'ok',
           },
           {
@@ -723,7 +723,7 @@ export default function CoachDashboard() {
           },
           {
             label: 'Action Plan Review',
-            value: `30 Jun ${new Date().getFullYear()}`,
+            value: format(endOfQuarter(new Date()), 'd MMM yyyy'),
             sub: 'End of quarter · all depts',
             status: 'upcoming',
           },
@@ -741,14 +741,14 @@ export default function CoachDashboard() {
         };
 
         const statusLabel: Record<string, string> = {
-          completed: '● Completed',
-          confirmed:  '● Confirmed',
-          proposed:   '● Proposed',
-          attention:  '● Attention',
-          critical:   '● Critical',
-          ok:         '✓ On track',
-          upcoming:   '○ Upcoming',
-          none:       '○ Not scheduled',
+          completed: 'Completed',
+          confirmed:  'Confirmed',
+          proposed:   'Proposed',
+          attention:  'Attention',
+          critical:   'Critical',
+          ok:         'On track',
+          upcoming:   'Upcoming',
+          none:       'Not scheduled',
         };
 
         return (
@@ -1101,7 +1101,7 @@ export default function CoachDashboard() {
                                 : action.daysStale >= 14 ? 'text-[#dc2626] font-semibold' : 'text-muted-foreground'
                             }`}>
                               {tab === 'overdue'
-                                ? (action.target_completion_date ? format(new Date(action.target_completion_date), 'dd MMM') : '—')
+                                ? (action.target_completion_date ? format(new Date(action.target_completion_date), 'd MMM') : '—')
                                 : `${action.daysStale}d`
                               }
                             </span>

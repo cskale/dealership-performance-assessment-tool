@@ -1,5 +1,5 @@
 // src/lib/dashboardUtils.ts
-import { differenceInCalendarDays, parseISO } from 'date-fns';
+import { differenceInCalendarDays, format, parseISO } from 'date-fns';
 import { getMaturityLevel } from '@/lib/maturityConfig';
 
 // ─── Department metadata ────────────────────────────────────────────────────
@@ -56,17 +56,15 @@ export function isOverdue(targetDate: string | null | undefined): boolean {
 
 /** "14 Apr 2026" */
 export function formatDisplayDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-GB', {
-    day: 'numeric', month: 'short', year: 'numeric',
-  });
+  // date-fns, not en-GB Intl: Chrome renders en-GB September as "Sept", date-fns views use "Sep"
+  return format(new Date(iso), 'd MMM yyyy');
 }
 
 /** "1 Jun 2026" (for action due dates) */
 export function formatDueDate(iso: string | null | undefined): string {
   if (!iso) return 'No date set';
-  return new Date(iso).toLocaleDateString('en-GB', {
-    day: 'numeric', month: 'short', year: 'numeric',
-  });
+  // date-fns, not en-GB Intl: Chrome renders en-GB September as "Sept", date-fns views use "Sep"
+  return format(new Date(iso), 'd MMM yyyy');
 }
 
 /** Returns "Q2 2026" style label from a date string */
@@ -195,5 +193,10 @@ export function heroNarrative(
   if (aboveBenchmark.length >= 1) {
     return `${aboveBenchmark[0]} is above benchmark. ${focusDept} requires the most urgent attention this quarter.`;
   }
-  return `${focusDept} has the lowest score and requires immediate intervention. All departments are developing — structured process improvement is the priority.`;
+  const values = DEPT_ORDER.map(k => scores[k]).filter((v): v is number => v != null);
+  // a tie has no "lowest" department
+  if (values.length > 1 && values.every(v => v === values[0])) {
+    return `All departments score ${Math.round(values[0])} — none is above benchmark, so structured process improvement across the dealership is the priority.`;
+  }
+  return `${focusDept} has the lowest score and requires immediate intervention. No department is above benchmark yet — structured process improvement is the priority.`;
 }

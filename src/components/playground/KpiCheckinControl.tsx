@@ -43,7 +43,7 @@ function currentMonthValue(): string {
 function formatMonth(month: string, locale: string): string {
   return new Date(`${month}-01T00:00:00Z`).toLocaleDateString(locale, {
     month: 'short',
-    year: '2-digit',
+    year: 'numeric',
     timeZone: 'UTC',
   });
 }

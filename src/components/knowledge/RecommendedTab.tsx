@@ -1,4 +1,5 @@
 import { useLatestAssessment } from '@/hooks/useLatestAssessment';
+import { formatDisplayDate } from '@/lib/dashboardUtils';
 import { useActiveRole } from '@/hooks/useActiveRole';
 import { mapSignalsToResources, GapCard, SignalType, DEPT_DISPLAY_NAMES } from '@/lib/mapSignalsToResources';
 import { FreshnessBadge } from '@/components/ui/FreshnessBadge';
@@ -225,7 +226,7 @@ export function RecommendedTab() {
               <FreshnessBadge completedAt={assessment.completedAt} />
             </div>
             <p className="text-xs text-neutral-400 mb-1">
-              {user?.email} · Assessment {new Date(assessment.completedAt).toLocaleDateString()}
+              {user?.email} · Assessment {formatDisplayDate(assessment.completedAt)}
             </p>
             <h2 className="text-2xl font-semibold text-white leading-tight">
               {topGap

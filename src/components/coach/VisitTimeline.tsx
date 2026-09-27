@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { DATE_LOCALES } from '@/lib/dateLocale';
 import { CalendarDays, ChevronDown, ChevronRight, Clock3, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -34,7 +35,7 @@ function statusVariant(status: string) {
 }
 
 function VisitRow({ visit, active, onClick }: { visit: TimelineVisit; active: boolean; onClick: () => void }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const summary = visit.summary ?? visit.visit_notes;
   return (
     <Button
@@ -49,25 +50,26 @@ function VisitRow({ visit, active, onClick }: { visit: TimelineVisit; active: bo
       <span className="min-w-0 flex-1 space-y-1.5">
         <span className="flex items-center justify-between gap-2">
           <span className="text-body-sm font-semibold text-foreground numeric">
-            {format(new Date(visit.visit_date), 'dd MMM yyyy')}
+            {format(new Date(visit.visit_date), 'd MMM yyyy', { locale: DATE_LOCALES[language] })}
           </span>
           <Badge variant="outline" className={cn('shrink-0 text-caption capitalize', statusVariant(visit.status))}>
             {t(`visit.status.${visit.status}`)}
           </Badge>
         </span>
         {summary && <span className="block truncate text-caption text-muted-foreground">{summary}</span>}
-        <span className="block text-caption text-muted-foreground">
+        {/* counts come only from the coach workspace query; without them "0 reviews · 0 notes" is wrong */}
+        {visit.noteCount !== undefined && <span className="block text-caption text-muted-foreground">
           {t('visit.timeline.counts')
             .replace('{actions}', String(visit.reviewCount ?? 0))
             .replace('{notes}', String(visit.noteCount ?? 0))}
-        </span>
+        </span>}
       </span>
     </Button>
   );
 }
 
 export function VisitTimeline({ visits, selectedVisitId, loading, onSelectBrief, onSelectVisit, onSchedule, readOnly = false }: VisitTimelineProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [showCancelled, setShowCancelled] = useState(false);
   const upcoming = visits.find(visit => ACTIVE_STATUSES.has(visit.status)) ?? null;
   const past = visits.filter(visit => !ACTIVE_STATUSES.has(visit.status) && visit.status !== 'cancelled');
@@ -100,7 +102,7 @@ export function VisitTimeline({ visits, selectedVisitId, loading, onSelectBrief,
       <div>
         <div className="flex items-center justify-between gap-2">
           <p className="text-label uppercase tracking-wider text-muted-foreground">{t('visit.timeline.past')}</p>
-          {selectedVisitId && <Button variant="ghost" size="sm" className="h-7 px-2 text-caption" onClick={onSelectBrief}>{t('visit.brief.title')}</Button>}
+          {selectedVisitId && !readOnly && <Button variant="ghost" size="sm" className="h-7 px-2 text-caption" onClick={onSelectBrief}>{t('visit.brief.title')}</Button>}
         </div>
         <div className="mt-2 space-y-1">
           {past.length === 0 ? (

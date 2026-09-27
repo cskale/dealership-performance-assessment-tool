@@ -76,7 +76,11 @@ export function interpolateKpiTemplate(
 ): KpiActionTemplate {
   const actualText = formatValue(s.actualValue, s.unit);
   const targetText = formatValue(s.targetValue, s.unit);
-  const gapText = Number.isFinite(s.gapPercent) ? `${s.gapPercent}%` : '';
+  // absolute gap in the KPI's own unit: relative % read as nonsense ("50% vs 1% — a gap of 4900%")
+  const diff = Math.abs(s.actualValue - s.targetValue);
+  const gapText = !Number.isFinite(s.gapPercent) || !Number.isFinite(diff) ? ''
+    : s.unit === '%' ? `${formatValue(diff, '').trim()} percentage points`
+    : formatValue(diff, s.unit);
   const unit = s.unit ?? '';
 
   return {

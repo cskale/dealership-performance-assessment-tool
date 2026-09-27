@@ -32,7 +32,7 @@ export function ScaleGauge({ value, max, target, fillClass }: ScaleGaugeProps) {
           style={{ width: value === null ? '0%' : pos(value) }}
         />
         <div className="absolute -top-6 -translate-x-1/2" style={{ left: pos(target) }} aria-hidden>
-          <span className="whitespace-nowrap rounded bg-foreground px-1.5 py-0.5 text-[9px] font-semibold text-background shadow-soft">Target {target}%</span>
+          <span className="whitespace-nowrap rounded bg-foreground px-1.5 py-0.5 text-[10px] font-semibold text-background shadow-soft">Target {target}%</span>
           <span className="mx-auto block h-2 w-px bg-foreground/60" />
         </div>
         <div className="absolute -top-1 h-[18px] w-px bg-foreground/60" style={{ left: pos(target) }} aria-hidden />

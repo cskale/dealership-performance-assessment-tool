@@ -83,7 +83,7 @@ describe('interpolateKpiTemplate', () => {
     expect(result.title).toContain('80%');
     expect(result.description).toContain('45%');
     expect(result.description).toContain('80%');
-    expect(result.description).toContain('43.8%');
+    expect(result.description).toContain('35 percentage points');
   });
 
   it('formats EUR values with euro sign and thousands separator', () => {

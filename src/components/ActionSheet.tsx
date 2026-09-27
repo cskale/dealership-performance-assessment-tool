@@ -405,10 +405,10 @@ const updateField = useCallback((field: string, value: string | string[] | numbe
                           <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-[hsl(var(--dd-amber-light))] rounded-tr-lg" />
                           <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-secondary rounded-bl-lg" />
                           <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-destructive/5 rounded-br-lg" />
-                          <span className="absolute top-0.5 left-1 text-[8px] text-[hsl(var(--dd-green))]">Quick Win</span>
-                          <span className="absolute top-0.5 right-1 text-[8px] text-[hsl(var(--dd-amber))] text-right">Strategic</span>
-                          <span className="absolute bottom-0.5 left-1 text-[8px] text-muted-foreground">Maintenance</span>
-                          <span className="absolute bottom-0.5 right-1 text-[8px] text-destructive text-right">Low Priority</span>
+                          <span className="absolute top-0.5 left-1 text-[10px] text-[hsl(var(--dd-green))]">Quick Win</span>
+                          <span className="absolute top-0.5 right-1 text-[10px] text-[hsl(var(--dd-amber))] text-right">Strategic</span>
+                          <span className="absolute bottom-0.5 left-1 text-[10px] text-muted-foreground">Maintenance</span>
+                          <span className="absolute bottom-0.5 right-1 text-[10px] text-destructive text-right">Low Priority</span>
                           <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border" />
                           <div className="absolute top-1/2 left-0 right-0 h-px bg-border" />
                           <div

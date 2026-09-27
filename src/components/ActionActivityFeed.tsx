@@ -236,7 +236,7 @@ export function ActionActivityFeed({ actionId }: ActionActivityFeedProps) {
                   </div>
                 ) : (
                   <div className={cn(
-                    'h-6 w-6 rounded-full flex items-center justify-center text-[9px] font-semibold shrink-0 mt-0.5',
+                    'h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-semibold shrink-0 mt-0.5',
                     isOwn ? 'bg-[hsl(var(--brand-500))] text-white' : 'bg-muted text-muted-foreground'
                   )}>
                     {authorInitials(author)}

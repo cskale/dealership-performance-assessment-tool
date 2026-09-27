@@ -4,6 +4,7 @@ import { Activity } from 'lucide-react';
 import { questionnaire, isDataQuestion } from '@/data/questionnaire';
 import type { TimelinePoint } from '@/lib/kpiTimeline';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { KPI_LABELS } from '@/lib/kpiDefinitions';
 
 interface LinkedKpiChipProps {
   kpiKey?: string;
@@ -19,7 +20,9 @@ export function LinkedKpiChip({ kpiKey, history = [] }: LinkedKpiChipProps) {
   if (!kpiKey) return null;
 
   const question = KPI_QUESTIONS.find((candidate) => candidate.kpiKey === kpiKey);
-  const label = question?.translations?.[language]?.text ?? question?.text ?? kpiKey;
+  const short = KPI_LABELS[kpiKey];
+  // short KPI name ("Workshop Loading"), not the full question which truncated to "What percentage of y…"
+  const label = short ? (short[language as 'en' | 'de'] ?? short.en) : question?.translations?.[language]?.text ?? question?.text ?? kpiKey;
 
   return (
     <Link
@@ -29,7 +32,7 @@ export function LinkedKpiChip({ kpiKey, history = [] }: LinkedKpiChipProps) {
       aria-label={`${t('actionPlan.viewKpi')}: ${label}`}
     >
       <Activity className="h-3 w-3 shrink-0" aria-hidden="true" />
-      <span className="max-w-32 truncate">{label}</span>
+      <span className="max-w-48 truncate">{label}</span>
       {history.length > 1 && (
         <span className="h-4 w-12 shrink-0" aria-hidden="true">
           <ResponsiveContainer width="100%" height="100%">

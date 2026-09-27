@@ -38,7 +38,7 @@ function coachDisplayName(profiles: CoachNote['profiles'], fallback: string): st
 
 export function CoachNotesPanel({ dealershipId }: CoachNotesPanelProps) {
   const navigate = useNavigate();
-  const { t } = useOptionalLanguage();
+  const { t, language } = useOptionalLanguage();
   const [notes, setNotes] = useState<CoachNote[]>([]);
   const [loaded, setLoaded] = useState(false);
 
@@ -114,7 +114,7 @@ export function CoachNotesPanel({ dealershipId }: CoachNotesPanelProps) {
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {groupId === 'general'
                 ? t('dealerNotes.general')
-                : t('dealerNotes.visit').replace('{date}', groupNotes[0]?.visitDate ? new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(groupNotes[0].visitDate)) : '—')}
+                : t('dealerNotes.visit').replace('{date}', groupNotes[0]?.visitDate ? new Intl.DateTimeFormat(language === 'en' ? 'en-GB' : language, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(groupNotes[0].visitDate)) : '—')}
             </h3>
             <div className="space-y-4">
             {groupNotes.map((note) => (

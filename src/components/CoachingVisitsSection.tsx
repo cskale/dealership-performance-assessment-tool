@@ -54,7 +54,6 @@ export function CoachingVisitsSection({ dealershipId, visits, loading, upcomingV
     updated_at: null,
     dealer_proposed_date: null,
     declined_by: null,
-    reviewCount: visit.reviews.length,
     } satisfies TimelineVisit)),
   ], [dealershipId, upcomingVisit, visits]);
 

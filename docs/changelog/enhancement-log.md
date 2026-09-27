@@ -4,6 +4,24 @@ Quick-reference log of incremental enhancements, UI fixes, and small quality-of-
 
 ---
 
+## 2026-09-27 — Full QA sweep fixes (dealer / coach / OEM)
+
+| # | Enhancement | Details | Commit |
+|---|-------------|---------|--------|
+| 1 | Mobile sidebar | Sidebar collapses to the icon rail below 768px; it left ~150px for content on phones. | this commit |
+| 2 | Visit review list | `get_visit_detail` returns `review_actions` (agreed at the previous visit); UI reviewed the wrong set. Migration `20260927180000`. | this commit |
+| 3 | Read-only visit view | Dealer/OEM see agreed actions, next date and summary as text instead of the disabled edit form; no false review counts or brief link. | this commit |
+| 4 | Visit translations | 63 coach-visit strings were English in de/es/fr/it; translated. Visit dates use the app language. | this commit |
+| 5 | Action gap wording | KPI actions state the gap in the KPI unit ("35 percentage points", "€2,450") instead of relative % ("4900%"). 17 stored descriptions stripped of the old clause. | this commit |
+| 6 | Dates and numbers | One date format (d MMM yyyy); euro/number formatting follows the app language; compact `formatEuroLarge` (was "100 €K"). | this commit |
+| 7 | Coach dashboard | Real end-of-quarter date (was a past 30 Jun); single status bullet. | this commit |
+| 8 | OEM | Intervention count matches coach (< 70); plural fix; OEM Team tab shows only OEM invites; Organisation tab hidden. | this commit |
+| 9 | Org chart coaches | `get_org_member_profiles` also returns assigned coaches for the External lane. Migration `20260927181000`. | this commit |
+| 10 | Account | Fake 2FA button replaced by "Coming soon"; email wraps; /100 scores; team copy; model cards aligned; Privacy tab reachable. | this commit |
+| 11 | Small fixes | Edge double password eye, 8–9px text raised, short KPI chip labels, 406 on user_sessions, dialog a11y title, workspace background, tied-department narrative, dead `VisitLogSheet` removed. | this commit |
+
+---
+
 ## 2026-09-27 — Lovable Prompts 2–4 review fixes
 
 | # | Enhancement | Details | Commit |
