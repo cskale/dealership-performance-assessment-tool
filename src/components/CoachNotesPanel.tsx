@@ -4,7 +4,7 @@ import { MessageSquare, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useOptionalLanguage } from '@/contexts/LanguageContext';
 
 interface CoachNote {
   id: string;
@@ -38,7 +38,7 @@ function coachDisplayName(profiles: CoachNote['profiles'], fallback: string): st
 
 export function CoachNotesPanel({ dealershipId }: CoachNotesPanelProps) {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t } = useOptionalLanguage();
   const [notes, setNotes] = useState<CoachNote[]>([]);
   const [loaded, setLoaded] = useState(false);
 

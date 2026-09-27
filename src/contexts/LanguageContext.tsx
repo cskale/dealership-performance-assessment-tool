@@ -139,3 +139,13 @@ export function useLanguage() {
   }
   return context;
 }
+
+export function useOptionalLanguage() {
+  const context = useContext(LanguageContext);
+  return context ?? {
+    language: 'en' as Language,
+    setLanguage: () => undefined,
+    t: (key: string) => en[key] || key,
+    isLoading: false,
+  };
+}
