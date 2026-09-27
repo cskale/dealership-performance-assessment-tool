@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { formatDisplayDate } from '@/lib/dashboardUtils';
 import { cleanActionTitle } from '@/lib/actionRationaleMap';
 import type { ActionRecord } from '../ActionPlan';
 import type { TimelinePoint } from '@/lib/kpiTimeline';
@@ -146,7 +147,7 @@ export function KanbanBoard({ actions, onStatusChange, onActionClick, dealership
                     <div className="mt-2 flex flex-wrap items-center gap-1 text-[10px] text-muted-foreground">
                       <span>{action.department}</span>
                       {action.responsible_person && <><span aria-hidden="true">·</span><span>{action.responsible_person}</span></>}
-                      {action.target_completion_date && <><span aria-hidden="true">·</span><span>{new Date(action.target_completion_date).toLocaleDateString(language)}</span></>}
+                      {action.target_completion_date && <><span aria-hidden="true">·</span><span>{language === 'en' ? formatDisplayDate(action.target_completion_date) : new Date(action.target_completion_date).toLocaleDateString(language, { day: 'numeric', month: 'short', year: 'numeric' })}</span></>}
                       {isOverdue(action) && <span className="inline-flex items-center gap-1 text-destructive"><Clock className="h-3 w-3" />{t('actionPlan.overdue')}</span>}
                     </div>
                     <div className="mt-2"><LinkedKpiChip kpiKey={kpiKey} history={kpiKey ? kpiTimelines[kpiKey] : undefined} /></div>
