@@ -4,6 +4,15 @@ Quick-reference log of incremental enhancements, UI fixes, and small quality-of-
 
 ---
 
+## 2026-09-27 — Lovable Prompts 2–4 review fixes
+
+| # | Enhancement | Details | Commit |
+|---|-------------|---------|--------|
+| 1 | Privacy + Integrations tabs restored | The new Account settings nav dropped both tabs, leaving their content unreachable (incl. data export/deletion). Re-added with i18n labels in all 5 languages. | this commit |
+| 2 | Sales-only / Service-only business models restored | The new 2S/3S/4S picker dropped these two values, which one live org uses and `actionTemplates` filters on. Picker now shows all 5. | this commit |
+
+---
+
 ## 2026-09-27 — Coach visit workspace (Lovable Prompt 1) review fixes
 
 | # | Enhancement | Details | Commit |

@@ -412,7 +412,9 @@ const Account = () => {
     ...(actorType !== 'coach' ? [{ value: 'organization', label: t('account.nav.organization'), icon: Building2 }] : []),
     ...(canManageTeam || actorType === 'coach' ? [{ value: 'team', label: actorType === 'coach' ? t('account.nav.dealerships') : t('account.nav.team'), icon: Users }] : []),
     { value: 'security', label: t('account.nav.security'), icon: Shield },
+    { value: 'privacy', label: t('account.nav.privacy'), icon: Globe },
     { value: 'notifications', label: t('account.nav.notifications'), icon: Bell },
+    { value: 'integrations', label: t('account.nav.integrations'), icon: Link2 },
     ...(hasActivityData ? [{ value: 'activity', label: t('account.nav.activity'), icon: Activity }] : []),
   ];
 

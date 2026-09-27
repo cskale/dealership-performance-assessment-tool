@@ -535,8 +535,10 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
                       </TooltipContent>
                     </Tooltip>
                   </div>
-                  <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
                     {[
+                      { value: 'sales_only', title: t('organization.model.sales_only'), detail: 'NVS · UVS' },
+                      { value: 'service_only', title: t('organization.model.service_only'), detail: 'SVC' },
                       { value: '2s', title: '2S', detail: t('organization.model.2s') },
                       { value: '3s', title: '3S', detail: t('organization.model.3s') },
                       { value: '4s', title: '4S', detail: t('organization.model.4s') },
