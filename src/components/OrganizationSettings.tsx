@@ -13,6 +13,7 @@ import { organizationSettingsSchema } from '@/lib/validationSchemas';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BrandChip } from '@/components/BrandChip';
 import { MultiSelect } from '@/components/ui/multi-select';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface OrgSettings {
   name: string;
@@ -151,6 +152,7 @@ function ChipSelector({ options, selected, onChange, disabled, mandatory }: {
 }
 
 export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -535,9 +537,9 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
                   </div>
                   <div className="grid gap-3 sm:grid-cols-3">
                     {[
-                      { value: '2s', title: '2S', detail: 'Sales · Service' },
-                      { value: '3s', title: '3S', detail: 'Sales · Service · Parts' },
-                      { value: '4s', title: '4S', detail: 'Sales · Service · Parts · Bodyshop' },
+                      { value: '2s', title: '2S', detail: t('organization.model.2s') },
+                      { value: '3s', title: '3S', detail: t('organization.model.3s') },
+                      { value: '4s', title: '4S', detail: t('organization.model.4s') },
                     ].map(model => (
                       <Button key={model.value} type="button" variant="outline" disabled={disabled} onClick={() => setSettings(p => ({ ...p, business_model: model.value }))} className={`h-auto min-h-24 flex-col items-start whitespace-normal p-4 text-left ${settings.business_model === model.value ? 'border-primary bg-primary/5 ring-1 ring-primary' : ''}`}>
                         <span className="text-lg font-semibold text-foreground">{model.title}</span><span className="text-xs font-normal leading-5 text-muted-foreground">{model.detail}</span>
