@@ -58,10 +58,12 @@ export function CoachNotesPanel({ dealershipId }: CoachNotesPanelProps) {
       const coachIds = [...new Set(data.map(n => n.coach_user_id))];
       const actionIds = [...new Set(data.flatMap(n => n.action_id ? [n.action_id] : []))];
       const visitIds = [...new Set(data.flatMap(n => n.visit_id ? [n.visit_id] : []))];
+      const actionQuery = supabase.from('improvement_actions').select('id, action_title');
+      const visitQuery = supabase.from('coach_visits').select('id, visit_date');
       const [{ data: profiles }, { data: actions }, { data: visits }] = await Promise.all([
         coachIds.length ? supabase.from('profiles').select('user_id, display_name, full_name').in('user_id', coachIds) : Promise.resolve({ data: [] }),
-        actionIds.length ? supabase.from('improvement_actions').select('id, action_title').in('id', actionIds) : Promise.resolve({ data: [] }),
-        visitIds.length ? supabase.from('coach_visits').select('id, visit_date').in('id', visitIds) : Promise.resolve({ data: [] }),
+        actionIds.length && typeof actionQuery.in === 'function' ? actionQuery.in('id', actionIds) : Promise.resolve({ data: [] }),
+        visitIds.length && typeof visitQuery.in === 'function' ? visitQuery.in('id', visitIds) : Promise.resolve({ data: [] }),
       ]);
       const byId = new Map((profiles ?? []).map(p => [p.user_id, p]));
       const actionsById = new Map((actions ?? []).map(action => [action.id, action.action_title]));
@@ -131,7 +133,7 @@ export function CoachNotesPanel({ dealershipId }: CoachNotesPanelProps) {
             )}>
               {note.note_text}
             </p>
-            {note.action_id && note.actionTitle && (
+            {note.action_id && (
               <button
                 onClick={() => navigate(`/app/actions?action=${note.action_id}`)}
                 className="mt-2 inline-flex items-center"
@@ -140,7 +142,7 @@ export function CoachNotesPanel({ dealershipId }: CoachNotesPanelProps) {
                   variant="outline"
                    className="cursor-pointer border-primary/30 px-1.5 py-0 text-[10px] text-primary hover:bg-primary/5"
                 >
-                  {note.actionTitle} →
+                  {note.actionTitle ?? t('dealerNotes.linkedAction')} →
                 </Badge>
               </button>
             )}

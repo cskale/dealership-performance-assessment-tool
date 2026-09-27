@@ -580,6 +580,7 @@ const de: Record<string, string> = {
   'dealerNotes.general': 'Allgemein',
   'dealerNotes.visit': 'Besuch {date}',
   'dealerNotes.coach': 'Coach',
+  'dealerNotes.linkedAction': 'Mit Aktion verknüpft',
   'time.justNow': 'Gerade eben',
   'time.minutesAgo': 'vor {count} Min.',
   'time.hoursAgo': 'vor {count} Std.',

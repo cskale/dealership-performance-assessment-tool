@@ -580,6 +580,7 @@ const es: Record<string, string> = {
   'dealerNotes.general': 'General',
   'dealerNotes.visit': 'Visita {date}',
   'dealerNotes.coach': 'Coach',
+  'dealerNotes.linkedAction': 'Vinculado a la acción',
   'time.justNow': 'Ahora mismo',
   'time.minutesAgo': 'hace {count} min',
   'time.hoursAgo': 'hace {count} h',
