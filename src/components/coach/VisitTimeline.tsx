@@ -20,6 +20,7 @@ interface VisitTimelineProps {
   onSelectBrief: () => void;
   onSelectVisit: (visit: TimelineVisit) => void;
   onSchedule: () => void;
+  readOnly?: boolean;
 }
 
 const ACTIVE_STATUSES = new Set(['proposed', 'confirmed', 'counter_proposed']);
@@ -65,7 +66,7 @@ function VisitRow({ visit, active, onClick }: { visit: TimelineVisit; active: bo
   );
 }
 
-export function VisitTimeline({ visits, selectedVisitId, loading, onSelectBrief, onSelectVisit, onSchedule }: VisitTimelineProps) {
+export function VisitTimeline({ visits, selectedVisitId, loading, onSelectBrief, onSelectVisit, onSchedule, readOnly = false }: VisitTimelineProps) {
   const { t } = useLanguage();
   const [showCancelled, setShowCancelled] = useState(false);
   const upcoming = visits.find(visit => ACTIVE_STATUSES.has(visit.status)) ?? null;
@@ -87,9 +88,11 @@ export function VisitTimeline({ visits, selectedVisitId, loading, onSelectBrief,
             <div className="flex items-center gap-2 text-body-sm text-muted-foreground">
               <CalendarDays className="h-4 w-4" /> {t('visit.timeline.noneScheduled')}
             </div>
-            <Button size="sm" variant="outline" className="mt-3 w-full" onClick={onSchedule}>
-              <Plus className="h-4 w-4" /> {t('visit.schedule')}
-            </Button>
+            {!readOnly && (
+              <Button size="sm" variant="outline" className="mt-3 w-full" onClick={onSchedule}>
+                <Plus className="h-4 w-4" /> {t('visit.schedule')}
+              </Button>
+            )}
           </div>
         )}
       </div>

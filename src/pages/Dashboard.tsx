@@ -1006,8 +1006,8 @@ export default function Dashboard() {
 
         {dealerId && (
           <CoachingVisitsSection
+            dealershipId={dealerId}
             visits={visitHistory ?? []}
-            brief={visitBrief ?? null}
             loading={visitHistoryLoading}
           />
         )}

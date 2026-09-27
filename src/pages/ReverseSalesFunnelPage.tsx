@@ -270,6 +270,7 @@ export default function ReverseSalesFunnelPage() {
 
   return (
     <PlaygroundCalculatorShell
+      guideId="reverse-sales-funnel"
       breadcrumbLabel="Reverse Sales Funnel Calculator"
       icon={TrendingUp}
       category="Sales Optimization"

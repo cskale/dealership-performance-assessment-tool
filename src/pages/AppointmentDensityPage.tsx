@@ -160,6 +160,7 @@ export default function AppointmentDensityPage() {
 
   return (
     <PlaygroundCalculatorShell
+      guideId="appointment-density"
       breadcrumbLabel="Appointment Density Optimizer"
       icon={Clock}
       category="Operational Models"

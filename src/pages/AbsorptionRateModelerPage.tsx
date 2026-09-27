@@ -281,6 +281,7 @@ export default function AbsorptionRateModelerPage() {
 
   return (
     <PlaygroundCalculatorShell
+      guideId="absorption-rate"
       breadcrumbLabel="Absorption Rate Modeler"
       icon={ShieldCheck}
       category="Operational Models"

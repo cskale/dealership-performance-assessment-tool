@@ -265,6 +265,7 @@ export default function MarketingRoiPage() {
 
   return (
     <PlaygroundCalculatorShell
+      guideId="marketing-roi"
       breadcrumbLabel="Marketing ROI Engine"
       icon={Megaphone}
       category="Marketing Intelligence"

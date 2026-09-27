@@ -181,6 +181,7 @@ export default function SalesVelocityPage() {
 
   return (
     <PlaygroundCalculatorShell
+      guideId="sales-velocity"
       breadcrumbLabel="Sales Velocity Instrument"
       icon={Gauge}
       category="Sales Optimization"

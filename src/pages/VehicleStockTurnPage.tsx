@@ -196,6 +196,7 @@ export default function VehicleStockTurnPage() {
 
   return (
     <PlaygroundCalculatorShell
+      guideId="vehicle-stock-turn"
       breadcrumbLabel="Vehicle Stock Turn Calculator"
       icon={Package}
       category="Operational Models"
