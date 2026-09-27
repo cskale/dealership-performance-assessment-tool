@@ -62,6 +62,7 @@ export function brokeredPreviewStorage() {
 
   return {
     getItem: async (key: string) => {
+      // eslint-disable-next-line prefer-const
       let res = await request('lovable-preview-auth:get', key);
       if (!res && firstGet) {
         await new Promise((r) => setTimeout(r, RETRY_DELAY));
