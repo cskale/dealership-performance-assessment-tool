@@ -96,17 +96,14 @@ export function InviteTeamMembers() {
 
     if (!memberships || memberships.length === 0) { setOrgMembers([]); return; }
 
-    const userIds = memberships.map(m => m.user_id);
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('user_id, display_name, full_name, email')
-      .in('user_id', userIds);
+    // profiles RLS is own-row only; this RPC returns names for members of the caller's org
+    const { data: profiles } = await supabase.rpc('get_org_member_profiles', { p_org_id: currentOrganization.id });
 
     const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
 
     setOrgMembers(memberships.map(m => {
       const p = profileMap.get(m.user_id);
-      const name = p?.display_name || p?.full_name || p?.email || `${m.user_id.slice(0, 8)}…`;
+      const name = p?.display_name || `${m.user_id.slice(0, 8)}…`;
       return { id: m.id, user_id: m.user_id, role: m.role, displayName: name, initials: getInitials(name) };
     }));
   }, [currentOrganization]);
