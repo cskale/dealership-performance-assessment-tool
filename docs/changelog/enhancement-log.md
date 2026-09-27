@@ -4,6 +4,18 @@ Quick-reference log of incremental enhancements, UI fixes, and small quality-of-
 
 ---
 
+## 2026-09-27 — Repo clean-up, docs structure and README refresh
+
+| # | Enhancement | Details | Commit |
+|---|-------------|---------|--------|
+| 1 | Agent leftovers removed | Deleted `.agents/` (391 files duplicating `.claude/skills/`), Lovable scratch plans (`roadmap.md`, `.lovable/`), a one-off debug script and diagram build artefacts. Tracked files ~1,200 → 810. These paths are now git-ignored. | `76f9f2b` |
+| 2 | Docs filed by type | Root docs moved into `docs/product/` (PRD, roadmap, improvement tracker archive), `docs/architecture/` (architecture, action-plan logic, diagrams), `docs/changelog/` (this log, CHANGELOG), `docs/contributing/` (CONTRIBUTING, SECURITY). Cross-links fixed. Root now holds only README, CLAUDE.md, AGENTS.md, DESIGN.md and tool config. | `76f9f2b` |
+| 3 | Repo hygiene rules | New "Repo Structure & Hygiene" section in CLAUDE.md: new docs go in the matching `docs/` folder; no one-off scripts, screenshots or agent scratch files in the repo. | `76f9f2b` |
+| 4 | README refreshed | Rewritten to the September 2026 state: Results redesign, monthly KPI check-ins, coach visit loop, notifications, security summary, 4-level maturity scale, 10 live Playground calculators, current OEM provisioning, repo layout, open issues and next up. | `2562ffe` |
+| 5 | Enhancement log in HTML | Styled HTML copy saved to Downloads (`enhancement-log.html`) with an entry index and colour-coded commit column. | — |
+
+---
+
 ## 2026-09-26/27 — Results redesign: minor fixes and final verification
 
 Follow-up pass after the Results redesign went live. All items reviewed before merge (`652195b`); tests 387/387, lint 0 errors, build green.
