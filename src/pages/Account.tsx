@@ -165,7 +165,7 @@ const Account = () => {
   const { organizations, currentOrganization, switchOrganization, userMemberships } = useMultiTenant();
   const { actorType } = useActiveRole();
   const { toast } = useToast();
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
   
   const queryClient = useQueryClient();
@@ -408,14 +408,12 @@ const Account = () => {
   const roleLabelDisplay = roleLabel.charAt(0).toUpperCase() + roleLabel.slice(1);
 
   const NAV_ITEMS = [
-    { value: 'profile',       label: 'Profile',        icon: User },
-    ...(actorType !== 'coach' ? [{ value: 'organization', label: 'Organization', icon: Building2 }] : []),
-    ...(canManageTeam || actorType === 'coach' ? [{ value: 'team', label: actorType === 'coach' ? 'Dealerships' : 'Team', icon: Users }] : []),
-    ...(hasActivityData  ? [{ value: 'activity', label: 'Activity',    icon: Activity }] : []),
-    { value: 'security',      label: 'Security',       icon: Shield },
-    { value: 'privacy',       label: 'Privacy',        icon: Globe },
-    { value: 'notifications', label: 'Notifications',  icon: Bell },
-    { value: 'integrations',  label: 'Integrations',   icon: Link2 },
+    { value: 'profile', label: t('account.nav.profile'), icon: User },
+    ...(actorType !== 'coach' ? [{ value: 'organization', label: t('account.nav.organization'), icon: Building2 }] : []),
+    ...(canManageTeam || actorType === 'coach' ? [{ value: 'team', label: actorType === 'coach' ? t('account.nav.dealerships') : t('account.nav.team'), icon: Users }] : []),
+    { value: 'security', label: t('account.nav.security'), icon: Shield },
+    { value: 'notifications', label: t('account.nav.notifications'), icon: Bell },
+    ...(hasActivityData ? [{ value: 'activity', label: t('account.nav.activity'), icon: Activity }] : []),
   ];
 
   return (
@@ -425,10 +423,10 @@ const Account = () => {
       </div>
 
       <div className="mx-auto max-w-[1400px] px-6 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical" className="flex gap-8 items-start">
+        <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical" className="flex flex-col gap-5 items-start lg:flex-row lg:gap-8">
           {/* Left rail — distinct fog background + border for clear separation from white content */}
-          <aside className="w-[240px] shrink-0 lg:w-[240px] max-lg:w-[64px] sticky top-6 self-start rounded-xl border border-[hsl(var(--dd-rule))] bg-[hsl(var(--dd-fog))] p-2">
-            <TabsList className="flex flex-col h-auto bg-transparent p-0 gap-0.5 w-full items-stretch">
+          <aside className="w-full shrink-0 self-start overflow-x-auto rounded-lg border border-[hsl(var(--dd-rule))] bg-[hsl(var(--dd-fog))] p-2 lg:sticky lg:top-6 lg:w-[240px]">
+            <TabsList className="flex h-auto min-w-max flex-row items-stretch gap-0.5 bg-transparent p-0 lg:min-w-0 lg:flex-col">
               {NAV_ITEMS.map(item => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.value;
@@ -441,13 +439,13 @@ const Account = () => {
                       data-[state=active]:text-[hsl(var(--dd-accent))]
                       data-[state=active]:shadow-sm
                       hover:bg-background/60
-                      max-lg:justify-center max-lg:px-0`}
+                      `}
                   >
                     {isActive && (
                       <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r bg-[hsl(var(--dd-accent))]" />
                     )}
                     <Icon className="h-[18px] w-[18px] shrink-0" />
-                    <span className="max-lg:hidden">{item.label}</span>
+                    <span>{item.label}</span>
                   </TabsTrigger>
                 );
               })}
@@ -703,7 +701,10 @@ const Account = () => {
                     <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>
                   ) : (
                     <div className="space-y-2">
-                      {completedAssessments.map(assessment => (
+                      {completedAssessments.slice(0, 3).map((assessment, index) => {
+                        const previous = completedAssessments[index + 1]?.overall_score;
+                        const delta = assessment.overall_score != null && previous != null ? Math.round(assessment.overall_score - previous) : null;
+                        return (
                         <div key={assessment.id} onClick={() => navigate(`/app/results/${assessment.id}`)}
                           className="flex items-center gap-3 p-3.5 rounded-lg border border-[hsl(var(--dd-rule))] cursor-pointer hover:border-[hsl(var(--dd-accent-mid))] transition-colors bg-white">
                           <div className="w-9 h-9 rounded-full bg-[hsl(var(--dd-green-light))] flex items-center justify-center">
@@ -716,12 +717,14 @@ const Account = () => {
                           {assessment.overall_score != null && (
                             <div className="text-right">
                               <div className="text-lg font-bold text-[hsl(var(--dd-accent))]">{Math.round(assessment.overall_score)}%</div>
+                              {delta !== null && <div className="text-[11px] text-muted-foreground">{delta >= 0 ? '+' : ''}{delta} {t('account.activity.points')}</div>}
                               <div className="text-[11px] text-muted-foreground">Score</div>
                             </div>
                           )}
                           <ChevronRight className="h-4 w-4 text-muted-foreground" />
                         </div>
-                      ))}
+                      )})}
+                      <Button variant="link" className="px-0" onClick={() => navigate('/app/results')}>{t('account.activity.seeAll')} <ChevronRight className="h-4 w-4" /></Button>
                     </div>
                   )}
                 </Section>

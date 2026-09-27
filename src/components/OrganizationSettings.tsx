@@ -15,6 +15,7 @@ import { BrandChip } from '@/components/BrandChip';
 import { MultiSelect } from '@/components/ui/multi-select';
 
 interface OrgSettings {
+  name: string;
   brand_mode: string | null;
   oem_authorization: string | null;
   network_structure: string | null;
@@ -156,6 +157,7 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
   const [uploading, setUploading] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [settings, setSettings] = useState<OrgSettings>({
+    name: '',
     brand_mode: null, oem_authorization: null, network_structure: null,
     business_model: null, positioning: null, default_language: 'en',
     country: null, city: null, logo_url: null,
@@ -173,6 +175,7 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
         const filtered = segs.filter(s => ['passenger', 'ev', 'used_cars'].includes(s));
         if (!filtered.includes('passenger')) filtered.unshift('passenger');
         setSettings({
+          name: data.name ?? '',
           brand_mode: data.brand_mode ?? null,
           oem_authorization: data.oem_authorization ?? null,
           network_structure: data.network_structure ?? null,
@@ -286,6 +289,15 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
   }
 
   const disabled = !isAdmin;
+  const initials = settings.name.split(/\s+/).filter(Boolean).slice(0, 2).map(word => word[0]).join('').toUpperCase() || 'OR';
+  const hero = (
+    <section className="rounded-lg border border-border bg-card p-5 shadow-card">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-semibold text-primary-foreground">{initials}</div>
+        <div className="min-w-0 flex-1"><h2 className="truncate text-xl font-semibold text-foreground">{settings.name}</h2><div className="mt-2 flex flex-wrap gap-2">{(settings.oem_brands ?? []).map(brand => <BrandChip key={brand} label={brand} />)}</div></div>
+      </div>
+    </section>
+  );
 
   if (complete && !editMode) {
     const languageLabel =
@@ -313,6 +325,7 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
 
     return (
       <div className="space-y-6">
+        {hero}
         <div className="flex items-center justify-between">
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Organization profile</div>
@@ -395,6 +408,7 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
   return (
     <TooltipProvider>
       <div className="space-y-8">
+        {hero}
         {/* Incomplete banner */}
         {!complete && !editMode && (
           <div className="flex items-center gap-3 p-4 rounded-xl border border-primary/30 bg-primary/5">
@@ -519,16 +533,17 @@ export const OrganizationSettings = ({ organizationId, isAdmin }: Props) => {
                       </TooltipContent>
                     </Tooltip>
                   </div>
-                  <Select value={settings.business_model || ''} onValueChange={v => setSettings(p => ({ ...p, business_model: v }))} disabled={disabled}>
-                    <SelectTrigger className="h-10"><SelectValue placeholder="Select business model" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="sales_only">Sales Only</SelectItem>
-                      <SelectItem value="service_only">Service Only</SelectItem>
-                      <SelectItem value="2s">2S (Sales + Service)</SelectItem>
-                      <SelectItem value="3s">3S (+ Spares)</SelectItem>
-                      <SelectItem value="4s">4S (+ Bodyshop)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    {[
+                      { value: '2s', title: '2S', detail: 'Sales · Service' },
+                      { value: '3s', title: '3S', detail: 'Sales · Service · Parts' },
+                      { value: '4s', title: '4S', detail: 'Sales · Service · Parts · Bodyshop' },
+                    ].map(model => (
+                      <Button key={model.value} type="button" variant="outline" disabled={disabled} onClick={() => setSettings(p => ({ ...p, business_model: model.value }))} className={`h-auto min-h-24 flex-col items-start whitespace-normal p-4 text-left ${settings.business_model === model.value ? 'border-primary bg-primary/5 ring-1 ring-primary' : ''}`}>
+                        <span className="text-lg font-semibold text-foreground">{model.title}</span><span className="text-xs font-normal leading-5 text-muted-foreground">{model.detail}</span>
+                      </Button>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="space-y-2">
