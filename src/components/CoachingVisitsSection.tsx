@@ -1,88 +1,88 @@
-import { useEffect, useMemo, useState } from 'react';
+import { format } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
-import type { VisitHistoryItem } from '@/hooks/useCoachVisitLoop';
-import { VisitDetail } from '@/components/coach/VisitDetail';
-import { VisitTimeline, type TimelineVisit } from '@/components/coach/VisitTimeline';
+import type { ReviewOutcome, VisitHistoryItem } from '@/hooks/useCoachVisitLoop';
 
 interface CoachingVisitsSectionProps {
   dealershipId: string;
   visits: VisitHistoryItem[];
   loading: boolean;
   upcomingVisit?: {
-    id: string;
-    coach_user_id: string;
     visit_date: string;
     status: 'proposed' | 'confirmed' | 'counter_proposed' | 'cancelled';
     dealer_proposed_date: string | null;
   } | null;
 }
 
-export function CoachingVisitsSection({ dealershipId, visits, loading, upcomingVisit }: CoachingVisitsSectionProps) {
-  const { t } = useLanguage();
-  const [selectedVisitId, setSelectedVisitId] = useState<string | null>(visits[0]?.id ?? null);
-  const timelineVisits = useMemo<TimelineVisit[]>(() => [
-    ...(upcomingVisit ? [{
-      id: upcomingVisit.id,
-      coach_user_id: upcomingVisit.coach_user_id,
-      dealership_id: dealershipId,
-      visit_date: upcomingVisit.dealer_proposed_date ?? upcomingVisit.visit_date,
-      status: upcomingVisit.status,
-      visit_notes: null,
-      visit_type: null,
-      modules_reviewed: [],
-      summary: null,
-      next_visit_date: null,
-      agreed_action_ids: [],
-      created_at: null,
-      updated_at: null,
-      dealer_proposed_date: upcomingVisit.dealer_proposed_date,
-      declined_by: null,
-    } satisfies TimelineVisit] : []),
-    ...visits.map(visit => ({
-    id: visit.id,
-    coach_user_id: '',
-    dealership_id: dealershipId,
-    visit_date: visit.visit_date,
-    status: 'completed' as const,
-    visit_notes: null,
-    visit_type: visit.visit_type as TimelineVisit['visit_type'],
-    modules_reviewed: visit.modules_reviewed,
-    summary: visit.summary,
-    next_visit_date: visit.next_visit_date,
-    agreed_action_ids: visit.agreed_actions.map(action => action.id),
-    created_at: null,
-    updated_at: null,
-    dealer_proposed_date: null,
-    declined_by: null,
-    } satisfies TimelineVisit)),
-  ], [dealershipId, upcomingVisit, visits]);
+const OUTCOME_STYLE: Record<ReviewOutcome, string> = {
+  done: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  in_progress: 'bg-blue-50 text-blue-700 border-blue-200',
+  blocked: 'bg-red-50 text-red-700 border-red-200',
+  not_started: 'bg-neutral-50 text-neutral-600 border-neutral-200',
+};
 
-  useEffect(() => {
-    if (!selectedVisitId && timelineVisits.length > 0) setSelectedVisitId(timelineVisits[0].id);
-  }, [selectedVisitId, timelineVisits]);
+// Read-only for dealers: every visit renders the same card, empty parts are simply omitted.
+export function CoachingVisitsSection({ visits, loading, upcomingVisit }: CoachingVisitsSectionProps) {
+  const { t } = useLanguage();
+  if (loading) return null;
+
+  const row = (key: string, date: string, badge: React.ReactNode, body?: React.ReactNode) => (
+    <li key={key} className="py-4 first:pt-0 last:pb-0">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-semibold text-foreground">{format(new Date(date), 'dd MMM yyyy')}</p>
+        {badge}
+      </div>
+      {body}
+    </li>
+  );
 
   return (
-    <section id="coaching-visits" className="scroll-mt-6 space-y-4 rounded-lg border border-border bg-card p-5 shadow-card">
-      <h2 className="text-base font-semibold text-foreground">{t('dealerVisits.title')}</h2>
-      {!loading && timelineVisits.length === 0 ? (
+    <section id="coaching-visits" className="scroll-mt-6 rounded-lg border border-border bg-card p-5 shadow-card">
+      <h2 className="mb-4 text-base font-semibold text-foreground">{t('dealerVisits.title')}</h2>
+      {!upcomingVisit && visits.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t('dealerVisits.empty')}</p>
       ) : (
-        <div className="flex flex-col items-start gap-6 lg:flex-row">
-          <VisitTimeline
-            visits={timelineVisits}
-            selectedVisitId={selectedVisitId}
-            loading={loading}
-            onSelectBrief={() => setSelectedVisitId(timelineVisits[0]?.id ?? null)}
-            onSelectVisit={visit => setSelectedVisitId(visit.id)}
-            onSchedule={() => undefined}
-            readOnly
-          />
-          {selectedVisitId && (
-            <div className="min-w-0 flex-1">
-              <VisitDetail visitId={selectedVisitId} dealershipId={dealershipId} />
-            </div>
+        <ul className="divide-y divide-border">
+          {upcomingVisit && row(
+            'upcoming',
+            upcomingVisit.dealer_proposed_date ?? upcomingVisit.visit_date,
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">{t('dealerVisits.upcoming')}</Badge>,
           )}
-        </div>
+          {visits.map(v => {
+            const outcome = (id: string): ReviewOutcome => {
+              const reviewed = v.reviews.find(r => r.action_id === id)?.outcome;
+              if (reviewed) return reviewed;
+              const status = v.agreed_actions.find(x => x.id === id)?.status?.toLowerCase().replace(' ', '_');
+              return status === 'completed' ? 'done' : status === 'in_progress' ? 'in_progress' : 'not_started';
+            };
+            return row(
+                  v.id,
+                  v.visit_date,
+                  <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">{t('dealerVisits.completed')}</Badge>,
+                  <>
+                    {v.summary && <p className="mt-2 text-sm text-muted-foreground">{v.summary}</p>}
+                    {v.agreed_actions.length > 0 && (
+                      <div className="mt-3">
+                        <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          {t('dealerVisits.agreedActions')} ({v.agreed_actions.length})
+                        </p>
+                        <ul className="space-y-1.5">
+                          {v.agreed_actions.map(a => (
+                            <li key={a.id} className="flex items-center justify-between gap-3 text-sm">
+                              <span className="min-w-0 truncate">{a.action_title}</span>
+                              <Badge variant="outline" className={cn('shrink-0', OUTCOME_STYLE[outcome(a.id)])}>
+                                {t(`dealerVisits.outcome.${outcome(a.id)}`)}
+                              </Badge>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </>,
+            );
+          })}
+        </ul>
       )}
     </section>
   );
