@@ -161,9 +161,10 @@ export default function CoachActions() {
     if (filterDealer !== 'all') {
       filtered = filtered.filter(a => a.assessments.dealership_id === filterDealer);
     }
-    if (filterStatus !== 'all') {
-      filtered = filtered.filter(a => a.status === filterStatus);
-    }
+    // Tracker shows open work only; completed actions stay reachable via the explicit status filter / full assessment
+    filtered = filterStatus === 'all'
+      ? filtered.filter(a => a.status !== 'Completed')
+      : filtered.filter(a => a.status === filterStatus);
     return filtered;
   }, [actions, filterDealer, filterStatus]);
 
@@ -295,10 +296,10 @@ export default function CoachActions() {
               </Select>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
                 <SelectTrigger className="w-40 h-9 text-sm border-border">
-                  <SelectValue placeholder="All Status" />
+                  <SelectValue placeholder="Open &amp; in progress" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="all">Open &amp; in progress</SelectItem>
                   <SelectItem value="Open">Open</SelectItem>
                   <SelectItem value="In Progress">In Progress</SelectItem>
                   <SelectItem value="Completed">Completed</SelectItem>

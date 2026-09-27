@@ -85,12 +85,8 @@ export function AssessmentHeroNav({
 
           {/* Overall % complete */}
           <div className="flex-shrink-0 bg-neutral-50 border border-neutral-200 rounded-xl px-7 py-4 text-center min-w-[160px]">
-            <div
-              className="text-[52px] font-extrabold text-neutral-1000 leading-none tabular-nums font-display"
-              style={{ letterSpacing: '-0.05em' } as React.CSSProperties}
-            >
-              {overallPct}
-              <sup className="text-[20px] font-bold align-super" style={{ letterSpacing: '-0.02em' }}>%</sup>
+            <div className="text-metric-lg numeric text-neutral-1000 leading-none">
+              {overallPct}%
             </div>
             <p className="text-[12px] font-medium text-neutral-600 mt-1.5 mb-2.5">Complete</p>
             <div className="w-full h-[5px] bg-neutral-200 rounded-full overflow-hidden">

@@ -762,11 +762,15 @@ const Account = () => {
                           {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
-                      <div className="h-1 rounded bg-[hsl(var(--dd-rule))] mt-1.5 overflow-hidden">
-                        <div className="h-full rounded transition-all duration-300" style={{
-                          width: `${(passwordStrength / 5) * 100}%`,
-                          background: passwordStrength <= 1 ? 'hsl(var(--dd-red))' : passwordStrength <= 2 ? 'hsl(var(--dd-amber))' : 'hsl(var(--dd-green))'
-                        }} />
+                      {/* 4 segments: Weak / Fair / Strong / Very strong — each label fills its own segments */}
+                      <div className="grid grid-cols-4 gap-1 mt-1.5" role="meter" aria-valuemin={0} aria-valuemax={4} aria-valuenow={Math.min(passwordStrength, 4)}>
+                        {[1, 2, 3, 4].map(seg => (
+                          <div key={seg} className="h-1 rounded transition-colors duration-300" style={{
+                            background: Math.min(passwordStrength, 4) >= seg
+                              ? (passwordStrength <= 1 ? 'hsl(var(--dd-red))' : passwordStrength <= 2 ? 'hsl(var(--dd-amber))' : 'hsl(var(--dd-green))')
+                              : 'hsl(var(--dd-rule))'
+                          }} />
+                        ))}
                       </div>
                       <div className="text-[11px] mt-1" style={{ color: passwordStrength <= 1 ? 'hsl(var(--dd-red))' : passwordStrength <= 2 ? 'hsl(var(--dd-amber))' : 'hsl(var(--dd-green))' }}>
                         {passwordStrength === 0 ? '' : passwordStrength <= 1 ? 'Weak' : passwordStrength <= 2 ? 'Fair' : passwordStrength <= 3 ? 'Strong' : 'Very strong'}

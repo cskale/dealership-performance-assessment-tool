@@ -726,6 +726,7 @@ export type Database = {
           note_text: string
           note_type: string | null
           updated_at: string
+          visit_id: string | null
         }
         Insert: {
           action_id?: string | null
@@ -737,6 +738,7 @@ export type Database = {
           note_text: string
           note_type?: string | null
           updated_at?: string
+          visit_id?: string | null
         }
         Update: {
           action_id?: string | null
@@ -748,6 +750,7 @@ export type Database = {
           note_text?: string
           note_type?: string | null
           updated_at?: string
+          visit_id?: string | null
         }
         Relationships: [
           {
@@ -769,6 +772,13 @@ export type Database = {
             columns: ["dealership_id"]
             isOneToOne: false
             referencedRelation: "dealerships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_notes_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "coach_visits"
             referencedColumns: ["id"]
           },
         ]
@@ -2094,7 +2104,16 @@ export type Database = {
           visits_last_90d: number
         }[]
       }
+      get_org_member_profiles: {
+        Args: { p_org_id: string }
+        Returns: {
+          actor_type: string
+          display_name: string
+          user_id: string
+        }[]
+      }
       get_visit_brief: { Args: { p_dealership_id: string }; Returns: Json }
+      get_visit_detail: { Args: { p_visit_id: string }; Returns: Json }
       has_org_access: {
         Args: {
           _min_role?: Database["public"]["Enums"]["access_role"]
