@@ -43,7 +43,7 @@ export function CoachingVisitsSection({ dealershipId, visits, loading, upcomingV
     coach_user_id: '',
     dealership_id: dealershipId,
     visit_date: visit.visit_date,
-    status: 'completed',
+    status: 'completed' as const,
     visit_notes: null,
     visit_type: visit.visit_type as TimelineVisit['visit_type'],
     modules_reviewed: visit.modules_reviewed,
@@ -55,7 +55,7 @@ export function CoachingVisitsSection({ dealershipId, visits, loading, upcomingV
     dealer_proposed_date: null,
     declined_by: null,
     reviewCount: visit.reviews.length,
-    })),
+    } satisfies TimelineVisit)),
   ], [dealershipId, upcomingVisit, visits]);
 
   useEffect(() => {
