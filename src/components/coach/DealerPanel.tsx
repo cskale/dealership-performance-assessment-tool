@@ -22,6 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { sanitizeText } from '@/lib/sanitize';
 import { useAuth } from '@/hooks/useAuth';
 import { VisitLogSheet } from '@/components/coach/VisitLogSheet';
+import { CoachVisitWorkspace } from '@/components/coach/CoachVisitWorkspace';
 import { generateVisitReport, type VisitReportData } from '@/lib/pdfReportGenerator';
 import { STATIC_BENCHMARKS, sectionToModuleCode } from '@/lib/benchmarkUtils';
 import { getDepartmentName } from '@/lib/departmentNames';
