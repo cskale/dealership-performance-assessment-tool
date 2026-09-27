@@ -285,8 +285,26 @@ OEM admins manage their network at `/app/oem-settings` (Network Settings in side
 ### Known Non-Blocking Issues
 - `useOnboarding` RLS false negatives: RLS timing can make a valid `active_dealership_id` appear inaccessible on first load. The hook now logs a warning and preserves the stored value instead of nulling it — but the root cause (RLS propagation delay) is not fixed.
 
+## Repo Structure & Hygiene
+
+Root holds only `README.md`, `CLAUDE.md`, `AGENTS.md` (Lovable's rules), `DESIGN.md` and the tool config files (they must stay at root). Everything else lives under a typed folder:
+
+```
+docs/product/        PRD, roadmaps, improvement-tracker.html (archive)
+docs/architecture/   ARCHITECTURE.md, logic write-ups, diagrams/
+docs/changelog/      enhancement-log.md (current), CHANGELOG.md (history to June 2026)
+docs/contributing/   CONTRIBUTING.md, SECURITY.md
+docs/lovable/        Lovable handoff prompts
+docs/superpowers/    specs/ and plans/
+docs/agents/         agent workflow docs
+scripts/             reusable scripts only (e.g. qa_click_through.py)
+```
+
+- Never commit one-off debug scripts, screenshots, generated artefacts, or agent scratch files. Put them in the session scratchpad; git-ignored: `.agents/`, `.lovable/`, `roadmap.md`, `.superpowers/`, `qa-screens/`.
+- New docs go into the matching `docs/` folder, never the repo root.
+
 ## Improvement Tracker
-- Status and priorities: `improvement_tracker_updated.html` (open in browser). Don't duplicate status here.
+- Status and priorities (archive, last updated July 2026): `docs/product/improvement-tracker.html`. Ongoing change history: `docs/changelog/enhancement-log.md`. Don't duplicate status here.
 
 ## Project skills
 - Engineering skills (mattpocock set + `brag`) live in `.claude/skills/`.

@@ -38,3 +38,8 @@ brag-output/
 
 # QA click-through screenshots
 qa-screens/
+
+# Agent tool scratch (duplicates / per-prompt plans)
+.agents/
+.lovable/
+roadmap.md
