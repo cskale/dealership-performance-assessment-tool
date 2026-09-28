@@ -23,6 +23,7 @@ Quick-reference log of incremental enhancements, UI fixes, and small quality-of-
 | 12 | Mobile follow-ups | Dashboard hero stacks on phones; Action Plan toolbar wraps; coach/OEM stats bars scroll; Account pane and header email fit; Results maturity stepper shows only the current level on phones. | `c72e252` |
 | 13 | Kanban dates (Lovable) | `KanbanBoard.tsx` due dates switched from US format to "31 Aug 2026". | `af2ad71` |
 | 14 | Leftover coach membership | CSKale's 5 May viewer membership in the dealer org removed (production data). Coach access unaffected: it comes from `coach_dealership_assignments`. | — (DB) |
+| 15 | Dealer dashboard declutter | Coaching visits is one read-only list with the same card per visit (date, status, summary, agreed actions + outcome). Removed Coach Notes, Strategic Findings, Priority card and timeline strip (duplicated other sections). | `5952d6f` |
 
 Merged to main as PR #8 (`673671d`), deployed to production. Verified: tsc clean, lint 0 errors, 387/387 tests, second signed-in sweep of all three roles on desktop and mobile with no page errors or failed requests.
 Open: real two-factor sign-in (enrolment + sign-in challenge); older pages still hard-code English.

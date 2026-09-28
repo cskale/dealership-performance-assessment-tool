@@ -7,14 +7,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ClipboardList, ArrowRight, BarChart3, Zap, Award, AlertCircle, Info, Calendar as CalendarIcon } from 'lucide-react';
+import { ClipboardList, ArrowRight, BarChart3, Zap, Award, Calendar as CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { calculateWeightedScore } from '@/lib/scoringEngine';
 import { getMaturityLevel, MATURITY_LEVELS } from '@/lib/maturityConfig';
 import { CoachingVisitsSection } from '@/components/CoachingVisitsSection';
-import { useVisitBrief, useVisitHistory } from '@/hooks/useCoachVisitLoop';
-import { CoachNotesPanel } from '@/components/CoachNotesPanel';
+import { useVisitHistory } from '@/hooks/useCoachVisitLoop';
 import { Calendar } from '@/components/ui/calendar';
 import {
   DEPT_DISPLAY_NAMES,
@@ -29,9 +28,6 @@ import {
   criticalGapCount,
   heroNarrative,
   isOverdue,
-  nextAssessmentDue,
-  endOfCurrentQuarter,
-  relativeDays,
 } from '@/lib/dashboardUtils';
 import { sendVisitNotification, notifyOemVisitConfirmed } from '@/lib/notifications';
 
@@ -56,18 +52,10 @@ interface ActionRow {
   status: string | null;
 }
 
-interface CoachRow {
-  coach_user_id: string;
-  assigned_at: string;
-  valid_from: string | null;
-  valid_to: string | null;
-  is_active: boolean;
-}
 
 interface DashboardData {
   assessment: AssessmentRow;
   actions: ActionRow[];
-  coach: CoachRow | null;
 }
 
 interface UpcomingVisit {
@@ -100,18 +88,8 @@ async function fetchDashboardData(userId: string, dealerId: string | null): Prom
     .neq('status', 'Completed')
     .order('target_completion_date', { ascending: true });
 
-  let coach: CoachRow | null = null;
-  if (dealerId) {
-    const { data: coachRows } = await supabase
-      .from('coach_dealership_assignments')
-      .select('coach_user_id, assigned_at, valid_from, valid_to, is_active')
-      .eq('dealership_id', dealerId)
-      .eq('is_active', true)
-      .limit(1);
-    coach = (coachRows?.[0] as CoachRow) ?? null;
-  }
 
-  return { assessment, actions: (actions ?? []) as ActionRow[], coach };
+  return { assessment, actions: (actions ?? []) as ActionRow[] };
 }
 
 async function fetchUpcomingVisit(userId: string): Promise<UpcomingVisit | null> {
@@ -284,136 +262,6 @@ function HeroCard({
   );
 }
 
-// ─── Timeline Strip ───────────────────────────────────────────────────────────
-
-type TimelineStatus = 'done' | 'upcoming' | 'overdue';
-
-interface TimelineSlotProps {
-  label: string;
-  date: string;
-  sub: string;
-  status: TimelineStatus;
-  badgeText: string;
-}
-
-function TimelineSlot({ label, date, sub, status, badgeText }: TimelineSlotProps) {
-  const dotColor = {
-    done:     'bg-emerald-500',
-    upcoming: 'bg-brand-400',
-    overdue:  'bg-red-500',
-  }[status];
-
-  const badgeStyle = {
-    done:     'bg-emerald-50 text-emerald-700',
-    upcoming: 'bg-brand-100 text-brand-700',
-    overdue:  'bg-red-50 text-red-500',
-  }[status];
-
-  return (
-    <div className="px-5 py-4 border-r border-neutral-100 last:border-r-0 relative">
-      <span className={cn('absolute top-4 right-4 w-2 h-2 rounded-full', dotColor)} />
-      <p className="text-[10px] font-semibold text-neutral-500 mb-1">{label}</p>
-      <p className="text-[13px] font-bold text-neutral-900 mb-0.5">{date}</p>
-      <p className="text-[10px] text-neutral-500 mb-2">{sub}</p>
-      <span className={cn('inline-block text-[10px] font-bold px-2 py-0.5 rounded-full', badgeStyle)}>
-        {badgeText}
-      </span>
-    </div>
-  );
-}
-
-function TimelineStrip({
-  assessment,
-  coach,
-  lastVisitDate,
-  nextVisit,
-}: {
-  assessment: AssessmentRow;
-  coach: CoachRow | null;
-  /** visit_date of the latest completed coach visit */
-  lastVisitDate: string | null;
-  nextVisit: UpcomingVisit | null;
-}) {
-  const nextDue = nextAssessmentDue(assessment.completed_at);
-  const qEnd    = endOfCurrentQuarter();
-  const nextDueOverdue = isOverdue(nextDue);
-
-  const nextVisitConfirmed = nextVisit?.status === 'confirmed';
-
-  return (
-    <div className="bg-white rounded-xl shadow-card border border-neutral-200 grid grid-cols-5 overflow-hidden">
-      <TimelineSlot
-        label="Last Assessment"
-        date={formatDisplayDate(assessment.completed_at)}
-        sub={`${Object.keys(assessment.answers ?? {}).length} questions · completed`}
-        status="done"
-        badgeText="Completed"
-      />
-      <TimelineSlot
-        label="Next Assessment Due"
-        date={formatDisplayDate(nextDue)}
-        sub={relativeDays(nextDue)}
-        status={nextDueOverdue ? 'overdue' : 'upcoming'}
-        badgeText={nextDueOverdue ? 'Overdue' : 'Upcoming'}
-      />
-      <TimelineSlot
-        label="Last Coach Visit"
-        date={lastVisitDate ? formatDisplayDate(lastVisitDate) : 'None yet'}
-        sub={lastVisitDate ? relativeDays(lastVisitDate) : coach ? 'Field coach assigned' : 'No coach assigned'}
-        status={lastVisitDate ? 'done' : 'upcoming'}
-        badgeText={lastVisitDate ? 'Completed' : 'No visits yet'}
-      />
-      <TimelineSlot
-        label="Next Coach Visit"
-        date={nextVisit ? formatDisplayDate(nextVisit.visit_date) : 'Not scheduled'}
-        sub={nextVisit ? relativeDays(nextVisit.visit_date) : coach ? 'Your coach will propose a date' : 'Contact your programme manager'}
-        status="upcoming"
-        badgeText={nextVisit ? (nextVisitConfirmed ? 'Confirmed' : 'Awaiting confirmation') : 'Not scheduled'}
-      />
-      <TimelineSlot
-        label="Action Plan Review"
-        date={formatDisplayDate(qEnd)}
-        sub="End of quarter · all departments"
-        status="upcoming"
-        badgeText="Upcoming"
-      />
-    </div>
-  );
-}
-
-// ─── Priority Intervention Card ───────────────────────────────────────────────
-
-function PriorityCard({
-  focusDeptName,
-  focusDeptScore,
-  quarter,
-}: {
-  focusDeptName: string;
-  focusDeptScore: number;
-  quarter: string;
-}) {
-  const navigate = useNavigate();
-  return (
-    <div className="flex items-center gap-4 px-5 py-4 bg-red-50 border border-red-200 border-l-[3px] border-l-red-500 rounded-xl shadow-card">
-      <div className="flex-1 min-w-0">
-        <p className="text-[12px] font-bold text-red-500 mb-1">
-          Priority Intervention Required
-        </p>
-        <p className="text-[12px] text-neutral-800 leading-relaxed">
-          {focusDeptName} scored {Math.round(focusDeptScore)}/100 and requires immediate
-          attention. Review the open actions and assign ownership before the {quarter} deadline.
-        </p>
-      </div>
-      <button
-        onClick={() => navigate('/actions?filter=critical')}
-        className="flex-shrink-0 px-5 py-2 bg-red-500 text-white rounded-lg text-[12px] font-bold hover:bg-red-600 transition-colors"
-      >
-        Resolve Now
-      </button>
-    </div>
-  );
-}
-
 // ─── Departmental Intelligence Grid ──────────────────────────────────────────
 
 function DeptColumns({ scores }: { scores: Record<string, number> }) {
@@ -558,95 +406,6 @@ function ActionsTable({
   );
 }
 
-// ─── Strategic Findings ───────────────────────────────────────────────────────
-
-interface Finding {
-  id: string;
-  severity: 'critical' | 'medium';
-  title: string;
-  description: string;
-}
-
-function deriveFindings(scores: Record<string, number>): Finding[] {
-  const findings: Finding[] = [];
-
-  for (const key of DEPT_ORDER) {
-    const score = scores[key];
-    if (score === undefined) continue; // skip unassessed departments
-    if (score < 45) {
-      const name = DEPT_DISPLAY_NAMES[key];
-      findings.push({
-        id: `critical-${key}`,
-        severity: 'critical',
-        title: `${name} — Critical Performance Gap`,
-        description: `${name} scored ${Math.round(score)}/100 (Foundational). Core processes are undefined or inconsistently applied, creating a significant drag on overall dealership performance. Immediate structured intervention is required before the next assessment cycle.`,
-      });
-    }
-  }
-
-  const weakDepts = DEPT_ORDER.filter(k => scores[k] !== undefined && scores[k] < 65);
-  if (weakDepts.length >= 2) {
-    const names = weakDepts.map(k => DEPT_DISPLAY_NAMES[k]).join(', ');
-    findings.push({
-      id: 'systemic-process',
-      severity: 'medium',
-      title: 'Cross-Department Process Consistency Gap',
-      description: `Below-benchmark performance identified in ${weakDepts.length} departments: ${names}. This pattern suggests an organisation-wide process discipline issue — likely inconsistent CRM usage, role ownership gaps, or absence of a regular operational review cadence — rather than isolated department failures.`,
-    });
-  }
-
-  return findings.slice(0, 3);
-}
-
-function FindingsCard({ scores }: { scores: Record<string, number> }) {
-  const findings = deriveFindings(scores);
-  if (findings.length === 0) return null;
-
-  return (
-    <>
-      <h2 className="text-[15px] font-bold text-neutral-900">Strategic Findings</h2>
-      <div className="bg-white rounded-xl shadow-card border border-neutral-200 px-5 py-5">
-        {findings.map((f, i) => (
-          <div
-            key={f.id}
-            className={cn('py-4 flex items-start gap-3', i > 0 && 'border-t border-neutral-100')}
-          >
-            <div
-              className={cn(
-                'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0',
-                f.severity === 'critical' ? 'bg-red-50' : 'bg-brand-100'
-              )}
-            >
-              {f.severity === 'critical' ? (
-                <AlertCircle size={16} strokeWidth={2} className="text-red-500" />
-              ) : (
-                <Info size={16} strokeWidth={2} className="text-brand-500" />
-              )}
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-3 mb-1">
-                <p className="text-[13px] font-bold text-neutral-900">{f.title}</p>
-                <span
-                  className={cn(
-                    'flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full',
-                    f.severity === 'critical'
-                      ? 'bg-red-50 text-red-500'
-                      : 'bg-brand-100 text-brand-700'
-                  )}
-                >
-                  {f.severity === 'critical' ? 'Critical risk' : 'Medium impact'}
-                </span>
-              </div>
-              <p className="text-[11px] text-neutral-600 leading-relaxed">{f.description}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </>
-  );
-}
-
 // ─── Empty State ──────────────────────────────────────────────────────────────
 
 function EmptyState({ onStart }: { onStart: () => void }) {
@@ -712,7 +471,6 @@ export default function Dashboard() {
   });
 
   const { data: visitHistory, isLoading: visitHistoryLoading } = useVisitHistory(dealerId);
-  const { data: visitBrief } = useVisitBrief(dealerId);
 
   const derived = useMemo(() => {
     if (!data) return null;
@@ -845,7 +603,7 @@ export default function Dashboard() {
     );
   }
 
-  const { assessment, actions, coach } = data;
+  const { assessment, actions } = data;
   const {
     overallScore, maturityLabel,
     focusDeptKey, focusDeptName, focusDeptScore,
@@ -1015,22 +773,7 @@ export default function Dashboard() {
           focusDeptKey={focusDeptKey}
         />
 
-        {/* ── Timeline strip ── */}
-        <TimelineStrip
-          assessment={assessment}
-          coach={coach}
-          lastVisitDate={visitBrief?.last_visit?.visit_date ?? null}
-          nextVisit={upcomingVisit ?? null}
-        />
 
-        {/* ── Priority card — only when a critical gap exists ── */}
-        {gapCount > 0 && (
-          <PriorityCard
-            focusDeptName={focusDeptName}
-            focusDeptScore={focusDeptScore}
-            quarter={quarter}
-          />
-        )}
 
         {/* ── Departmental intelligence ── */}
         <DeptGrid scores={scores} />
@@ -1049,12 +792,6 @@ export default function Dashboard() {
             upcomingVisit={upcomingVisit}
           />
         )}
-
-        {/* ── Coach Notes — visible to dealers when notes exist ── */}
-        <CoachNotesPanel dealershipId={dealerId ?? null} />
-
-        {/* ── Strategic findings ── */}
-        <FindingsCard scores={scores} />
 
       </main>
     </div>
