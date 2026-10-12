@@ -307,7 +307,7 @@ scripts/             reusable scripts only (e.g. qa_click_through.py)
 - Status and priorities (archive, last updated July 2026): `docs/product/improvement-tracker.html`. Ongoing change history: `docs/changelog/enhancement-log.md`. Don't duplicate status here.
 
 ## Project skills
-- Engineering skills (mattpocock set + `brag`) live in `.claude/skills/`.
+- Engineering skills (mattpocock set) live in `.claude/skills/`.
 
 ## Agent skills
 
