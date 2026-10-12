@@ -135,7 +135,7 @@ Tests live in `src/__tests__/`. The test setup is in `src/test-setup.ts`. Covera
 
 ## Role Architecture
 
-Three actor types exist in `profiles.actor_type` enum: `'dealer' | 'coach' | 'oem' | 'internal'`
+Four actor types exist in `profiles.actor_type` enum: `'dealer' | 'coach' | 'oem' | 'internal'` (`internal` has no dedicated UI)
 
 ```
 OEM Admin  (actor_type='oem')   →  /app/oem-dashboard — network leaderboard across all dealers
