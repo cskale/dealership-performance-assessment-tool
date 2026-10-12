@@ -4,6 +4,16 @@ Quick-reference log of incremental enhancements, UI fixes, and small quality-of-
 
 ---
 
+## 2026-10-12 — Repo cleanup
+
+| # | Enhancement | Details | Commit |
+|---|-------------|---------|--------|
+| 1 | Merged branches deleted | 13 remote + 12 local branches removed; all fully contained in `main`. | — (git) |
+| 2 | Dead files removed | `kpiPositionEstimator.ts`, `moduleLabels.ts`, `FieldNotesCollapsible.tsx` (+ test), `public/placeholder.svg` — no imports. | `8857839` |
+| 3 | Lint error | `prefer-const` in `previewAuthStorage.ts`; lint now 0 errors. | `8857839` |
+
+---
+
 ## 2026-09-27 — Full QA sweep fixes (dealer / coach / OEM)
 
 | # | Enhancement | Details | Commit |
