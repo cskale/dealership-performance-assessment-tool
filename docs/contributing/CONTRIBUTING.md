@@ -189,7 +189,7 @@ These files contain business logic, data definitions, or infrastructure code. **
 | `src/lib/actionRationaleMap.ts` | Action plan template logic |
 | `src/lib/benchmarkGovernance.ts` | Benchmark validation and governance rules |
 | `src/lib/narrativeTemplates.ts` | 32-variant executive narrative generation |
-| `src/lib/crossValidationRules.ts` | Cross-department validation logic |
+| `src/data/crossValidationRules.ts` | Cross-department validation logic |
 | `src/lib/ceilingAnalysis.ts` | Ceiling analysis and plateau detection |
 | `src/data/actionTemplates.ts` | 22 action plan templates with implementation steps |
 | `supabase/functions/` | All Edge Functions |

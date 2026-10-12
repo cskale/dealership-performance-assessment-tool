@@ -50,7 +50,7 @@ All app routes are under `/app/*` and protected by `ProtectedRoute`. Public rout
 
 - **Supabase** handles auth, database (PostgreSQL with RLS), and real-time. Client is in `src/integrations/supabase/client.ts`. TypeScript types (auto-generated) are in `src/integrations/supabase/types.ts`.
 - **Multi-tenancy**: Organization-scoped via `useMultiTenant`. All data queries should be scoped to the active organization.
-- **RBAC**: 5 roles (Owner, Admin, Manager, Analyst, Viewer) managed via `RoleContext` and `useActiveRole`.
+- **RBAC**: 4 membership roles (`owner`, `admin`, `member`, `viewer`) from `memberships.role`, plus `actor_type` (dealer/coach/oem/internal); both read via `useActiveRole`.
 
 ### Assessment Engine
 
@@ -61,7 +61,7 @@ The core business logic lives in `src/lib/`:
 - `kpiDefinitions.ts` — KPI metadata (355KB, largest file — treat as data, not logic)
 - `actionRationaleMap.ts` — action plan templates
 
-`src/data/questionnaire.ts` (100KB) contains all assessment questions. `src/data/actionTemplates.ts` contains action plan templates.
+`src/data/questionnaire.ts` (370KB) contains all assessment questions. `src/data/actionTemplates.ts` contains action plan templates.
 
 ### State Pattern
 

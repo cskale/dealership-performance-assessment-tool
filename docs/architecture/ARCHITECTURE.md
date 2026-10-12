@@ -325,7 +325,7 @@ actionRationaleMap.ts  → Action plan generation
 | `src/lib/contextIntelligence.ts` | Context-aware recommendation layer | — |
 | `src/lib/narrativeTemplates.ts` | 32 executive narrative variants | — |
 | `src/lib/benchmarkGovernance.ts` | Benchmark validation | — |
-| `src/lib/crossValidationRules.ts` | Cross-department validation (partially wired) | — |
+| `src/data/crossValidationRules.ts` | Cross-department validation, rendered as alert cards in Results | — |
 | `src/lib/ceilingAnalysis.ts` | Ceiling analysis (not yet rendered in UI) | — |
 
 ### Scoring Model
@@ -348,7 +348,7 @@ Leading:       score >= 85 AND all sub-categories >= 60
 
 ### Unwired Components (Not Yet Called)
 
-- `evaluateCrossValidations()` in `crossValidationRules.ts` — not called from signalEngine
+- `evaluateCrossValidations()` in `crossValidationRules.ts` — called from `Results.tsx` (useMemo), not from signalEngine
 - `generateCeilingInsights()` in `ceilingAnalysis.ts` — not rendered on Results page
 
 ---
@@ -692,7 +692,7 @@ npm run lint              # ESLint
 
 ### Assessment Engine
 
-- `evaluateCrossValidations()` in `crossValidationRules.ts` is implemented but not called from signalEngine. Cross-validation insights are not surfaced in the current UI.
+- `evaluateCrossValidations()` runs in `Results.tsx` and is shown as alert cards; it is not fed into signalEngine, so findings do not affect signals or actions.
 - `generateCeilingInsights()` in `ceilingAnalysis.ts` is implemented but not rendered on the Results page.
 - Score delta / trajectory requires a DB design for historical snapshots (`assessments` currently does not store point-in-time snapshots in a queryable format). This is tracker item #36.
 
