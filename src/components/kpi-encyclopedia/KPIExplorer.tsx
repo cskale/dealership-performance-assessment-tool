@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -45,12 +45,15 @@ function highlightMatch(text: string, search: string) {
 // Primary visible chips (max 6) + overflow into dropdown
 const PRIMARY_CHIP_COUNT = 6;
 
+const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
 export function KPIExplorer({ initialKpiKey, onKpiClose }: KPIExplorerProps) {
   const { language } = useLanguage();
 
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebouncedValue(searchTerm);
   const [activeDepartment, setActiveDepartment] = useState<string>("all");
+  const [activeLetter, setActiveLetter] = useState<string | null>(null);
   const [selectedKpiKey, setSelectedKpiKey] = useState<string | null>(initialKpiKey ?? null);
 
   // Build flat list
@@ -70,12 +73,20 @@ export function KPIExplorer({ initialKpiKey, onKpiClose }: KPIExplorerProps) {
     return items;
   }, [language]);
 
+  const deptFilteredItems = useMemo(() => {
+    if (activeDepartment === "all") return allItems;
+    return allItems.filter((i) => i.departmentKey === activeDepartment);
+  }, [allItems, activeDepartment]);
+
+  const availableLetters = useMemo(() => {
+    const s = new Set<string>();
+    for (const i of deptFilteredItems) s.add(i.kpi.title.charAt(0).toUpperCase());
+    return s;
+  }, [deptFilteredItems]);
+
   // Filter
   const filteredItems = useMemo(() => {
-    let result = allItems;
-    if (activeDepartment !== "all") {
-      result = result.filter((i) => i.departmentKey === activeDepartment);
-    }
+    let result = deptFilteredItems;
     if (debouncedSearchTerm.length >= 2) {
       const s = debouncedSearchTerm.toLowerCase();
       result = result.filter(
@@ -85,8 +96,16 @@ export function KPIExplorer({ initialKpiKey, onKpiClose }: KPIExplorerProps) {
           (i.kpi.formula?.toLowerCase().includes(s) ?? false)
       );
     }
+    if (activeLetter) {
+      result = result
+        .filter((i) => i.kpi.title.charAt(0).toUpperCase() === activeLetter)
+        .slice()
+        .sort((a, b) => a.kpi.title.localeCompare(b.kpi.title));
+    }
     return result;
-  }, [allItems, activeDepartment, debouncedSearchTerm]);
+  }, [deptFilteredItems, debouncedSearchTerm, activeLetter]);
+
+  useEffect(() => { setActiveLetter(null); }, [activeDepartment, debouncedSearchTerm]);
 
   // Department chips with counts
   const departmentChips = useMemo(() => {
@@ -191,7 +210,7 @@ export function KPIExplorer({ initialKpiKey, onKpiClose }: KPIExplorerProps) {
                   : "bg-background text-muted-foreground border-border hover:bg-muted/60"
               )}
             >
-              {label}
+              {label} ({chip.count})
             </button>
           );
         })}
@@ -233,8 +252,35 @@ export function KPIExplorer({ initialKpiKey, onKpiClose }: KPIExplorerProps) {
         )}
       </div>
 
+      {/* Alphabet index */}
+      <div className="flex flex-wrap items-center gap-1">
+        {ALPHABET.map((letter) => {
+          const enabled = availableLetters.has(letter);
+          const isActive = activeLetter === letter;
+          return (
+            <button
+              key={letter}
+              type="button"
+              disabled={!enabled}
+              onClick={() => setActiveLetter(isActive ? null : letter)}
+              aria-pressed={isActive}
+              className={cn(
+                "h-7 w-7 rounded-md text-label font-medium transition-colors",
+                isActive
+                  ? "bg-primary text-primary-foreground"
+                  : enabled
+                    ? "text-foreground hover:bg-muted"
+                    : "text-muted-foreground/30 cursor-default"
+              )}
+            >
+              {letter}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Result count */}
-      {(searchTerm.length >= 2 || activeDepartment !== "all") && (
+      {(searchTerm.length >= 2 || activeDepartment !== "all" || activeLetter) && (
         <p className="text-body-sm text-muted-foreground -mt-2">
           {resultCount} {language === 'de' ? 'KPIs gefunden' : 'KPIs found'}
         </p>
