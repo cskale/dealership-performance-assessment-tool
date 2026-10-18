@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChevronLeft } from "lucide-react";
 import { getDepartmentConfig } from "@/lib/departmentConfig";
+import { categorizeImprovementLever } from "@/lib/improvementLeverCategory";
+import type { LeverCategory } from "@/lib/improvementLeverCategory";
 import type { KPIDefinition } from "@/lib/kpiDefinitions";
 
 interface KPIStudioProps {
@@ -22,26 +24,11 @@ const diagnosticRows = [
   { key: "incentives", label: { en: "Incentives", de: "Anreize" } },
 ] as const;
 
-function getImprovementTag(index: number, language: string) {
-  if (index < 2) {
-    return {
-      label: language === "de" ? "Schneller Gewinn" : "Quick win",
-      className: "bg-primary/10 text-primary border-primary/20",
-    };
-  }
-
-  if (index < 5) {
-    return {
-      label: language === "de" ? "Strukturell" : "Structural",
-      className: "bg-secondary text-secondary-foreground border-border/60",
-    };
-  }
-
-  return {
-    label: language === "de" ? "Fähigkeit" : "Capability",
-    className: "bg-muted text-muted-foreground border-border/60",
-  };
-}
+const LEVER_TAG: Record<LeverCategory, { label: { en: string; de: string }; dotClass: string }> = {
+  "quick-win": { label: { en: "Quick win", de: "Schneller Gewinn" }, dotClass: "bg-success" },
+  structural: { label: { en: "Structural", de: "Strukturell" }, dotClass: "bg-primary" },
+  capability: { label: { en: "Capability", de: "Fähigkeit" }, dotClass: "bg-warning" },
+};
 
 const BENCHMARK_GOOD_TO_BAD = ["bg-success", "bg-primary", "bg-warning", "bg-destructive/80"];
 const BENCHMARK_BAD_TO_GOOD = [...BENCHMARK_GOOD_TO_BAD].reverse();
@@ -181,9 +168,9 @@ export function KPIStudio({ kpi, departmentKey, language, onBack, onNavigateToKp
 
       <section className="border-b border-border/30 px-8 py-9 sm:px-10 lg:px-14">
         <div className="max-w-5xl">
-          <div className="mb-5 flex items-center gap-3">
-            <span className="h-[1.5px] w-6 bg-primary" />
-            <span className="text-caption font-medium uppercase tracking-wider text-primary">{deptLabel}</span>
+          <div className="mb-5 flex items-center gap-2">
+            <DeptIcon className="h-3 w-3" />
+            <span className="text-caption font-medium uppercase tracking-wider text-muted-foreground/70">{deptLabel}</span>
           </div>
 
           <h1 className="mb-4 text-h2 font-bold tracking-tight text-foreground">{kpi.title}</h1>
@@ -226,8 +213,8 @@ export function KPIStudio({ kpi, departmentKey, language, onBack, onNavigateToKp
             </div>
           )}
 
-          <div className="rounded-lg border border-primary/10 bg-primary/5 p-5">
-            <span className="mb-2 block text-caption font-medium uppercase tracking-wider text-primary/70">
+          <div className="rounded-lg border border-border/40 bg-muted/20 p-5">
+            <span className={cn("mb-2 block", SECTION_LABEL_CLASS)}>
               {t.whyThisMatters}
             </span>
             <p className="text-body-md leading-relaxed text-foreground/75">
@@ -314,13 +301,14 @@ export function KPIStudio({ kpi, departmentKey, language, onBack, onNavigateToKp
           <span className={cn("mb-4 block", SECTION_LABEL_CLASS)}>{t.improvementActions}</span>
           <div>
             {kpi.improvementLevers?.map((lever, index) => {
-              const tag = getImprovementTag(index, language);
+              const tag = LEVER_TAG[categorizeImprovementLever(lever)];
               return (
                 <div key={lever} className="flex items-start gap-3 border-b border-border/20 py-3 last:border-b-0">
                   <span className="w-4 shrink-0 text-caption text-muted-foreground/50">{index + 1}</span>
                   <p className="flex-1 text-body-sm leading-relaxed text-foreground">{lever}</p>
-                  <span className={cn("inline-flex shrink-0 items-center rounded-md border px-2.5 py-1 text-caption font-medium", tag.className)}>
-                    {tag.label}
+                  <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border/50 px-2 py-0.5 text-caption font-medium text-muted-foreground">
+                    <span className={cn("h-1.5 w-1.5 rounded-full", tag.dotClass)} />
+                    {tag.label[language === "de" ? "de" : "en"]}
                   </span>
                 </div>
               );
@@ -341,8 +329,9 @@ export function KPIStudio({ kpi, departmentKey, language, onBack, onNavigateToKp
                     key={driver}
                     type="button"
                     onClick={() => onNavigateToKpi?.(driver)}
-                    className="hover-lift flex w-full items-center gap-2 rounded-r-md border border-l-2 border-border/30 border-l-primary bg-card p-2 text-left"
+                    className="hover-lift flex w-full items-center gap-2 rounded-md border border-border/40 bg-card p-2 text-left"
                   >
+                    <span className="text-muted-foreground/40">←</span>
                     <span className="flex-1 text-body-sm text-muted-foreground">{driver}</span>
                     <span className="text-caption text-muted-foreground/50">{getUpstreamTag(driver, language)}</span>
                   </button>
@@ -363,10 +352,11 @@ export function KPIStudio({ kpi, departmentKey, language, onBack, onNavigateToKp
                     key={impact}
                     type="button"
                     onClick={() => onNavigateToKpi?.(impact)}
-                    className="hover-lift flex w-full items-center gap-2 rounded-l-md border border-r-2 border-border/30 border-r-primary bg-card p-2 text-left"
+                    className="hover-lift flex w-full items-center gap-2 rounded-md border border-border/40 bg-card p-2 text-left"
                   >
                     <span className="flex-1 text-body-sm text-muted-foreground">{impact}</span>
                     <span className="text-caption text-muted-foreground/50">{getDownstreamTag(impact, language)}</span>
+                    <span className="text-muted-foreground/40">→</span>
                   </button>
                 ))}
               </div>
