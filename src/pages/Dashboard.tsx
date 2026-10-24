@@ -506,6 +506,13 @@ export default function Dashboard() {
 
   const { data: visitHistory, isLoading: visitHistoryLoading } = useVisitHistory(dealerId);
 
+  const { t } = useLanguage();
+  const { data: dealerNetwork } = useQuery({
+    queryKey: ['dealership-network', dealerId],
+    queryFn: () => fetchDealershipNetwork(dealerId!),
+    enabled: !!dealerId && actorType === 'dealer',
+  });
+
   const derived = useMemo(() => {
     if (!data) return null;
     const { assessment, actions } = data;
