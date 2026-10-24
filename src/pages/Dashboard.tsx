@@ -132,8 +132,8 @@ async function fetchUpcomingVisit(userId: string): Promise<UpcomingVisit | null>
 }
 
 interface DealerNetworkData {
-  dealershipName: string;
-  coaches: { id: string; name: string }[];
+  dealershipName: string | null;
+  coaches: { id: string; name: string | null }[];
 }
 
 async function fetchDealershipNetwork(dealershipId: string): Promise<DealerNetworkData> {
@@ -155,11 +155,11 @@ async function fetchDealershipNetwork(dealershipId: string): Promise<DealerNetwo
       .in('user_id', coachIds);
     coaches = (profiles ?? []).map(p => ({
       id: p.user_id,
-      name: p.display_name ?? p.full_name ?? 'Coach',
+      name: p.display_name ?? p.full_name ?? null,
     }));
   }
 
-  return { dealershipName: dealershipRow?.name ?? 'Dealership', coaches };
+  return { dealershipName: dealershipRow?.name ?? null, coaches };
 }
 
 // ─── Stats Bar ────────────────────────────────────────────────────────────────
@@ -832,11 +832,11 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <NetworkBeam
-                center={{ label: dealerNetwork.dealershipName }}
+                center={{ label: dealerNetwork.dealershipName ?? t('network.dealershipFallback') }}
                 nodes={dealerNetwork.coaches.map(c => ({
                   id: c.id,
-                  label: c.name,
-                  sublabel: 'Coach',
+                  label: c.name ?? t('network.coach'),
+                  sublabel: t('network.coach'),
                   score: null,
                 }))}
               />

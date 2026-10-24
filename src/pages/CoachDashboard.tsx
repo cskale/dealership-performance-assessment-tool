@@ -586,7 +586,7 @@ export default function CoachDashboard() {
         </CardHeader>
         <CardContent>
           <NetworkBeam
-            center={{ label: 'You' }}
+            center={{ label: t('network.you') }}
             nodes={dealers.map(d => ({
               id: d.dealershipId,
               label: d.dealerName,

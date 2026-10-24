@@ -1,4 +1,4 @@
-import { ReactNode, useRef } from 'react';
+import { ReactNode, createRef, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AnimatedBeam } from '@/components/ui/animated-beam';
 import { cn } from '@/lib/utils';
@@ -46,8 +46,15 @@ export function NetworkBeam({ center, nodes, maxNodes = 8, className }: NetworkB
   const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const centerRef = useRef<HTMLDivElement>(null);
-  const leftRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const rightRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const nodeRefs = useRef(new Map<string, React.RefObject<HTMLDivElement>>());
+  const refFor = (id: string): React.RefObject<HTMLDivElement> => {
+    let ref = nodeRefs.current.get(id);
+    if (!ref) {
+      ref = createRef<HTMLDivElement>();
+      nodeRefs.current.set(id, ref);
+    }
+    return ref;
+  };
 
   if (nodes.length === 0) {
     return (
@@ -60,28 +67,22 @@ export function NetworkBeam({ center, nodes, maxNodes = 8, className }: NetworkB
   const overflow = nodes.length > maxNodes ? nodes.length - (maxNodes - 1) : 0;
   const visible = overflow > 0 ? nodes.slice(0, maxNodes - 1) : nodes;
   const displayNodes: NetworkBeamNode[] = overflow > 0
-    ? [...visible, { id: '__more__', label: t('network.more').replace('{count}', String(overflow)), score: null }]
+    ? [...visible, { id: '__more__', label: t('network.more'), score: null }]
     : visible;
 
   const half = Math.ceil(displayNodes.length / 2);
   const leftNodes = displayNodes.slice(0, half);
   const rightNodes = displayNodes.slice(half);
-  leftRefs.current = [];
-  rightRefs.current = [];
 
   const renderNode = (
     node: NetworkBeamNode,
     side: 'left' | 'right',
-    index: number,
   ) => {
     const clickable = !!node.onClick;
     const inner = (
       <>
         <div
-          ref={el => {
-            if (side === 'left') leftRefs.current[index] = el;
-            else rightRefs.current[index] = el;
-          }}
+          ref={refFor(node.id)}
           className={cn(
             'flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-card text-xs font-semibold text-foreground ring-2 ring-offset-2 ring-offset-background sm:h-12 sm:w-12',
             ringClass(node.score),
@@ -123,7 +124,7 @@ export function NetworkBeam({ center, nodes, maxNodes = 8, className }: NetworkB
     >
       {/* Left column */}
       <div className="z-10 flex flex-col justify-center gap-3 sm:gap-5">
-        {leftNodes.map((n, i) => renderNode(n, 'left', i))}
+        {leftNodes.map((n) => renderNode(n, 'left'))}
       </div>
 
       {/* Center hub */}
@@ -146,7 +147,7 @@ export function NetworkBeam({ center, nodes, maxNodes = 8, className }: NetworkB
 
       {/* Right column */}
       <div className="z-10 flex flex-col justify-center gap-3 sm:gap-5">
-        {rightNodes.map((n, i) => renderNode(n, 'right', i))}
+        {rightNodes.map((n) => renderNode(n, 'right'))}
       </div>
 
       {/* Beams */}
@@ -154,7 +155,7 @@ export function NetworkBeam({ center, nodes, maxNodes = 8, className }: NetworkB
         <AnimatedBeam
           key={`l-${n.id}`}
           containerRef={containerRef}
-          fromRef={{ current: leftRefs.current[i] } as React.RefObject<HTMLElement>}
+          fromRef={refFor(n.id) as React.RefObject<HTMLElement>}
           toRef={centerRef as React.RefObject<HTMLElement>}
           curvature={curvatureFor(i, leftNodes.length)}
           duration={5}
@@ -168,7 +169,7 @@ export function NetworkBeam({ center, nodes, maxNodes = 8, className }: NetworkB
         <AnimatedBeam
           key={`r-${n.id}`}
           containerRef={containerRef}
-          fromRef={{ current: rightRefs.current[i] } as React.RefObject<HTMLElement>}
+          fromRef={refFor(n.id) as React.RefObject<HTMLElement>}
           toRef={centerRef as React.RefObject<HTMLElement>}
           curvature={curvatureFor(i, rightNodes.length)}
           reverse

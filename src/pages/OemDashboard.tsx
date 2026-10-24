@@ -600,7 +600,7 @@ export default function OemDashboard() {
       {/* ── Top stats bar ── */}
       <div className="h-9 bg-[#0b1f3a] flex items-center px-6 sticky top-0 z-10 overflow-x-auto whitespace-nowrap">
         {(() => {
-          const brand = networks.find(n => n.id === selectedNetworkId)?.oem_brand ?? 'OEM Network';
+          const brand = networks.find(n => n.id === selectedNetworkId)?.oem_brand ?? t('network.oemFallback');
           const chips = [
             { label: 'NETWORK',          value: brand },
             { label: 'AVG SCORE',        value: stats.avg > 0 ? String(stats.avg) : '—' },
@@ -1205,7 +1205,7 @@ export default function OemDashboard() {
             <CardContent>
               <NetworkBeam
                 center={{
-                  label: networks.find(n => n.id === effectiveNetworkId)?.name ?? 'OEM Network',
+                  label: networks.find(n => n.id === effectiveNetworkId)?.name ?? t('network.oemFallback'),
                   sublabel: networks.find(n => n.id === effectiveNetworkId)?.oem_brand ?? undefined,
                 }}
                 nodes={sortedDealers.map(d => ({
