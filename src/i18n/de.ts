@@ -624,7 +624,11 @@ const de: Record<string, string> = {
   'playground.guide.sources': 'Wo Sie die Zahlen finden:',
   'network.title': 'Netzwerkübersicht',
   'network.empty': 'Noch keine Verbindungen',
-  'network.more': '+{count} weitere',
+  'network.more': 'weitere',
+  'network.you': 'Sie',
+  'network.coach': 'Coach',
+  'network.oemFallback': 'OEM-Netzwerk',
+  'network.dealershipFallback': 'Autohaus',
 };
 
 export default de;

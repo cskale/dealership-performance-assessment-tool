@@ -624,7 +624,11 @@ const it: Record<string, string> = {
   'playground.guide.sources': 'Dove trovare i dati:',
   'network.title': 'Mappa della rete',
   'network.empty': 'Nessuna connessione',
-  'network.more': '+{count} altri',
+  'network.more': 'altri',
+  'network.you': 'Tu',
+  'network.coach': 'Coach',
+  'network.oemFallback': 'Rete del costruttore',
+  'network.dealershipFallback': 'Concessionaria',
 };
 
 export default it;
