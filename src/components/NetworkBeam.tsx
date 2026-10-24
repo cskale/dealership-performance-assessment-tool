@@ -67,7 +67,7 @@ export function NetworkBeam({ center, nodes, maxNodes = 8, className }: NetworkB
   const overflow = nodes.length > maxNodes ? nodes.length - (maxNodes - 1) : 0;
   const visible = overflow > 0 ? nodes.slice(0, maxNodes - 1) : nodes;
   const displayNodes: NetworkBeamNode[] = overflow > 0
-    ? [...visible, { id: '__more__', label: t('network.more').replace('{count}', String(overflow)), score: null }]
+    ? [...visible, { id: '__more__', label: t('network.more'), score: null }]
     : visible;
 
   const half = Math.ceil(displayNodes.length / 2);
