@@ -13,6 +13,9 @@ import { cn } from '@/lib/utils';
 import { calculateWeightedScore } from '@/lib/scoringEngine';
 import { getMaturityLevel, MATURITY_LEVELS } from '@/lib/maturityConfig';
 import { CoachingVisitsSection } from '@/components/CoachingVisitsSection';
+import { NetworkBeam } from '@/components/NetworkBeam';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useVisitHistory } from '@/hooks/useCoachVisitLoop';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -126,6 +129,37 @@ async function fetchUpcomingVisit(userId: string): Promise<UpcomingVisit | null>
     dealership_id: profile.active_dealership_id,
     dealership_name: dealershipRow?.name ?? 'Dealership',
   };
+}
+
+interface DealerNetworkData {
+  dealershipName: string;
+  coaches: { id: string; name: string }[];
+}
+
+async function fetchDealershipNetwork(dealershipId: string): Promise<DealerNetworkData> {
+  const [{ data: dealershipRow }, { data: assignments }] = await Promise.all([
+    supabase.from('dealerships').select('name').eq('id', dealershipId).maybeSingle(),
+    supabase
+      .from('coach_dealership_assignments')
+      .select('coach_user_id')
+      .eq('dealership_id', dealershipId)
+      .eq('is_active', true),
+  ]);
+
+  const coachIds = (assignments ?? []).map(a => a.coach_user_id).filter(Boolean);
+  let coaches: { id: string; name: string }[] = [];
+  if (coachIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, full_name, display_name')
+      .in('user_id', coachIds);
+    coaches = (profiles ?? []).map(p => ({
+      id: p.user_id,
+      name: p.display_name ?? p.full_name ?? 'Coach',
+    }));
+  }
+
+  return { dealershipName: dealershipRow?.name ?? 'Dealership', coaches };
 }
 
 // ─── Stats Bar ────────────────────────────────────────────────────────────────
