@@ -825,6 +825,25 @@ export default function Dashboard() {
           onViewAll={() => navigate('/actions')}
         />
 
+        {dealerId && dealerNetwork && (
+          <Card className="shadow-card rounded-xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold">{t('network.title')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <NetworkBeam
+                center={{ label: dealerNetwork.dealershipName }}
+                nodes={dealerNetwork.coaches.map(c => ({
+                  id: c.id,
+                  label: c.name,
+                  sublabel: 'Coach',
+                  score: null,
+                }))}
+              />
+            </CardContent>
+          </Card>
+        )}
+
         {dealerId && (
           <CoachingVisitsSection
             dealershipId={dealerId}
