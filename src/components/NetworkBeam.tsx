@@ -73,8 +73,6 @@ export function NetworkBeam({ center, nodes, maxNodes = 8, className }: NetworkB
   const half = Math.ceil(displayNodes.length / 2);
   const leftNodes = displayNodes.slice(0, half);
   const rightNodes = displayNodes.slice(half);
-  leftRefs.current = [];
-  rightRefs.current = [];
 
   const renderNode = (
     node: NetworkBeamNode,
@@ -85,10 +83,7 @@ export function NetworkBeam({ center, nodes, maxNodes = 8, className }: NetworkB
     const inner = (
       <>
         <div
-          ref={el => {
-            if (side === 'left') leftRefs.current[index] = el;
-            else rightRefs.current[index] = el;
-          }}
+          ref={refFor(node.id)}
           className={cn(
             'flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-card text-xs font-semibold text-foreground ring-2 ring-offset-2 ring-offset-background sm:h-12 sm:w-12',
             ringClass(node.score),
