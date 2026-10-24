@@ -77,7 +77,6 @@ export function NetworkBeam({ center, nodes, maxNodes = 8, className }: NetworkB
   const renderNode = (
     node: NetworkBeamNode,
     side: 'left' | 'right',
-    index: number,
   ) => {
     const clickable = !!node.onClick;
     const inner = (
