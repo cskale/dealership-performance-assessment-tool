@@ -586,7 +586,7 @@ export default function CoachDashboard() {
         </CardHeader>
         <CardContent>
           <NetworkBeam
-            center={{ label: 'You', sublabel: t('coach.dashboardTitle') !== 'coach.dashboardTitle' ? undefined : undefined }}
+            center={{ label: 'You' }}
             nodes={dealers.map(d => ({
               id: d.dealershipId,
               label: d.dealerName,
