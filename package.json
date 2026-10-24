@@ -37,6 +37,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
+    "framer-motion": "^14.6.0",
     "jsdom": "^27.0.0",
     "jspdf": "4.0.0",
     "jspdf-autotable": "^5.0.7",
