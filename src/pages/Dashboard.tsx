@@ -13,6 +13,9 @@ import { cn } from '@/lib/utils';
 import { calculateWeightedScore } from '@/lib/scoringEngine';
 import { getMaturityLevel, MATURITY_LEVELS } from '@/lib/maturityConfig';
 import { CoachingVisitsSection } from '@/components/CoachingVisitsSection';
+import { NetworkBeam } from '@/components/NetworkBeam';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useVisitHistory } from '@/hooks/useCoachVisitLoop';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -126,6 +129,37 @@ async function fetchUpcomingVisit(userId: string): Promise<UpcomingVisit | null>
     dealership_id: profile.active_dealership_id,
     dealership_name: dealershipRow?.name ?? 'Dealership',
   };
+}
+
+interface DealerNetworkData {
+  dealershipName: string;
+  coaches: { id: string; name: string }[];
+}
+
+async function fetchDealershipNetwork(dealershipId: string): Promise<DealerNetworkData> {
+  const [{ data: dealershipRow }, { data: assignments }] = await Promise.all([
+    supabase.from('dealerships').select('name').eq('id', dealershipId).maybeSingle(),
+    supabase
+      .from('coach_dealership_assignments')
+      .select('coach_user_id')
+      .eq('dealership_id', dealershipId)
+      .eq('is_active', true),
+  ]);
+
+  const coachIds = (assignments ?? []).map(a => a.coach_user_id).filter(Boolean);
+  let coaches: { id: string; name: string }[] = [];
+  if (coachIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, full_name, display_name')
+      .in('user_id', coachIds);
+    coaches = (profiles ?? []).map(p => ({
+      id: p.user_id,
+      name: p.display_name ?? p.full_name ?? 'Coach',
+    }));
+  }
+
+  return { dealershipName: dealershipRow?.name ?? 'Dealership', coaches };
 }
 
 // ─── Stats Bar ────────────────────────────────────────────────────────────────
@@ -472,6 +506,13 @@ export default function Dashboard() {
 
   const { data: visitHistory, isLoading: visitHistoryLoading } = useVisitHistory(dealerId);
 
+  const { t } = useLanguage();
+  const { data: dealerNetwork } = useQuery({
+    queryKey: ['dealership-network', dealerId],
+    queryFn: () => fetchDealershipNetwork(dealerId!),
+    enabled: !!dealerId && actorType === 'dealer',
+  });
+
   const derived = useMemo(() => {
     if (!data) return null;
     const { assessment, actions } = data;
@@ -783,6 +824,25 @@ export default function Dashboard() {
           actions={actions}
           onViewAll={() => navigate('/actions')}
         />
+
+        {dealerId && dealerNetwork && (
+          <Card className="shadow-card rounded-xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold">{t('network.title')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <NetworkBeam
+                center={{ label: dealerNetwork.dealershipName }}
+                nodes={dealerNetwork.coaches.map(c => ({
+                  id: c.id,
+                  label: c.name,
+                  sublabel: 'Coach',
+                  score: null,
+                }))}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {dealerId && (
           <CoachingVisitsSection

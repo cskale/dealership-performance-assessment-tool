@@ -622,6 +622,9 @@ const fr: Record<string, string> = {
   'playground.guide.what': 'Ce que vous obtenez',
   'playground.guide.how': 'Comment agir',
   'playground.guide.sources': 'Où trouver les chiffres :',
+  'network.title': 'Carte du réseau',
+  'network.empty': 'Aucune connexion pour le moment',
+  'network.more': '+{count} autres',
 };
 
 export default fr;
