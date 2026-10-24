@@ -1,4 +1,4 @@
-import { ReactNode, useRef } from 'react';
+import { ReactNode, createRef, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AnimatedBeam } from '@/components/ui/animated-beam';
 import { cn } from '@/lib/utils';
@@ -46,8 +46,15 @@ export function NetworkBeam({ center, nodes, maxNodes = 8, className }: NetworkB
   const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const centerRef = useRef<HTMLDivElement>(null);
-  const leftRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const rightRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const nodeRefs = useRef(new Map<string, React.RefObject<HTMLDivElement>>());
+  const refFor = (id: string): React.RefObject<HTMLDivElement> => {
+    let ref = nodeRefs.current.get(id);
+    if (!ref) {
+      ref = createRef<HTMLDivElement>();
+      nodeRefs.current.set(id, ref);
+    }
+    return ref;
+  };
 
   if (nodes.length === 0) {
     return (
