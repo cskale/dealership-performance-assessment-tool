@@ -124,7 +124,7 @@ export function NetworkBeam({ center, nodes, maxNodes = 8, className }: NetworkB
     >
       {/* Left column */}
       <div className="z-10 flex flex-col justify-center gap-3 sm:gap-5">
-        {leftNodes.map((n, i) => renderNode(n, 'left', i))}
+        {leftNodes.map((n) => renderNode(n, 'left'))}
       </div>
 
       {/* Center hub */}
@@ -147,7 +147,7 @@ export function NetworkBeam({ center, nodes, maxNodes = 8, className }: NetworkB
 
       {/* Right column */}
       <div className="z-10 flex flex-col justify-center gap-3 sm:gap-5">
-        {rightNodes.map((n, i) => renderNode(n, 'right', i))}
+        {rightNodes.map((n) => renderNode(n, 'right'))}
       </div>
 
       {/* Beams */}
