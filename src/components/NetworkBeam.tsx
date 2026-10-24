@@ -156,7 +156,7 @@ export function NetworkBeam({ center, nodes, maxNodes = 8, className }: NetworkB
         <AnimatedBeam
           key={`l-${n.id}`}
           containerRef={containerRef}
-          fromRef={{ current: leftRefs.current[i] } as React.RefObject<HTMLElement>}
+          fromRef={refFor(n.id) as React.RefObject<HTMLElement>}
           toRef={centerRef as React.RefObject<HTMLElement>}
           curvature={curvatureFor(i, leftNodes.length)}
           duration={5}
@@ -170,7 +170,7 @@ export function NetworkBeam({ center, nodes, maxNodes = 8, className }: NetworkB
         <AnimatedBeam
           key={`r-${n.id}`}
           containerRef={containerRef}
-          fromRef={{ current: rightRefs.current[i] } as React.RefObject<HTMLElement>}
+          fromRef={refFor(n.id) as React.RefObject<HTMLElement>}
           toRef={centerRef as React.RefObject<HTMLElement>}
           curvature={curvatureFor(i, rightNodes.length)}
           reverse
