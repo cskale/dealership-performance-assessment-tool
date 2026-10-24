@@ -23,6 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useNetworkCoachingStats, type CoachingStatsRow } from '@/hooks/useCoachVisitLoop';
 import { TierBadge } from '@/components/shared/TierBadge';
 import { ScoreGauge } from '@/components/shared/ScoreGauge';
+import { NetworkBeam } from '@/components/NetworkBeam';
 import {
   DEPT_KEYS, DEPT_LABELS, AT_RISK_THRESHOLD,
   parseDeptScores, getDeptCellClass, getDeptBgClass, getDeptTextClass,
@@ -1193,6 +1194,28 @@ export default function OemDashboard() {
                   </Table>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Network map — hub-and-spoke visualisation */}
+          <Card className="shadow-card rounded-xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold">{t('network.title')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <NetworkBeam
+                center={{
+                  label: networks.find(n => n.id === effectiveNetworkId)?.name ?? 'OEM Network',
+                  sublabel: networks.find(n => n.id === effectiveNetworkId)?.oem_brand ?? undefined,
+                }}
+                nodes={sortedDealers.map(d => ({
+                  id: d.dealershipId,
+                  label: d.dealerName,
+                  sublabel: d.location,
+                  score: d.latestScore,
+                  onClick: () => setSelectedDealer(d),
+                }))}
+              />
             </CardContent>
           </Card>
 
