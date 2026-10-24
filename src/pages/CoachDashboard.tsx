@@ -7,6 +7,7 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { NetworkBeam } from '@/components/NetworkBeam';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import {
@@ -577,6 +578,25 @@ export default function CoachDashboard() {
           <span className="mr-1.5">↓</span> Export Report
         </Button>
       </div>
+
+      {/* Network map — coach hub with assigned dealerships */}
+      <Card className="shadow-card rounded-xl">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-semibold">{t('network.title')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <NetworkBeam
+            center={{ label: 'You', sublabel: t('coach.dashboardTitle') !== 'coach.dashboardTitle' ? undefined : undefined }}
+            nodes={dealers.map(d => ({
+              id: d.dealershipId,
+              label: d.dealerName,
+              sublabel: d.location,
+              score: d.latestScore,
+              onClick: () => navigate(`/app/coach/dealer/${d.dealershipId}`),
+            }))}
+          />
+        </CardContent>
+      </Card>
 
       {/* Dark hero card */}
       {(() => {
